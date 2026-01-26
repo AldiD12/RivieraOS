@@ -46,6 +46,11 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? Environment.GetEnvironmentVariable("DATABASE_URL")
     ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 
+Console.WriteLine($"🔍 Checking connection string...");
+Console.WriteLine($"   - From Configuration: {(builder.Configuration.GetConnectionString("DefaultConnection") != null ? "Found" : "Not found")}");
+Console.WriteLine($"   - From DATABASE_URL: {(Environment.GetEnvironmentVariable("DATABASE_URL") != null ? "Found" : "Not found")}");
+Console.WriteLine($"   - From ConnectionStrings__DefaultConnection: {(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection") != null ? "Found" : "Not found")}");
+
 if (string.IsNullOrEmpty(connectionString))
 {
     // Development: Use In-Memory Database
@@ -57,7 +62,16 @@ if (string.IsNullOrEmpty(connectionString))
 else
 {
     // Production: Use PostgreSQL
-    Console.WriteLine($"🔗 Connection string found: {connectionString.Substring(0, Math.Min(50, connectionString.Length))}...");
+    Console.WriteLine($"🔗 Connection string length: {connectionString.Length}");
+    Console.WriteLine($"🔗 Connection string preview: {connectionString.Substring(0, Math.Min(30, connectionString.Length))}...");
+    
+    // Validate connection string format
+    if (!connectionString.StartsWith("postgresql://") && !connectionString.StartsWith("postgres://"))
+    {
+        Console.WriteLine($"❌ ERROR: Invalid connection string format. Must start with postgresql:// or postgres://");
+        Console.WriteLine($"   Actual value: {connectionString}");
+        throw new Exception("Invalid PostgreSQL connection string format");
+    }
     
     builder.Services.AddDbContext<RivieraDbContext>(options =>
         options.UseNpgsql(connectionString));
