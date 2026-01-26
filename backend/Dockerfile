@@ -8,6 +8,10 @@ RUN dotnet restore
 
 # Copy everything else and build
 COPY . .
+
+# Remove appsettings.Production.json to force environment variable usage
+RUN rm -f appsettings.Production.json
+
 RUN dotnet publish RestaurantQRApi.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 # Runtime stage
