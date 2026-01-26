@@ -110,8 +110,37 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<RivieraDbContext>();
-    context.Database.EnsureCreated();
-    DbInitializer.Initialize(context);
+    
+    try
+    {
+        Console.WriteLine("📊 Initializing database...");
+        
+        // For PostgreSQL in production, assume migrations are run separately
+        // For in-memory dev database, create it
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            Console.WriteLine("📊 Creating in-memory database...");
+            context.Database.EnsureCreated();
+            
+            Console.WriteLine("📊 Seeding data...");
+            DbInitializer.Initialize(context);
+            Console.WriteLine("✅ Database initialized successfully!");
+        }
+        else
+        {
+            Console.WriteLine("📊 Production mode - skipping auto-migration");
+            Console.WriteLine("📊 Run migrations manually: dotnet ef database update");
+            Console.WriteLine("📊 Seeding data...");
+            DbInitializer.Initialize(context);
+            Console.WriteLine("✅ Database ready!");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Database initialization failed: {ex.Message}");
+        Console.WriteLine($"   Stack trace: {ex.StackTrace}");
+        throw;
+    }
 }
 
 // Configure middleware
