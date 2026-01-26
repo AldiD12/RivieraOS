@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -7,77 +6,59 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BlackBear.Services.Core.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialSqlServer : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterDatabase()
-                .Annotation("MySql:CharSet", "utf8mb4");
-
             migrationBuilder.CreateTable(
                 name: "core_businesses",
                 columns: table => new
                 {
                     business_id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    registered_name = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    brand_name = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    tax_id = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    contact_email = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    logo_url = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    subscription_status = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    is_active = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    registered_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    brand_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    tax_id = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    contact_email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    logo_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    subscription_status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    is_active = table.Column<bool>(type: "bit", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_core_businesses", x => x.business_id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "core_roles",
                 columns: table => new
                 {
                     role_id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    role_name = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    description = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    role_name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_core_roles", x => x.role_id);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "catalog_venues",
                 columns: table => new
                 {
                     venue_id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    name = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    type = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    description = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    address = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    image_url = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    latitude = table.Column<double>(type: "double", nullable: true),
-                    longitude = table.Column<double>(type: "double", nullable: true),
-                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    image_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    latitude = table.Column<double>(type: "float", nullable: true),
+                    longitude = table.Column<double>(type: "float", nullable: true),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
                     business_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -89,27 +70,21 @@ namespace BlackBear.Services.Core.Migrations
                         principalTable: "core_businesses",
                         principalColumn: "business_id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "core_users",
                 columns: table => new
                 {
                     user_id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    email = table.Column<string>(type: "varchar(255)", maxLength: 255, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    password_hash = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    full_name = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    phone_number = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    user_type = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    is_active = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    password_hash = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    full_name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    phone_number = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    user_type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    is_active = table.Column<bool>(type: "bit", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
                     business_id = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -121,19 +96,17 @@ namespace BlackBear.Services.Core.Migrations
                         principalTable: "core_businesses",
                         principalColumn: "business_id",
                         onDelete: ReferentialAction.SetNull);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "catalog_categories",
                 columns: table => new
                 {
                     category_id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    name = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     sort_order = table.Column<int>(type: "int", nullable: false),
-                    is_active = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    is_active = table.Column<bool>(type: "bit", nullable: false),
                     venue_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -145,18 +118,17 @@ namespace BlackBear.Services.Core.Migrations
                         principalTable: "catalog_venues",
                         principalColumn: "venue_id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "catalog_venue_configs",
                 columns: table => new
                 {
                     config_id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    is_booking_enabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    is_self_service_enabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    is_event_mode_enabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    is_booking_enabled = table.Column<bool>(type: "bit", nullable: false),
+                    is_self_service_enabled = table.Column<bool>(type: "bit", nullable: false),
+                    is_event_mode_enabled = table.Column<bool>(type: "bit", nullable: false),
                     max_capacity = table.Column<int>(type: "int", nullable: false),
                     booking_deposit_amount = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     venue_id = table.Column<int>(type: "int", nullable: false)
@@ -170,19 +142,16 @@ namespace BlackBear.Services.Core.Migrations
                         principalTable: "catalog_venues",
                         principalColumn: "venue_id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "catalog_venue_zones",
                 columns: table => new
                 {
                     zone_id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    name = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    zone_type = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    zone_type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     capacity_per_unit = table.Column<int>(type: "int", nullable: false),
                     base_price = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     venue_id = table.Column<int>(type: "int", nullable: false)
@@ -196,27 +165,23 @@ namespace BlackBear.Services.Core.Migrations
                         principalTable: "catalog_venues",
                         principalColumn: "venue_id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "events_scheduled",
                 columns: table => new
                 {
                     event_id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    description = table.Column<string>(type: "longtext", nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    flyer_image_url = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    start_time = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    end_time = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    is_ticketed = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    flyer_image_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    start_time = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    end_time = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    is_ticketed = table.Column<bool>(type: "bit", nullable: false),
                     ticket_price = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     max_guests = table.Column<int>(type: "int", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
                     venue_id = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -228,8 +193,7 @@ namespace BlackBear.Services.Core.Migrations
                         principalTable: "catalog_venues",
                         principalColumn: "venue_id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "core_user_roles",
@@ -253,26 +217,22 @@ namespace BlackBear.Services.Core.Migrations
                         principalTable: "core_users",
                         principalColumn: "user_id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "catalog_products",
                 columns: table => new
                 {
                     product_id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    name = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    description = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
-                    image_url = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    image_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     price = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
                     old_price = table.Column<decimal>(type: "decimal(10,2)", nullable: true),
-                    is_available = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    is_alcohol = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    created_at = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    is_available = table.Column<bool>(type: "bit", nullable: false),
+                    is_alcohol = table.Column<bool>(type: "bit", nullable: false),
+                    created_at = table.Column<DateTime>(type: "datetime2", nullable: false),
                     category_id = table.Column<int>(type: "int", nullable: false),
                     venue_id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -291,20 +251,18 @@ namespace BlackBear.Services.Core.Migrations
                         principalTable: "catalog_venues",
                         principalColumn: "venue_id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateTable(
                 name: "events_bookings",
                 columns: table => new
                 {
                     booking_id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    status = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     guest_count = table.Column<int>(type: "int", nullable: false),
                     total_paid = table.Column<decimal>(type: "decimal(10,2)", nullable: false),
-                    booking_date = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    booking_date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     event_id = table.Column<int>(type: "int", nullable: false),
                     user_id = table.Column<int>(type: "int", nullable: false)
                 },
@@ -323,8 +281,7 @@ namespace BlackBear.Services.Core.Migrations
                         principalTable: "events_scheduled",
                         principalColumn: "event_id",
                         onDelete: ReferentialAction.Cascade);
-                })
-                .Annotation("MySql:CharSet", "utf8mb4");
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_catalog_categories_venue_id",

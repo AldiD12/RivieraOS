@@ -14,9 +14,9 @@ namespace BlackBear.Services.Core.Entities
 
         // Navigation properties
         [ForeignKey("UserId")]
-        public User User { get; set; } = null!;
+        public User? User { get; set; }
 
         [ForeignKey("RoleId")]
-        public Role Role { get; set; } = null!;
+        public Role? Role { get; set; }
     }
 }

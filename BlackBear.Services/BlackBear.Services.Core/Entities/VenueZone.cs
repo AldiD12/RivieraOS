@@ -31,6 +31,6 @@ namespace BlackBear.Services.Core.Entities
 
         // Navigation property
         [ForeignKey("VenueId")]
-        public Venue Venue { get; set; } = null!;
+        public Venue? Venue { get; set; }
     }
 }

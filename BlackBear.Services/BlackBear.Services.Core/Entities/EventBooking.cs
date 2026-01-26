@@ -32,9 +32,9 @@ namespace BlackBear.Services.Core.Entities
 
         // Navigation properties
         [ForeignKey("EventId")]
-        public ScheduledEvent ScheduledEvent { get; set; } = null!;
+        public ScheduledEvent? ScheduledEvent { get; set; }
 
         [ForeignKey("UserId")]
-        public User User { get; set; } = null!;
+        public User? User { get; set; }
     }
 }

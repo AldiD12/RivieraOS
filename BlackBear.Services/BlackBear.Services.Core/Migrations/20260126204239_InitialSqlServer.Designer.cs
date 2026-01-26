@@ -12,18 +12,18 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlackBear.Services.Core.Migrations
 {
     [DbContext(typeof(BlackBearDbContext))]
-    [Migration("20260126170623_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260126204239_InitialSqlServer")]
+    partial class InitialSqlServer
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.23")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("BlackBear.Services.Core.Entities.Business", b =>
                 {
@@ -32,46 +32,46 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("int")
                         .HasColumnName("business_id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BrandName")
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("brand_name");
 
                     b.Property<string>("ContactEmail")
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("contact_email");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("bit")
                         .HasColumnName("is_active");
 
                     b.Property<string>("LogoUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("logo_url");
 
                     b.Property<string>("RegisteredName")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("registered_name");
 
                     b.Property<string>("SubscriptionStatus")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("subscription_status");
 
                     b.Property<string>("TaxId")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("tax_id");
 
                     b.HasKey("Id");
@@ -86,16 +86,16 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("int")
                         .HasColumnName("category_id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("bit")
                         .HasColumnName("is_active");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("name");
 
                     b.Property<int>("SortOrder")
@@ -120,10 +120,10 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("int")
                         .HasColumnName("booking_id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("BookingDate")
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasColumnName("booking_date");
 
                     b.Property<int>("EventId")
@@ -137,7 +137,7 @@ namespace BlackBear.Services.Core.Migrations
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("status");
 
                     b.Property<decimal>("TotalPaid")
@@ -164,38 +164,38 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("int")
                         .HasColumnName("product_id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("int")
                         .HasColumnName("category_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("description");
 
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("image_url");
 
                     b.Property<bool>("IsAlcohol")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("bit")
                         .HasColumnName("is_alcohol");
 
                     b.Property<bool>("IsAvailable")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("bit")
                         .HasColumnName("is_available");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("varchar(150)")
+                        .HasColumnType("nvarchar(150)")
                         .HasColumnName("name");
 
                     b.Property<decimal?>("OldPrice")
@@ -226,17 +226,17 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("int")
                         .HasColumnName("role_id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)")
+                        .HasColumnType("nvarchar(200)")
                         .HasColumnName("description");
 
                     b.Property<string>("RoleName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("role_name");
 
                     b.HasKey("Id");
@@ -251,27 +251,27 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("int")
                         .HasColumnName("event_id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("longtext")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("description");
 
                     b.Property<DateTime>("EndTime")
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasColumnName("end_time");
 
                     b.Property<string>("FlyerImageUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("flyer_image_url");
 
                     b.Property<bool>("IsTicketed")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("bit")
                         .HasColumnName("is_ticketed");
 
                     b.Property<int>("MaxGuests")
@@ -281,11 +281,11 @@ namespace BlackBear.Services.Core.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("varchar(200)")
+                        .HasColumnType("nvarchar(200)")
                         .HasColumnName("name");
 
                     b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasColumnName("start_time");
 
                     b.Property<decimal>("TicketPrice")
@@ -310,44 +310,44 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("int")
                         .HasColumnName("user_id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("BusinessId")
                         .HasColumnType("int")
                         .HasColumnName("business_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("varchar(255)")
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("email");
 
                     b.Property<string>("FullName")
                         .HasMaxLength(150)
-                        .HasColumnType("varchar(150)")
+                        .HasColumnType("nvarchar(150)")
                         .HasColumnName("full_name");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("bit")
                         .HasColumnName("is_active");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("longtext")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("password_hash");
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("phone_number");
 
                     b.Property<string>("UserType")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("user_type");
 
                     b.HasKey("Id");
@@ -384,11 +384,11 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("int")
                         .HasColumnName("venue_id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("address");
 
                     b.Property<int>("BusinessId")
@@ -396,35 +396,35 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnName("business_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)")
+                        .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
                     b.Property<string>("Description")
-                        .HasColumnType("longtext")
+                        .HasColumnType("nvarchar(max)")
                         .HasColumnName("description");
 
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("varchar(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("image_url");
 
                     b.Property<double?>("Latitude")
-                        .HasColumnType("double")
+                        .HasColumnType("float")
                         .HasColumnName("latitude");
 
                     b.Property<double?>("Longitude")
-                        .HasColumnType("double")
+                        .HasColumnType("float")
                         .HasColumnName("longitude");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("varchar(150)")
+                        .HasColumnType("nvarchar(150)")
                         .HasColumnName("name");
 
                     b.Property<string>("Type")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("type");
 
                     b.HasKey("Id");
@@ -441,22 +441,22 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("int")
                         .HasColumnName("config_id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("BookingDepositAmount")
                         .HasColumnType("decimal(10,2)")
                         .HasColumnName("booking_deposit_amount");
 
                     b.Property<bool>("IsBookingEnabled")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("bit")
                         .HasColumnName("is_booking_enabled");
 
                     b.Property<bool>("IsEventModeEnabled")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("bit")
                         .HasColumnName("is_event_mode_enabled");
 
                     b.Property<bool>("IsSelfServiceEnabled")
-                        .HasColumnType("tinyint(1)")
+                        .HasColumnType("bit")
                         .HasColumnName("is_self_service_enabled");
 
                     b.Property<int>("MaxCapacity")
@@ -482,7 +482,7 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("int")
                         .HasColumnName("zone_id");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("BasePrice")
                         .HasColumnType("decimal(10,2)")
@@ -495,7 +495,7 @@ namespace BlackBear.Services.Core.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("varchar(100)")
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("name");
 
                     b.Property<int>("VenueId")
@@ -504,7 +504,7 @@ namespace BlackBear.Services.Core.Migrations
 
                     b.Property<string>("ZoneType")
                         .HasMaxLength(50)
-                        .HasColumnType("varchar(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("zone_type");
 
                     b.HasKey("Id");

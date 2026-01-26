@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.Entities;
@@ -7,6 +8,7 @@ namespace BlackBear.Services.Core.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class BusinessesController : ControllerBase
     {
         private readonly BlackBearDbContext _context;
