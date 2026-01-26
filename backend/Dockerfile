@@ -8,16 +8,14 @@ RUN dotnet restore
 
 # Copy everything else and build
 COPY . .
-RUN dotnet build RestaurantQRApi.csproj -c Release -o /app/build
-RUN dotnet publish RestaurantQRApi.csproj -c Release -o /app/publish
+RUN dotnet publish RestaurantQRApi.csproj -c Release -o /app/publish /p:UseAppHost=false
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Expose port (Render will set PORT env variable)
-EXPOSE 8080
-ENV ASPNETCORE_URLS=http://+:8080
+# Render uses PORT environment variable
+ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT:-8080}
 
 ENTRYPOINT ["dotnet", "RestaurantQRApi.dll"]
