@@ -40,44 +40,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Add DbContext - Support both InMemory (dev) and PostgreSQL (production)
-// Try multiple ways to get connection string (Render compatibility)
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-    ?? Environment.GetEnvironmentVariable("DATABASE_URL")
-    ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
-
-Console.WriteLine($"🔍 Checking connection string...");
-Console.WriteLine($"   - From Configuration: {(builder.Configuration.GetConnectionString("DefaultConnection") != null ? "Found" : "Not found")}");
-Console.WriteLine($"   - From DATABASE_URL: {(Environment.GetEnvironmentVariable("DATABASE_URL") != null ? "Found" : "Not found")}");
-Console.WriteLine($"   - From ConnectionStrings__DefaultConnection: {(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection") != null ? "Found" : "Not found")}");
-
-if (string.IsNullOrEmpty(connectionString))
-{
-    // Development: Use In-Memory Database
-    builder.Services.AddDbContext<RivieraDbContext>(options =>
-        options.UseInMemoryDatabase("RivieraDb"));
-    
-    Console.WriteLine("🔧 Using In-Memory Database (Development Mode)");
-}
-else
-{
-    // Production: Use PostgreSQL
-    Console.WriteLine($"🔗 Connection string length: {connectionString.Length}");
-    Console.WriteLine($"🔗 Connection string preview: {connectionString.Substring(0, Math.Min(30, connectionString.Length))}...");
-    
-    // Validate connection string format
-    if (!connectionString.StartsWith("postgresql://") && !connectionString.StartsWith("postgres://"))
-    {
-        Console.WriteLine($"❌ ERROR: Invalid connection string format. Must start with postgresql:// or postgres://");
-        Console.WriteLine($"   Actual value: {connectionString}");
-        throw new Exception("Invalid PostgreSQL connection string format");
-    }
-    
-    builder.Services.AddDbContext<RivieraDbContext>(options =>
-        options.UseNpgsql(connectionString));
-    
-    Console.WriteLine("🚀 Using PostgreSQL Database (Production Mode)");
-}
+// Add DbContext - Use In-Memory for now (simpler deployment)
+Console.WriteLine("🔧 Using In-Memory Database");
+builder.Services.AddDbContext<RivieraDbContext>(options =>
+    options.UseInMemoryDatabase("RivieraDb"));
 
 // Register Services (Modular Monolith)
 builder.Services.AddScoped<VenueService>();
@@ -110,37 +76,9 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<RivieraDbContext>();
-    
-    try
-    {
-        Console.WriteLine("📊 Initializing database...");
-        
-        // For PostgreSQL in production, assume migrations are run separately
-        // For in-memory dev database, create it
-        if (string.IsNullOrEmpty(connectionString))
-        {
-            Console.WriteLine("📊 Creating in-memory database...");
-            context.Database.EnsureCreated();
-            
-            Console.WriteLine("📊 Seeding data...");
-            DbInitializer.Initialize(context);
-            Console.WriteLine("✅ Database initialized successfully!");
-        }
-        else
-        {
-            Console.WriteLine("📊 Production mode - skipping auto-migration");
-            Console.WriteLine("📊 Run migrations manually: dotnet ef database update");
-            Console.WriteLine("📊 Seeding data...");
-            DbInitializer.Initialize(context);
-            Console.WriteLine("✅ Database ready!");
-        }
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"❌ Database initialization failed: {ex.Message}");
-        Console.WriteLine($"   Stack trace: {ex.StackTrace}");
-        throw;
-    }
+    context.Database.EnsureCreated();
+    DbInitializer.Initialize(context);
+    Console.WriteLine("✅ Database initialized!");
 }
 
 // Configure middleware
