@@ -40,10 +40,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Add DbContext - Use In-Memory for now (simpler deployment)
-Console.WriteLine("🔧 Using In-Memory Database");
-builder.Services.AddDbContext<RivieraDbContext>(options =>
-    options.UseInMemoryDatabase("RivieraDb"));
+// Add DbContext - Support both InMemory (dev) and PostgreSQL (production)
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Development: Use In-Memory Database
+    Console.WriteLine("🔧 Using In-Memory Database (Development Mode)");
+    builder.Services.AddDbContext<RivieraDbContext>(options =>
+        options.UseInMemoryDatabase("RivieraDb"));
+}
+else
+{
+    // Production: Use PostgreSQL
+    Console.WriteLine($"🚀 Using PostgreSQL Database (Production Mode)");
+    Console.WriteLine($"🔗 Connection string length: {connectionString.Length} characters");
+    
+    builder.Services.AddDbContext<RivieraDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
 
 // Register Services (Modular Monolith)
 builder.Services.AddScoped<VenueService>();
@@ -62,7 +77,7 @@ builder.Services.AddCors(options =>
             "http://localhost:5173", 
             "http://localhost:5174", 
             "http://localhost:3000",
-            "https://riviera-os-app.onrender.com"
+            "https://rivieraos.onrender.com"
         )
         .AllowAnyHeader()
         .AllowAnyMethod()
@@ -76,9 +91,22 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<RivieraDbContext>();
-    context.Database.EnsureCreated();
-    DbInitializer.Initialize(context);
-    Console.WriteLine("✅ Database initialized!");
+    
+    try
+    {
+        Console.WriteLine("📊 Initializing database...");
+        context.Database.EnsureCreated(); // Creates all tables
+        
+        Console.WriteLine("📊 Seeding initial data...");
+        DbInitializer.Initialize(context);
+        
+        Console.WriteLine("✅ Database ready!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Database error: {ex.Message}");
+        throw;
+    }
 }
 
 // Configure middleware
