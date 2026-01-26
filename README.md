@@ -1,259 +1,357 @@
-# Restaurant QR Ordering System MVP
+# 🏖️ Riviera OS
 
-A full-stack restaurant ordering system with QR code support, real-time order notifications, and separate customer/admin interfaces.
+**High-performance beach club management system for the Albanian Riviera**
 
-## Tech Stack
+A modular monolith built for speed, designed for luxury. Handles sunbed reservations, real-time orders, and customer feedback at scale during peak August season.
 
-### Backend
-- **.NET 9** Web API
-- **Entity Framework Core** with In-Memory Database
-- **SignalR** for real-time communication
+**Live Demo:** Coming soon  
+**GitHub:** https://github.com/AldiD12/RivieraOS
 
-### Frontend
-- **React 18** with Vite
-- **Tailwind CSS** for styling
-- **React Router** for navigation
-- **Axios** for API calls
-- **SignalR Client** for real-time updates
+## 🚀 Quick Start
 
-## Features
+### Local Development
 
-### Customer Mode (`/menu/:tableId`) - No Login Required
-- Mobile-first menu browsing
-- Add items to cart
-- Review order in modal
-- Place order with "Pay Cash" option
-- Real-time order status updates
-- Clean, industrial minimalist UI
-
-### Waiter Mode (`/waiter/tables`) - 4-Digit PIN Required
-- View all tables (occupied/available)
-- Real-time table status updates
-- Click occupied tables to view bills
-- Itemized bill with service charge and tax
-- Mark tables as paid
-- Fast PIN-based authentication (12-hour session)
-
-### Admin/Kitchen Mode (`/admin/dashboard`) - Password Required
-- Real-time order notifications
-- Sound alert on new orders
-- Visual flash animation for new orders
-- View active and completed orders
-- Update order status (Pending → Preparing → Ready → Completed)
-- Filter orders by status
-- Live updates via SignalR
-
-### QR Code Generator (`/admin/qr-codes`) - Password Required
-- Generate QR codes for any number of tables
-- Customizable restaurant name and base URL
-- Print-optimized layout
-- Download individual QR codes as PNG
-- Print all codes at once
-
-## Authentication
-
-The system uses **Role-Based Access Control (RBAC)** with JWT tokens:
-
-### Default Credentials
-
-**Waiter Login** (4-Digit PIN):
-- PIN: `1111`
-- Access: Waiter Dashboard, Table Management, Billing
-
-**Manager Login** (Password):
-- Password: `admin123`
-- Access: Kitchen Dashboard, QR Code Generator, Order Management
-
-**Customer Access**:
-- No login required
-- Direct access via QR code scan
-
-For detailed authentication information, see [AUTHENTICATION.md](./AUTHENTICATION.md)
-
-## Project Structure
-
-```
-restaurant-qr-ordering/
-├── backend/                    # .NET 9 API
-│   ├── Controllers/
-│   │   ├── MenuController.cs
-│   │   └── OrdersController.cs
-│   ├── Data/
-│   │   └── AppDbContext.cs
-│   ├── Hubs/
-│   │   └── OrderHub.cs
-│   ├── Models/
-│   │   ├── MenuItem.cs
-│   │   ├── Order.cs
-│   │   └── OrderItem.cs
-│   └── Program.cs
-│
-└── frontend/                   # React + Vite
-    ├── src/
-    │   ├── pages/
-    │   │   ├── MenuPage.jsx
-    │   │   └── AdminDashboard.jsx
-    │   ├── services/
-    │   │   ├── api.js
-    │   │   └── signalr.js
-    │   ├── App.jsx
-    │   └── main.jsx
-    └── package.json
-```
-
-## Getting Started
-
-### Prerequisites
-- .NET 9 SDK
-- Node.js 18+ and npm
-
-### Backend Setup
-
-1. Navigate to backend directory:
+**Backend:**
 ```bash
 cd backend
-```
-
-2. Restore dependencies (if needed):
-```bash
-dotnet restore
-```
-
-3. Run the backend:
-```bash
 dotnet run
+# Runs on http://localhost:5000
 ```
 
-The API will start at `http://localhost:5000`
-
-### Frontend Setup
-
-1. Navigate to frontend directory:
+**Frontend:**
 ```bash
 cd frontend
-```
-
-2. Install dependencies (if needed):
-```bash
 npm install
-```
-
-3. Start the development server:
-```bash
 npm run dev
+# Runs on http://localhost:5173
 ```
 
-The frontend will start at `http://localhost:5173`
+**Default Credentials:**
+- Waiter PIN: `1111`
+- Admin Password: `admin123`
 
-## Usage
+### Production Deployment
 
-### Customer Flow (No Login)
-1. Scan QR code or open `http://localhost:5173/menu/1`
-2. Browse the menu
-3. Add items to cart
-4. Review order and place it
-5. Receive real-time status updates
+See **[DEPLOYMENT-CHECKLIST.md](./DEPLOYMENT-CHECKLIST.md)** for step-by-step Supabase + Render deployment.
 
-### Waiter Flow (PIN: 1111)
-1. Open `http://localhost:5173/` and click "Waiter Dashboard"
-2. Enter PIN: `1111` on the numpad
-3. View table grid (green = available, red = occupied)
-4. Click occupied table to view bill
-5. Mark table as paid when customer is ready
+---
 
-### Admin/Kitchen Flow (Password: admin123)
-1. Open `http://localhost:5173/` and click "Kitchen Dashboard"
-2. Enter password: `admin123`
-3. View incoming orders in real-time
-4. Update order status as you prepare food
-5. Generate QR codes from the QR Codes page
+## 🏗️ Tech Stack
 
-## API Endpoints
+**Backend:**
+- .NET 9 Web API (Modular Monolith)
+- Entity Framework Core 9
+- PostgreSQL (Supabase) / In-Memory (dev)
+- SignalR for real-time updates
+- FluentValidation for request validation
 
-### Authentication
-- `POST /api/auth/login` - Login (waiter PIN or admin password)
-- `POST /api/auth/verify` - Verify JWT token
+**Frontend:**
+- React 18 + Vite
+- Tailwind CSS + Framer Motion
+- React Router v6
+- Leaflet (OpenStreetMap)
+- SignalR Client
 
-### Menu
-- `GET /api/menu` - Get all menu items
+---
+
+## ✨ Features
+
+### Customer-Facing (Luxury Design)
+
+**Discovery Page** - "Waze for Beaches"
+- Interactive map with real-time sunbed availability
+- Live occupancy stats per venue
+- Coastal intelligence theme with bronze accents
+
+**Menu Page** - Midnight Editorial Design
+- Fluid brutalism with staggered layout
+- Ultra-tall portrait product images
+- Parallax scrolling effects
+- Floating bronze orb buttons
+
+**Review Page** - Feedback Shield
+- 4-5 star reviews → Google redirect
+- 1-3 star reviews → Internal alert (WhatsApp)
+- Midnight editorial aesthetic
+
+### Staff-Facing (Industrial Minimalist)
+
+**Bar KDS (Kitchen Display System)** - "The Cockpit"
+- High-density masonry grid (3 columns)
+- Smart card states (NEW/CLAIMED/LATE)
+- Real-time timer with color coding
+- Single-tap claim, tap-to-complete
+- NO PRICES (bartender doesn't need them)
+
+**Collector Dashboard** - Sunbed Management
+- Real-time sunbed status grid
+- Quick status changes (Available/Occupied/Reserved)
+- SignalR live updates across all devices
+
+**Admin Dashboard** - Command Center
+- Split-panel layout (70% map, 30% inspector)
+- Sunbed status management
+- Order monitoring
+- Real-time venue overview
+
+---
+
+## 🏛️ Architecture
+
+**Modular Monolith** with 4 core modules:
+
+1. **Core** - Business, User entities
+2. **Catalog** - Venue, VenueZone, Category, Product
+3. **Ops** - Order, OrderItem, Device
+4. **Feedback** - Review
+
+See **[ARCHITECTURE.md](./ARCHITECTURE.md)** for detailed documentation.
+
+---
+
+## 📊 Performance
+
+**Target:** Sub-200ms API response time on 4G/5G
+
+**Optimizations:**
+- Database indexes on high-traffic queries
+- Single-query DTO projections with `AsNoTracking()`
+- Filtered at database level (no in-memory filtering)
+- SignalR for real-time updates (no polling)
+
+**Example:** Menu endpoint executes 1 SQL query instead of 5+
+
+---
+
+## 🎨 Design System
+
+**Two-Track Philosophy:**
+
+**Customer Pages** - Ultra-Luxury ($20K+ Standard)
+- Benchmark: Aman Resorts, Six Senses, Soho House
+- Typography: Playfair Display (serif) + Geist Sans/Mono
+- Colors: Deep water gradient (zinc-950 → #0f172a), bronze accents
+- 4% grain overlay, heavy vignette, parallax effects
+
+**Staff Pages** - Industrial Minimalist
+- High contrast: white on black (zinc-950)
+- Monospace for all numbers
+- Sharp corners, 1-2px borders
+- Zero decorative elements
+
+See **[.kiro/steering/premium-design-system.md](./.kiro/steering/premium-design-system.md)** for complete specs.
+
+---
+
+## 📁 Project Structure
+
+```
+RivieraOS/
+├── backend/
+│   ├── Controllers/          # API endpoints
+│   ├── Data/
+│   │   ├── Migrations/       # EF Core migrations
+│   │   ├── RivieraDbContext.cs
+│   │   └── DbInitializer.cs  # Seed data
+│   ├── Hubs/
+│   │   └── BeachHub.cs       # SignalR hub
+│   ├── Modules/
+│   │   ├── Core/             # Business, User
+│   │   ├── Catalog/          # Venue, Product, Category
+│   │   ├── Ops/              # Order, OrderItem, Device
+│   │   └── Feedback/         # Review
+│   ├── Program.cs
+│   └── appsettings.json
+│
+├── frontend/
+│   ├── src/
+│   │   ├── pages/
+│   │   │   ├── DiscoveryPage.jsx      # Customer: Map view
+│   │   │   ├── MenuPage.jsx           # Customer: Order menu
+│   │   │   ├── ReviewPage.jsx         # Customer: Feedback
+│   │   │   ├── BarDisplay.jsx         # Staff: KDS
+│   │   │   ├── CollectorDashboard.jsx # Staff: Sunbeds
+│   │   │   ├── AdminDashboard.jsx     # Staff: Command center
+│   │   │   └── LoginPage.jsx          # Staff: Auth
+│   │   ├── services/
+│   │   │   ├── api.js         # Axios instance
+│   │   │   ├── auth.js        # JWT handling
+│   │   │   └── signalr.js     # Real-time connection
+│   │   └── components/
+│   └── package.json
+│
+├── DEPLOYMENT-CHECKLIST.md   # Step-by-step deployment guide
+├── ARCHITECTURE.md            # System documentation
+└── README.md
+```
+
+---
+
+## 🔌 API Endpoints
+
+### Venue & Menu
+- `GET /api/venue` - List all venues
+- `GET /api/venue/{id}/layout` - Get sunbed layout + stats
+- `GET /api/venue/{id}/menu` - Get menu with categories
 
 ### Orders
-- `GET /api/orders` - Get all orders
-- `POST /api/orders` - Create new order (triggers SignalR event)
-- `GET /api/orders/{id}` - Get specific order
-- `PATCH /api/orders/{id}/status` - Update order status
+- `POST /api/order` - Create order (triggers SignalR)
+- `GET /api/order/venue/{venueId}` - Get venue orders
+- `PATCH /api/order/{id}/status` - Update order status
+- `PATCH /api/order/{id}/assign` - Claim order (waiter)
 
-### Billing
-- `GET /api/bill/{tableId}` - Get bill for table
-- `POST /api/bill/{tableId}/pay` - Mark table as paid
-- `GET /api/bill/tables/status` - Get all active tables
+### Products (Sunbeds)
+- `PATCH /api/venue/products/{id}/status` - Update sunbed status
 
-### SignalR Hub
-- Hub URL: `/orderhub`
-- Admin Group: `AdminGroup`
-- Events: 
-  - `ReceiveOrder` - New order created
-  - `OrderStatusUpdated` - Order status changed
-  - `TableFreed` - Table marked as paid
+### Reviews
+- `POST /api/review` - Submit feedback
+- `GET /api/review/venue/{venueId}` - Get venue reviews
 
-## Sample Data
+### SignalR Hub (`/beachhub`)
+- `LayoutUpdate` - Sunbed status changed
+- `NewOrder` - Order placed
+- `OrderStatusChanged` - Order updated
+- `OrderAssigned` - Order claimed by waiter
 
-The system comes pre-seeded with 6 menu items:
-- Margherita Pizza - $12.99
-- Pepperoni Pizza - $14.99
-- Caesar Salad - $8.99
-- Cheeseburger - $11.99
-- Coca Cola - $2.99
-- Pasta Carbonara - $13.99
+---
 
-## Key Implementation Details
+## 🗄️ Database Schema
 
-### Real-time Communication
-- Backend uses SignalR `OrderHub` with admin group management
-- When order is created via POST, it triggers `ReceiveOrder` event to all admin clients
-- Frontend admin dashboard listens for `ReceiveOrder` and updates UI instantly
+**Key Entities:**
+- `Business` - Venue owner/operator
+- `User` - Staff (Waiter, Admin)
+- `Venue` - Beach club/restaurant
+- `VenueZone` - Sections (VIP, Front Row, etc.)
+- `Category` - Menu categories (Drinks, Food)
+- `Product` - Menu items + Sunbeds (with UnitCode)
+- `Order` - Customer orders
+- `OrderItem` - Line items
+- `Review` - Customer feedback
 
-### CORS Configuration
-Backend allows requests from:
-- `http://localhost:5173` (Vite dev server)
-- `http://localhost:3000` (alternative React port)
+**Performance Indexes:**
+- `Product(CategoryId, VenueZoneId, Status, IsAvailable)`
+- `Order(VenueId, Status, CreatedAt, AssignedUserId)`
+- `Category(VenueId, Type)`
 
-### In-Memory Database
-- Data persists only while backend is running
-- Database is seeded on startup with sample menu items
-- Perfect for MVP/demo purposes
+---
 
-## Development Notes
+## 🧪 Sample Data
 
-- JWT-based authentication with 12-hour token expiry
-- Role-based route protection (Waiter/Admin)
-- All orders default to "Cash" payment method
-- Orders are sorted by creation time (newest first)
-- SignalR automatically reconnects on connection loss
-- Industrial/minimalist design inspired by Linear and Vercel
+**Venues:**
+- Hotel Coral Beach (20 sunbeds, full menu)
+- Folie Beach Bar
+- Hotel Coral
 
-## Design System
+**Sunbeds:** A1-A10, B1-B10 (Zone A: VIP Front, Zone B: Standard)
 
-The UI follows a hyper-minimalist, industrial aesthetic:
-- **Typography**: Inter font with tight tracking
-- **Colors**: Off-white backgrounds (zinc-50), solid black accents (zinc-900)
-- **Borders**: 1px borders on all elements (no shadows)
-- **Spacing**: Generous gaps for breathing room
-- **Interactions**: Subtle, instant feedback
-- **Layout**: Bento grid for dashboards, clean list layouts
+**Menu:** 6 drinks (Mojito, Aperol Spritz, Espresso, etc.)
 
-## Future Enhancements
+---
 
-- Database persistence (PostgreSQL/MySQL)
-- User management system
-- Multiple payment methods (Card, Mobile)
-- Order history and analytics
-- Menu item management interface
-- Table reservation system
-- Receipt printing
-- Multi-language support
-- Kitchen printer integration
+## 🚢 Deployment
 
-## License
+**Recommended Stack:**
+- **Database:** Supabase PostgreSQL (free tier)
+- **Backend:** Render.com Web Service (free/$7/month)
+- **Frontend:** Render.com Static Site (free)
+
+**Cost:** $0-7/month for 1-2 venues
+
+See **[DEPLOYMENT-CHECKLIST.md](./DEPLOYMENT-CHECKLIST.md)** for complete guide.
+
+---
+
+## 🛠️ Development
+
+**Prerequisites:**
+- .NET 9 SDK
+- Node.js 18+
+- PostgreSQL (optional, uses in-memory by default)
+
+**Environment Variables:**
+
+Backend (`appsettings.Production.json`):
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "postgresql://..."
+  }
+}
+```
+
+Frontend (`.env.production`):
+```
+VITE_API_URL=https://your-api.onrender.com
+```
+
+---
+
+## 📝 Key Implementation Details
+
+**Dual-Mode Database:**
+- Development: In-memory (no setup required)
+- Production: PostgreSQL (via connection string)
+
+**Shadow Fiscal Model:**
+- System calculates totals
+- Waiter manually enters final amount into fiscal device
+- NOT a POS system
+
+**Review Shield:**
+- Rating ≥ 4 → Redirect to Google Maps review
+- Rating < 4 → Internal alert (WhatsApp stub)
+
+**3-Tap Rule:**
+- Every action completes in ≤3 taps
+- Optimized for speed during peak hours
+
+---
+
+## 🔐 Security
+
+- JWT-based authentication (12-hour expiry)
+- Role-based access control (Waiter/Admin)
+- FluentValidation on all inputs
+- CORS restricted to known origins
+- UUIDs for all primary keys (no guessable IDs)
+
+---
+
+## 🎯 Roadmap
+
+**Phase 1: MVP** ✅
+- [x] Modular monolith architecture
+- [x] Real-time order system
+- [x] Sunbed management
+- [x] Premium design system
+- [x] PostgreSQL support
+- [x] Deployment ready
+
+**Phase 2: Scale** (Q2 2026)
+- [ ] Multi-venue support (25+ venues)
+- [ ] WhatsApp integration (alerts)
+- [ ] Analytics dashboard
+- [ ] Mobile apps (React Native)
+- [ ] Payment gateway integration
+
+**Phase 3: Intelligence** (Q3 2026)
+- [ ] Predictive occupancy
+- [ ] Dynamic pricing
+- [ ] Customer profiles
+- [ ] Loyalty program
+
+---
+
+## 📄 License
 
 MIT
+
+---
+
+## 🤝 Contributing
+
+This is a private project for Albanian Riviera beach clubs. For inquiries, contact the repository owner.
+
+---
+
+**Built with ❤️ for the Albanian Riviera**
