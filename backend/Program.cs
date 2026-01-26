@@ -41,7 +41,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 
 // Add DbContext - Support both InMemory (dev) and PostgreSQL (production)
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Try multiple ways to get connection string (Render compatibility)
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+    ?? Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
 
 if (string.IsNullOrEmpty(connectionString))
 {
@@ -54,6 +57,8 @@ if (string.IsNullOrEmpty(connectionString))
 else
 {
     // Production: Use PostgreSQL
+    Console.WriteLine($"🔗 Connection string found: {connectionString.Substring(0, Math.Min(50, connectionString.Length))}...");
+    
     builder.Services.AddDbContext<RivieraDbContext>(options =>
         options.UseNpgsql(connectionString));
     
