@@ -7,29 +7,41 @@ namespace BlackBear.Services.Core.Entities
     public class Venue
     {
         [Key]
+        [Column("venue_id")]
         public int Id { get; set; }
 
         [Required]
-        [MaxLength(255)]
+        [MaxLength(150)]
+        [Column("name")]
         public string Name { get; set; } = string.Empty;
 
-        [MaxLength(100)]
+        [MaxLength(50)]
+        [Column("type")]
         public string? Type { get; set; }
 
-        [MaxLength(2000)]
+        [Column("description")]
         public string? Description { get; set; }
 
         [MaxLength(500)]
+        [Column("address")]
         public string? Address { get; set; }
 
         [MaxLength(500)]
+        [Column("image_url")]
         public string? ImageUrl { get; set; }
 
-        // Spatial data (simple doubles for now, can migrate to NetTopologySuite later)
+        // Spatial data (simple doubles for now)
+        [Column("latitude")]
         public double? Latitude { get; set; }
+
+        [Column("longitude")]
         public double? Longitude { get; set; }
 
+        [Column("created_at")]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
         // Foreign key
+        [Column("business_id")]
         public int BusinessId { get; set; }
 
         // Navigation properties
@@ -37,5 +49,9 @@ namespace BlackBear.Services.Core.Entities
         public Business Business { get; set; } = null!;
 
         public VenueConfig? VenueConfig { get; set; }
+        public ICollection<VenueZone> VenueZones { get; set; } = new List<VenueZone>();
+        public ICollection<Category> Categories { get; set; } = new List<Category>();
+        public ICollection<Product> Products { get; set; } = new List<Product>();
+        public ICollection<ScheduledEvent> ScheduledEvents { get; set; } = new List<ScheduledEvent>();
     }
 }

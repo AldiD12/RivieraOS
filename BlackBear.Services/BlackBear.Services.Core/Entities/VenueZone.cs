@@ -1,0 +1,36 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace BlackBear.Services.Core.Entities
+{
+    [Table("catalog_venue_zones")]
+    public class VenueZone
+    {
+        [Key]
+        [Column("zone_id")]
+        public int Id { get; set; }
+
+        [Required]
+        [MaxLength(100)]
+        [Column("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [MaxLength(50)]
+        [Column("zone_type")]
+        public string? ZoneType { get; set; }
+
+        [Column("capacity_per_unit")]
+        public int CapacityPerUnit { get; set; } = 0;
+
+        [Column("base_price", TypeName = "decimal(10,2)")]
+        public decimal BasePrice { get; set; } = 0;
+
+        // Foreign key
+        [Column("venue_id")]
+        public int VenueId { get; set; }
+
+        // Navigation property
+        [ForeignKey("VenueId")]
+        public Venue Venue { get; set; } = null!;
+    }
+}
