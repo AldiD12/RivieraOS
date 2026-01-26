@@ -1,0 +1,23 @@
+namespace RivieraApi.Modules.Catalog;
+
+public class Category
+{
+    public int Id { get; set; }
+    public int VenueId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public CategoryType Type { get; set; }
+    public int OrderIndex { get; set; }
+    public DateTime CreatedAt { get; set; }
+    
+    // Navigation
+    public Venue Venue { get; set; } = null!;
+    public ICollection<Product> Products { get; set; } = new List<Product>();
+}
+
+public enum CategoryType
+{
+    Sunbeds,
+    Drinks,
+    Food,
+    Services
+}
