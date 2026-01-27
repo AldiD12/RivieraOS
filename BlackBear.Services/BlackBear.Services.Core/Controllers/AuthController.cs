@@ -26,12 +26,19 @@ namespace BlackBear.Services.Core.Controllers
 
         // POST: api/auth/register
         [HttpPost("register")]
-        public async Task<ActionResult<LoginResponse>> Register(RegisterRequest request)
+        public async Task<IActionResult> Register(RegisterRequest request)
         {
             // Check if user already exists
             if (await _context.Users.AnyAsync(u => u.Email == request.Email))
             {
                 return BadRequest("User with this email already exists.");
+            }
+
+            // Get the Guest role (default for new registrations)
+            var guestRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Guest");
+            if (guestRole == null)
+            {
+                return StatusCode(500, "Default role not configured.");
             }
 
             // Create new user
@@ -48,26 +55,40 @@ namespace BlackBear.Services.Core.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            // Generate token and return
-            var token = GenerateJwtToken(user);
-            var expireMinutes = int.Parse(_configuration["Jwt:ExpireMinutes"]!);
-
-            return Ok(new LoginResponse
+            // Assign Guest role to new user
+            var userRole = new UserRole
             {
-                Token = token,
-                Expiration = DateTime.UtcNow.AddMinutes(expireMinutes),
                 UserId = user.Id,
+                RoleId = guestRole.Id
+            };
+            _context.UserRoles.Add(userRole);
+            await _context.SaveChangesAsync();
+
+            // Generate token and return
+            var token = GenerateJwtToken(user, guestRole.RoleName);
+
+            // Map user to profile DTO
+            var userProfile = new UserProfileDto
+            {
+                Id = user.Id,
                 Email = user.Email,
-                FullName = user.FullName
-            });
+                FullName = user.FullName,
+                Role = guestRole.RoleName,
+                BusinessId = user.BusinessId
+            };
+
+            return Ok(new { token, user = userProfile });
         }
 
         // POST: api/auth/login
         [HttpPost("login")]
-        public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
+        public async Task<IActionResult> Login(LoginRequest request)
         {
-            // Find user by email
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+            // Find user by email, including their roles
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (user == null)
             {
@@ -86,27 +107,32 @@ namespace BlackBear.Services.Core.Controllers
                 return Unauthorized("User account is deactivated.");
             }
 
-            // Generate JWT token
-            var token = GenerateJwtToken(user);
-            var expireMinutes = int.Parse(_configuration["Jwt:ExpireMinutes"]!);
+            // Get user's role
+            var roleName = user.UserRoles.FirstOrDefault()?.Role?.RoleName;
 
-            return Ok(new LoginResponse
+            // Generate JWT token
+            var token = GenerateJwtToken(user, roleName);
+
+            // Map user to profile DTO
+            var userProfile = new UserProfileDto
             {
-                Token = token,
-                Expiration = DateTime.UtcNow.AddMinutes(expireMinutes),
-                UserId = user.Id,
+                Id = user.Id,
                 Email = user.Email,
-                FullName = user.FullName
-            });
+                FullName = user.FullName,
+                Role = roleName,
+                BusinessId = user.BusinessId
+            };
+
+            return Ok(new { token, user = userProfile });
         }
 
-        private string GenerateJwtToken(User user)
+        private string GenerateJwtToken(User user, string? roleName)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var expireMinutes = int.Parse(_configuration["Jwt:ExpireMinutes"]!);
 
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
@@ -114,6 +140,18 @@ namespace BlackBear.Services.Core.Controllers
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email)
             };
+
+            // Add BusinessId claim if user belongs to a business
+            if (user.BusinessId.HasValue)
+            {
+                claims.Add(new Claim("businessId", user.BusinessId.Value.ToString()));
+            }
+
+            // Add Role claim if user has a role
+            if (!string.IsNullOrEmpty(roleName))
+            {
+                claims.Add(new Claim(ClaimTypes.Role, roleName));
+            }
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],

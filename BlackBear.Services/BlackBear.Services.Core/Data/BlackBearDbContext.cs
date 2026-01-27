@@ -1,13 +1,24 @@
 using Microsoft.EntityFrameworkCore;
 using BlackBear.Services.Core.Entities;
+using BlackBear.Services.Core.Interfaces;
 
 namespace BlackBear.Services.Core.Data
 {
     public class BlackBearDbContext : DbContext
     {
+        private readonly ICurrentUserService? _currentUserService;
+
         public BlackBearDbContext(DbContextOptions<BlackBearDbContext> options)
             : base(options)
         {
+        }
+
+        public BlackBearDbContext(
+            DbContextOptions<BlackBearDbContext> options,
+            ICurrentUserService currentUserService)
+            : base(options)
+        {
+            _currentUserService = currentUserService;
         }
 
         // Core schema entities
@@ -30,6 +41,21 @@ namespace BlackBear.Services.Core.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // === GLOBAL QUERY FILTERS FOR MULTI-TENANCY ===
+            // These filters ensure users can only access data belonging to their business
+
+            // Filter for Venue (has direct BusinessId)
+            modelBuilder.Entity<Venue>().HasQueryFilter(v =>
+                _currentUserService == null ||
+                _currentUserService.BusinessId == null ||
+                v.BusinessId == _currentUserService.BusinessId);
+
+            // Filter for User (has nullable BusinessId)
+            modelBuilder.Entity<User>().HasQueryFilter(u =>
+                _currentUserService == null ||
+                _currentUserService.BusinessId == null ||
+                u.BusinessId == _currentUserService.BusinessId);
 
             // === CORE MODULE ===
 

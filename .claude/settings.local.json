@@ -4,7 +4,8 @@
       "Bash(dotnet build:*)",
       "Bash(dir:*)",
       "Bash(dotnet ef migrations:*)",
-      "Bash(dotnet ef database:*)"
+      "Bash(dotnet ef database:*)",
+      "Bash(tree:*)"
     ]
   }
 }

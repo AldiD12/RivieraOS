@@ -1,5 +1,7 @@
 using System.Text;
 using BlackBear.Services.Core.Data;
+using BlackBear.Services.Core.Interfaces;
+using BlackBear.Services.Core.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -9,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 1. Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 // 2. Add Swagger/OpenAPI with JWT support
 builder.Services.AddEndpointsApiExplorer();
@@ -69,6 +73,19 @@ builder.Services.AddDbContext<BlackBearDbContext>(options =>
     options.UseSqlServer(connectionString)
 );
 
+// 5. Add CORS Policy
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 // 4. Configure the HTTP request pipeline.
@@ -80,6 +97,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
