@@ -86,6 +86,10 @@ builder.Services.AddCors(options =>
     });
 });
 
+// 6. Add Health Checks
+builder.Services.AddHealthChecks()
+    .AddSqlServer(connectionString!, name: "database", tags: ["db", "sql"]);
+
 var app = builder.Build();
 
 // 4. Configure the HTTP request pipeline.
@@ -104,5 +108,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Health check endpoints
+app.MapHealthChecks("/health");
 
 app.Run();

@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.vs
+.vscode
+.idea
+*.user
+*.suo
+
+# Build outputs
+**/bin
+**/obj
+**/out
+
+# Test results
+**/TestResults
+
+# Documentation
+**/*.md
+LICENSE
+
+# Docker
+**/Dockerfile*
+**/.dockerignore
+
+# Local settings (secrets)
+**/appsettings.Development.json
+**/secrets.json

@@ -5,7 +5,8 @@
       "Bash(dir:*)",
       "Bash(dotnet ef migrations:*)",
       "Bash(dotnet ef database:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(dotnet add:*)"
     ]
   }
 }
