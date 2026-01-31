@@ -107,8 +107,8 @@ export default function LoginPage() {
         localStorage.setItem('role', 'Admin');
         
         console.log('Admin login successful, redirecting...');
-        // Redirect to admin dashboard
-        navigate('/admin');
+        // Redirect to original admin dashboard
+        navigate('/manager');
       } else {
         throw new Error('Authentication failed');
       }
