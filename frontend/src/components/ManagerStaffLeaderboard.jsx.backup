@@ -88,6 +88,7 @@ export default function ManagerStaffLeaderboard() {
       setLoading(false);
     }
   };
+  };
 
   // Animated counters - MUST be called before any conditional returns
   const animatedRevenue = useCountUp(data?.overview?.totalRevenue || 0, 2000);

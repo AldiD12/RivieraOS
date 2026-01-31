@@ -6,13 +6,15 @@ import MenuPage from './pages/MenuPage';
 import BarDisplay from './pages/BarDisplay';
 import LoginPage from './pages/LoginPage';
 import ReviewPage from './pages/ReviewPage';
-import WaiterSpeedPage from './pages/WaiterSpeedPage';
 import ManagerLeaderboardPage from './pages/ManagerLeaderboardPage';
+import OurAdmin from './pages/OurAdmin';
 import ProtectedRoute from './components/ProtectedRoute';
+import ApiStatus from './components/ApiStatus';
 
 function App() {
   return (
     <BrowserRouter>
+      <ApiStatus />
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<DiscoveryPage />} />
@@ -21,8 +23,7 @@ function App() {
         <Route path="/bar" element={<BarDisplay />} />
         <Route path="/review/:venueId" element={<ReviewPage />} />
         
-        {/* New Speed Waiter Routes */}
-        <Route path="/waiter/speed" element={<WaiterSpeedPage />} />
+        {/* Manager Dashboard */}
         <Route path="/manager/leaderboard" element={<ManagerLeaderboardPage />} />
 
         {/* Admin Routes - Protected */}
@@ -31,6 +32,16 @@ function App() {
           element={
             <ProtectedRoute role="Admin">
               <AdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* OurAdmin Dashboard - Protected */}
+        <Route 
+          path="/ouradmin" 
+          element={
+            <ProtectedRoute role="Admin">
+              <OurAdmin />
             </ProtectedRoute>
           } 
         />

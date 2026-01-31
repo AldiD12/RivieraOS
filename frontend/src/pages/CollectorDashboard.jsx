@@ -1,21 +1,46 @@
 import { useState, useEffect } from 'react';
 import { HubConnectionBuilder } from '@microsoft/signalr';
-import { X, Euro, Sun } from 'lucide-react';
 
-const API_URL = 'http://localhost:5000/api';
-const HUB_URL = 'http://localhost:5000/hubs/beach';
+const API_URL = 'http://localhost:5171/api';
+const HUB_URL = 'http://localhost:5171/hubs/beach';
 const VENUE_ID = 1; // Hotel Coral Beach
 
-export default function CollectorDashboard() {
-  const [zones, setZones] = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [connection, setConnection] = useState(null);
-  const [totalCashToday, setTotalCashToday] = useState(0);
+// Material Icons Component
+const MaterialIcon = ({ name, className = "", filled = true }) => (
+  <span className={`material-symbols-outlined ${className}`} style={{
+    fontVariationSettings: `'FILL' ${filled ? 1 : 0}, 'wght' 400, 'GRAD' 0, 'opsz' 24`
+  }}>
+    {name}
+  </span>
+);
 
-  // Fetch venue layout
+export default function CollectorDashboard() {
+  const [zones, setZones] = useState([
+    { id: 1, name: 'VIP ZONE', status: 'green', flag: 'GREEN FLAG' },
+    { id: 2, name: 'FAMILY ZONE', status: 'yellow', flag: 'YELLOW FLAG' },
+    { id: 3, name: 'PUBLIC AREA', status: 'red', flag: 'RED FLAG' }
+  ]);
+  const [connection, setConnection] = useState(null);
+  const [currentUser, setCurrentUser] = useState('Manager Alex');
+  const [lastUpdated, setLastUpdated] = useState(new Date());
+
+  // Add fonts on component mount
   useEffect(() => {
-    fetchVenueLayout();
+    // Add Material Symbols font if not already present
+    if (!document.querySelector('link[href*="Material+Symbols"]')) {
+      const link = document.createElement('link');
+      link.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap';
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
+    
+    // Add Noto fonts
+    if (!document.querySelector('link[href*="Noto"]')) {
+      const link = document.createElement('link');
+      link.href = 'https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Noto+Sans:wght@400;500;700&display=swap';
+      link.rel = 'stylesheet';
+      document.head.appendChild(link);
+    }
   }, []);
 
   // Setup SignalR connection
@@ -34,10 +59,10 @@ export default function CollectorDashboard() {
       connection
         .start()
         .then(() => {
-          console.log('SignalR Connected');
+          console.log('Beach Commander - SignalR Connected');
 
-          connection.on('LayoutUpdate', (data) => {
-            updateProductInState(data.productId, data.status, data.guestName);
+          connection.on('ZoneStatusUpdate', (data) => {
+            updateZoneStatus(data.zoneId, data.status);
           });
         })
         .catch((err) => console.error('SignalR Connection Error:', err));
@@ -50,214 +75,241 @@ export default function CollectorDashboard() {
     };
   }, [connection]);
 
-  const fetchVenueLayout = async () => {
+  const updateZoneStatus = (zoneId, newStatus) => {
+    setZones(prevZones =>
+      prevZones.map(zone =>
+        zone.id === zoneId
+          ? { 
+              ...zone, 
+              status: newStatus, 
+              flag: `${newStatus.toUpperCase()} FLAG` 
+            }
+          : zone
+      )
+    );
+    setLastUpdated(new Date());
+  };
+
+  const handleZoneStatusChange = async (zoneId, newStatus) => {
     try {
-      const response = await fetch(`${API_URL}/venue/${VENUE_ID}/layout`);
-      const data = await response.json();
-      setZones(data.zones);
+      // Update local state immediately for better UX
+      updateZoneStatus(zoneId, newStatus);
+
+      // Send to backend (you can implement the actual API call here)
+      const response = await fetch(`${API_URL}/venue/zones/${zoneId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (!response.ok) {
+        // Revert on error
+        console.error('Failed to update zone status');
+      }
     } catch (error) {
-      console.error('Error fetching venue layout:', error);
+      console.error('Error updating zone status:', error);
     }
   };
 
-  const updateProductInState = (productId, newStatus, guestName) => {
-    setZones((prevZones) =>
-      prevZones.map((zone) => ({
+  const handleEmergencyOverride = async () => {
+    try {
+      // Set all zones to red
+      const updatedZones = zones.map(zone => ({
         ...zone,
-        products: zone.products.map((product) =>
-          product.id === productId
-            ? { ...product, status: newStatus, currentGuestName: guestName }
-            : product
-        ),
-      }))
+        status: 'red',
+        flag: 'RED FLAG'
+      }));
+      setZones(updatedZones);
+      setLastUpdated(new Date());
+
+      // Send emergency override to backend
+      await fetch(`${API_URL}/venue/emergency-override`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'set_all_red' }),
+      });
+    } catch (error) {
+      console.error('Error setting emergency override:', error);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'green':
+        return {
+          bg: 'bg-green-500/10 dark:bg-green-500/20',
+          text: 'text-green-600',
+          icon: 'check_circle',
+          label: 'OPEN'
+        };
+      case 'yellow':
+        return {
+          bg: 'bg-yellow-500/10 dark:bg-yellow-500/20',
+          text: 'text-yellow-600',
+          icon: 'warning',
+          label: 'CAUTION'
+        };
+      case 'red':
+        return {
+          bg: 'bg-red-500/10 dark:bg-red-500/20',
+          text: 'text-red-600',
+          icon: 'block',
+          label: 'CLOSED'
+        };
+      default:
+        return {
+          bg: 'bg-gray-500/10',
+          text: 'text-gray-600',
+          icon: 'help',
+          label: 'UNKNOWN'
+        };
+    }
+  };
+
+  const getFlagButton = (currentStatus, targetStatus, zoneId) => {
+    const isActive = currentStatus === targetStatus;
+    const colors = {
+      green: {
+        active: 'bg-green-500 text-white shadow-[0_0_15px_rgba(46,204,113,0.6)] ring-2 ring-green-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800',
+        inactive: 'bg-gray-100 dark:bg-white/5 border border-transparent hover:border-green-500/50 hover:bg-green-500/10 text-gray-300 hover:text-green-500'
+      },
+      yellow: {
+        active: 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(241,196,15,0.6)] ring-2 ring-yellow-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800',
+        inactive: 'bg-gray-100 dark:bg-white/5 border border-transparent hover:border-yellow-500/50 hover:bg-yellow-500/10 text-gray-300 hover:text-yellow-500'
+      },
+      red: {
+        active: 'bg-red-500 text-white shadow-[0_0_15px_rgba(242,13,13,0.6)] ring-2 ring-red-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800',
+        inactive: 'bg-gray-100 dark:bg-white/5 border border-transparent hover:border-red-500/50 hover:bg-red-500/10 text-gray-300 hover:text-red-500'
+      }
+    };
+
+    return (
+      <button
+        onClick={() => handleZoneStatusChange(zoneId, targetStatus)}
+        className={`w-full h-full rounded-xl flex items-center justify-center transition-all ${
+          isActive ? colors[targetStatus].active : colors[targetStatus].inactive
+        }`}
+      >
+        <MaterialIcon name="flag" className="text-3xl drop-shadow-md" />
+        <span className="sr-only">Set {targetStatus}</span>
+      </button>
     );
   };
 
-  const handleProductClick = (product) => {
-    // Only allow interaction with Available products
-    if (product.status === 0) {
-      setSelectedProduct(product);
-      setShowModal(true);
-    }
-  };
-
-  const handleTakePayment = async () => {
-    if (!selectedProduct) return;
-
-    try {
-      const response = await fetch(`${API_URL}/venue/products/${selectedProduct.id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: 2, // Occupied
-          guestName: 'Cash Payment',
-        }),
-      });
-
-      if (response.ok) {
-        // Update total cash
-        setTotalCashToday((prev) => prev + selectedProduct.basePrice);
-        setShowModal(false);
-        setSelectedProduct(null);
-      }
-    } catch (error) {
-      console.error('Error taking payment:', error);
-    }
-  };
-
-  const getProductStyles = (product) => {
-    const baseStyles = 'relative w-full aspect-square rounded-md transition-all cursor-pointer flex items-center justify-center text-lg font-bold border-2';
-
-    switch (product.status) {
-      case 0: // Available
-        return `${baseStyles} bg-emerald-500 border-emerald-600 text-black hover:bg-emerald-400 active:scale-95 shadow-lg`;
-      case 1: // BookedOnline
-        return `${baseStyles} bg-yellow-500/20 border-yellow-600/40 text-yellow-500 cursor-not-allowed`;
-      case 2: // Occupied
-        return `${baseStyles} bg-red-500/20 border-red-600/40 text-red-500 cursor-not-allowed`;
-      case 3: // HotelBlocked
-        return `${baseStyles} bg-blue-500/20 border-blue-600/40 text-blue-500 cursor-not-allowed`;
-      default:
-        return baseStyles;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Header - Industrial Minimalist */}
-      <nav className="border-b border-zinc-800 bg-black sticky top-0 z-10">
-        <div className="px-6 py-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <Sun className="w-7 h-7 text-zinc-400" />
-                <h1 className="text-2xl font-black tracking-tight">COLLECTOR</h1>
-              </div>
-              <p className="text-sm font-medium text-zinc-500 tracking-wide">Tap available beds to collect payment</p>
-            </div>
-            <div className="text-right">
-              <div className="text-xs font-bold uppercase tracking-widest text-zinc-600 mb-1">
-                Cash Today
-              </div>
-              <div className="text-5xl font-black tabular-nums tracking-tight">
-                €{totalCashToday.toFixed(2)}
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Beach Map - Large Touch Targets */}
-      <div className="p-6 space-y-6 pb-32">
-        {zones.map((zone) => (
-          <div key={zone.id} className="bg-zinc-900 border border-zinc-800 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-5 pb-4 border-b border-zinc-800">
-              <h2 className="text-lg font-black uppercase tracking-wider text-zinc-400">
-                {zone.name}
-              </h2>
-              <span className="text-sm font-black tabular-nums bg-white text-black px-4 py-2 rounded-md tracking-wide">
-                {zone.products.filter(p => p.status === 0).length} AVAILABLE
+    <div 
+      className="bg-[#f8f5f5] dark:bg-[#221010] min-h-screen flex flex-col antialiased text-[#181111] dark:text-gray-100 transition-colors duration-200"
+      style={{ fontFamily: '"Noto Serif", serif' }}
+    >
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#1a0f0f]/90 backdrop-blur-md border-b border-gray-200 dark:border-white/10 shadow-sm">
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex flex-col items-center w-full">
+            <h1 className="text-xl font-bold tracking-tight uppercase text-center">Grand Blue Resort</h1>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+              </span>
+              <span 
+                className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase"
+                style={{ fontFamily: '"Noto Sans", sans-serif' }}
+              >
+                Live Status
               </span>
             </div>
-
-            <div className="grid grid-cols-5 gap-3">
-              {zone.products.map((product) => (
-                <button
-                  key={product.id}
-                  onClick={() => handleProductClick(product)}
-                  className={getProductStyles(product)}
-                  disabled={product.status !== 0}
-                >
-                  <span className="text-xl font-black tracking-tight">{product.unitCode}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Payment Modal */}
-      {showModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-zinc-900 border-2 border-zinc-700 rounded-lg w-full max-w-md shadow-2xl">
-            {/* Modal Header */}
-            <div className="border-b border-zinc-800 p-6 flex items-center justify-between">
-              <div>
-                <h3 className="text-3xl font-black mb-1 tracking-tight">
-                  {selectedProduct.unitCode}
-                </h3>
-                <p className="text-sm font-bold text-zinc-500 uppercase tracking-widest">
-                  Collect Payment
-                </p>
-              </div>
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  setSelectedProduct(null);
-                }}
-                className="p-2 hover:bg-zinc-800 rounded-md transition-colors"
-              >
-                <X className="w-7 h-7 text-zinc-500" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 space-y-6">
-              {/* Price Display */}
-              <div className="bg-black border border-zinc-800 rounded-lg p-8 text-center">
-                <div className="text-xs font-black uppercase tracking-widest text-zinc-600 mb-3">
-                  Daily Rate
-                </div>
-                <div className="text-7xl font-black tabular-nums tracking-tighter">
-                  €{selectedProduct.basePrice}
-                </div>
-              </div>
-
-              {/* Payment Button */}
-              <button
-                onClick={handleTakePayment}
-                className="w-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 border-2 border-emerald-600 text-black text-xl font-black py-6 rounded-lg transition-all flex items-center justify-center gap-3 shadow-lg uppercase tracking-wide"
-              >
-                <Euro className="w-8 h-8" />
-                Collect Cash
-              </button>
-
-              {/* Cancel Button */}
-              <button
-                onClick={() => {
-                  setShowModal(false);
-                  setSelectedProduct(null);
-                }}
-                className="w-full bg-zinc-800 hover:bg-zinc-700 active:scale-95 border border-zinc-700 text-white text-lg font-bold py-4 rounded-lg transition-all uppercase tracking-wide"
-              >
-                Cancel
-              </button>
-            </div>
           </div>
         </div>
-      )}
+      </header>
 
-      {/* Legend - Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-zinc-800 p-5">
-        <div className="grid grid-cols-4 gap-4 max-w-3xl mx-auto">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-500 border-2 border-emerald-600 rounded-md"></div>
-            <span className="text-sm font-black uppercase tracking-wide">Available</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-yellow-500/20 border-2 border-yellow-600/40 rounded-md"></div>
-            <span className="text-sm font-black uppercase tracking-wide text-zinc-500">Booked</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-red-500/20 border-2 border-red-600/40 rounded-md"></div>
-            <span className="text-sm font-black uppercase tracking-wide text-zinc-500">Occupied</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-500/20 border-2 border-blue-600/40 rounded-md"></div>
-            <span className="text-sm font-black uppercase tracking-wide text-zinc-500">Hotel</span>
-          </div>
+      <main className="flex-1 flex flex-col p-4 max-w-md mx-auto w-full gap-6 pb-12">
+        {/* Emergency Override */}
+        <section aria-label="Emergency Controls">
+          <button 
+            onClick={handleEmergencyOverride}
+            className="relative w-full overflow-hidden group rounded-2xl bg-red-500 text-white shadow-xl shadow-red-500/30 active:scale-[0.98] transition-transform duration-150"
+          >
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+            {/* Striped background pattern for warning effect */}
+            <div 
+              className="absolute inset-0 opacity-10" 
+              style={{
+                backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, #000 10px, #000 20px)'
+              }}
+            ></div>
+            <div className="relative flex flex-col items-center justify-center py-6 px-4">
+              <MaterialIcon name="warning" className="text-4xl mb-2 animate-pulse" />
+              <span className="text-lg font-bold tracking-wider leading-tight text-center">SET ENTIRE BEACH TO RED</span>
+              <span 
+                className="text-[10px] opacity-80 mt-1"
+                style={{ fontFamily: '"Noto Sans", sans-serif' }}
+              >
+                EMERGENCY OVERRIDE
+              </span>
+            </div>
+          </button>
+        </section>
+
+        {/* Zones List */}
+        <div className="flex flex-col gap-5">
+          {zones.map((zone) => {
+            const badge = getStatusBadge(zone.status);
+            
+            return (
+              <article 
+                key={zone.id}
+                className="bg-white dark:bg-[#2a1515] rounded-2xl p-5 shadow-md border border-gray-100 dark:border-white/5 relative overflow-hidden"
+              >
+                {/* Status Badge */}
+                <div className={`absolute top-0 right-0 ${badge.bg} px-4 py-1.5 rounded-bl-2xl`}>
+                  <p 
+                    className={`text-xs font-bold ${badge.text} tracking-wide flex items-center gap-1`}
+                    style={{ fontFamily: '"Noto Sans", sans-serif' }}
+                  >
+                    <MaterialIcon name={badge.icon} className="text-[14px]" />
+                    {badge.label}
+                  </p>
+                </div>
+
+                <div className="mb-5">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-wide">
+                    {zone.name}
+                  </h2>
+                  <p 
+                    className="text-sm text-gray-500 dark:text-gray-400 mt-1"
+                    style={{ fontFamily: '"Noto Sans", sans-serif' }}
+                  >
+                    Currently: <span className={`font-bold ${badge.text}`}>{zone.flag}</span>
+                  </p>
+                </div>
+
+                {/* Controls */}
+                <div className="grid grid-cols-3 gap-3 h-20">
+                  {getFlagButton(zone.status, 'green', zone.id)}
+                  {getFlagButton(zone.status, 'yellow', zone.id)}
+                  {getFlagButton(zone.status, 'red', zone.id)}
+                </div>
+              </article>
+            );
+          })}
         </div>
-      </div>
+
+        {/* Footer Info */}
+        <footer className="mt-4 text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <div className="h-px w-10 bg-gray-300 dark:bg-gray-700"></div>
+            <MaterialIcon name="waves" className="text-gray-400 text-sm" />
+            <div className="h-px w-10 bg-gray-300 dark:bg-gray-700"></div>
+          </div>
+          <p 
+            className="text-xs text-gray-400"
+            style={{ fontFamily: '"Noto Sans", sans-serif' }}
+          >
+            Last updated: {lastUpdated.toLocaleTimeString()}<br/>
+            Logged in as: <span className="font-bold text-gray-600 dark:text-gray-300">{currentUser}</span>
+          </p>
+        </footer>
+      </main>
     </div>
   );
 }

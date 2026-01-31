@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/auth';
 import { Lock, User, X } from 'lucide-react';
 
 export default function LoginPage() {
@@ -31,9 +30,58 @@ export default function LoginPage() {
     setError('');
 
     try {
-      await login('waiter', pin);
+      // Map PIN to BlackBear credentials
+      const waiterMap = {
+        '1111': { email: 'marco@hotelcoral.al', password: '1111' },
+        '2222': { email: 'sofia@hotelcoral.al', password: '2222' },
+        '3333': { email: 'luca@hotelcoral.al', password: '3333' }
+      };
+      
+      const credentials = waiterMap[pin];
+      
+      if (!credentials) {
+        setError('Invalid PIN');
+        setShake(true);
+        setPin('');
+        setTimeout(() => setShake(false), 500);
+        setLoading(false);
+        return;
+      }
+
+      console.log('Sending login request:', credentials);
+
+      // Call BlackBear auth endpoint
+      const response = await fetch('http://localhost:5171/api/Auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: credentials.email,
+          password: credentials.password
+        })
+      });
+
+      console.log('Response status:', response.status);
+      const responseText = await response.text();
+      console.log('Response body:', responseText);
+
+      if (!response.ok) {
+        throw new Error(`Authentication failed: ${responseText}`);
+      }
+
+      const data = JSON.parse(responseText);
+      const { token, userId, fullName } = data;
+      
+      // Store authentication data
+      localStorage.setItem('token', token);
+      localStorage.setItem('userId', userId.toString());
+      localStorage.setItem('userName', fullName);
+      localStorage.setItem('role', 'Waiter'); // Capital W to match ProtectedRoute
+      
+      console.log('Login successful, redirecting...');
+      // Redirect to collector dashboard (waiter interface)
       navigate('/collector');
     } catch (err) {
+      console.error('Login error:', err);
       setError('Invalid PIN');
       setShake(true);
       setPin('');
@@ -52,9 +100,40 @@ export default function LoginPage() {
     setError('');
 
     try {
-      await login('admin', password);
-      navigate('/manager');
+      console.log('Sending admin login request');
+
+      // Call BlackBear auth endpoint with admin credentials
+      const response = await fetch('http://localhost:5171/api/Auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: 'admin@hotelcoral.al',
+          password: password
+        })
+      });
+
+      console.log('Admin response status:', response.status);
+      const responseText = await response.text();
+      console.log('Admin response body:', responseText);
+
+      if (!response.ok) {
+        throw new Error(`Authentication failed: ${responseText}`);
+      }
+
+      const data = JSON.parse(responseText);
+      const { token, userId, fullName } = data;
+      
+      // Store authentication data
+      localStorage.setItem('token', token);
+      localStorage.setItem('userId', userId.toString());
+      localStorage.setItem('userName', fullName);
+      localStorage.setItem('role', 'Admin'); // Capital A to match ProtectedRoute
+      
+      console.log('Admin login successful, redirecting...');
+      // Redirect to manager dashboard
+      navigate('/manager/leaderboard');
     } catch (err) {
+      console.error('Login error:', err);
       setError('Invalid password');
       setPassword('');
     } finally {

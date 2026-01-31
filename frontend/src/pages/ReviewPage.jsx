@@ -3,7 +3,21 @@ import { useParams } from 'react-router-dom';
 import { Star, Send, Heart } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 
-const API_URL = 'http://localhost:5000/api';
+// For MVP - hardcoded venue data
+const VENUES = {
+  1: {
+    name: 'Hotel Coral Beach',
+    location: 'Pampelonne Beach, Saint-Tropez',
+    latitude: 43.2384,
+    longitude: 6.6847
+  },
+  2: {
+    name: 'La Reserve',
+    location: 'Pampelonne, Ramatuelle',
+    latitude: 43.2385,
+    longitude: 6.6848
+  }
+};
 
 export default function ReviewPage() {
   const { venueId } = useParams();
@@ -23,20 +37,13 @@ export default function ReviewPage() {
   const y = useTransform(scrollY, [0, 300], [0, -50]);
 
   useEffect(() => {
-    fetchVenue();
-  }, [venueId]);
-
-  const fetchVenue = async () => {
-    try {
-      const response = await fetch(`${API_URL}/venue/${venueId}/layout`);
-      const data = await response.json();
-      setVenue(data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching venue:', error);
-      setLoading(false);
+    // For MVP - use hardcoded venue data
+    const venueData = VENUES[parseInt(venueId)];
+    if (venueData) {
+      setVenue(venueData);
     }
-  };
+    setLoading(false);
+  }, [venueId]);
 
   const handleStarClick = (selectedRating) => {
     setRating(selectedRating);
@@ -63,35 +70,34 @@ export default function ReviewPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${API_URL}/review`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          venueId: parseInt(venueId),
-          rating: submittedRating,
-          comment: comment || null,
-          customerName: customerName || null,
-          customerEmail: customerEmail || null,
-        }),
+      // For MVP - simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log('Review submitted:', {
+        venueId: parseInt(venueId),
+        rating: submittedRating,
+        comment: comment || null,
+        customerName: customerName || null,
+        customerEmail: customerEmail || null,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // If high rating (4-5), redirect to Google Maps
-        if (data.redirect) {
-          setTimeout(() => {
-            // Generate Google Maps review URL
-            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`;
-            window.location.href = googleMapsUrl;
-          }, 2000);
-        } else {
-          // Show thank you message for low ratings
-          setShowSuccess(true);
+      // If high rating (4-5), redirect to Google Maps
+      if (submittedRating >= 4) {
+        setTimeout(() => {
+          // Generate Google Maps review URL
+          const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`;
+          window.open(googleMapsUrl, '_blank');
+          // Redirect to home after opening Google Maps
           setTimeout(() => {
             window.location.href = '/';
-          }, 3000);
-        }
+          }, 2000);
+        }, 2000);
+      } else {
+        // Show thank you message for low ratings
+        setShowSuccess(true);
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 3000);
       }
     } catch (error) {
       console.error('Error submitting review:', error);
