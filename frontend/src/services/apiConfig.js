@@ -28,16 +28,32 @@ export const checkApiHealth = async () => {
   if (API_CONFIG.IS_MOCK) return { status: 'mock', healthy: true };
   
   try {
-    // For Azure API, test the businesses endpoint
+    // For Azure API, test a public endpoint or handle auth
     const testUrl = API_CONFIG.IS_AZURE 
-      ? `${API_CONFIG.BASE_URL}/Businesses`
+      ? `${API_CONFIG.BASE_URL}/Auth/login` // Test auth endpoint instead
       : API_CONFIG.BASE_URL.replace('/api', '/health');
       
-    const response = await fetch(testUrl);
+    const response = await fetch(testUrl, {
+      method: API_CONFIG.IS_AZURE ? 'POST' : 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: API_CONFIG.IS_AZURE ? JSON.stringify({
+        email: "test@test.com",
+        password: "test"
+      }) : undefined
+    });
+    
+    // For Azure, even a 400/401 means the API is responding
+    const isHealthy = API_CONFIG.IS_AZURE 
+      ? (response.status === 400 || response.status === 401 || response.ok)
+      : response.ok;
+    
     return { 
       status: CURRENT_ENV.toLowerCase(), 
-      healthy: response.ok,
-      url: API_CONFIG.BASE_URL 
+      healthy: isHealthy,
+      url: API_CONFIG.BASE_URL,
+      note: API_CONFIG.IS_AZURE ? 'API responding (auth required)' : undefined
     };
   } catch (error) {
     return { 

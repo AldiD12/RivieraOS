@@ -35,7 +35,10 @@ export default function ApiStatus() {
 
   const getStatusText = () => {
     if (apiStatus?.status === 'mock') return 'MOCK DATA';
-    if (apiStatus?.healthy) return `${apiStatus.status.toUpperCase()} API`;
+    if (apiStatus?.healthy) {
+      if (apiStatus?.note) return `${apiStatus.status.toUpperCase()} READY`;
+      return `${apiStatus.status.toUpperCase()} API`;
+    }
     return `${apiStatus.status.toUpperCase()} OFFLINE`;
   };
 
