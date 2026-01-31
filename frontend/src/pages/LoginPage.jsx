@@ -48,38 +48,30 @@ export default function LoginPage() {
         return;
       }
 
-      console.log('Sending login request:', credentials);
-
-      // Call BlackBear auth endpoint
-      const response = await fetch('http://localhost:5171/api/Auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: credentials.email,
-          password: credentials.password
-        })
-      });
-
-      console.log('Response status:', response.status);
-      const responseText = await response.text();
-      console.log('Response body:', responseText);
-
-      if (!response.ok) {
-        throw new Error(`Authentication failed: ${responseText}`);
+      // Use unified API for authentication
+      const { loginUser } = await import('../services/api.js');
+      const result = await loginUser(credentials);
+      
+      if (result.success) {
+        // Store authentication data
+        localStorage.setItem('token', result.token || 'mock-token');
+        localStorage.setItem('userId', '1');
+        localStorage.setItem('userName', result.user?.name || 'Staff Member');
+        localStorage.setItem('role', 'Waiter');
+        
+        console.log('Login successful, redirecting...');
+        
+        // Route based on PIN to appropriate dashboard
+        const pinRoutes = {
+          '1111': '/collector',  // Beach/Sunbed Collector
+          '2222': '/bar',        // Bar Staff
+          '3333': '/collector'   // Another Collector
+        };
+        
+        navigate(pinRoutes[pin] || '/collector');
+      } else {
+        throw new Error('Authentication failed');
       }
-
-      const data = JSON.parse(responseText);
-      const { token, userId, fullName } = data;
-      
-      // Store authentication data
-      localStorage.setItem('token', token);
-      localStorage.setItem('userId', userId.toString());
-      localStorage.setItem('userName', fullName);
-      localStorage.setItem('role', 'Waiter'); // Capital W to match ProtectedRoute
-      
-      console.log('Login successful, redirecting...');
-      // Redirect to collector dashboard (waiter interface)
-      navigate('/collector');
     } catch (err) {
       console.error('Login error:', err);
       setError('Invalid PIN');
@@ -100,38 +92,26 @@ export default function LoginPage() {
     setError('');
 
     try {
-      console.log('Sending admin login request');
-
-      // Call BlackBear auth endpoint with admin credentials
-      const response = await fetch('http://localhost:5171/api/Auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'admin@hotelcoral.al',
-          password: password
-        })
+      // Use unified API for admin authentication
+      const { loginUser } = await import('../services/api.js');
+      const result = await loginUser({
+        email: 'admin@hotelcoral.al',
+        password: password
       });
-
-      console.log('Admin response status:', response.status);
-      const responseText = await response.text();
-      console.log('Admin response body:', responseText);
-
-      if (!response.ok) {
-        throw new Error(`Authentication failed: ${responseText}`);
+      
+      if (result.success) {
+        // Store authentication data
+        localStorage.setItem('token', result.token || 'mock-admin-token');
+        localStorage.setItem('userId', '999');
+        localStorage.setItem('userName', result.user?.name || 'Administrator');
+        localStorage.setItem('role', 'Admin');
+        
+        console.log('Admin login successful, redirecting...');
+        // Redirect to admin dashboard
+        navigate('/admin');
+      } else {
+        throw new Error('Authentication failed');
       }
-
-      const data = JSON.parse(responseText);
-      const { token, userId, fullName } = data;
-      
-      // Store authentication data
-      localStorage.setItem('token', token);
-      localStorage.setItem('userId', userId.toString());
-      localStorage.setItem('userName', fullName);
-      localStorage.setItem('role', 'Admin'); // Capital A to match ProtectedRoute
-      
-      console.log('Admin login successful, redirecting...');
-      // Redirect to manager dashboard
-      navigate('/manager/leaderboard');
     } catch (err) {
       console.error('Login error:', err);
       setError('Invalid password');

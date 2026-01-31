@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import DiscoveryPage from './pages/DiscoveryPage';
 import AdminDashboard from './pages/AdminDashboard';
 import CollectorDashboard from './pages/CollectorDashboard';
 import MenuPage from './pages/MenuPage';
@@ -16,17 +15,33 @@ function App() {
     <BrowserRouter>
       <ApiStatus />
       <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<DiscoveryPage />} />
+        {/* Staff Login - Default Landing */}
+        <Route path="/" element={<LoginPage />} />
         <Route path="/login" element={<LoginPage />} />
+        
+        {/* Customer-Facing Routes (QR Code Access) */}
         <Route path="/menu" element={<MenuPage />} />
-        <Route path="/bar" element={<BarDisplay />} />
         <Route path="/review/:venueId" element={<ReviewPage />} />
         
-        {/* Manager Dashboard */}
-        <Route path="/manager/leaderboard" element={<ManagerLeaderboardPage />} />
+        {/* Staff Dashboards - Protected */}
+        <Route 
+          path="/collector" 
+          element={
+            <ProtectedRoute role="Waiter">
+              <CollectorDashboard />
+            </ProtectedRoute>
+          } 
+        />
+        
+        <Route 
+          path="/bar" 
+          element={
+            <ProtectedRoute role="Waiter">
+              <BarDisplay />
+            </ProtectedRoute>
+          } 
+        />
 
-        {/* Admin Routes - Protected */}
         <Route 
           path="/manager" 
           element={
@@ -36,9 +51,8 @@ function App() {
           } 
         />
 
-        {/* OurAdmin Dashboard - Protected */}
         <Route 
-          path="/ouradmin" 
+          path="/admin" 
           element={
             <ProtectedRoute role="Admin">
               <OurAdmin />
@@ -46,17 +60,17 @@ function App() {
           } 
         />
 
-        {/* Collector Routes - Protected */}
+        {/* Manager Dashboard */}
         <Route 
-          path="/collector" 
+          path="/manager/leaderboard" 
           element={
-            <ProtectedRoute role="Waiter">
-              <CollectorDashboard />
+            <ProtectedRoute role="Admin">
+              <ManagerLeaderboardPage />
             </ProtectedRoute>
           } 
         />
 
-        {/* Catch all - redirect to home */}
+        {/* Catch all - redirect to login */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
