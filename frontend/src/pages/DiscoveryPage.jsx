@@ -26,13 +26,29 @@ export default function DiscoveryPage() {
 
   const fetchVenues = async () => {
     try {
-      const response = await fetch(`${API_URL}/venue`);
-      const data = await response.json();
+      // Use the unified API service instead of direct fetch
+      const { getVenues } = await import('../services/api.js');
+      const data = await getVenues();
       setVenues(data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching venues:', error);
+      // Fallback to mock data
+      setVenues([
+        {
+          id: 1,
+          name: 'Hotel Coral Beach',
+          description: 'Luxury beachfront resort with premium amenities',
+          imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800',
+          status: 'Open',
+          rating: 4.8,
+          priceRange: '€€€',
+          type: 'Resort & Spa',
+          address: 'Coral Bay, Mediterranean Coast'
+        }
+      ]);
       setLoading(false);
+    }
     }
   };
 

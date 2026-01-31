@@ -1,9 +1,11 @@
 import * as signalR from '@microsoft/signalr';
 
 // Use environment variable in production, localhost in development
+import { API_CONFIG } from './apiConfig.js';
+
 const HUB_URL = import.meta.env.PROD
-  ? (import.meta.env.VITE_API_URL || 'https://riviera-api.onrender.com').replace('/api', '') + '/hubs/beach'
-  : 'http://localhost:5000/hubs/beach';
+  ? (import.meta.env.VITE_API_URL || API_CONFIG.BASE_URL.replace('/api', '')) + '/hubs/beach'
+  : API_CONFIG.BASE_URL.replace('/api', '') + '/hubs/beach';
 
 export const createConnection = () => {
   const connection = new signalR.HubConnectionBuilder()

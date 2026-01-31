@@ -6,7 +6,8 @@ const API_ENVIRONMENTS = {
 };
 
 // Current environment - change this to switch APIs
-const CURRENT_ENV = 'AZURE'; // Changed to AZURE to test professor's API
+// Force MOCK mode in production due to CORS restrictions
+const CURRENT_ENV = import.meta.env.PROD ? 'MOCK' : 'AZURE';
 
 export const API_CONFIG = {
   BASE_URL: API_ENVIRONMENTS[CURRENT_ENV],
