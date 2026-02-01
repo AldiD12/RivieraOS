@@ -6,7 +6,11 @@
       "Bash(dotnet ef migrations:*)",
       "Bash(dotnet ef database:*)",
       "Bash(tree:*)",
-      "Bash(dotnet add:*)"
+      "Bash(dotnet add:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push)",
+      "Bash(az account show:*)"
     ]
   }
 }

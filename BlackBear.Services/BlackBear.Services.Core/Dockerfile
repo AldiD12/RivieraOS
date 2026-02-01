@@ -1,69 +1,40 @@
 # ============================================
 # BlackBear.Services.Core - Production Dockerfile
-# Optimized for Azure Container Apps / App Service
+# Compatible with Visual Studio Container Tools
 # ============================================
 
-# Stage 1: Build
-FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
+# Stage 1: Base runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+WORKDIR /app
+EXPOSE 8080
+ENV ASPNETCORE_HTTP_PORTS=8080
+ENV ASPNETCORE_URLS=http://+:8080
+
+# Stage 2: Build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy csproj and restore dependencies (cached layer)
-COPY ["BlackBear.Services.Core/BlackBear.Services.Core.csproj", "BlackBear.Services.Core/"]
-RUN dotnet restore "BlackBear.Services.Core/BlackBear.Services.Core.csproj" --runtime linux-musl-x64
+# Copy csproj and restore
+COPY ["BlackBear.Services.Core.csproj", "./"]
+RUN dotnet restore "BlackBear.Services.Core.csproj"
 
-# Copy source code and build
+# Copy everything else and build
 COPY . .
-WORKDIR "/src/BlackBear.Services.Core"
-RUN dotnet build "BlackBear.Services.Core.csproj" -c Release --no-restore
+RUN dotnet build "BlackBear.Services.Core.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Stage 2: Publish
+# Stage 3: Publish
 FROM build AS publish
-RUN dotnet publish "BlackBear.Services.Core.csproj" -c Release -o /app/publish \
-    --no-build \
-    --runtime linux-musl-x64 \
-    --self-contained false \
-    /p:PublishTrimmed=false
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "BlackBear.Services.Core.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-# Stage 3: Runtime (Production)
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS final
-
-# Labels for Azure Container Registry
-LABEL org.opencontainers.image.title="BlackBear.Services.Core" \
-      org.opencontainers.image.description="BlackBear Core API Service" \
-      org.opencontainers.image.vendor="BlackBear"
-
-# Install curl for health checks and set timezone
-RUN apk add --no-cache curl tzdata \
-    && cp /usr/share/zoneinfo/UTC /etc/localtime \
-    && echo "UTC" > /etc/timezone \
-    && apk del tzdata
-
-# Create non-root user for security
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
+# Stage 4: Final runtime image
+FROM base AS final
 WORKDIR /app
-
-# Copy published app
 COPY --from=publish /app/publish .
 
-# Set ownership to non-root user
-RUN chown -R appuser:appgroup /app
+# Environment variables
+ENV ASPNETCORE_ENVIRONMENT=Production \
+    DOTNET_RUNNING_IN_CONTAINER=true
 
-# Switch to non-root user
-USER appuser
-
-# Environment variables for production
-ENV ASPNETCORE_URLS=http://+:8080 \
-    ASPNETCORE_ENVIRONMENT=Production \
-    DOTNET_RUNNING_IN_CONTAINER=true \
-    DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-
-# Expose port (Azure uses 8080 by default)
-EXPOSE 8080
-
-# Health check for Azure
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl --fail http://localhost:8080/health || exit 1
-
-# Entry point
 ENTRYPOINT ["dotnet", "BlackBear.Services.Core.dll"]
