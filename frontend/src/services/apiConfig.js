@@ -6,8 +6,8 @@ const API_ENVIRONMENTS = {
 };
 
 // Current environment - change this to switch APIs
-// CORS is now allowed by professor, so we can use AZURE in production
-const CURRENT_ENV = 'AZURE';
+// Reverting to MOCK until CORS headers are properly configured
+const CURRENT_ENV = import.meta.env.PROD ? 'MOCK' : 'AZURE';
 
 export const API_CONFIG = {
   BASE_URL: API_ENVIRONMENTS[CURRENT_ENV],
