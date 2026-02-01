@@ -6,8 +6,8 @@ const API_ENVIRONMENTS = {
 };
 
 // Current environment - change this to switch APIs
-// Reverting to MOCK until CORS headers are properly configured
-const CURRENT_ENV = import.meta.env.PROD ? 'MOCK' : 'AZURE';
+// Connecting to Azure API
+const CURRENT_ENV = 'AZURE';
 
 export const API_CONFIG = {
   BASE_URL: API_ENVIRONMENTS[CURRENT_ENV],
