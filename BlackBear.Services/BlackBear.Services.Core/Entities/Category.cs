@@ -21,6 +21,12 @@ namespace BlackBear.Services.Core.Entities
         [Column("is_active")]
         public bool IsActive { get; set; } = true;
 
+        [Column("is_deleted")]
+        public bool IsDeleted { get; set; } = false;
+
+        [Column("deleted_at")]
+        public DateTime? DeletedAt { get; set; }
+
         // Foreign key
         [Column("venue_id")]
         public int VenueId { get; set; }

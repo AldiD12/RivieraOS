@@ -9,6 +9,25 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Validate required configuration
+var jwtKey = builder.Configuration["Jwt:Key"];
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+var jwtAudience = builder.Configuration["Jwt:Audience"];
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (string.IsNullOrEmpty(jwtKey))
+    throw new InvalidOperationException("Missing configuration: Jwt:Key");
+if (string.IsNullOrEmpty(jwtIssuer))
+    throw new InvalidOperationException("Missing configuration: Jwt:Issuer");
+if (string.IsNullOrEmpty(jwtAudience))
+    throw new InvalidOperationException("Missing configuration: Jwt:Audience");
+if (string.IsNullOrEmpty(connectionString))
+    throw new InvalidOperationException("Missing configuration: ConnectionStrings:DefaultConnection");
+
+Console.WriteLine($"[Startup] Environment: {builder.Environment.EnvironmentName}");
+Console.WriteLine($"[Startup] JWT Issuer: {jwtIssuer}");
+Console.WriteLine($"[Startup] Connection string found: {!string.IsNullOrEmpty(connectionString)}");
+
 // 1. Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
@@ -44,9 +63,6 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 // 3. Add JWT Authentication
-var jwtKey = builder.Configuration["Jwt:Key"]!;
-var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;
-var jwtAudience = builder.Configuration["Jwt:Audience"]!;
 
 builder.Services.AddAuthentication(options =>
 {
@@ -67,8 +83,16 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// 4. Add Authorization Policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("SuperAdmin", policy => policy.RequireRole("SuperAdmin"));
+    options.AddPolicy("BusinessOwner", policy => policy.RequireRole("SuperAdmin", "BusinessOwner"));
+    options.AddPolicy("Manager", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager"));
+    options.AddPolicy("Staff", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager", "Staff"));
+});
+
 // 4. Add Database Context (Azure SQL Server Connection)
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<BlackBearDbContext>(options =>
     options.UseSqlServer(connectionString)
 );
@@ -88,19 +112,14 @@ builder.Services.AddCors(options =>
 
 // 6. Add Health Checks
 builder.Services.AddHealthChecks()
-    .AddSqlServer(connectionString!, name: "database", tags: ["db", "sql"]);
+    .AddSqlServer(connectionString, name: "database", tags: ["db", "sql"]);
 
 var app = builder.Build();
 
 // 4. Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    // Enable Swagger UI
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
+// Enable Swagger UI (available in all environments)
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseCors("AllowFrontend");
 
@@ -110,6 +129,14 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Health check endpoints
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false // No checks, just returns healthy
+});
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("db") // Only database checks
+});
+app.MapHealthChecks("/health"); // All checks
 
 app.Run();

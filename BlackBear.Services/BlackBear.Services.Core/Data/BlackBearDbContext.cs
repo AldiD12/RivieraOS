@@ -42,20 +42,35 @@ namespace BlackBear.Services.Core.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // === GLOBAL QUERY FILTERS FOR MULTI-TENANCY ===
-            // These filters ensure users can only access data belonging to their business
+            // === GLOBAL QUERY FILTERS ===
+            // Combines soft delete + multi-tenancy filters
+            // SuperAdmin (no BusinessId) bypasses tenant filter but still respects soft delete
 
-            // Filter for Venue (has direct BusinessId)
+            // Business: only soft delete filter (SuperAdmin manages all businesses)
+            modelBuilder.Entity<Business>().HasQueryFilter(b => !b.IsDeleted);
+
+            // Venue: soft delete + multi-tenancy (SuperAdmin bypasses tenant filter)
             modelBuilder.Entity<Venue>().HasQueryFilter(v =>
-                _currentUserService == null ||
-                _currentUserService.BusinessId == null ||
-                v.BusinessId == _currentUserService.BusinessId);
+                !v.IsDeleted &&
+                (_currentUserService == null ||
+                 _currentUserService.BusinessId == null ||
+                 v.BusinessId == _currentUserService.BusinessId));
 
-            // Filter for User (has nullable BusinessId)
+            // VenueZone: soft delete only (filtered through Venue relationship)
+            modelBuilder.Entity<VenueZone>().HasQueryFilter(vz => !vz.IsDeleted);
+
+            // Category: soft delete only (filtered through Venue relationship)
+            modelBuilder.Entity<Category>().HasQueryFilter(c => !c.IsDeleted);
+
+            // Product: soft delete only (filtered through Venue relationship)
+            modelBuilder.Entity<Product>().HasQueryFilter(p => !p.IsDeleted);
+
+            // User: multi-tenancy only (no soft delete for users, uses IsActive)
             modelBuilder.Entity<User>().HasQueryFilter(u =>
                 _currentUserService == null ||
                 _currentUserService.BusinessId == null ||
                 u.BusinessId == _currentUserService.BusinessId);
+
 
             // === CORE MODULE ===
 

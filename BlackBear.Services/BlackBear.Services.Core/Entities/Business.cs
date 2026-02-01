@@ -41,6 +41,12 @@ namespace BlackBear.Services.Core.Entities
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        [Column("is_deleted")]
+        public bool IsDeleted { get; set; } = false;
+
+        [Column("deleted_at")]
+        public DateTime? DeletedAt { get; set; }
+
         // Navigation properties
         public ICollection<User> Users { get; set; } = new List<User>();
         public ICollection<Venue> Venues { get; set; } = new List<Venue>();

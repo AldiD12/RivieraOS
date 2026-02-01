@@ -25,6 +25,12 @@ namespace BlackBear.Services.Core.Entities
         [Column("base_price", TypeName = "decimal(10,2)")]
         public decimal BasePrice { get; set; } = 0;
 
+        [Column("is_deleted")]
+        public bool IsDeleted { get; set; } = false;
+
+        [Column("deleted_at")]
+        public DateTime? DeletedAt { get; set; }
+
         // Foreign key
         [Column("venue_id")]
         public int VenueId { get; set; }
