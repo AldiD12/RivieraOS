@@ -30,11 +30,11 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Map PIN to BlackBear credentials
+      // Map PIN to BlackBear credentials (Azure requires 6+ char passwords)
       const waiterMap = {
-        '1111': { email: 'marco@hotelcoral.al', password: '1111' },
-        '2222': { email: 'sofia@hotelcoral.al', password: '2222' },
-        '3333': { email: 'luca@hotelcoral.al', password: '3333' }
+        '1111': { email: 'marco@hotelcoral.al', password: '111111' },
+        '2222': { email: 'sofia@hotelcoral.al', password: '222222' },
+        '3333': { email: 'luca@hotelcoral.al', password: '333333' }
       };
       
       const credentials = waiterMap[pin];
