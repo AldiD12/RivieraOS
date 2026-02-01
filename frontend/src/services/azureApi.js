@@ -25,17 +25,43 @@ azureApi.interceptors.request.use((config) => {
 // Authentication
 export const azureAuth = {
   register: async (registerData) => {
-    const response = await azureApi.post('/Auth/register', registerData);
-    return response.data;
+    try {
+      const response = await azureApi.post('/Auth/register', registerData);
+      // Store JWT token if returned
+      if (response.data.token) {
+        localStorage.setItem('azure_jwt_token', response.data.token);
+      }
+      // Transform Azure response to match frontend expectations
+      return {
+        success: true,
+        user: response.data.user,
+        token: response.data.token,
+        message: 'User registered successfully'
+      };
+    } catch (error) {
+      console.error('Azure register error:', error);
+      throw error;
+    }
   },
   
   login: async (loginData) => {
-    const response = await azureApi.post('/Auth/login', loginData);
-    // Store JWT token if returned
-    if (response.data.token) {
-      localStorage.setItem('azure_jwt_token', response.data.token);
+    try {
+      const response = await azureApi.post('/Auth/login', loginData);
+      // Store JWT token if returned
+      if (response.data.token) {
+        localStorage.setItem('azure_jwt_token', response.data.token);
+      }
+      // Transform Azure response to match frontend expectations
+      return {
+        success: true,
+        user: response.data.user,
+        token: response.data.token
+      };
+    } catch (error) {
+      // Handle login errors
+      console.error('Azure login error:', error);
+      throw error;
     }
-    return response.data;
   }
 };
 
@@ -138,7 +164,16 @@ export const unifiedApi = {
   // Authentication
   login: async (credentials) => {
     if (API_CONFIG.IS_AZURE) {
-      return await azureAuth.login(credentials);
+      try {
+        return await azureAuth.login(credentials);
+      } catch (error) {
+        // If Azure login fails, return error in expected format
+        console.error('Azure login failed:', error);
+        return { 
+          success: false, 
+          error: error.response?.data?.message || 'Login failed' 
+        };
+      }
     }
     // Fallback to local auth logic
     return { success: true, user: { email: credentials.email, role: 'Admin' } };
