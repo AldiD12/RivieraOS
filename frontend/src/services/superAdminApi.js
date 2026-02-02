@@ -143,29 +143,80 @@ export const staffApi = {
   }
 };
 
-// Venue Management APIs
+// Venue Management APIs - Based on swagger.json endpoints
 export const venueApi = {
-  // Get venues for a business
+  // GET /api/superadmin/businesses/{businessId}/Venues - Get venues for a business
   getByBusiness: async (businessId) => {
     const response = await superAdminApi.get(`/superadmin/businesses/${businessId}/Venues`);
     return response.data;
   },
 
-  // Create venue
+  // POST /api/superadmin/businesses/{businessId}/Venues - Create venue
   create: async (businessId, venueData) => {
     const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Venues`, venueData);
     return response.data;
   },
 
-  // Update venue
+  // GET /api/superadmin/businesses/{businessId}/Venues/{id} - Get venue details
+  getById: async (businessId, venueId) => {
+    const response = await superAdminApi.get(`/superadmin/businesses/${businessId}/Venues/${venueId}`);
+    return response.data;
+  },
+
+  // PUT /api/superadmin/businesses/{businessId}/Venues/{id} - Update venue
   update: async (businessId, venueId, venueData) => {
     const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/Venues/${venueId}`, venueData);
     return response.data;
   },
 
-  // Delete venue
+  // DELETE /api/superadmin/businesses/{businessId}/Venues/{id} - Delete venue
   delete: async (businessId, venueId) => {
     const response = await superAdminApi.delete(`/superadmin/businesses/${businessId}/Venues/${venueId}`);
+    return response.data;
+  },
+
+  // GET /api/superadmin/businesses/{businessId}/Venues/{id}/config - Get venue config
+  getConfig: async (businessId, venueId) => {
+    const response = await superAdminApi.get(`/superadmin/businesses/${businessId}/Venues/${venueId}/config`);
+    return response.data;
+  },
+
+  // PUT /api/superadmin/businesses/{businessId}/Venues/{id}/config - Update venue config
+  updateConfig: async (businessId, venueId, configData) => {
+    const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/Venues/${venueId}/config`, configData);
+    return response.data;
+  }
+};
+
+// Zone Management APIs - Based on swagger.json endpoints
+export const zoneApi = {
+  // GET /api/superadmin/venues/{venueId}/Zones - Get zones for a venue
+  getByVenue: async (venueId) => {
+    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/Zones`);
+    return response.data;
+  },
+
+  // POST /api/superadmin/venues/{venueId}/Zones - Create zone
+  create: async (venueId, zoneData) => {
+    const response = await superAdminApi.post(`/superadmin/venues/${venueId}/Zones`, zoneData);
+    return response.data;
+  },
+
+  // GET /api/superadmin/venues/{venueId}/Zones/{id} - Get zone details
+  getById: async (venueId, zoneId) => {
+    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/Zones/${zoneId}`);
+    return response.data;
+  },
+
+  // PUT /api/superadmin/venues/{venueId}/Zones/{id} - Update zone
+  update: async (venueId, zoneId, zoneData) => {
+    const response = await superAdminApi.put(`/superadmin/venues/${venueId}/Zones/${zoneId}`, zoneData);
+    return response.data;
+  },
+
+  // DELETE /api/superadmin/venues/{venueId}/Zones/{id} - Delete zone
+  delete: async (venueId, zoneId) => {
+    const response = await superAdminApi.delete(`/superadmin/venues/${venueId}/Zones/${zoneId}`);
     return response.data;
   }
 };

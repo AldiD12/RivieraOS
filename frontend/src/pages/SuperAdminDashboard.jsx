@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { businessApi, staffApi, venueApi, categoryApi, productApi } from '../services/superAdminApi.js';
+import { businessApi, staffApi, venueApi, zoneApi, categoryApi, productApi } from '../services/superAdminApi.js';
 
 // Staff Modal Components - Defined OUTSIDE to prevent re-creation on every render
 const CreateStaffModal = ({ 
@@ -783,6 +783,548 @@ const EditProductModal = ({
   </AnimatePresence>
 );
 
+// Venue Modal Components - Defined OUTSIDE to prevent re-creation on every render
+const CreateVenueModal = ({ 
+  isOpen, 
+  onClose, 
+  venueForm, 
+  onFormChange, 
+  onSubmit 
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-bold text-white mb-6">Create Venue</h2>
+          
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Venue Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={venueForm.name}
+                  onChange={(e) => onFormChange('name', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter venue name"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Venue Type
+                </label>
+                <select
+                  value={venueForm.type}
+                  onChange={(e) => onFormChange('type', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                >
+                  <option value="">Select type</option>
+                  <option value="Restaurant">Restaurant</option>
+                  <option value="Bar">Bar</option>
+                  <option value="Beach">Beach</option>
+                  <option value="Pool">Pool</option>
+                  <option value="Spa">Spa</option>
+                  <option value="Event">Event Space</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  value={venueForm.location}
+                  onChange={(e) => onFormChange('location', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter location"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Capacity
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={venueForm.capacity}
+                  onChange={(e) => onFormChange('capacity', parseInt(e.target.value) || 0)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="0"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Description
+              </label>
+              <textarea
+                value={venueForm.description}
+                onChange={(e) => onFormChange('description', e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                rows="3"
+                placeholder="Enter venue description"
+              />
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="venueIsActive"
+                checked={venueForm.isActive}
+                onChange={(e) => onFormChange('isActive', e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="venueIsActive" className="text-sm text-zinc-300">
+                Active Venue
+              </label>
+            </div>
+            
+            <div className="flex justify-end space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Create Venue
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+const EditVenueModal = ({ 
+  isOpen, 
+  onClose, 
+  venueForm, 
+  onFormChange, 
+  onSubmit 
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-bold text-white mb-6">Edit Venue</h2>
+          
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Venue Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={venueForm.name}
+                  onChange={(e) => onFormChange('name', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Venue Type
+                </label>
+                <select
+                  value={venueForm.type}
+                  onChange={(e) => onFormChange('type', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                >
+                  <option value="">Select type</option>
+                  <option value="Restaurant">Restaurant</option>
+                  <option value="Bar">Bar</option>
+                  <option value="Beach">Beach</option>
+                  <option value="Pool">Pool</option>
+                  <option value="Spa">Spa</option>
+                  <option value="Event">Event Space</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  value={venueForm.location}
+                  onChange={(e) => onFormChange('location', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Capacity
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={venueForm.capacity}
+                  onChange={(e) => onFormChange('capacity', parseInt(e.target.value) || 0)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Description
+              </label>
+              <textarea
+                value={venueForm.description}
+                onChange={(e) => onFormChange('description', e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                rows="3"
+              />
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="editVenueIsActive"
+                checked={venueForm.isActive}
+                onChange={(e) => onFormChange('isActive', e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="editVenueIsActive" className="text-sm text-zinc-300">
+                Active Venue
+              </label>
+            </div>
+            
+            <div className="flex justify-end space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Update Venue
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+// Zone Modal Components
+const CreateZoneModal = ({ 
+  isOpen, 
+  onClose, 
+  zoneForm, 
+  onFormChange, 
+  onSubmit 
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-bold text-white mb-6">Create Zone</h2>
+          
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Zone Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={zoneForm.name}
+                  onChange={(e) => onFormChange('name', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter zone name"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Zone Type
+                </label>
+                <select
+                  value={zoneForm.type}
+                  onChange={(e) => onFormChange('type', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                >
+                  <option value="">Select type</option>
+                  <option value="Dining">Dining Area</option>
+                  <option value="Seating">Seating Area</option>
+                  <option value="Sunbed">Sunbed Area</option>
+                  <option value="Bar">Bar Area</option>
+                  <option value="VIP">VIP Section</option>
+                  <option value="Service">Service Area</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Capacity
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={zoneForm.capacity}
+                  onChange={(e) => onFormChange('capacity', parseInt(e.target.value) || 0)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="0"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Sort Order
+                </label>
+                <input
+                  type="number"
+                  value={zoneForm.sortOrder}
+                  onChange={(e) => onFormChange('sortOrder', parseInt(e.target.value) || 0)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="0"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Description
+              </label>
+              <textarea
+                value={zoneForm.description}
+                onChange={(e) => onFormChange('description', e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                rows="3"
+                placeholder="Enter zone description"
+              />
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="zoneIsActive"
+                checked={zoneForm.isActive}
+                onChange={(e) => onFormChange('isActive', e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="zoneIsActive" className="text-sm text-zinc-300">
+                Active Zone
+              </label>
+            </div>
+            
+            <div className="flex justify-end space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Create Zone
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+const EditZoneModal = ({ 
+  isOpen, 
+  onClose, 
+  zoneForm, 
+  onFormChange, 
+  onSubmit 
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-bold text-white mb-6">Edit Zone</h2>
+          
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Zone Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={zoneForm.name}
+                  onChange={(e) => onFormChange('name', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Zone Type
+                </label>
+                <select
+                  value={zoneForm.type}
+                  onChange={(e) => onFormChange('type', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                >
+                  <option value="">Select type</option>
+                  <option value="Dining">Dining Area</option>
+                  <option value="Seating">Seating Area</option>
+                  <option value="Sunbed">Sunbed Area</option>
+                  <option value="Bar">Bar Area</option>
+                  <option value="VIP">VIP Section</option>
+                  <option value="Service">Service Area</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Capacity
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={zoneForm.capacity}
+                  onChange={(e) => onFormChange('capacity', parseInt(e.target.value) || 0)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Sort Order
+                </label>
+                <input
+                  type="number"
+                  value={zoneForm.sortOrder}
+                  onChange={(e) => onFormChange('sortOrder', parseInt(e.target.value) || 0)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Description
+              </label>
+              <textarea
+                value={zoneForm.description}
+                onChange={(e) => onFormChange('description', e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                rows="3"
+              />
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="editZoneIsActive"
+                checked={zoneForm.isActive}
+                onChange={(e) => onFormChange('isActive', e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="editZoneIsActive" className="text-sm text-zinc-300">
+                Active Zone
+              </label>
+            </div>
+            
+            <div className="flex justify-end space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Update Zone
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
 // Business Modal Components - Defined OUTSIDE to prevent re-creation on every render
 const CreateBusinessModal = ({ 
   isOpen, 
@@ -1044,6 +1586,14 @@ export default function SuperAdminDashboard() {
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
+
+  // Venues & Zones Modal states
+  const [showCreateVenueModal, setShowCreateVenueModal] = useState(false);
+  const [showEditVenueModal, setShowEditVenueModal] = useState(false);
+  const [showCreateZoneModal, setShowCreateZoneModal] = useState(false);
+  const [showEditZoneModal, setShowEditZoneModal] = useState(false);
+  const [editingVenue, setEditingVenue] = useState(null);
+  const [editingZone, setEditingZone] = useState(null);
   
   // Menu Management Data states
   const [venues, setVenues] = useState([]);
@@ -1052,6 +1602,12 @@ export default function SuperAdminDashboard() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [products, setProducts] = useState([]);
   const [menuLoading, setMenuLoading] = useState(false);
+
+  // Venues & Zones Data states
+  const [venuesForManagement, setVenuesForManagement] = useState([]);
+  const [selectedVenueForManagement, setSelectedVenueForManagement] = useState(null);
+  const [zones, setZones] = useState([]);
+  const [venuesLoading, setVenuesLoading] = useState(false);
 
   // Business Form states
   const [businessForm, setBusinessForm] = useState({
@@ -1093,6 +1649,26 @@ export default function SuperAdminDashboard() {
     isAvailable: true,
     isAlcohol: false,
     categoryId: null
+  });
+
+  // Venue Form states
+  const [venueForm, setVenueForm] = useState({
+    name: '',
+    type: '',
+    location: '',
+    description: '',
+    capacity: 0,
+    isActive: true
+  });
+
+  // Zone Form states
+  const [zoneForm, setZoneForm] = useState({
+    name: '',
+    type: '',
+    description: '',
+    capacity: 0,
+    sortOrder: 0,
+    isActive: true
   });
 
   // Check user role and permissions
@@ -1725,6 +2301,235 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  // Venues & Zones Management Functions
+  const fetchVenuesForManagement = async (businessId) => {
+    try {
+      setVenuesLoading(true);
+      console.log('🔄 Fetching venues for management for business:', businessId);
+      
+      const venueData = await venueApi.getByBusiness(businessId);
+      console.log('✅ Venues for management fetched:', venueData.length, 'venues');
+      setVenuesForManagement(Array.isArray(venueData) ? venueData : []);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error fetching venues for management:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Venue management requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to fetch venues: ' + (err.response?.data?.message || err.message));
+      }
+    } finally {
+      setVenuesLoading(false);
+    }
+  };
+
+  const fetchZones = async (venueId) => {
+    try {
+      setVenuesLoading(true);
+      console.log('🔄 Fetching zones for venue:', venueId);
+      
+      const zoneData = await zoneApi.getByVenue(venueId);
+      console.log('✅ Zones fetched:', zoneData.length, 'zones');
+      setZones(Array.isArray(zoneData) ? zoneData : []);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error fetching zones:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Zone management requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to fetch zones: ' + (err.response?.data?.message || err.message));
+      }
+    } finally {
+      setVenuesLoading(false);
+    }
+  };
+
+  const handleCreateVenue = async (e) => {
+    e.preventDefault();
+    if (!selectedBusiness) return;
+    
+    try {
+      console.log('🔄 Creating new venue:', venueForm);
+      
+      await venueApi.create(selectedBusiness.id, venueForm);
+      console.log('✅ Venue created successfully');
+      
+      setShowCreateVenueModal(false);
+      resetVenueForm();
+      await fetchVenuesForManagement(selectedBusiness.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error creating venue:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Venue creation requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to create venue: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleUpdateVenue = async (e) => {
+    e.preventDefault();
+    if (!selectedBusiness || !editingVenue) return;
+    
+    try {
+      console.log('🔄 Updating venue:', editingVenue.id);
+      
+      await venueApi.update(selectedBusiness.id, editingVenue.id, venueForm);
+      console.log('✅ Venue updated successfully');
+      
+      setShowEditVenueModal(false);
+      setEditingVenue(null);
+      resetVenueForm();
+      await fetchVenuesForManagement(selectedBusiness.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error updating venue:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Venue update requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to update venue: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleDeleteVenue = async (venueId) => {
+    if (!selectedBusiness) return;
+    if (!confirm('Are you sure you want to delete this venue? This will also delete all zones in this venue.')) return;
+    
+    try {
+      console.log('🔄 Deleting venue:', venueId);
+      
+      await venueApi.delete(selectedBusiness.id, venueId);
+      console.log('✅ Venue deleted successfully');
+      
+      await fetchVenuesForManagement(selectedBusiness.id);
+      if (selectedVenueForManagement?.id === venueId) {
+        setSelectedVenueForManagement(null);
+        setZones([]);
+      }
+      setError('');
+    } catch (err) {
+      console.error('❌ Error deleting venue:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Venue deletion requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to delete venue: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleCreateZone = async (e) => {
+    e.preventDefault();
+    if (!selectedVenueForManagement) return;
+    
+    try {
+      console.log('🔄 Creating new zone:', zoneForm);
+      
+      await zoneApi.create(selectedVenueForManagement.id, zoneForm);
+      console.log('✅ Zone created successfully');
+      
+      setShowCreateZoneModal(false);
+      resetZoneForm();
+      await fetchZones(selectedVenueForManagement.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error creating zone:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Zone creation requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to create zone: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleUpdateZone = async (e) => {
+    e.preventDefault();
+    if (!selectedVenueForManagement || !editingZone) return;
+    
+    try {
+      console.log('🔄 Updating zone:', editingZone.id);
+      
+      await zoneApi.update(selectedVenueForManagement.id, editingZone.id, zoneForm);
+      console.log('✅ Zone updated successfully');
+      
+      setShowEditZoneModal(false);
+      setEditingZone(null);
+      resetZoneForm();
+      await fetchZones(selectedVenueForManagement.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error updating zone:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Zone update requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to update zone: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleDeleteZone = async (zoneId) => {
+    if (!selectedVenueForManagement) return;
+    if (!confirm('Are you sure you want to delete this zone? This action cannot be undone.')) return;
+    
+    try {
+      console.log('🔄 Deleting zone:', zoneId);
+      
+      await zoneApi.delete(selectedVenueForManagement.id, zoneId);
+      console.log('✅ Zone deleted successfully');
+      
+      await fetchZones(selectedVenueForManagement.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error deleting zone:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Zone deletion requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to delete zone: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
   // Business CRUD operations
   const handleCreateBusiness = async (e) => {
     e.preventDefault();
@@ -1913,6 +2718,28 @@ export default function SuperAdminDashboard() {
     });
   }, []);
 
+  const resetVenueForm = useCallback(() => {
+    setVenueForm({
+      name: '',
+      type: '',
+      location: '',
+      description: '',
+      capacity: 0,
+      isActive: true
+    });
+  }, []);
+
+  const resetZoneForm = useCallback(() => {
+    setZoneForm({
+      name: '',
+      type: '',
+      description: '',
+      capacity: 0,
+      sortOrder: 0,
+      isActive: true
+    });
+  }, []);
+
   // Form handlers with useCallback to prevent re-renders
   const handleBusinessFormChange = useCallback((field, value) => {
     setBusinessForm(prev => ({
@@ -1937,6 +2764,20 @@ export default function SuperAdminDashboard() {
 
   const handleProductFormChange = useCallback((field, value) => {
     setProductForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
+  const handleVenueFormChange = useCallback((field, value) => {
+    setVenueForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
+  const handleZoneFormChange = useCallback((field, value) => {
+    setZoneForm(prev => ({
       ...prev,
       [field]: value
     }));
@@ -1994,6 +2835,30 @@ export default function SuperAdminDashboard() {
     setEditingProduct(null);
     resetProductForm();
   }, [resetProductForm]);
+
+  // Venue Modal handlers
+  const handleCloseCreateVenueModal = useCallback(() => {
+    setShowCreateVenueModal(false);
+    resetVenueForm();
+  }, [resetVenueForm]);
+
+  const handleCloseEditVenueModal = useCallback(() => {
+    setShowEditVenueModal(false);
+    setEditingVenue(null);
+    resetVenueForm();
+  }, [resetVenueForm]);
+
+  // Zone Modal handlers
+  const handleCloseCreateZoneModal = useCallback(() => {
+    setShowCreateZoneModal(false);
+    resetZoneForm();
+  }, [resetZoneForm]);
+
+  const handleCloseEditZoneModal = useCallback(() => {
+    setShowEditZoneModal(false);
+    setEditingZone(null);
+    resetZoneForm();
+  }, [resetZoneForm]);
 
   const openEditModal = (business) => {
     setEditingBusiness(business);
@@ -2053,6 +2918,32 @@ export default function SuperAdminDashboard() {
       categoryId: product.categoryId || selectedCategory?.id || null
     });
     setShowEditProductModal(true);
+  };
+
+  const openEditVenueModal = (venue) => {
+    setEditingVenue(venue);
+    setVenueForm({
+      name: venue.name || '',
+      type: venue.type || '',
+      location: venue.location || '',
+      description: venue.description || '',
+      capacity: venue.capacity || 0,
+      isActive: venue.isActive !== false
+    });
+    setShowEditVenueModal(true);
+  };
+
+  const openEditZoneModal = (zone) => {
+    setEditingZone(zone);
+    setZoneForm({
+      name: zone.name || '',
+      type: zone.type || '',
+      description: zone.description || '',
+      capacity: zone.capacity || 0,
+      sortOrder: zone.sortOrder || 0,
+      isActive: zone.isActive !== false
+    });
+    setShowEditZoneModal(true);
   };
 
   // Tab Navigation Component
@@ -2190,7 +3081,7 @@ export default function SuperAdminDashboard() {
                     }}
                     className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded text-sm transition-colors"
                   >
-                    Manage Staff
+                    Staff
                   </button>
                   <button
                     onClick={() => {
@@ -2205,6 +3096,20 @@ export default function SuperAdminDashboard() {
                     className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors"
                   >
                     Menu
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log('🔘 Venues Management button clicked for business:', business.id);
+                      console.log('🔘 Calling fetchBusinessDetails and fetchVenuesForManagement...');
+                      fetchBusinessDetails(business.id);
+                      fetchVenuesForManagement(business.id);
+                      console.log('🔘 Setting activeTab to venues...');
+                      setActiveTab('venues');
+                      console.log('🔘 Should now show venues tab');
+                    }}
+                    className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                  >
+                    Venues
                   </button>
                   <button
                     onClick={() => {
@@ -2738,42 +3643,255 @@ export default function SuperAdminDashboard() {
   // Venues & Zones Tab
   const VenuesTab = () => (
     <div className="space-y-6">
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-white mb-4">Venues & Zones Management</h2>
-        <p className="text-zinc-400 mb-6">Configure venues, zones, and seating layouts</p>
-        
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 max-w-2xl mx-auto">
-          <h3 className="text-lg font-medium text-white mb-4">Required API Endpoints</h3>
-          <div className="space-y-2 text-sm text-left">
-            <div className="text-zinc-300">
-              <strong>Venues:</strong>
-            </div>
-            <div className="text-zinc-400 font-mono text-xs ml-4">
-              GET/POST/PUT/DELETE /api/superadmin/businesses/{'{businessId}'}/Venues
-            </div>
-            
-            <div className="text-zinc-300 mt-4">
-              <strong>Zones:</strong>
-            </div>
-            <div className="text-zinc-400 font-mono text-xs ml-4">
-              GET/POST/PUT/DELETE /api/superadmin/venues/{'{venueId}'}/Zones
-            </div>
-            
-            <div className="text-zinc-300 mt-4">
-              <strong>Venue Configuration:</strong>
-            </div>
-            <div className="text-zinc-400 font-mono text-xs ml-4">
-              GET/PUT /api/superadmin/businesses/{'{businessId}'}/Venues/{'{id}'}/config
-            </div>
-          </div>
-          
-          <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-800 rounded">
-            <p className="text-yellow-400 text-sm">
-              ⚠️ These endpoints exist in the API but return 403 Forbidden due to missing role claims in JWT token.
+      <div className="flex items-center space-x-4 mb-6">
+        <button 
+          onClick={() => setActiveTab('businesses')}
+          className="text-zinc-400 hover:text-white transition-colors"
+        >
+          ← Back to Businesses
+        </button>
+        {selectedBusiness && (
+          <div>
+            <h2 className="text-2xl font-bold text-white">
+              Venues & Zones - {selectedBusiness.brandName || selectedBusiness.registeredName}
+            </h2>
+            <p className="text-sm text-zinc-400 mt-1">
+              Business ID: {selectedBusiness.id} | Manage venues and their zones
             </p>
           </div>
-        </div>
+        )}
       </div>
+
+      {selectedBusiness ? (
+        <div className="space-y-8">
+          {/* Venues Management */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-medium text-white">Venues</h3>
+                <p className="text-sm text-zinc-400">{venuesForManagement.length} venues configured</p>
+              </div>
+              <button 
+                onClick={() => {
+                  console.log('🔘 Add Venue button clicked');
+                  setShowCreateVenueModal(true);
+                }}
+                className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                + Add Venue
+              </button>
+            </div>
+            
+            {venuesLoading ? (
+              <div className="text-center py-8">
+                <div className="inline-block w-6 h-6 border-2 border-zinc-600 border-t-white rounded-full animate-spin mb-2"></div>
+                <p className="text-zinc-400 text-sm">Loading venues...</p>
+              </div>
+            ) : venuesForManagement.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {venuesForManagement.map((venue) => (
+                  <motion.div
+                    key={venue.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                      selectedVenueForManagement?.id === venue.id
+                        ? 'bg-zinc-800 border-zinc-600'
+                        : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
+                    }`}
+                    onClick={() => {
+                      console.log('🔘 Venue selected for management:', venue.id);
+                      setSelectedVenueForManagement(venue);
+                      fetchZones(venue.id);
+                    }}
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-white">{venue.name}</h4>
+                        <p className="text-sm text-zinc-400">{venue.type || 'Venue'}</p>
+                        {venue.location && (
+                          <p className="text-xs text-zinc-500">{venue.location}</p>
+                        )}
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        venue.isActive 
+                          ? 'bg-green-900/30 text-green-400' 
+                          : 'bg-red-900/30 text-red-400'
+                      }`}>
+                        {venue.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    
+                    <div className="space-y-1 text-xs text-zinc-500 mb-3">
+                      <div className="flex justify-between">
+                        <span>Capacity:</span>
+                        <span>{venue.capacity || 'Not set'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>ID:</span>
+                        <span className="font-mono">{venue.id}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditVenueModal(venue);
+                        }}
+                        className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteVenue(venue.id);
+                        }}
+                        className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-zinc-400">No venues found for this business.</p>
+                <button 
+                  onClick={() => setShowCreateVenueModal(true)}
+                  className="mt-2 bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                >
+                  Create First Venue
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Zones Management */}
+          {selectedVenueForManagement && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-medium text-white">Zones - {selectedVenueForManagement.name}</h3>
+                  <p className="text-sm text-zinc-400">{zones.length} zones configured</p>
+                </div>
+                <button 
+                  onClick={() => {
+                    console.log('🔘 Add Zone button clicked');
+                    setShowCreateZoneModal(true);
+                  }}
+                  className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                >
+                  + Add Zone
+                </button>
+              </div>
+              
+              {zones.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {zones.map((zone) => (
+                    <motion.div
+                      key={zone.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-white">{zone.name}</h4>
+                          <p className="text-sm text-zinc-400">{zone.type || 'Zone'}</p>
+                        </div>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          zone.isActive 
+                            ? 'bg-green-900/30 text-green-400' 
+                            : 'bg-red-900/30 text-red-400'
+                        }`}>
+                          {zone.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-1 text-xs text-zinc-500 mb-3">
+                        <div className="flex justify-between">
+                          <span>Capacity:</span>
+                          <span>{zone.capacity || 'Not set'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Order:</span>
+                          <span>{zone.sortOrder}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>ID:</span>
+                          <span className="font-mono">{zone.id}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => {
+                            console.log('🔘 Edit Zone button clicked for:', zone.id);
+                            openEditZoneModal(zone);
+                          }}
+                          className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            console.log('🔘 Delete Zone button clicked for:', zone.id);
+                            handleDeleteZone(zone.id);
+                          }}
+                          className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-zinc-400">No zones found in this venue.</p>
+                  <button 
+                    onClick={() => setShowCreateZoneModal(true)}
+                    className="mt-2 bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Create First Zone
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Venues & Zones API Status */}
+          <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <div className="w-5 h-5 text-blue-400 mt-0.5">ℹ️</div>
+              <div>
+                <h4 className="text-blue-400 font-medium mb-1">Venues & Zones Management APIs</h4>
+                <p className="text-blue-300 text-sm">
+                  Complete venue and zone management system with hierarchical structure.
+                </p>
+                <div className="mt-2 space-y-1 text-xs text-blue-300 font-mono">
+                  <div>✅ GET/POST/PUT/DELETE /api/superadmin/businesses/{'{businessId}'}/Venues</div>
+                  <div>✅ GET/POST/PUT/DELETE /api/superadmin/venues/{'{venueId}'}/Zones</div>
+                  <div>✅ GET/PUT /api/superadmin/businesses/{'{businessId}'}/Venues/{'{id}'}/config</div>
+                </div>
+                <p className="text-blue-300 text-sm mt-2">
+                  {error.includes('SuperAdmin') ? 
+                    '⚠️ Currently limited due to JWT role claims configuration.' :
+                    '✅ All venue and zone management features should be fully functional.'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-zinc-400">Select a business to manage venues and zones</p>
+        </div>
+      )}
     </div>
   );
 
@@ -2944,6 +4062,36 @@ export default function SuperAdminDashboard() {
           productForm={productForm}
           onFormChange={handleProductFormChange}
           onSubmit={handleUpdateProduct}
+        />
+
+        {/* Venues & Zones Management Modals */}
+        <CreateVenueModal 
+          isOpen={showCreateVenueModal}
+          onClose={handleCloseCreateVenueModal}
+          venueForm={venueForm}
+          onFormChange={handleVenueFormChange}
+          onSubmit={handleCreateVenue}
+        />
+        <EditVenueModal 
+          isOpen={showEditVenueModal}
+          onClose={handleCloseEditVenueModal}
+          venueForm={venueForm}
+          onFormChange={handleVenueFormChange}
+          onSubmit={handleUpdateVenue}
+        />
+        <CreateZoneModal 
+          isOpen={showCreateZoneModal}
+          onClose={handleCloseCreateZoneModal}
+          zoneForm={zoneForm}
+          onFormChange={handleZoneFormChange}
+          onSubmit={handleCreateZone}
+        />
+        <EditZoneModal 
+          isOpen={showEditZoneModal}
+          onClose={handleCloseEditZoneModal}
+          zoneForm={zoneForm}
+          onFormChange={handleZoneFormChange}
+          onSubmit={handleUpdateZone}
         />
       </div>
     </div>
