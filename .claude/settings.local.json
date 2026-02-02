@@ -10,7 +10,12 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push)",
-      "Bash(az account show:*)"
+      "Bash(az account show:*)",
+      "Bash(az acr login:*)",
+      "Bash(docker build:*)",
+      "Bash(docker push:*)",
+      "Bash(az containerapp update:*)",
+      "Bash(az:*)"
     ]
   }
 }

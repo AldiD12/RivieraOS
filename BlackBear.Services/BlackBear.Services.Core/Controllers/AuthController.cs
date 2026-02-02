@@ -28,8 +28,8 @@ namespace BlackBear.Services.Core.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequest request)
         {
-            // Check if user already exists
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
+            // Check if user already exists (ignore filters to check all users)
+            if (await _context.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == request.Email))
             {
                 return BadRequest("User with this email already exists.");
             }
@@ -85,7 +85,9 @@ namespace BlackBear.Services.Core.Controllers
         public async Task<IActionResult> Login(LoginRequest request)
         {
             // Find user by email, including their roles
+            // IgnoreQueryFilters bypasses multi-tenancy to allow any user (including SuperAdmin) to login
             var user = await _context.Users
+                .IgnoreQueryFilters()
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
