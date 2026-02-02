@@ -2072,18 +2072,37 @@ export default function SuperAdminDashboard() {
   };
 
   const handleToggleStaffActivation = async (staffId) => {
-    if (!selectedBusiness) return;
+    if (!selectedBusiness) {
+      console.log('❌ No selected business for staff activation toggle');
+      setError('Please select a business first');
+      return;
+    }
     
     try {
-      console.log('🔄 Toggling staff activation:', staffId);
+      console.log('🔄 Toggling staff activation:', {
+        staffId,
+        businessId: selectedBusiness.id,
+        businessName: selectedBusiness.brandName || selectedBusiness.registeredName
+      });
       
-      await staffApi.toggleActivation(selectedBusiness.id, staffId);
-      console.log('✅ Staff activation toggled successfully');
+      const result = await staffApi.toggleActivation(selectedBusiness.id, staffId);
+      console.log('✅ Staff activation toggled successfully:', result);
       
+      // Refresh the staff list
       await fetchStaffMembers(selectedBusiness.id);
       setError('');
+      
+      console.log('✅ Staff list refreshed after activation toggle');
     } catch (err) {
-      console.error('❌ Error toggling staff activation:', err);
+      console.error('❌ Error toggling staff activation:', {
+        staffId,
+        businessId: selectedBusiness.id,
+        error: err,
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        url: err.config?.url
+      });
       
       if (err.response?.status === 403) {
         setError('Staff activation toggle requires SuperAdmin privileges. Please contact system administrator.');
@@ -2091,6 +2110,10 @@ export default function SuperAdminDashboard() {
         setError('Session expired. Please login again.');
         localStorage.clear();
         window.location.href = '/superadmin/login';
+      } else if (err.response?.status === 404) {
+        setError('Staff member not found. They may have been deleted.');
+        // Refresh the list anyway to sync with server
+        await fetchStaffMembers(selectedBusiness.id);
       } else {
         setError('Failed to toggle staff activation: ' + (err.response?.data?.message || err.message));
       }
