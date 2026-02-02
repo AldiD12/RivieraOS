@@ -361,6 +361,27 @@ export default function SuperAdminDashboard() {
     }));
   }, []);
 
+  // Individual field handlers to prevent inline functions
+  const handleRegisteredNameChange = useCallback((e) => {
+    handleBusinessFormChange('registeredName', e.target.value);
+  }, [handleBusinessFormChange]);
+
+  const handleBrandNameChange = useCallback((e) => {
+    handleBusinessFormChange('brandName', e.target.value);
+  }, [handleBusinessFormChange]);
+
+  const handleTaxIdChange = useCallback((e) => {
+    handleBusinessFormChange('taxId', e.target.value);
+  }, [handleBusinessFormChange]);
+
+  const handleContactEmailChange = useCallback((e) => {
+    handleBusinessFormChange('contactEmail', e.target.value);
+  }, [handleBusinessFormChange]);
+
+  const handleIsActiveChange = useCallback((e) => {
+    handleBusinessFormChange('isActive', e.target.checked);
+  }, [handleBusinessFormChange]);
+
   const handleCloseCreateModal = useCallback(() => {
     setShowCreateBusinessModal(false);
     resetBusinessForm();
@@ -421,10 +442,7 @@ export default function SuperAdminDashboard() {
                     type="text"
                     required
                     value={businessForm.registeredName}
-                    onChange={(e) => {
-                      e.preventDefault();
-                      handleBusinessFormChange('registeredName', e.target.value);
-                    }}
+                    onChange={handleRegisteredNameChange}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="Enter registered business name"
                   />
@@ -437,10 +455,7 @@ export default function SuperAdminDashboard() {
                   <input
                     type="text"
                     value={businessForm.brandName}
-                    onChange={(e) => {
-                      e.preventDefault();
-                      handleBusinessFormChange('brandName', e.target.value);
-                    }}
+                    onChange={handleBrandNameChange}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="Enter brand name"
                   />
@@ -453,10 +468,7 @@ export default function SuperAdminDashboard() {
                   <input
                     type="text"
                     value={businessForm.taxId}
-                    onChange={(e) => {
-                      e.preventDefault();
-                      handleBusinessFormChange('taxId', e.target.value);
-                    }}
+                    onChange={handleTaxIdChange}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="Enter tax ID"
                   />
@@ -470,10 +482,7 @@ export default function SuperAdminDashboard() {
                     type="email"
                     required
                     value={businessForm.contactEmail}
-                    onChange={(e) => {
-                      e.preventDefault();
-                      handleBusinessFormChange('contactEmail', e.target.value);
-                    }}
+                    onChange={handleContactEmailChange}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="Enter contact email"
                   />
@@ -485,10 +494,7 @@ export default function SuperAdminDashboard() {
                   type="checkbox"
                   id="isActive"
                   checked={businessForm.isActive}
-                  onChange={(e) => {
-                    e.preventDefault();
-                    handleBusinessFormChange('isActive', e.target.checked);
-                  }}
+                  onChange={handleIsActiveChange}
                   className="mr-2"
                 />
                 <label htmlFor="isActive" className="text-sm text-zinc-300">
@@ -550,10 +556,7 @@ export default function SuperAdminDashboard() {
                     type="text"
                     required
                     value={businessForm.registeredName}
-                    onChange={(e) => {
-                      e.preventDefault();
-                      handleBusinessFormChange('registeredName', e.target.value);
-                    }}
+                    onChange={handleRegisteredNameChange}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   />
                 </div>
@@ -565,10 +568,7 @@ export default function SuperAdminDashboard() {
                   <input
                     type="text"
                     value={businessForm.brandName}
-                    onChange={(e) => {
-                      e.preventDefault();
-                      handleBusinessFormChange('brandName', e.target.value);
-                    }}
+                    onChange={handleBrandNameChange}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   />
                 </div>
@@ -581,10 +581,7 @@ export default function SuperAdminDashboard() {
                     type="email"
                     required
                     value={businessForm.contactEmail}
-                    onChange={(e) => {
-                      e.preventDefault();
-                      handleBusinessFormChange('contactEmail', e.target.value);
-                    }}
+                    onChange={handleContactEmailChange}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   />
                 </div>
@@ -596,10 +593,7 @@ export default function SuperAdminDashboard() {
                   <input
                     type="text"
                     value={businessForm.taxId}
-                    onChange={(e) => {
-                      e.preventDefault();
-                      handleBusinessFormChange('taxId', e.target.value);
-                    }}
+                    onChange={handleTaxIdChange}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   />
                 </div>
@@ -610,10 +604,7 @@ export default function SuperAdminDashboard() {
                   type="checkbox"
                   id="editIsActive"
                   checked={businessForm.isActive}
-                  onChange={(e) => {
-                    e.preventDefault();
-                    handleBusinessFormChange('isActive', e.target.checked);
-                  }}
+                  onChange={handleIsActiveChange}
                   className="mr-2"
                 />
                 <label htmlFor="editIsActive" className="text-sm text-zinc-300">
