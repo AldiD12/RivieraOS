@@ -1990,19 +1990,40 @@ export default function SuperAdminDashboard() {
   };
 
   const handleDeleteStaff = async (staffId) => {
-    if (!selectedBusiness) return;
+    if (!selectedBusiness) {
+      console.log('❌ No selected business for staff deletion');
+      setError('Please select a business first');
+      return;
+    }
+    
     if (!confirm('Are you sure you want to delete this staff member? This action cannot be undone.')) return;
     
     try {
-      console.log('🔄 Deleting staff member:', staffId);
+      console.log('🔄 Deleting staff member:', {
+        staffId,
+        businessId: selectedBusiness.id,
+        businessName: selectedBusiness.brandName || selectedBusiness.registeredName
+      });
       
-      await staffApi.delete(selectedBusiness.id, staffId);
-      console.log('✅ Staff member deleted successfully');
+      const result = await staffApi.delete(selectedBusiness.id, staffId);
+      console.log('✅ Staff member deleted successfully:', result);
       
+      // Refresh the staff list
       await fetchStaffMembers(selectedBusiness.id);
       setError('');
+      
+      // Show success message
+      console.log('✅ Staff list refreshed after deletion');
     } catch (err) {
-      console.error('❌ Error deleting staff member:', err);
+      console.error('❌ Error deleting staff member:', {
+        staffId,
+        businessId: selectedBusiness.id,
+        error: err,
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        url: err.config?.url
+      });
       
       if (err.response?.status === 403) {
         setError('Staff deletion requires SuperAdmin privileges. Please contact system administrator.');
@@ -2010,6 +2031,10 @@ export default function SuperAdminDashboard() {
         setError('Session expired. Please login again.');
         localStorage.clear();
         window.location.href = '/superadmin/login';
+      } else if (err.response?.status === 404) {
+        setError('Staff member not found. They may have already been deleted.');
+        // Refresh the list anyway to sync with server
+        await fetchStaffMembers(selectedBusiness.id);
       } else {
         setError('Failed to delete staff member: ' + (err.response?.data?.message || err.message));
       }
