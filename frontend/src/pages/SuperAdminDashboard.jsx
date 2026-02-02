@@ -74,6 +74,28 @@ const CreateStaffModal = ({
               
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  PIN Code *
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength="4"
+                  pattern="[0-9]{4}"
+                  value={staffForm.pin}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, ''); // Only allow digits
+                    if (value.length <= 4) {
+                      onFormChange('pin', value);
+                    }
+                  }}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none font-mono text-center text-lg tracking-widest"
+                  placeholder="0000"
+                />
+                <p className="text-xs text-zinc-500 mt-1">4-digit PIN for staff login</p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
                   Phone Number
                 </label>
                 <input
@@ -188,6 +210,28 @@ const EditStaffModal = ({
                   onChange={(e) => onFormChange('phoneNumber', e.target.value)}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                 />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  PIN Code *
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength="4"
+                  pattern="[0-9]{4}"
+                  value={staffForm.pin}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, ''); // Only allow digits
+                    if (value.length <= 4) {
+                      onFormChange('pin', value);
+                    }
+                  }}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none font-mono text-center text-lg tracking-widest"
+                  placeholder="0000"
+                />
+                <p className="text-xs text-zinc-500 mt-1">4-digit PIN for staff login</p>
               </div>
               
               <div>
@@ -1655,6 +1699,7 @@ export default function SuperAdminDashboard() {
     fullName: '',
     phoneNumber: '',
     role: '',
+    pin: '',
     isActive: true
   });
 
@@ -2832,6 +2877,7 @@ export default function SuperAdminDashboard() {
       fullName: '',
       phoneNumber: '',
       role: '',
+      pin: '',
       isActive: true
     });
   }, []);
@@ -3023,6 +3069,7 @@ export default function SuperAdminDashboard() {
       fullName: staff.fullName || '',
       phoneNumber: staff.phoneNumber || '',
       role: staff.role || staff.userType || '',
+      pin: staff.pin || '', // Populate PIN if available
       isActive: staff.isActive !== false
     });
     setShowEditStaffModal(true);
@@ -3363,6 +3410,12 @@ export default function SuperAdminDashboard() {
                       <div className="flex justify-between">
                         <span className="text-zinc-500">Role:</span>
                         <span className="text-zinc-300">{staff.role || staff.userType || 'Staff'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">PIN:</span>
+                        <span className="text-zinc-300 font-mono tracking-wider">
+                          {staff.pin ? `****${staff.pin.slice(-1)}` : 'Not set'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-zinc-500">Phone:</span>
