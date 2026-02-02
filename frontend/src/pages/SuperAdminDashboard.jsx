@@ -1080,6 +1080,16 @@ const CreateZoneModal = ({
         >
           <h2 className="text-xl font-bold text-white mb-6">Create Zone</h2>
           
+          {/* Show which venue this zone will belong to */}
+          <div className="mb-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
+            <p className="text-blue-400 text-sm">
+              🏖️ This zone will be created inside: <strong>{selectedVenueForManagement?.name}</strong>
+            </p>
+            <p className="text-blue-300 text-xs mt-1">
+              Venue ID: {selectedVenueForManagement?.id} • Type: {selectedVenueForManagement?.type || 'Venue'}
+            </p>
+          </div>
+          
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -1216,6 +1226,16 @@ const EditZoneModal = ({
           onClick={(e) => e.stopPropagation()}
         >
           <h2 className="text-xl font-bold text-white mb-6">Edit Zone</h2>
+          
+          {/* Show which venue this zone belongs to */}
+          <div className="mb-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
+            <p className="text-blue-400 text-sm">
+              🏖️ This zone belongs to: <strong>{selectedVenueForManagement?.name}</strong>
+            </p>
+            <p className="text-blue-300 text-xs mt-1">
+              Venue ID: {selectedVenueForManagement?.id} • Type: {selectedVenueForManagement?.type || 'Venue'}
+            </p>
+          </div>
           
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -3694,16 +3714,11 @@ export default function SuperAdminDashboard() {
                     key={venue.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                    className={`p-4 rounded-lg border transition-all ${
                       selectedVenueForManagement?.id === venue.id
-                        ? 'bg-zinc-800 border-zinc-600'
+                        ? 'bg-zinc-800 border-zinc-600 ring-2 ring-blue-500/50'
                         : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
                     }`}
-                    onClick={() => {
-                      console.log('🔘 Venue selected for management:', venue.id);
-                      setSelectedVenueForManagement(venue);
-                      fetchZones(venue.id);
-                    }}
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex-1">
@@ -3728,18 +3743,38 @@ export default function SuperAdminDashboard() {
                         <span>{venue.capacity || 'Not set'}</span>
                       </div>
                       <div className="flex justify-between">
+                        <span>Zones:</span>
+                        <span className="text-blue-400">
+                          {selectedVenueForManagement?.id === venue.id ? zones.length : '?'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
                         <span>ID:</span>
                         <span className="font-mono">{venue.id}</span>
                       </div>
                     </div>
 
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2 mb-2">
+                      <button
+                        onClick={() => {
+                          console.log('🔘 Venue selected for management:', venue.id);
+                          setSelectedVenueForManagement(venue);
+                          fetchZones(venue.id);
+                        }}
+                        className={`flex-1 px-2 py-1 rounded text-xs transition-colors ${
+                          selectedVenueForManagement?.id === venue.id
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-zinc-700 hover:bg-zinc-600 text-white'
+                        }`}
+                      >
+                        {selectedVenueForManagement?.id === venue.id ? 'Selected' : 'Manage Zones'}
+                      </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           openEditVenueModal(venue);
                         }}
-                        className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                        className="bg-zinc-800 hover:bg-zinc-700 text-white px-2 py-1 rounded text-xs transition-colors"
                       >
                         Edit
                       </button>
@@ -3753,12 +3788,21 @@ export default function SuperAdminDashboard() {
                         Delete
                       </button>
                     </div>
+
+                    {selectedVenueForManagement?.id === venue.id && (
+                      <div className="mt-2 p-2 bg-blue-900/20 border border-blue-800 rounded text-xs">
+                        <p className="text-blue-400">
+                          👆 This venue is selected. Manage its zones below.
+                        </p>
+                      </div>
+                    )}
                   </motion.div>
                 ))}
               </div>
             ) : (
               <div className="text-center py-8">
                 <p className="text-zinc-400">No venues found for this business.</p>
+                <p className="text-sm text-zinc-500 mt-1">Create venues first, then add zones to each venue.</p>
                 <button 
                   onClick={() => setShowCreateVenueModal(true)}
                   className="mt-2 bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
@@ -3769,23 +3813,44 @@ export default function SuperAdminDashboard() {
             )}
           </div>
 
-          {/* Zones Management */}
+          {/* Zones Management - Only show when a venue is selected */}
           {selectedVenueForManagement && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-lg font-medium text-white">Zones - {selectedVenueForManagement.name}</h3>
-                  <p className="text-sm text-zinc-400">{zones.length} zones configured</p>
+            <div className="space-y-4 border-t border-zinc-800 pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm">🏖️</span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium text-white">
+                      Zones in "{selectedVenueForManagement.name}"
+                    </h3>
+                    <p className="text-sm text-zinc-400">
+                      {zones.length} zones configured • Venue ID: {selectedVenueForManagement.id}
+                    </p>
+                  </div>
                 </div>
-                <button 
-                  onClick={() => {
-                    console.log('🔘 Add Zone button clicked');
-                    setShowCreateZoneModal(true);
-                  }}
-                  className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-                >
-                  + Add Zone
-                </button>
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => {
+                      console.log('🔘 Clear venue selection');
+                      setSelectedVenueForManagement(null);
+                      setZones([]);
+                    }}
+                    className="px-3 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors text-sm"
+                  >
+                    Clear Selection
+                  </button>
+                  <button 
+                    onClick={() => {
+                      console.log('🔘 Add Zone button clicked for venue:', selectedVenueForManagement.id);
+                      setShowCreateZoneModal(true);
+                    }}
+                    className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    + Add Zone to This Venue
+                  </button>
+                </div>
               </div>
               
               {zones.length > 0 ? (
@@ -3801,6 +3866,9 @@ export default function SuperAdminDashboard() {
                         <div className="flex-1">
                           <h4 className="font-medium text-white">{zone.name}</h4>
                           <p className="text-sm text-zinc-400">{zone.type || 'Zone'}</p>
+                          <p className="text-xs text-blue-400 mt-1">
+                            📍 In {selectedVenueForManagement.name}
+                          </p>
                         </div>
                         <span className={`px-2 py-1 rounded-full text-xs ${
                           zone.isActive 
@@ -3821,7 +3889,7 @@ export default function SuperAdminDashboard() {
                           <span>{zone.sortOrder}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span>ID:</span>
+                          <span>Zone ID:</span>
                           <span className="font-mono">{zone.id}</span>
                         </div>
                       </div>
@@ -3850,16 +3918,36 @@ export default function SuperAdminDashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-zinc-400">No zones found in this venue.</p>
+                <div className="text-center py-8 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                  <div className="text-zinc-400 mb-4">
+                    <p>No zones found in "{selectedVenueForManagement.name}"</p>
+                    <p className="text-sm mt-2">Zones are areas within this venue (dining areas, sunbed sections, etc.)</p>
+                  </div>
                   <button 
                     onClick={() => setShowCreateZoneModal(true)}
-                    className="mt-2 bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                    className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
                   >
-                    Create First Zone
+                    Create First Zone in This Venue
                   </button>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Help Section - Show when no venue is selected */}
+          {!selectedVenueForManagement && venuesForManagement.length > 0 && (
+            <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <div className="w-5 h-5 text-blue-400 mt-0.5">💡</div>
+                <div>
+                  <h4 className="text-blue-400 font-medium mb-1">How to Manage Zones</h4>
+                  <p className="text-blue-300 text-sm">
+                    1. Click "Manage Zones" on any venue above to select it<br/>
+                    2. Once selected, you can create and manage zones within that venue<br/>
+                    3. Each zone belongs to a specific venue (dining areas, sunbed sections, etc.)
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
