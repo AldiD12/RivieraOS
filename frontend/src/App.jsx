@@ -4,6 +4,8 @@ import CollectorDashboard from './pages/CollectorDashboard';
 import MenuPage from './pages/MenuPage';
 import BarDisplay from './pages/BarDisplay';
 import LoginPage from './pages/LoginPage';
+import LandingPage from './pages/LandingPage';
+import BusinessSetupPage from './pages/BusinessSetupPage';
 import ReviewPage from './pages/ReviewPage';
 import ManagerLeaderboardPage from './pages/ManagerLeaderboardPage';
 import OurAdmin from './pages/OurAdmin';
@@ -17,8 +19,13 @@ function App() {
     <BrowserRouter>
       <ApiStatus />
       <Routes>
-        {/* Staff Login - Default Landing */}
-        <Route path="/" element={<LoginPage />} />
+        {/* Landing Page - Business Setup Check */}
+        <Route path="/" element={<LandingPage />} />
+        
+        {/* Business Setup Routes */}
+        <Route path="/setup" element={<BusinessSetupPage />} />
+        
+        {/* Staff Login - After Business Setup */}
         <Route path="/login" element={<LoginPage />} />
         
         {/* Customer-Facing Routes (QR Code Access) */}
@@ -94,7 +101,7 @@ function App() {
           } 
         />
 
-        {/* Catch all - redirect to login */}
+        {/* Catch all - redirect to landing */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
