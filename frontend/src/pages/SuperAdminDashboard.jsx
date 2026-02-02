@@ -330,8 +330,14 @@ export default function SuperAdminDashboard() {
       try {
         console.log('🔄 Trying SuperAdmin endpoint: /api/superadmin/Businesses');
         data = await businessApi.superAdmin.getAll();
-        console.log('✅ SuperAdmin businesses fetched successfully:', Array.isArray(data) ? data.length : 'non-array response', 'businesses');
-        console.log('📊 Response data type:', typeof data, 'Data:', data);
+        console.log('✅ SuperAdmin businesses fetched successfully:', Array.isArray(data) ? data.length : 'paginated response');
+        console.log('📊 Response structure:', {
+          type: typeof data,
+          isArray: Array.isArray(data),
+          hasItems: data?.items ? `Array(${data.items.length})` : 'No',
+          hasPagination: data?.totalCount ? `${data.totalCount} total` : 'No',
+          data: data
+        });
       } catch (superAdminError) {
         console.log('⚠️ SuperAdmin endpoint failed:', {
           status: superAdminError.response?.status,
@@ -378,8 +384,32 @@ export default function SuperAdminDashboard() {
         }
       }
       
-      // Ensure data is an array
-      const businessesArray = Array.isArray(data) ? data : (data?.businesses || data?.data || []);
+      // Ensure data is an array - handle paginated responses
+      let businessesArray;
+      if (Array.isArray(data)) {
+        // Direct array response
+        businessesArray = data;
+      } else if (data && Array.isArray(data.items)) {
+        // Paginated response with items array
+        businessesArray = data.items;
+        console.log('📊 Paginated response detected:', {
+          totalCount: data.totalCount,
+          page: data.page,
+          pageSize: data.pageSize,
+          totalPages: data.totalPages,
+          itemsCount: data.items.length
+        });
+      } else if (data && Array.isArray(data.businesses)) {
+        // Alternative format with businesses array
+        businessesArray = data.businesses;
+      } else if (data && Array.isArray(data.data)) {
+        // Alternative format with data array
+        businessesArray = data.data;
+      } else {
+        // Fallback to empty array
+        console.log('⚠️ Unexpected response format, using empty array:', data);
+        businessesArray = [];
+      }
       setBusinesses(businessesArray);
       setError('');
       console.log('✅ Businesses loaded successfully:', businessesArray.length, 'businesses');
