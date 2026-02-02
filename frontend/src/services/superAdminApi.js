@@ -287,10 +287,53 @@ export const productApi = {
   }
 };
 
+// AdminUsers Management APIs - Based on swagger.json endpoints
+export const adminUsersApi = {
+  // GET /api/superadmin/AdminUsers - Get all admin users
+  getAll: async () => {
+    const response = await superAdminApi.get('/superadmin/AdminUsers');
+    return response.data;
+  },
+
+  // POST /api/superadmin/AdminUsers - Create admin user
+  create: async (adminUserData) => {
+    const response = await superAdminApi.post('/superadmin/AdminUsers', adminUserData);
+    return response.data;
+  }
+};
+
+// Auth Management APIs - Based on swagger.json endpoints
+export const authApi = {
+  // POST /api/Auth/register - Register new user
+  register: async (registerData) => {
+    const response = await superAdminApi.post('/Auth/register', registerData);
+    return response.data;
+  },
+
+  // POST /api/Auth/login - Login user
+  login: async (loginData) => {
+    const response = await superAdminApi.post('/Auth/login', loginData);
+    return response.data;
+  }
+};
+
+// Dashboard Analytics APIs - Based on swagger.json endpoints
+export const dashboardApi = {
+  // GET /api/superadmin/Dashboard - Get dashboard analytics
+  getAnalytics: async () => {
+    const response = await superAdminApi.get('/superadmin/Dashboard');
+    return response.data;
+  }
+};
+
 export default {
   business: businessApi,
   staff: staffApi,
   venue: venueApi,
+  zone: zoneApi,
   category: categoryApi,
-  product: productApi
+  product: productApi,
+  adminUsers: adminUsersApi,
+  auth: authApi,
+  dashboard: dashboardApi
 };
