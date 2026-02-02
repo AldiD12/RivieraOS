@@ -306,14 +306,20 @@ export default function SuperAdminDashboard() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowCreateBusinessModal(false)}
+          onClick={(e) => {
+            e.preventDefault();
+            setShowCreateBusinessModal(false);
+          }}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
             <h2 className="text-xl font-bold text-white mb-6">Create New Business</h2>
             
@@ -327,7 +333,10 @@ export default function SuperAdminDashboard() {
                     type="text"
                     required
                     value={businessForm.registeredName}
-                    onChange={(e) => setBusinessForm({...businessForm, registeredName: e.target.value})}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setBusinessForm({...businessForm, registeredName: e.target.value});
+                    }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="Enter registered business name"
                   />
@@ -340,7 +349,10 @@ export default function SuperAdminDashboard() {
                   <input
                     type="text"
                     value={businessForm.brandName}
-                    onChange={(e) => setBusinessForm({...businessForm, brandName: e.target.value})}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setBusinessForm({...businessForm, brandName: e.target.value});
+                    }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="Enter brand name"
                   />
@@ -353,7 +365,10 @@ export default function SuperAdminDashboard() {
                   <input
                     type="text"
                     value={businessForm.taxId}
-                    onChange={(e) => setBusinessForm({...businessForm, taxId: e.target.value})}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setBusinessForm({...businessForm, taxId: e.target.value});
+                    }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="Enter tax ID"
                   />
@@ -367,7 +382,10 @@ export default function SuperAdminDashboard() {
                     type="email"
                     required
                     value={businessForm.contactEmail}
-                    onChange={(e) => setBusinessForm({...businessForm, contactEmail: e.target.value})}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setBusinessForm({...businessForm, contactEmail: e.target.value});
+                    }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="Enter contact email"
                   />
@@ -379,7 +397,10 @@ export default function SuperAdminDashboard() {
                   type="checkbox"
                   id="isActive"
                   checked={businessForm.isActive}
-                  onChange={(e) => setBusinessForm({...businessForm, isActive: e.target.checked})}
+                  onChange={(e) => {
+                    e.preventDefault();
+                    setBusinessForm({...businessForm, isActive: e.target.checked});
+                  }}
                   className="mr-2"
                 />
                 <label htmlFor="isActive" className="text-sm text-zinc-300">
@@ -390,7 +411,8 @@ export default function SuperAdminDashboard() {
               <div className="flex justify-end space-x-4 pt-4">
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
                     setShowCreateBusinessModal(false);
                     resetBusinessForm();
                   }}
@@ -420,14 +442,20 @@ export default function SuperAdminDashboard() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={() => setShowEditBusinessModal(false)}
+          onClick={(e) => {
+            e.preventDefault();
+            setShowEditBusinessModal(false);
+          }}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
             <h2 className="text-xl font-bold text-white mb-6">Edit Business</h2>
             
@@ -441,7 +469,10 @@ export default function SuperAdminDashboard() {
                     type="text"
                     required
                     value={businessForm.registeredName}
-                    onChange={(e) => setBusinessForm({...businessForm, registeredName: e.target.value})}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setBusinessForm({...businessForm, registeredName: e.target.value});
+                    }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   />
                 </div>
@@ -453,7 +484,10 @@ export default function SuperAdminDashboard() {
                   <input
                     type="text"
                     value={businessForm.brandName}
-                    onChange={(e) => setBusinessForm({...businessForm, brandName: e.target.value})}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setBusinessForm({...businessForm, brandName: e.target.value});
+                    }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   />
                 </div>
@@ -466,7 +500,10 @@ export default function SuperAdminDashboard() {
                     type="email"
                     required
                     value={businessForm.contactEmail}
-                    onChange={(e) => setBusinessForm({...businessForm, contactEmail: e.target.value})}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setBusinessForm({...businessForm, contactEmail: e.target.value});
+                    }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   />
                 </div>
@@ -478,7 +515,10 @@ export default function SuperAdminDashboard() {
                   <input
                     type="text"
                     value={businessForm.taxId}
-                    onChange={(e) => setBusinessForm({...businessForm, taxId: e.target.value})}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      setBusinessForm({...businessForm, taxId: e.target.value});
+                    }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   />
                 </div>
@@ -489,7 +529,10 @@ export default function SuperAdminDashboard() {
                   type="checkbox"
                   id="editIsActive"
                   checked={businessForm.isActive}
-                  onChange={(e) => setBusinessForm({...businessForm, isActive: e.target.checked})}
+                  onChange={(e) => {
+                    e.preventDefault();
+                    setBusinessForm({...businessForm, isActive: e.target.checked});
+                  }}
                   className="mr-2"
                 />
                 <label htmlFor="editIsActive" className="text-sm text-zinc-300">
@@ -500,7 +543,8 @@ export default function SuperAdminDashboard() {
               <div className="flex justify-end space-x-4 pt-4">
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
                     setShowEditBusinessModal(false);
                     setEditingBusiness(null);
                     resetBusinessForm();
