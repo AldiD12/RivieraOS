@@ -15,68 +15,59 @@ Added PIN field to SuperAdmin staff creation/editing to enable PIN-based login f
 ## Backend Requirements Needed
 
 ### 1. Database Schema Update
-Add PIN column to users table:
-```sql
-ALTER TABLE users ADD COLUMN pin VARCHAR(4);
--- Add unique constraint for PIN within business scope
-ALTER TABLE users ADD CONSTRAINT unique_business_pin UNIQUE (business_id, pin);
-```
+**NO SCHEMA CHANGES NEEDED!** 
+
+Use the existing `password_hash` field to store the hashed PIN. This is much cleaner because:
+- ✅ No database migration required
+- ✅ Uses existing PBKDF2 security infrastructure  
+- ✅ Maintains current authentication flow
+- ✅ Simpler implementation
 
 ### 2. API Endpoint Updates
 
 #### Update User Creation Endpoint
 **POST /api/superadmin/businesses/{businessId}/Users**
 
-Current request body:
+**Instead of adding a PIN field, hash the PIN and store it as the password:**
+
+Frontend sends:
 ```json
 {
-  "email": "string",
-  "password": "string", 
-  "fullName": "string",
-  "phoneNumber": "string",
-  "role": "string"
+  "email": "marco@hotelcoral.al",
+  "password": "1111",  // ← PIN goes here (will be hashed)
+  "fullName": "Marco Rossi",
+  "phoneNumber": "+355123456789",
+  "role": "Staff"
 }
 ```
 
-**Add PIN field:**
-```json
-{
-  "email": "string",
-  "password": "string",
-  "fullName": "string", 
-  "phoneNumber": "string",
-  "role": "string",
-  "pin": "string"  // ← ADD THIS
-}
-```
+Backend should:
+1. Validate PIN format (exactly 4 digits)
+2. Hash the PIN using existing PBKDF2 method
+3. Store hashed PIN in `password_hash` field
+4. Validate PIN uniqueness within business scope
 
 #### Update User Update Endpoint
 **PUT /api/superadmin/businesses/{businessId}/Users/{id}**
 
-Add PIN field to UpdateUserRequest schema.
+When updating a user's PIN:
+1. Frontend sends new PIN in `password` field
+2. Backend validates PIN format (4 digits)
+3. Backend hashes PIN and updates `password_hash`
+4. Backend validates PIN uniqueness within business
 
 #### Update User Response DTOs
-Add PIN field to UserSummaryDto and UserDetailDto:
-```json
-{
-  "id": 1,
-  "email": "string",
-  "fullName": "string",
-  "phoneNumber": "string", 
-  "role": "string",
-  "pin": "string",  // ← ADD THIS
-  "isActive": true
-}
-```
+**No changes needed to response DTOs** - the PIN should never be returned in API responses for security. Frontend will display PIN as masked (****X) based on what it sent.
 
 ### 3. PIN Validation Rules
 - **Length**: Exactly 4 digits
-- **Format**: Numeric only (0000-9999)
-- **Uniqueness**: PIN must be unique within each business
+- **Format**: Numeric only (0000-9999)  
+- **Uniqueness**: PIN must be unique within each business (check before hashing)
 - **Required**: PIN is mandatory for staff creation
+- **Storage**: Hash PIN using existing PBKDF2 method and store in `password_hash` field
 
 ### 4. Login System Update
-Update the regular staff login to support PIN-based authentication:
+Update the regular staff login to support PIN-based authentication using existing password field:
 
 **Current hardcoded system:**
 ```javascript
@@ -87,22 +78,45 @@ const waiterMap = {
 };
 ```
 
-**Should become dynamic lookup:**
+**Should become dynamic lookup using existing auth system:**
 ```javascript
-// Look up user by PIN in database
-const user = await getUserByPin(pin);
-if (user && user.isActive) {
-  // Authenticate with user's actual credentials
-  return authenticateUser(user.email, user.password);
-}
+// When user enters PIN "1111":
+// 1. Look up user by email (marco@hotelcoral.al) 
+// 2. Verify PIN "1111" against stored password_hash using existing hash verification
+// 3. If valid, authenticate user normally
+
+// The PIN is essentially the user's password now
+const loginResult = await authenticateUser(userEmail, enteredPIN);
 ```
 
-### 5. Business Context
-Since we have multiple businesses, PIN lookup should consider business context:
-- Option A: PINs unique globally across all businesses
-- Option B: PINs unique per business (recommended)
+**Implementation approach:**
+1. Keep the PIN→email mapping for now (1111→marco@hotelcoral.al)
+2. Use existing `/api/Auth/login` endpoint with email + PIN
+3. Backend verifies PIN against `password_hash` using existing verification logic
 
-If Option B, the login system needs to know which business the PIN belongs to.
+### 5. Business Context & PIN Uniqueness
+Since we have multiple businesses, PIN uniqueness should be enforced per business:
+
+**Recommended approach:**
+- PINs unique per business (not globally)
+- Before hashing PIN, check if PIN already exists for that business
+- Return validation error if PIN already exists
+
+**Implementation:**
+```sql
+-- Check PIN uniqueness before creating/updating user
+SELECT COUNT(*) FROM core_users 
+WHERE business_id = @businessId 
+AND id != @userId  -- Exclude current user when updating
+AND EXISTS (
+  -- Check if any user in this business has this PIN
+  -- This requires checking the hashed PIN, which is complex
+  -- Alternative: maintain a separate PIN lookup table
+);
+```
+
+**Alternative simpler approach:**
+Add a `pin_plaintext` column temporarily for uniqueness checking, but still store hashed PIN in `password_hash` for authentication.
 
 ## Testing Checklist
 After backend implementation:
@@ -125,8 +139,14 @@ After backend implementation:
 
 ---
 
-**Next Steps:**
-1. Backend developer adds PIN column to database
-2. Backend developer updates API endpoints to handle PIN
-3. Backend developer updates login system for dynamic PIN lookup
-4. Test PIN creation and login functionality
+**Next Steps for Backend Developer:**
+1. ✅ **No database changes needed** - use existing `password_hash` field
+2. Update user creation/update endpoints to:
+   - Validate PIN format (4 digits only)
+   - Check PIN uniqueness within business before hashing
+   - Hash PIN using existing PBKDF2 method
+   - Store hashed PIN in `password_hash` field
+3. Update login system to use existing auth flow with PIN as password
+4. Test PIN creation, uniqueness validation, and login functionality
+
+**This approach is much simpler and cleaner than adding a new PIN column!**

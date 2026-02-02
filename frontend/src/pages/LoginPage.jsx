@@ -34,7 +34,8 @@ export default function LoginPage() {
       const waiterMap = {
         '1111': { email: 'marco@hotelcoral.al', password: '111111' },
         '2222': { email: 'sofia@hotelcoral.al', password: '222222' },
-        '3333': { email: 'luca@hotelcoral.al', password: '333333' }
+        '3333': { email: 'luca@hotelcoral.al', password: '333333' },
+        '4444': { email: 'test@hotelcoral.al', password: '4444' }  // Test PIN
       };
       
       const credentials = waiterMap[pin];
@@ -65,7 +66,8 @@ export default function LoginPage() {
         const pinRoutes = {
           '1111': '/collector',  // Beach/Sunbed Collector
           '2222': '/bar',        // Bar Staff
-          '3333': '/collector'   // Another Collector
+          '3333': '/collector',  // Another Collector
+          '4444': '/collector'   // Test Staff
         };
         
         navigate(pinRoutes[pin] || '/collector');
