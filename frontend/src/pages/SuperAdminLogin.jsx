@@ -15,20 +15,36 @@ export default function SuperAdminLogin() {
     setError('');
 
     try {
-      // SuperAdmin credentials check
-      if (credentials.username === 'superadmin' && credentials.password === 'RivieraOS2024!') {
-        // Store SuperAdmin session
-        localStorage.setItem('token', 'superadmin-token');
-        localStorage.setItem('role', 'SuperAdmin');
-        localStorage.setItem('userId', '0');
-        localStorage.setItem('userName', 'Super Administrator');
+      // Use Azure API for SuperAdmin authentication
+      const { azureAuth } = await import('../services/azureApi.js');
+      
+      const result = await azureAuth.login({
+        email: credentials.username, // Use username as email for SuperAdmin
+        password: credentials.password
+      });
+      
+      if (result.success && result.user) {
+        // Check if user has SuperAdmin role/permissions
+        const userType = result.user.userType || result.user.role;
         
-        navigate('/superadmin');
+        if (userType === 'SuperAdmin' || userType === 'SystemAdmin') {
+          // Store SuperAdmin session
+          localStorage.setItem('token', result.token);
+          localStorage.setItem('azure_jwt_token', result.token);
+          localStorage.setItem('role', 'SuperAdmin');
+          localStorage.setItem('userId', result.user.id || '0');
+          localStorage.setItem('userName', result.user.fullName || 'Super Administrator');
+          
+          navigate('/superadmin');
+        } else {
+          setError('Access denied. SuperAdmin privileges required.');
+        }
       } else {
-        setError('Invalid super admin credentials');
+        setError('Invalid credentials or insufficient privileges');
       }
     } catch (err) {
-      setError('Authentication failed');
+      console.error('SuperAdmin login error:', err);
+      setError('Authentication failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -56,17 +72,17 @@ export default function SuperAdminLogin() {
               </div>
             )}
 
-            {/* Username */}
+            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Username
+                Email Address
               </label>
               <input
-                type="text"
+                type="email"
                 value={credentials.username}
                 onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none transition-colors"
-                placeholder="Enter username"
+                placeholder="Enter email address"
                 required
               />
             </div>
