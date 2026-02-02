@@ -1060,7 +1060,8 @@ const CreateZoneModal = ({
   onClose, 
   zoneForm, 
   onFormChange, 
-  onSubmit 
+  onSubmit,
+  selectedVenue
 }) => (
   <AnimatePresence>
     {isOpen && (
@@ -1081,14 +1082,16 @@ const CreateZoneModal = ({
           <h2 className="text-xl font-bold text-white mb-6">Create Zone</h2>
           
           {/* Show which venue this zone will belong to */}
-          <div className="mb-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
-            <p className="text-blue-400 text-sm">
-              🏖️ This zone will be created inside: <strong>{selectedVenueForManagement?.name}</strong>
-            </p>
-            <p className="text-blue-300 text-xs mt-1">
-              Venue ID: {selectedVenueForManagement?.id} • Type: {selectedVenueForManagement?.type || 'Venue'}
-            </p>
-          </div>
+          {selectedVenue && (
+            <div className="mb-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
+              <p className="text-blue-400 text-sm">
+                🏖️ This zone will be created inside: <strong>{selectedVenue.name}</strong>
+              </p>
+              <p className="text-blue-300 text-xs mt-1">
+                Venue ID: {selectedVenue.id} • Type: {selectedVenue.type || 'Venue'}
+              </p>
+            </div>
+          )}
           
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1207,7 +1210,8 @@ const EditZoneModal = ({
   onClose, 
   zoneForm, 
   onFormChange, 
-  onSubmit 
+  onSubmit,
+  selectedVenue
 }) => (
   <AnimatePresence>
     {isOpen && (
@@ -1228,14 +1232,16 @@ const EditZoneModal = ({
           <h2 className="text-xl font-bold text-white mb-6">Edit Zone</h2>
           
           {/* Show which venue this zone belongs to */}
-          <div className="mb-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
-            <p className="text-blue-400 text-sm">
-              🏖️ This zone belongs to: <strong>{selectedVenueForManagement?.name}</strong>
-            </p>
-            <p className="text-blue-300 text-xs mt-1">
-              Venue ID: {selectedVenueForManagement?.id} • Type: {selectedVenueForManagement?.type || 'Venue'}
-            </p>
-          </div>
+          {selectedVenue && (
+            <div className="mb-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
+              <p className="text-blue-400 text-sm">
+                🏖️ This zone belongs to: <strong>{selectedVenue.name}</strong>
+              </p>
+              <p className="text-blue-300 text-xs mt-1">
+                Venue ID: {selectedVenue.id} • Type: {selectedVenue.type || 'Venue'}
+              </p>
+            </div>
+          )}
           
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -4173,6 +4179,7 @@ export default function SuperAdminDashboard() {
           zoneForm={zoneForm}
           onFormChange={handleZoneFormChange}
           onSubmit={handleCreateZone}
+          selectedVenue={selectedVenueForManagement}
         />
         <EditZoneModal 
           isOpen={showEditZoneModal}
@@ -4180,6 +4187,7 @@ export default function SuperAdminDashboard() {
           zoneForm={zoneForm}
           onFormChange={handleZoneFormChange}
           onSubmit={handleUpdateZone}
+          selectedVenue={selectedVenueForManagement}
         />
       </div>
     </div>
