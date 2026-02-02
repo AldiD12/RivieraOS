@@ -2461,6 +2461,67 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  const handleToggleVenueActivation = async (venueId, currentStatus) => {
+    if (!selectedBusiness) {
+      console.log('❌ No selected business for venue activation toggle');
+      setError('Please select a business first');
+      return;
+    }
+    
+    try {
+      console.log('🔄 Toggling venue activation:', {
+        venueId,
+        currentStatus,
+        newStatus: !currentStatus,
+        businessId: selectedBusiness.id
+      });
+      
+      // Get current venue data
+      const currentVenue = venuesForManagement.find(v => v.id === venueId);
+      if (!currentVenue) {
+        setError('Venue not found');
+        return;
+      }
+      
+      // Update venue with toggled status
+      const updatedVenueData = {
+        ...currentVenue,
+        isActive: !currentStatus
+      };
+      
+      await venueApi.update(selectedBusiness.id, venueId, updatedVenueData);
+      console.log('✅ Venue activation toggled successfully');
+      
+      // Refresh the venues list
+      await fetchVenuesForManagement(selectedBusiness.id);
+      setError('');
+      
+      console.log('✅ Venues list refreshed after activation toggle');
+    } catch (err) {
+      console.error('❌ Error toggling venue activation:', {
+        venueId,
+        businessId: selectedBusiness.id,
+        error: err,
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data
+      });
+      
+      if (err.response?.status === 403) {
+        setError('Venue activation requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else if (err.response?.status === 404) {
+        setError('Venue not found. It may have been deleted.');
+        await fetchVenuesForManagement(selectedBusiness.id);
+      } else {
+        setError('Failed to toggle venue activation: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
   const handleUpdateVenue = async (e) => {
     e.preventDefault();
     if (!selectedBusiness || !editingVenue) return;
@@ -3826,6 +3887,20 @@ export default function SuperAdminDashboard() {
                         }`}
                       >
                         {selectedVenueForManagement?.id === venue.id ? 'Selected' : 'Manage Zones'}
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('🔘 Toggle Venue Activation button clicked for venue:', venue.id);
+                          handleToggleVenueActivation(venue.id, venue.isActive);
+                        }}
+                        className={`px-2 py-1 rounded text-xs transition-colors ${
+                          venue.isActive 
+                            ? 'bg-yellow-600 hover:bg-yellow-700 text-white' 
+                            : 'bg-green-600 hover:bg-green-700 text-white'
+                        }`}
+                      >
+                        {venue.isActive ? 'Deactivate' : 'Activate'}
                       </button>
                       <button
                         onClick={(e) => {
