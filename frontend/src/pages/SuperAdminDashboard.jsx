@@ -1,8 +1,320 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { businessApi } from '../services/superAdminApi.js';
+import { businessApi, staffApi } from '../services/superAdminApi.js';
 
-// Modal Components - Defined OUTSIDE to prevent re-creation on every render
+// Staff Modal Components - Defined OUTSIDE to prevent re-creation on every render
+const CreateStaffModal = ({ 
+  isOpen, 
+  onClose, 
+  staffForm, 
+  onFormChange, 
+  onSubmit 
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-bold text-white mb-6">Add Staff Member</h2>
+          
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={staffForm.email}
+                  onChange={(e) => onFormChange('email', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter email address"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={staffForm.fullName}
+                  onChange={(e) => onFormChange('fullName', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter full name"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength="6"
+                  value={staffForm.password}
+                  onChange={(e) => onFormChange('password', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter password (min 6 characters)"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={staffForm.phoneNumber}
+                  onChange={(e) => onFormChange('phoneNumber', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter phone number"
+                />
+              </div>
+              
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Role *
+                </label>
+                <select
+                  required
+                  value={staffForm.role}
+                  onChange={(e) => onFormChange('role', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                >
+                  <option value="">Select role</option>
+                  <option value="Staff">Staff</option>
+                  <option value="Manager">Manager</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Collector">Collector</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Add Staff Member
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+const EditStaffModal = ({ 
+  isOpen, 
+  onClose, 
+  staffForm, 
+  onFormChange, 
+  onSubmit 
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-bold text-white mb-6">Edit Staff Member</h2>
+          
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={staffForm.email}
+                  onChange={(e) => onFormChange('email', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={staffForm.fullName}
+                  onChange={(e) => onFormChange('fullName', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={staffForm.phoneNumber}
+                  onChange={(e) => onFormChange('phoneNumber', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Role *
+                </label>
+                <select
+                  required
+                  value={staffForm.role}
+                  onChange={(e) => onFormChange('role', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                >
+                  <option value="">Select role</option>
+                  <option value="Staff">Staff</option>
+                  <option value="Manager">Manager</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Collector">Collector</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="editStaffIsActive"
+                checked={staffForm.isActive}
+                onChange={(e) => onFormChange('isActive', e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="editStaffIsActive" className="text-sm text-zinc-300">
+                Active Staff Member
+              </label>
+            </div>
+            
+            <div className="flex justify-end space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Update Staff Member
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+const ResetPasswordModal = ({ 
+  isOpen, 
+  onClose, 
+  staffMember,
+  newPassword,
+  onPasswordChange,
+  onSubmit 
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-zinc-900 rounded-lg p-6 w-full max-w-md"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-bold text-white mb-6">Reset Password</h2>
+          
+          <div className="mb-4">
+            <p className="text-zinc-300 text-sm">
+              Reset password for: <strong>{staffMember?.fullName || staffMember?.email}</strong>
+            </p>
+          </div>
+          
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                New Password *
+              </label>
+              <input
+                type="password"
+                required
+                minLength="6"
+                value={newPassword}
+                onChange={(e) => onPasswordChange(e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                placeholder="Enter new password (min 6 characters)"
+              />
+            </div>
+            
+            <div className="flex justify-end space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+              >
+                Reset Password
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+// Business Modal Components - Defined OUTSIDE to prevent re-creation on every render
 const CreateBusinessModal = ({ 
   isOpen, 
   onClose, 
@@ -242,12 +554,21 @@ export default function SuperAdminDashboard() {
   const [error, setError] = useState('');
   const [userInfo, setUserInfo] = useState(null);
   
-  // Modal states
+  // Business Modal states
   const [showCreateBusinessModal, setShowCreateBusinessModal] = useState(false);
   const [showEditBusinessModal, setShowEditBusinessModal] = useState(false);
   const [editingBusiness, setEditingBusiness] = useState(null);
 
-  // Form states
+  // Staff Modal states
+  const [showCreateStaffModal, setShowCreateStaffModal] = useState(false);
+  const [showEditStaffModal, setShowEditStaffModal] = useState(false);
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
+  const [editingStaff, setEditingStaff] = useState(null);
+  const [staffMembers, setStaffMembers] = useState([]);
+  const [staffLoading, setStaffLoading] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+
+  // Business Form states
   const [businessForm, setBusinessForm] = useState({
     registeredName: '',
     brandName: '',
@@ -257,6 +578,16 @@ export default function SuperAdminDashboard() {
     address: '',
     description: '',
     logoUrl: '',
+    isActive: true
+  });
+
+  // Staff Form states
+  const [staffForm, setStaffForm] = useState({
+    email: '',
+    password: '',
+    fullName: '',
+    phoneNumber: '',
+    role: '',
     isActive: true
   });
 
@@ -452,9 +783,186 @@ export default function SuperAdminDashboard() {
       }
       
       setSelectedBusiness(data);
+      
+      // Also fetch staff for this business
+      await fetchStaffMembers(businessId);
     } catch (err) {
       console.error('Error fetching business details:', err);
       setError('Failed to fetch business details');
+    }
+  };
+
+  // Staff Management Functions
+  const fetchStaffMembers = async (businessId) => {
+    try {
+      setStaffLoading(true);
+      console.log('🔄 Fetching staff members for business:', businessId);
+      
+      const staffData = await staffApi.getByBusiness(businessId);
+      console.log('✅ Staff members fetched:', staffData.length, 'members');
+      setStaffMembers(Array.isArray(staffData) ? staffData : []);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error fetching staff members:', err);
+      
+      if (err.response?.status === 403) {
+        console.log('⚠️ SuperAdmin staff endpoint requires proper role claims');
+        setError('Staff management requires SuperAdmin privileges. Using business data as fallback.');
+        // Use staff data from business object if available
+        if (selectedBusiness?.users) {
+          setStaffMembers(selectedBusiness.users);
+        }
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to fetch staff members: ' + (err.response?.data?.message || err.message));
+      }
+    } finally {
+      setStaffLoading(false);
+    }
+  };
+
+  const handleCreateStaff = async (e) => {
+    e.preventDefault();
+    if (!selectedBusiness) return;
+    
+    try {
+      console.log('🔄 Creating new staff member:', staffForm);
+      
+      await staffApi.create(selectedBusiness.id, staffForm);
+      console.log('✅ Staff member created successfully');
+      
+      setShowCreateStaffModal(false);
+      resetStaffForm();
+      await fetchStaffMembers(selectedBusiness.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error creating staff member:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Staff creation requires SuperAdmin privileges. Please contact system administrator.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to create staff member: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleUpdateStaff = async (e) => {
+    e.preventDefault();
+    if (!selectedBusiness || !editingStaff) return;
+    
+    try {
+      console.log('🔄 Updating staff member:', editingStaff.id);
+      
+      await staffApi.update(selectedBusiness.id, editingStaff.id, staffForm);
+      console.log('✅ Staff member updated successfully');
+      
+      setShowEditStaffModal(false);
+      setEditingStaff(null);
+      resetStaffForm();
+      await fetchStaffMembers(selectedBusiness.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error updating staff member:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Staff update requires SuperAdmin privileges. Please contact system administrator.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to update staff member: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleDeleteStaff = async (staffId) => {
+    if (!selectedBusiness) return;
+    if (!confirm('Are you sure you want to delete this staff member? This action cannot be undone.')) return;
+    
+    try {
+      console.log('🔄 Deleting staff member:', staffId);
+      
+      await staffApi.delete(selectedBusiness.id, staffId);
+      console.log('✅ Staff member deleted successfully');
+      
+      await fetchStaffMembers(selectedBusiness.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error deleting staff member:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Staff deletion requires SuperAdmin privileges. Please contact system administrator.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to delete staff member: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!selectedBusiness || !editingStaff || !newPassword) return;
+    
+    try {
+      console.log('🔄 Resetting password for staff member:', editingStaff.id);
+      
+      await staffApi.resetPassword(selectedBusiness.id, editingStaff.id, newPassword);
+      console.log('✅ Password reset successfully');
+      
+      setShowResetPasswordModal(false);
+      setEditingStaff(null);
+      setNewPassword('');
+      setError('');
+      alert('Password reset successfully!');
+    } catch (err) {
+      console.error('❌ Error resetting password:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Password reset requires SuperAdmin privileges. Please contact system administrator.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to reset password: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleToggleStaffActivation = async (staffId) => {
+    if (!selectedBusiness) return;
+    
+    try {
+      console.log('🔄 Toggling staff activation:', staffId);
+      
+      await staffApi.toggleActivation(selectedBusiness.id, staffId);
+      console.log('✅ Staff activation toggled successfully');
+      
+      await fetchStaffMembers(selectedBusiness.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error toggling staff activation:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Staff activation toggle requires SuperAdmin privileges. Please contact system administrator.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to toggle staff activation: ' + (err.response?.data?.message || err.message));
+      }
     }
   };
 
@@ -614,6 +1122,17 @@ export default function SuperAdminDashboard() {
     });
   }, []);
 
+  const resetStaffForm = useCallback(() => {
+    setStaffForm({
+      email: '',
+      password: '',
+      fullName: '',
+      phoneNumber: '',
+      role: '',
+      isActive: true
+    });
+  }, []);
+
   // Form handlers with useCallback to prevent re-renders
   const handleBusinessFormChange = useCallback((field, value) => {
     setBusinessForm(prev => ({
@@ -622,6 +1141,14 @@ export default function SuperAdminDashboard() {
     }));
   }, []);
 
+  const handleStaffFormChange = useCallback((field, value) => {
+    setStaffForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
+  // Business Modal handlers
   const handleCloseCreateModal = useCallback(() => {
     setShowCreateBusinessModal(false);
     resetBusinessForm();
@@ -632,6 +1159,24 @@ export default function SuperAdminDashboard() {
     setEditingBusiness(null);
     resetBusinessForm();
   }, [resetBusinessForm]);
+
+  // Staff Modal handlers
+  const handleCloseCreateStaffModal = useCallback(() => {
+    setShowCreateStaffModal(false);
+    resetStaffForm();
+  }, [resetStaffForm]);
+
+  const handleCloseEditStaffModal = useCallback(() => {
+    setShowEditStaffModal(false);
+    setEditingStaff(null);
+    resetStaffForm();
+  }, [resetStaffForm]);
+
+  const handleCloseResetPasswordModal = useCallback(() => {
+    setShowResetPasswordModal(false);
+    setEditingStaff(null);
+    setNewPassword('');
+  }, []);
 
   const openEditModal = (business) => {
     setEditingBusiness(business);
@@ -647,6 +1192,25 @@ export default function SuperAdminDashboard() {
       isActive: business.isActive !== false
     });
     setShowEditBusinessModal(true);
+  };
+
+  const openEditStaffModal = (staff) => {
+    setEditingStaff(staff);
+    setStaffForm({
+      email: staff.email || '',
+      password: '', // Don't populate password for security
+      fullName: staff.fullName || '',
+      phoneNumber: staff.phoneNumber || '',
+      role: staff.role || staff.userType || '',
+      isActive: staff.isActive !== false
+    });
+    setShowEditStaffModal(true);
+  };
+
+  const openResetPasswordModal = (staff) => {
+    setEditingStaff(staff);
+    setNewPassword('');
+    setShowResetPasswordModal(true);
   };
 
   // Tab Navigation Component
@@ -846,14 +1410,13 @@ export default function SuperAdminDashboard() {
             <div>
               <h3 className="text-lg font-medium text-white">Staff Members</h3>
               <p className="text-sm text-zinc-400">
-                {selectedBusiness.users?.length || 0} staff members registered
+                {staffMembers.length} staff members registered
               </p>
             </div>
             <button 
               onClick={() => {
                 console.log('🔘 Add Staff button clicked');
-                // TODO: Implement add staff modal when SuperAdmin endpoints are available
-                setError('Staff management requires SuperAdmin API access. Feature coming soon.');
+                setShowCreateStaffModal(true);
               }}
               className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
             >
@@ -862,99 +1425,147 @@ export default function SuperAdminDashboard() {
           </div>
 
           {/* Staff Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {selectedBusiness.users?.length > 0 ? (
-              selectedBusiness.users.map((user) => (
-                <div key={user.id} className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="w-10 h-10 bg-zinc-800 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-medium text-white">
-                        {user.fullName?.charAt(0) || user.email.charAt(0).toUpperCase()}
+          {staffLoading ? (
+            <div className="text-center py-12">
+              <div className="inline-block w-8 h-8 border-2 border-zinc-600 border-t-white rounded-full animate-spin mb-4"></div>
+              <p className="text-zinc-400">Loading staff members...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {staffMembers.length > 0 ? (
+                staffMembers.map((staff) => (
+                  <motion.div 
+                    key={staff.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors"
+                  >
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className="w-10 h-10 bg-zinc-800 rounded-full flex items-center justify-center">
+                        <span className="text-sm font-medium text-white">
+                          {staff.fullName?.charAt(0) || staff.email.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-white">{staff.fullName || 'Unnamed User'}</h4>
+                        <p className="text-sm text-zinc-400 truncate">{staff.email}</p>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        staff.isActive 
+                          ? 'bg-green-900/30 text-green-400 border border-green-800' 
+                          : 'bg-red-900/30 text-red-400 border border-red-800'
+                      }`}>
+                        {staff.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </div>
-                    <div>
-                      <h4 className="font-medium text-white">{user.fullName || 'Unnamed User'}</h4>
-                      <p className="text-sm text-zinc-400">{user.email}</p>
+                    
+                    <div className="space-y-2 text-sm mb-4">
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Role:</span>
+                        <span className="text-zinc-300">{staff.role || staff.userType || 'Staff'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Phone:</span>
+                        <span className="text-zinc-300">{staff.phoneNumber || 'Not set'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Created:</span>
+                        <span className="text-zinc-300 text-xs">
+                          {staff.createdAt ? new Date(staff.createdAt).toLocaleDateString() : 'Unknown'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">ID:</span>
+                        <span className="text-zinc-300 font-mono text-xs">{staff.id}</span>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="space-y-2 text-sm mb-4">
-                    <div className="flex justify-between">
-                      <span className="text-zinc-500">Role:</span>
-                      <span className="text-zinc-300">{user.userType || user.role || 'Staff'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-zinc-500">Phone:</span>
-                      <span className="text-zinc-300">{user.phoneNumber || 'Not set'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-zinc-500">Status:</span>
-                      <span className={user.isActive ? 'text-green-400' : 'text-red-400'}>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-zinc-500">ID:</span>
-                      <span className="text-zinc-300 font-mono text-xs">{user.id}</span>
-                    </div>
-                  </div>
 
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => {
-                        console.log('🔘 Edit Staff button clicked for user:', user.id);
-                        setError('Staff editing requires SuperAdmin API access. Feature coming soon.');
-                      }}
-                      className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded text-sm transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        console.log('🔘 Reset Password button clicked for user:', user.id);
-                        setError('Password reset requires SuperAdmin API access. Feature coming soon.');
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm transition-colors"
-                    >
-                      Reset
-                    </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => {
+                          console.log('🔘 Edit Staff button clicked for user:', staff.id);
+                          openEditStaffModal(staff);
+                        }}
+                        className="bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          console.log('🔘 Reset Password button clicked for user:', staff.id);
+                          openResetPasswordModal(staff);
+                        }}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                      >
+                        Reset
+                      </button>
+                      <button
+                        onClick={() => {
+                          console.log('🔘 Toggle Activation button clicked for user:', staff.id);
+                          handleToggleStaffActivation(staff.id);
+                        }}
+                        className={`px-3 py-2 rounded text-sm transition-colors ${
+                          staff.isActive 
+                            ? 'bg-yellow-600 hover:bg-yellow-700 text-white' 
+                            : 'bg-green-600 hover:bg-green-700 text-white'
+                        }`}
+                      >
+                        {staff.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          console.log('🔘 Delete Staff button clicked for user:', staff.id);
+                          handleDeleteStaff(staff.id);
+                        }}
+                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <div className="text-zinc-400 mb-4">
+                    <p>No staff members found for this business.</p>
+                    <p className="text-sm mt-2">Add your first staff member to get started.</p>
                   </div>
+                  <button 
+                    onClick={() => {
+                      console.log('🔘 Add First Staff button clicked');
+                      setShowCreateStaffModal(true);
+                    }}
+                    className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Add First Staff Member
+                  </button>
                 </div>
-              ))
-            ) : (
-              <div className="col-span-full text-center py-8">
-                <div className="text-zinc-400 mb-4">
-                  <p>No staff members found for this business.</p>
-                  <p className="text-sm mt-2">Staff data may be available through SuperAdmin endpoints.</p>
-                </div>
-                <button 
-                  onClick={() => {
-                    console.log('🔘 Add First Staff button clicked');
-                    setError('Staff management requires SuperAdmin API access. Feature coming soon.');
-                  }}
-                  className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-                >
-                  Add First Staff Member
-                </button>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
-          {/* Staff Management Notice */}
-          <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-4">
+          {/* Staff Management API Status */}
+          <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4">
             <div className="flex items-start space-x-3">
-              <div className="w-5 h-5 text-yellow-400 mt-0.5">⚠️</div>
+              <div className="w-5 h-5 text-blue-400 mt-0.5">ℹ️</div>
               <div>
-                <h4 className="text-yellow-400 font-medium mb-1">Limited Staff Management</h4>
-                <p className="text-yellow-300 text-sm">
-                  Full staff management (add, edit, delete, password reset) requires SuperAdmin API endpoints. 
-                  Currently showing read-only data from business records.
+                <h4 className="text-blue-400 font-medium mb-1">Staff Management APIs</h4>
+                <p className="text-blue-300 text-sm">
+                  Full staff management functionality is available through SuperAdmin endpoints.
                 </p>
-                <p className="text-yellow-300 text-sm mt-2">
-                  Available endpoints: <code className="bg-yellow-900/30 px-1 rounded text-xs">GET /api/Businesses/{'{id}'}</code>
-                </p>
-                <p className="text-yellow-300 text-sm">
-                  Required endpoints: <code className="bg-yellow-900/30 px-1 rounded text-xs">GET/POST/PUT/DELETE /api/superadmin/businesses/{'{businessId}'}/Users</code>
+                <div className="mt-2 space-y-1 text-xs text-blue-300 font-mono">
+                  <div>✅ GET /api/superadmin/businesses/{'{businessId}'}/Users</div>
+                  <div>✅ POST /api/superadmin/businesses/{'{businessId}'}/Users</div>
+                  <div>✅ PUT /api/superadmin/businesses/{'{businessId}'}/Users/{'{id}'}</div>
+                  <div>✅ DELETE /api/superadmin/businesses/{'{businessId}'}/Users/{'{id}'}</div>
+                  <div>✅ POST /api/superadmin/businesses/{'{businessId}'}/Users/{'{id}'}/reset-password</div>
+                  <div>✅ POST /api/superadmin/businesses/{'{businessId}'}/Users/{'{id}'}/activate</div>
+                </div>
+                <p className="text-blue-300 text-sm mt-2">
+                  {error.includes('SuperAdmin') ? 
+                    '⚠️ Currently limited due to JWT role claims configuration.' :
+                    '✅ All staff management features should be fully functional.'
+                  }
                 </p>
               </div>
             </div>
@@ -962,7 +1573,7 @@ export default function SuperAdminDashboard() {
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-zinc-400">Select a business to view staff members</p>
+          <p className="text-zinc-400">Select a business to view and manage staff members</p>
         </div>
       )}
     </div>
@@ -1144,7 +1755,7 @@ export default function SuperAdminDashboard() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Modals */}
+        {/* Business Modals */}
         <CreateBusinessModal 
           isOpen={showCreateBusinessModal}
           onClose={handleCloseCreateModal}
@@ -1158,6 +1769,30 @@ export default function SuperAdminDashboard() {
           businessForm={businessForm}
           onFormChange={handleBusinessFormChange}
           onSubmit={handleUpdateBusiness}
+        />
+
+        {/* Staff Modals */}
+        <CreateStaffModal 
+          isOpen={showCreateStaffModal}
+          onClose={handleCloseCreateStaffModal}
+          staffForm={staffForm}
+          onFormChange={handleStaffFormChange}
+          onSubmit={handleCreateStaff}
+        />
+        <EditStaffModal 
+          isOpen={showEditStaffModal}
+          onClose={handleCloseEditStaffModal}
+          staffForm={staffForm}
+          onFormChange={handleStaffFormChange}
+          onSubmit={handleUpdateStaff}
+        />
+        <ResetPasswordModal 
+          isOpen={showResetPasswordModal}
+          onClose={handleCloseResetPasswordModal}
+          staffMember={editingStaff}
+          newPassword={newPassword}
+          onPasswordChange={setNewPassword}
+          onSubmit={handleResetPassword}
         />
       </div>
     </div>

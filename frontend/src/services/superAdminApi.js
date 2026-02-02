@@ -96,29 +96,49 @@ export const businessApi = {
   }
 };
 
-// Staff Management APIs (extending business management)
+// Staff Management APIs - Based on swagger.json endpoints
 export const staffApi = {
-  // Get staff for a business
+  // GET /api/superadmin/businesses/{businessId}/Users - Get staff for a business
   getByBusiness: async (businessId) => {
-    const response = await superAdminApi.get(`/superadmin/Businesses/${businessId}/staff`);
+    const response = await superAdminApi.get(`/superadmin/businesses/${businessId}/Users`);
     return response.data;
   },
 
-  // Create staff member
+  // POST /api/superadmin/businesses/{businessId}/Users - Create staff member
   create: async (businessId, staffData) => {
-    const response = await superAdminApi.post(`/superadmin/Businesses/${businessId}/staff`, staffData);
+    const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Users`, staffData);
     return response.data;
   },
 
-  // Update staff member
+  // GET /api/superadmin/businesses/{businessId}/Users/{id} - Get staff details
+  getById: async (businessId, staffId) => {
+    const response = await superAdminApi.get(`/superadmin/businesses/${businessId}/Users/${staffId}`);
+    return response.data;
+  },
+
+  // PUT /api/superadmin/businesses/{businessId}/Users/{id} - Update staff member
   update: async (businessId, staffId, staffData) => {
-    const response = await superAdminApi.put(`/superadmin/Businesses/${businessId}/staff/${staffId}`, staffData);
+    const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/Users/${staffId}`, staffData);
     return response.data;
   },
 
-  // Delete staff member
+  // DELETE /api/superadmin/businesses/{businessId}/Users/{id} - Delete staff member
   delete: async (businessId, staffId) => {
-    const response = await superAdminApi.delete(`/superadmin/Businesses/${businessId}/staff/${staffId}`);
+    const response = await superAdminApi.delete(`/superadmin/businesses/${businessId}/Users/${staffId}`);
+    return response.data;
+  },
+
+  // POST /api/superadmin/businesses/{businessId}/Users/{id}/reset-password - Reset password
+  resetPassword: async (businessId, staffId, newPassword) => {
+    const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Users/${staffId}/reset-password`, {
+      newPassword: newPassword
+    });
+    return response.data;
+  },
+
+  // POST /api/superadmin/businesses/{businessId}/Users/{id}/activate - Activate/deactivate user
+  toggleActivation: async (businessId, staffId) => {
+    const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Users/${staffId}/activate`);
     return response.data;
   }
 };
