@@ -1,0 +1,46 @@
+{
+  "cli": {
+    "version": ">= 12.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "resourceClass": "medium"
+      },
+      "env": {
+        "RNMAPBOX_MAPS_DOWNLOAD_TOKEN": "sk.eyJ1IjoiYWxkaWQxNjAyIiwiYSI6ImNtbDQ4NHV3aDB5ZTQzZHNkZHpoYm96MnkifQ.BIK3YtfFBiLSZLRREwFNrg"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "resourceClass": "medium"
+      },
+      "env": {
+        "RNMAPBOX_MAPS_DOWNLOAD_TOKEN": "sk.eyJ1IjoiYWxkaWQxNjAyIiwiYSI6ImNtbDQ4NHV3aDB5ZTQzZHNkZHpoYm96MnkifQ.BIK3YtfFBiLSZLRREwFNrg"
+      }
+    },
+    "production": {
+      "ios": {
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "resourceClass": "medium"
+      },
+      "env": {
+        "RNMAPBOX_MAPS_DOWNLOAD_TOKEN": "sk.eyJ1IjoiYWxkaWQxNjAyIiwiYSI6ImNtbDQ4NHV3aDB5ZTQzZHNkZHpoYm96MnkifQ.BIK3YtfFBiLSZLRREwFNrg"
+      }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

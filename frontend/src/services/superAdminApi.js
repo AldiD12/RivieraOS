@@ -16,6 +16,9 @@ superAdminApi.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
     console.log('✅ SuperAdmin API call with token:', config.method.toUpperCase(), config.url);
+    console.log('🔐 Token preview:', token.substring(0, 20) + '...');
+  } else {
+    console.log('⚠️ No token found for SuperAdmin API call:', config.method.toUpperCase(), config.url);
   }
   return config;
 });

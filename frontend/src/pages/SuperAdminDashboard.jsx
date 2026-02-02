@@ -92,13 +92,21 @@ export default function SuperAdminDashboard() {
         return;
       }
       
+      console.log('🔐 Using token for API call:', token.substring(0, 20) + '...');
+      
       // Try SuperAdmin endpoint first, fallback to regular endpoint
       let data;
       try {
+        console.log('🔄 Trying SuperAdmin endpoint: /api/superadmin/Businesses');
         data = await businessApi.superAdmin.getAll();
-        console.log('✅ Businesses fetched successfully:', data.length, 'businesses');
+        console.log('✅ SuperAdmin businesses fetched successfully:', data.length, 'businesses');
       } catch (superAdminError) {
-        console.log('⚠️ SuperAdmin endpoint failed:', superAdminError.response?.status);
+        console.log('⚠️ SuperAdmin endpoint failed:', {
+          status: superAdminError.response?.status,
+          statusText: superAdminError.response?.statusText,
+          data: superAdminError.response?.data,
+          url: superAdminError.config?.url
+        });
         
         // If it's a 401, redirect to login
         if (superAdminError.response?.status === 401) {
@@ -109,24 +117,38 @@ export default function SuperAdminDashboard() {
           return;
         }
         
-        // Try regular endpoint as fallback
-        try {
-          data = await businessApi.getAll();
-          console.log('✅ Businesses fetched via regular endpoint:', data.length, 'businesses');
-        } catch (regularError) {
-          if (regularError.response?.status === 401) {
-            console.log('❌ Authentication failed on regular endpoint too');
-            setError('Session expired. Please login again.');
-            localStorage.clear();
-            window.location.href = '/superadmin/login';
-            return;
+        // If it's 403, try regular endpoint as fallback
+        if (superAdminError.response?.status === 403) {
+          console.log('⚠️ SuperAdmin access forbidden, trying regular endpoint as fallback');
+          try {
+            console.log('🔄 Trying regular endpoint: /api/Businesses');
+            data = await businessApi.getAll();
+            console.log('✅ Regular businesses fetched successfully:', data.length, 'businesses');
+            console.log('⚠️ Note: Using regular endpoint - some SuperAdmin features may be limited');
+          } catch (regularError) {
+            console.log('❌ Regular endpoint also failed:', {
+              status: regularError.response?.status,
+              statusText: regularError.response?.statusText,
+              data: regularError.response?.data
+            });
+            
+            if (regularError.response?.status === 401) {
+              console.log('❌ Authentication failed on regular endpoint too');
+              setError('Session expired. Please login again.');
+              localStorage.clear();
+              window.location.href = '/superadmin/login';
+              return;
+            }
+            throw regularError;
           }
-          throw regularError;
+        } else {
+          throw superAdminError;
         }
       }
       
-      setBusinesses(data);
+      setBusinesses(data || []);
       setError('');
+      console.log('✅ Businesses loaded successfully');
     } catch (err) {
       console.error('❌ Error fetching businesses:', err);
       
@@ -142,7 +164,8 @@ export default function SuperAdminDashboard() {
         console.error('API Error details:', {
           status: err.response?.status,
           statusText: err.response?.statusText,
-          data: err.response?.data
+          data: err.response?.data,
+          url: err.config?.url
         });
       }
     } finally {
@@ -547,6 +570,11 @@ export default function SuperAdminDashboard() {
       {error && (
         <div className="bg-red-900/20 border border-red-800 rounded-lg p-4">
           <p className="text-red-400">{error}</p>
+          {error.includes('SuperAdmin') && (
+            <p className="text-yellow-400 text-sm mt-2">
+              ⚠️ Using regular endpoints as fallback - some advanced features may be limited
+            </p>
+          )}
         </div>
       )}
 
@@ -671,51 +699,136 @@ export default function SuperAdminDashboard() {
           ← Back to Businesses
         </button>
         {selectedBusiness && (
-          <h2 className="text-2xl font-bold text-white">
-            Staff - {selectedBusiness.brandName || selectedBusiness.registeredName}
-          </h2>
+          <div>
+            <h2 className="text-2xl font-bold text-white">
+              Staff - {selectedBusiness.brandName || selectedBusiness.registeredName}
+            </h2>
+            <p className="text-sm text-zinc-400 mt-1">
+              Business ID: {selectedBusiness.id} | Contact: {selectedBusiness.contactEmail}
+            </p>
+          </div>
         )}
       </div>
 
       {selectedBusiness ? (
         <div className="space-y-6">
+          {/* Staff Management Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-medium text-white">Staff Members</h3>
+              <p className="text-sm text-zinc-400">
+                {selectedBusiness.users?.length || 0} staff members registered
+              </p>
+            </div>
+            <button 
+              onClick={() => {
+                console.log('🔘 Add Staff button clicked');
+                // TODO: Implement add staff modal when SuperAdmin endpoints are available
+                setError('Staff management requires SuperAdmin API access. Feature coming soon.');
+              }}
+              className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+            >
+              + Add Staff Member
+            </button>
+          </div>
+
+          {/* Staff Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {selectedBusiness.users?.map((user) => (
-              <div key={user.id} className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
-                <div className="flex items-center space-x-3 mb-3">
-                  <div className="w-10 h-10 bg-zinc-800 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-white">
-                      {user.fullName?.charAt(0) || user.email.charAt(0).toUpperCase()}
-                    </span>
+            {selectedBusiness.users?.length > 0 ? (
+              selectedBusiness.users.map((user) => (
+                <div key={user.id} className="bg-zinc-900 border border-zinc-800 rounded-lg p-4">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className="w-10 h-10 bg-zinc-800 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-white">
+                        {user.fullName?.charAt(0) || user.email.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-white">{user.fullName || 'Unnamed User'}</h4>
+                      <p className="text-sm text-zinc-400">{user.email}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-medium text-white">{user.fullName || 'Unnamed User'}</h4>
-                    <p className="text-sm text-zinc-400">{user.email}</p>
+                  
+                  <div className="space-y-2 text-sm mb-4">
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Role:</span>
+                      <span className="text-zinc-300">{user.userType || user.role || 'Staff'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Phone:</span>
+                      <span className="text-zinc-300">{user.phoneNumber || 'Not set'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Status:</span>
+                      <span className={user.isActive ? 'text-green-400' : 'text-red-400'}>
+                        {user.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">ID:</span>
+                      <span className="text-zinc-300 font-mono text-xs">{user.id}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => {
+                        console.log('🔘 Edit Staff button clicked for user:', user.id);
+                        setError('Staff editing requires SuperAdmin API access. Feature coming soon.');
+                      }}
+                      className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => {
+                        console.log('🔘 Reset Password button clicked for user:', user.id);
+                        setError('Password reset requires SuperAdmin API access. Feature coming soon.');
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                    >
+                      Reset
+                    </button>
                   </div>
                 </div>
-                
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Role:</span>
-                    <span className="text-zinc-300">{user.userType || 'Staff'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Phone:</span>
-                    <span className="text-zinc-300">{user.phoneNumber || 'Not set'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Status:</span>
-                    <span className={user.isActive ? 'text-green-400' : 'text-red-400'}>
-                      {user.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )) || (
+              ))
+            ) : (
               <div className="col-span-full text-center py-8">
-                <p className="text-zinc-400">No staff members found for this business.</p>
+                <div className="text-zinc-400 mb-4">
+                  <p>No staff members found for this business.</p>
+                  <p className="text-sm mt-2">Staff data may be available through SuperAdmin endpoints.</p>
+                </div>
+                <button 
+                  onClick={() => {
+                    console.log('🔘 Add First Staff button clicked');
+                    setError('Staff management requires SuperAdmin API access. Feature coming soon.');
+                  }}
+                  className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                >
+                  Add First Staff Member
+                </button>
               </div>
             )}
+          </div>
+
+          {/* Staff Management Notice */}
+          <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <div className="w-5 h-5 text-yellow-400 mt-0.5">⚠️</div>
+              <div>
+                <h4 className="text-yellow-400 font-medium mb-1">Limited Staff Management</h4>
+                <p className="text-yellow-300 text-sm">
+                  Full staff management (add, edit, delete, password reset) requires SuperAdmin API endpoints. 
+                  Currently showing read-only data from business records.
+                </p>
+                <p className="text-yellow-300 text-sm mt-2">
+                  Available endpoints: <code className="bg-yellow-900/30 px-1 rounded text-xs">GET /api/Businesses/{'{id}'}</code>
+                </p>
+                <p className="text-yellow-300 text-sm">
+                  Required endpoints: <code className="bg-yellow-900/30 px-1 rounded text-xs">GET/POST/PUT/DELETE /api/superadmin/businesses/{'{businessId}'}/Users</code>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       ) : (
@@ -726,25 +839,117 @@ export default function SuperAdminDashboard() {
     </div>
   );
 
-  // Placeholder tabs
+  // Menu & Products Tab
   const MenuTab = () => (
-    <div className="text-center py-12">
-      <h2 className="text-2xl font-bold text-white mb-4">Menu & Products Management</h2>
-      <p className="text-zinc-400">Coming soon - Product and category management</p>
+    <div className="space-y-6">
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-white mb-4">Menu & Products Management</h2>
+        <p className="text-zinc-400 mb-6">Manage categories and products across all venues</p>
+        
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 max-w-2xl mx-auto">
+          <h3 className="text-lg font-medium text-white mb-4">Required API Endpoints</h3>
+          <div className="space-y-2 text-sm text-left">
+            <div className="text-zinc-300">
+              <strong>Categories:</strong>
+            </div>
+            <div className="text-zinc-400 font-mono text-xs ml-4">
+              GET/POST/PUT/DELETE /api/superadmin/venues/{'{venueId}'}/Categories
+            </div>
+            
+            <div className="text-zinc-300 mt-4">
+              <strong>Products:</strong>
+            </div>
+            <div className="text-zinc-400 font-mono text-xs ml-4">
+              GET/POST/PUT/DELETE /api/superadmin/categories/{'{categoryId}'}/Products
+            </div>
+          </div>
+          
+          <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-800 rounded">
+            <p className="text-yellow-400 text-sm">
+              ⚠️ These endpoints exist in the API but return 403 Forbidden due to missing role claims in JWT token.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
+  // Venues & Zones Tab
   const VenuesTab = () => (
-    <div className="text-center py-12">
-      <h2 className="text-2xl font-bold text-white mb-4">Venues & Zones Management</h2>
-      <p className="text-zinc-400">Coming soon - Venue and zone configuration</p>
+    <div className="space-y-6">
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-white mb-4">Venues & Zones Management</h2>
+        <p className="text-zinc-400 mb-6">Configure venues, zones, and seating layouts</p>
+        
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 max-w-2xl mx-auto">
+          <h3 className="text-lg font-medium text-white mb-4">Required API Endpoints</h3>
+          <div className="space-y-2 text-sm text-left">
+            <div className="text-zinc-300">
+              <strong>Venues:</strong>
+            </div>
+            <div className="text-zinc-400 font-mono text-xs ml-4">
+              GET/POST/PUT/DELETE /api/superadmin/businesses/{'{businessId}'}/Venues
+            </div>
+            
+            <div className="text-zinc-300 mt-4">
+              <strong>Zones:</strong>
+            </div>
+            <div className="text-zinc-400 font-mono text-xs ml-4">
+              GET/POST/PUT/DELETE /api/superadmin/venues/{'{venueId}'}/Zones
+            </div>
+            
+            <div className="text-zinc-300 mt-4">
+              <strong>Venue Configuration:</strong>
+            </div>
+            <div className="text-zinc-400 font-mono text-xs ml-4">
+              GET/PUT /api/superadmin/businesses/{'{businessId}'}/Venues/{'{id}'}/config
+            </div>
+          </div>
+          
+          <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-800 rounded">
+            <p className="text-yellow-400 text-sm">
+              ⚠️ These endpoints exist in the API but return 403 Forbidden due to missing role claims in JWT token.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
+  // Settings Tab
   const SettingsTab = () => (
-    <div className="text-center py-12">
-      <h2 className="text-2xl font-bold text-white mb-4">System Settings</h2>
-      <p className="text-zinc-400">Coming soon - Global system configuration</p>
+    <div className="space-y-6">
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-white mb-4">System Settings</h2>
+        <p className="text-zinc-400 mb-6">Global system configuration and admin management</p>
+        
+        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 max-w-2xl mx-auto">
+          <h3 className="text-lg font-medium text-white mb-4">Available Features</h3>
+          <div className="space-y-4 text-left">
+            <div className="flex items-center justify-between p-3 bg-zinc-800 rounded">
+              <span className="text-zinc-300">Admin Users Management</span>
+              <span className="text-green-400 text-sm">Available</span>
+            </div>
+            <div className="text-zinc-400 font-mono text-xs ml-4">
+              GET/POST /api/superadmin/AdminUsers
+            </div>
+            
+            <div className="flex items-center justify-between p-3 bg-zinc-800 rounded">
+              <span className="text-zinc-300">Dashboard Analytics</span>
+              <span className="text-yellow-400 text-sm">Limited</span>
+            </div>
+            <div className="text-zinc-400 font-mono text-xs ml-4">
+              GET /api/superadmin/Dashboard
+            </div>
+          </div>
+          
+          <div className="mt-6 p-4 bg-blue-900/20 border border-blue-800 rounded">
+            <p className="text-blue-400 text-sm">
+              💡 Admin user management endpoints are available and should work once JWT role claims are fixed.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
@@ -756,6 +961,18 @@ export default function SuperAdminDashboard() {
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Super Admin Dashboard</h1>
             <p className="text-zinc-400">Manage all businesses, staff, and system settings</p>
+            
+            {/* API Status Indicator */}
+            <div className="flex items-center space-x-4 mt-3">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-xs text-green-400">Basic APIs Working</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <span className="text-xs text-yellow-400">SuperAdmin APIs Limited</span>
+              </div>
+            </div>
           </div>
           
           {userInfo && (

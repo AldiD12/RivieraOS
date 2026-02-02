@@ -16,9 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services
 builder.Services.AddControllers();
 
-// Add FluentValidation
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddFluentValidationClientsideAdapters();
+// Add FluentValidation (manual validation only - no automatic)
 builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderValidator>();
 
 // Add JWT Authentication

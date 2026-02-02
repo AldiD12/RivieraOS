@@ -40,10 +40,30 @@ public static class DbInitializer
             new User
             {
                 BusinessId = business.Id,
-                FullName = "Beach Collector",
-                Email = "collector@hotelcoral.al",
+                FullName = "Marco Rossi",
+                Email = "marco@hotelcoral.al",
                 Role = UserRole.Collector,
                 PinCode = "1111",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            },
+            new User
+            {
+                BusinessId = business.Id,
+                FullName = "Sofia Bianchi",
+                Email = "sofia@hotelcoral.al",
+                Role = UserRole.Collector,
+                PinCode = "2222",
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            },
+            new User
+            {
+                BusinessId = business.Id,
+                FullName = "Luca Ferrari",
+                Email = "luca@hotelcoral.al",
+                Role = UserRole.Collector,
+                PinCode = "3333",
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using FluentValidation;
 using RivieraApi.Hubs;
 using RivieraApi.Modules.Ops.Services;
 using RivieraApi.Modules.Ops.DTOs;
@@ -13,21 +14,24 @@ public class OrderController : ControllerBase
 {
     private readonly OrderService _orderService;
     private readonly IHubContext<BeachHub> _hubContext;
+    private readonly IValidator<CreateOrderDto> _validator;
 
-    public OrderController(OrderService orderService, IHubContext<BeachHub> hubContext)
+    public OrderController(OrderService orderService, IHubContext<BeachHub> hubContext, IValidator<CreateOrderDto> validator)
     {
         _orderService = orderService;
         _hubContext = hubContext;
+        _validator = validator;
     }
 
-    // POST /api/order - FluentValidation automatically validates CreateOrderDto
+    // POST /api/order - Manually validate with FluentValidation
     [HttpPost]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
     {
-        // If validation fails, ModelState will contain errors and return 400 automatically
-        if (!ModelState.IsValid)
+        // Manual async validation
+        var validationResult = await _validator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
         {
-            return BadRequest(ModelState);
+            return BadRequest(new { errors = validationResult.Errors.Select(e => e.ErrorMessage) });
         }
 
         try
@@ -47,7 +51,10 @@ public class OrderController : ControllerBase
                     quantity = oi.Quantity,
                     price = oi.UnitPriceAtTime
                 }).ToList(),
-                createdAt = order.CreatedAt
+                createdAt = order.CreatedAt,
+                userId = order.UserId, // Waiter who created the order
+                userName = order.User?.FullName, // Waiter name
+                productId = order.ProductId // Sunbed if from QR code
             });
 
             // If sunbed was occupied, broadcast layout update
@@ -105,6 +112,9 @@ public class OrderController : ControllerBase
             assignedUserId = o.AssignedUserId,
             assignedUserName = o.AssignedUser?.FullName,
             assignedAt = o.AssignedAt,
+            userId = o.UserId, // Waiter who created the order
+            userName = o.User?.FullName, // Waiter name
+            productId = o.ProductId, // Sunbed if from QR code
             items = o.OrderItems.Select(oi => new
             {
                 name = oi.Product.Name,
