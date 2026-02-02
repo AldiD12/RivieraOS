@@ -99,7 +99,8 @@ export default function SuperAdminDashboard() {
       try {
         console.log('🔄 Trying SuperAdmin endpoint: /api/superadmin/Businesses');
         data = await businessApi.superAdmin.getAll();
-        console.log('✅ SuperAdmin businesses fetched successfully:', data.length, 'businesses');
+        console.log('✅ SuperAdmin businesses fetched successfully:', Array.isArray(data) ? data.length : 'non-array response', 'businesses');
+        console.log('📊 Response data type:', typeof data, 'Data:', data);
       } catch (superAdminError) {
         console.log('⚠️ SuperAdmin endpoint failed:', {
           status: superAdminError.response?.status,
@@ -146,9 +147,11 @@ export default function SuperAdminDashboard() {
         }
       }
       
-      setBusinesses(data || []);
+      // Ensure data is an array
+      const businessesArray = Array.isArray(data) ? data : (data?.businesses || data?.data || []);
+      setBusinesses(businessesArray);
       setError('');
-      console.log('✅ Businesses loaded successfully');
+      console.log('✅ Businesses loaded successfully:', businessesArray.length, 'businesses');
     } catch (err) {
       console.error('❌ Error fetching businesses:', err);
       
