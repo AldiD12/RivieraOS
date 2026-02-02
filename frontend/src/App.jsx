@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import ReviewPage from './pages/ReviewPage';
 import ManagerLeaderboardPage from './pages/ManagerLeaderboardPage';
 import OurAdmin from './pages/OurAdmin';
+import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import ApiStatus from './components/ApiStatus';
 
@@ -65,6 +66,16 @@ function App() {
           element={
             <ProtectedRoute role="Admin">
               <OurAdmin />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Super Admin Dashboard */}
+        <Route 
+          path="/superadmin" 
+          element={
+            <ProtectedRoute role="Admin">
+              <SuperAdminDashboard />
             </ProtectedRoute>
           } 
         />
