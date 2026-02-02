@@ -147,58 +147,91 @@ export const staffApi = {
 export const venueApi = {
   // Get venues for a business
   getByBusiness: async (businessId) => {
-    const response = await superAdminApi.get(`/superadmin/Businesses/${businessId}/venues`);
+    const response = await superAdminApi.get(`/superadmin/businesses/${businessId}/Venues`);
     return response.data;
   },
 
   // Create venue
   create: async (businessId, venueData) => {
-    const response = await superAdminApi.post(`/superadmin/Businesses/${businessId}/venues`, venueData);
+    const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Venues`, venueData);
     return response.data;
   },
 
   // Update venue
   update: async (businessId, venueId, venueData) => {
-    const response = await superAdminApi.put(`/superadmin/Businesses/${businessId}/venues/${venueId}`, venueData);
+    const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/Venues/${venueId}`, venueData);
     return response.data;
   },
 
   // Delete venue
   delete: async (businessId, venueId) => {
-    const response = await superAdminApi.delete(`/superadmin/Businesses/${businessId}/venues/${venueId}`);
+    const response = await superAdminApi.delete(`/superadmin/businesses/${businessId}/Venues/${venueId}`);
     return response.data;
   }
 };
 
-// Product Management APIs
+// Category Management APIs - Based on swagger.json endpoints
+export const categoryApi = {
+  // GET /api/superadmin/venues/{venueId}/Categories - Get categories for a venue
+  getByVenue: async (venueId) => {
+    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/Categories`);
+    return response.data;
+  },
+
+  // POST /api/superadmin/venues/{venueId}/Categories - Create category
+  create: async (venueId, categoryData) => {
+    const response = await superAdminApi.post(`/superadmin/venues/${venueId}/Categories`, categoryData);
+    return response.data;
+  },
+
+  // GET /api/superadmin/venues/{venueId}/Categories/{id} - Get category details
+  getById: async (venueId, categoryId) => {
+    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/Categories/${categoryId}`);
+    return response.data;
+  },
+
+  // PUT /api/superadmin/venues/{venueId}/Categories/{id} - Update category
+  update: async (venueId, categoryId, categoryData) => {
+    const response = await superAdminApi.put(`/superadmin/venues/${venueId}/Categories/${categoryId}`, categoryData);
+    return response.data;
+  },
+
+  // DELETE /api/superadmin/venues/{venueId}/Categories/{id} - Delete category
+  delete: async (venueId, categoryId) => {
+    const response = await superAdminApi.delete(`/superadmin/venues/${venueId}/Categories/${categoryId}`);
+    return response.data;
+  }
+};
+
+// Product Management APIs - Based on swagger.json endpoints
 export const productApi = {
-  // Get products for a business
-  getByBusiness: async (businessId) => {
-    const response = await superAdminApi.get(`/superadmin/Businesses/${businessId}/products`);
+  // GET /api/superadmin/categories/{categoryId}/Products - Get products for a category
+  getByCategory: async (categoryId) => {
+    const response = await superAdminApi.get(`/superadmin/categories/${categoryId}/Products`);
     return response.data;
   },
 
-  // Create product
-  create: async (businessId, productData) => {
-    const response = await superAdminApi.post(`/superadmin/Businesses/${businessId}/products`, productData);
+  // POST /api/superadmin/categories/{categoryId}/Products - Create product
+  create: async (categoryId, productData) => {
+    const response = await superAdminApi.post(`/superadmin/categories/${categoryId}/Products`, productData);
     return response.data;
   },
 
-  // Update product
-  update: async (businessId, productId, productData) => {
-    const response = await superAdminApi.put(`/superadmin/Businesses/${businessId}/products/${productId}`, productData);
+  // GET /api/superadmin/categories/{categoryId}/Products/{id} - Get product details
+  getById: async (categoryId, productId) => {
+    const response = await superAdminApi.get(`/superadmin/categories/${categoryId}/Products/${productId}`);
     return response.data;
   },
 
-  // Delete product
-  delete: async (businessId, productId) => {
-    const response = await superAdminApi.delete(`/superadmin/Businesses/${businessId}/products/${productId}`);
+  // PUT /api/superadmin/categories/{categoryId}/Products/{id} - Update product
+  update: async (categoryId, productId, productData) => {
+    const response = await superAdminApi.put(`/superadmin/categories/${categoryId}/Products/${productId}`, productData);
     return response.data;
   },
 
-  // Toggle product availability
-  toggleAvailability: async (businessId, productId) => {
-    const response = await superAdminApi.patch(`/superadmin/Businesses/${businessId}/products/${productId}/availability`);
+  // DELETE /api/superadmin/categories/{categoryId}/Products/{id} - Delete product
+  delete: async (categoryId, productId) => {
+    const response = await superAdminApi.delete(`/superadmin/categories/${categoryId}/Products/${productId}`);
     return response.data;
   }
 };
@@ -207,5 +240,6 @@ export default {
   business: businessApi,
   staff: staffApi,
   venue: venueApi,
+  category: categoryApi,
   product: productApi
 };

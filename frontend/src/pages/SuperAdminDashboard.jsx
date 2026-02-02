@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { businessApi, staffApi } from '../services/superAdminApi.js';
+import { businessApi, staffApi, venueApi, categoryApi, productApi } from '../services/superAdminApi.js';
 
 // Staff Modal Components - Defined OUTSIDE to prevent re-creation on every render
 const CreateStaffModal = ({ 
@@ -314,6 +314,475 @@ const ResetPasswordModal = ({
   </AnimatePresence>
 );
 
+// Category Modal Components
+const CreateCategoryModal = ({ 
+  isOpen, 
+  onClose, 
+  categoryForm, 
+  onFormChange, 
+  onSubmit 
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-zinc-900 rounded-lg p-6 w-full max-w-md"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-bold text-white mb-6">Create Category</h2>
+          
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Category Name *
+              </label>
+              <input
+                type="text"
+                required
+                value={categoryForm.name}
+                onChange={(e) => onFormChange('name', e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                placeholder="Enter category name"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Sort Order
+              </label>
+              <input
+                type="number"
+                value={categoryForm.sortOrder}
+                onChange={(e) => onFormChange('sortOrder', parseInt(e.target.value) || 0)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                placeholder="0"
+              />
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="categoryIsActive"
+                checked={categoryForm.isActive}
+                onChange={(e) => onFormChange('isActive', e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="categoryIsActive" className="text-sm text-zinc-300">
+                Active Category
+              </label>
+            </div>
+            
+            <div className="flex justify-end space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Create Category
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+const EditCategoryModal = ({ 
+  isOpen, 
+  onClose, 
+  categoryForm, 
+  onFormChange, 
+  onSubmit 
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-zinc-900 rounded-lg p-6 w-full max-w-md"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-bold text-white mb-6">Edit Category</h2>
+          
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Category Name *
+              </label>
+              <input
+                type="text"
+                required
+                value={categoryForm.name}
+                onChange={(e) => onFormChange('name', e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Sort Order
+              </label>
+              <input
+                type="number"
+                value={categoryForm.sortOrder}
+                onChange={(e) => onFormChange('sortOrder', parseInt(e.target.value) || 0)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+              />
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="editCategoryIsActive"
+                checked={categoryForm.isActive}
+                onChange={(e) => onFormChange('isActive', e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="editCategoryIsActive" className="text-sm text-zinc-300">
+                Active Category
+              </label>
+            </div>
+            
+            <div className="flex justify-end space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Update Category
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+// Product Modal Components
+const CreateProductModal = ({ 
+  isOpen, 
+  onClose, 
+  productForm, 
+  onFormChange, 
+  onSubmit 
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-bold text-white mb-6">Create Product</h2>
+          
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Product Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={productForm.name}
+                  onChange={(e) => onFormChange('name', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter product name"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Price *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  required
+                  value={productForm.price}
+                  onChange={(e) => onFormChange('price', parseFloat(e.target.value) || 0)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="0.00"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Old Price
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={productForm.oldPrice || ''}
+                  onChange={(e) => onFormChange('oldPrice', e.target.value ? parseFloat(e.target.value) : null)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="0.00"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Image URL
+                </label>
+                <input
+                  type="url"
+                  value={productForm.imageUrl}
+                  onChange={(e) => onFormChange('imageUrl', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Description
+              </label>
+              <textarea
+                value={productForm.description}
+                onChange={(e) => onFormChange('description', e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                rows="3"
+                placeholder="Enter product description"
+              />
+            </div>
+            
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="productIsAvailable"
+                  checked={productForm.isAvailable}
+                  onChange={(e) => onFormChange('isAvailable', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="productIsAvailable" className="text-sm text-zinc-300">
+                  Available
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="productIsAlcohol"
+                  checked={productForm.isAlcohol}
+                  onChange={(e) => onFormChange('isAlcohol', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="productIsAlcohol" className="text-sm text-zinc-300">
+                  Contains Alcohol
+                </label>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Create Product
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+const EditProductModal = ({ 
+  isOpen, 
+  onClose, 
+  productForm, 
+  onFormChange, 
+  onSubmit 
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h2 className="text-xl font-bold text-white mb-6">Edit Product</h2>
+          
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Product Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={productForm.name}
+                  onChange={(e) => onFormChange('name', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Price *
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  required
+                  value={productForm.price}
+                  onChange={(e) => onFormChange('price', parseFloat(e.target.value) || 0)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Old Price
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={productForm.oldPrice || ''}
+                  onChange={(e) => onFormChange('oldPrice', e.target.value ? parseFloat(e.target.value) : null)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Image URL
+                </label>
+                <input
+                  type="url"
+                  value={productForm.imageUrl}
+                  onChange={(e) => onFormChange('imageUrl', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Description
+              </label>
+              <textarea
+                value={productForm.description}
+                onChange={(e) => onFormChange('description', e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                rows="3"
+              />
+            </div>
+            
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="editProductIsAvailable"
+                  checked={productForm.isAvailable}
+                  onChange={(e) => onFormChange('isAvailable', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="editProductIsAvailable" className="text-sm text-zinc-300">
+                  Available
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="editProductIsAlcohol"
+                  checked={productForm.isAlcohol}
+                  onChange={(e) => onFormChange('isAlcohol', e.target.checked)}
+                  className="mr-2"
+                />
+                <label htmlFor="editProductIsAlcohol" className="text-sm text-zinc-300">
+                  Contains Alcohol
+                </label>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-4 pt-4">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+              >
+                Update Product
+              </button>
+            </div>
+          </form>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
 // Business Modal Components - Defined OUTSIDE to prevent re-creation on every render
 const CreateBusinessModal = ({ 
   isOpen, 
@@ -568,6 +1037,22 @@ export default function SuperAdminDashboard() {
   const [staffLoading, setStaffLoading] = useState(false);
   const [newPassword, setNewPassword] = useState('');
 
+  // Menu Management Modal states
+  const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
+  const [showEditCategoryModal, setShowEditCategoryModal] = useState(false);
+  const [showCreateProductModal, setShowCreateProductModal] = useState(false);
+  const [showEditProductModal, setShowEditProductModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
+  
+  // Menu Management Data states
+  const [venues, setVenues] = useState([]);
+  const [selectedVenue, setSelectedVenue] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [menuLoading, setMenuLoading] = useState(false);
+
   // Business Form states
   const [businessForm, setBusinessForm] = useState({
     registeredName: '',
@@ -589,6 +1074,25 @@ export default function SuperAdminDashboard() {
     phoneNumber: '',
     role: '',
     isActive: true
+  });
+
+  // Category Form states
+  const [categoryForm, setCategoryForm] = useState({
+    name: '',
+    sortOrder: 0,
+    isActive: true
+  });
+
+  // Product Form states
+  const [productForm, setProductForm] = useState({
+    name: '',
+    description: '',
+    imageUrl: '',
+    price: 0,
+    oldPrice: null,
+    isAvailable: true,
+    isAlcohol: false,
+    categoryId: null
   });
 
   // Check user role and permissions
@@ -966,6 +1470,261 @@ export default function SuperAdminDashboard() {
     }
   };
 
+  // Menu Management Functions
+  const fetchVenues = async (businessId) => {
+    try {
+      setMenuLoading(true);
+      console.log('🔄 Fetching venues for business:', businessId);
+      
+      const venueData = await venueApi.getByBusiness(businessId);
+      console.log('✅ Venues fetched:', venueData.length, 'venues');
+      setVenues(Array.isArray(venueData) ? venueData : []);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error fetching venues:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Venue management requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to fetch venues: ' + (err.response?.data?.message || err.message));
+      }
+    } finally {
+      setMenuLoading(false);
+    }
+  };
+
+  const fetchCategories = async (venueId) => {
+    try {
+      setMenuLoading(true);
+      console.log('🔄 Fetching categories for venue:', venueId);
+      
+      const categoryData = await categoryApi.getByVenue(venueId);
+      console.log('✅ Categories fetched:', categoryData.length, 'categories');
+      setCategories(Array.isArray(categoryData) ? categoryData : []);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error fetching categories:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Category management requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to fetch categories: ' + (err.response?.data?.message || err.message));
+      }
+    } finally {
+      setMenuLoading(false);
+    }
+  };
+
+  const fetchProducts = async (categoryId) => {
+    try {
+      setMenuLoading(true);
+      console.log('🔄 Fetching products for category:', categoryId);
+      
+      const productData = await productApi.getByCategory(categoryId);
+      console.log('✅ Products fetched:', productData.length, 'products');
+      setProducts(Array.isArray(productData) ? productData : []);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error fetching products:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Product management requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to fetch products: ' + (err.response?.data?.message || err.message));
+      }
+    } finally {
+      setMenuLoading(false);
+    }
+  };
+
+  const handleCreateCategory = async (e) => {
+    e.preventDefault();
+    if (!selectedVenue) return;
+    
+    try {
+      console.log('🔄 Creating new category:', categoryForm);
+      
+      await categoryApi.create(selectedVenue.id, categoryForm);
+      console.log('✅ Category created successfully');
+      
+      setShowCreateCategoryModal(false);
+      resetCategoryForm();
+      await fetchCategories(selectedVenue.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error creating category:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Category creation requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to create category: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    if (!selectedVenue || !editingCategory) return;
+    
+    try {
+      console.log('🔄 Updating category:', editingCategory.id);
+      
+      await categoryApi.update(selectedVenue.id, editingCategory.id, categoryForm);
+      console.log('✅ Category updated successfully');
+      
+      setShowEditCategoryModal(false);
+      setEditingCategory(null);
+      resetCategoryForm();
+      await fetchCategories(selectedVenue.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error updating category:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Category update requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to update category: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId) => {
+    if (!selectedVenue) return;
+    if (!confirm('Are you sure you want to delete this category? This will also delete all products in this category.')) return;
+    
+    try {
+      console.log('🔄 Deleting category:', categoryId);
+      
+      await categoryApi.delete(selectedVenue.id, categoryId);
+      console.log('✅ Category deleted successfully');
+      
+      await fetchCategories(selectedVenue.id);
+      if (selectedCategory?.id === categoryId) {
+        setSelectedCategory(null);
+        setProducts([]);
+      }
+      setError('');
+    } catch (err) {
+      console.error('❌ Error deleting category:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Category deletion requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to delete category: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleCreateProduct = async (e) => {
+    e.preventDefault();
+    if (!selectedCategory) return;
+    
+    try {
+      console.log('🔄 Creating new product:', productForm);
+      
+      await productApi.create(selectedCategory.id, productForm);
+      console.log('✅ Product created successfully');
+      
+      setShowCreateProductModal(false);
+      resetProductForm();
+      await fetchProducts(selectedCategory.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error creating product:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Product creation requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to create product: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleUpdateProduct = async (e) => {
+    e.preventDefault();
+    if (!selectedCategory || !editingProduct) return;
+    
+    try {
+      console.log('🔄 Updating product:', editingProduct.id);
+      
+      await productApi.update(selectedCategory.id, editingProduct.id, productForm);
+      console.log('✅ Product updated successfully');
+      
+      setShowEditProductModal(false);
+      setEditingProduct(null);
+      resetProductForm();
+      await fetchProducts(selectedCategory.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error updating product:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Product update requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to update product: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    if (!selectedCategory) return;
+    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return;
+    
+    try {
+      console.log('🔄 Deleting product:', productId);
+      
+      await productApi.delete(selectedCategory.id, productId);
+      console.log('✅ Product deleted successfully');
+      
+      await fetchProducts(selectedCategory.id);
+      setError('');
+    } catch (err) {
+      console.error('❌ Error deleting product:', err);
+      
+      if (err.response?.status === 403) {
+        setError('Product deletion requires SuperAdmin privileges.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to delete product: ' + (err.response?.data?.message || err.message));
+      }
+    }
+  };
+
   // Business CRUD operations
   const handleCreateBusiness = async (e) => {
     e.preventDefault();
@@ -1133,6 +1892,27 @@ export default function SuperAdminDashboard() {
     });
   }, []);
 
+  const resetCategoryForm = useCallback(() => {
+    setCategoryForm({
+      name: '',
+      sortOrder: 0,
+      isActive: true
+    });
+  }, []);
+
+  const resetProductForm = useCallback(() => {
+    setProductForm({
+      name: '',
+      description: '',
+      imageUrl: '',
+      price: 0,
+      oldPrice: null,
+      isAvailable: true,
+      isAlcohol: false,
+      categoryId: null
+    });
+  }, []);
+
   // Form handlers with useCallback to prevent re-renders
   const handleBusinessFormChange = useCallback((field, value) => {
     setBusinessForm(prev => ({
@@ -1143,6 +1923,20 @@ export default function SuperAdminDashboard() {
 
   const handleStaffFormChange = useCallback((field, value) => {
     setStaffForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
+  const handleCategoryFormChange = useCallback((field, value) => {
+    setCategoryForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
+  const handleProductFormChange = useCallback((field, value) => {
+    setProductForm(prev => ({
       ...prev,
       [field]: value
     }));
@@ -1178,6 +1972,29 @@ export default function SuperAdminDashboard() {
     setNewPassword('');
   }, []);
 
+  // Menu Modal handlers
+  const handleCloseCreateCategoryModal = useCallback(() => {
+    setShowCreateCategoryModal(false);
+    resetCategoryForm();
+  }, [resetCategoryForm]);
+
+  const handleCloseEditCategoryModal = useCallback(() => {
+    setShowEditCategoryModal(false);
+    setEditingCategory(null);
+    resetCategoryForm();
+  }, [resetCategoryForm]);
+
+  const handleCloseCreateProductModal = useCallback(() => {
+    setShowCreateProductModal(false);
+    resetProductForm();
+  }, [resetProductForm]);
+
+  const handleCloseEditProductModal = useCallback(() => {
+    setShowEditProductModal(false);
+    setEditingProduct(null);
+    resetProductForm();
+  }, [resetProductForm]);
+
   const openEditModal = (business) => {
     setEditingBusiness(business);
     setBusinessForm({
@@ -1211,6 +2028,31 @@ export default function SuperAdminDashboard() {
     setEditingStaff(staff);
     setNewPassword('');
     setShowResetPasswordModal(true);
+  };
+
+  const openEditCategoryModal = (category) => {
+    setEditingCategory(category);
+    setCategoryForm({
+      name: category.name || '',
+      sortOrder: category.sortOrder || 0,
+      isActive: category.isActive !== false
+    });
+    setShowEditCategoryModal(true);
+  };
+
+  const openEditProductModal = (product) => {
+    setEditingProduct(product);
+    setProductForm({
+      name: product.name || '',
+      description: product.description || '',
+      imageUrl: product.imageUrl || '',
+      price: product.price || 0,
+      oldPrice: product.oldPrice || null,
+      isAvailable: product.isAvailable !== false,
+      isAlcohol: product.isAlcohol || false,
+      categoryId: product.categoryId || selectedCategory?.id || null
+    });
+    setShowEditProductModal(true);
   };
 
   // Tab Navigation Component
@@ -1348,7 +2190,21 @@ export default function SuperAdminDashboard() {
                     }}
                     className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded text-sm transition-colors"
                   >
-                    Manage
+                    Manage Staff
+                  </button>
+                  <button
+                    onClick={() => {
+                      console.log('🔘 Menu Management button clicked for business:', business.id);
+                      console.log('🔘 Calling fetchBusinessDetails and fetchVenues...');
+                      fetchBusinessDetails(business.id);
+                      fetchVenues(business.id);
+                      console.log('🔘 Setting activeTab to menu...');
+                      setActiveTab('menu');
+                      console.log('🔘 Should now show menu tab');
+                    }}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                  >
+                    Menu
                   </button>
                   <button
                     onClick={() => {
@@ -1582,35 +2438,300 @@ export default function SuperAdminDashboard() {
   // Menu & Products Tab
   const MenuTab = () => (
     <div className="space-y-6">
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-white mb-4">Menu & Products Management</h2>
-        <p className="text-zinc-400 mb-6">Manage categories and products across all venues</p>
-        
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 max-w-2xl mx-auto">
-          <h3 className="text-lg font-medium text-white mb-4">Required API Endpoints</h3>
-          <div className="space-y-2 text-sm text-left">
-            <div className="text-zinc-300">
-              <strong>Categories:</strong>
-            </div>
-            <div className="text-zinc-400 font-mono text-xs ml-4">
-              GET/POST/PUT/DELETE /api/superadmin/venues/{'{venueId}'}/Categories
-            </div>
-            
-            <div className="text-zinc-300 mt-4">
-              <strong>Products:</strong>
-            </div>
-            <div className="text-zinc-400 font-mono text-xs ml-4">
-              GET/POST/PUT/DELETE /api/superadmin/categories/{'{categoryId}'}/Products
-            </div>
-          </div>
-          
-          <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-800 rounded">
-            <p className="text-yellow-400 text-sm">
-              ⚠️ These endpoints exist in the API but return 403 Forbidden due to missing role claims in JWT token.
+      <div className="flex items-center space-x-4 mb-6">
+        <button 
+          onClick={() => setActiveTab('businesses')}
+          className="text-zinc-400 hover:text-white transition-colors"
+        >
+          ← Back to Businesses
+        </button>
+        {selectedBusiness && (
+          <div>
+            <h2 className="text-2xl font-bold text-white">
+              Menu Management - {selectedBusiness.brandName || selectedBusiness.registeredName}
+            </h2>
+            <p className="text-sm text-zinc-400 mt-1">
+              Business ID: {selectedBusiness.id} | Manage venues, categories, and products
             </p>
           </div>
-        </div>
+        )}
       </div>
+
+      {selectedBusiness ? (
+        <div className="space-y-8">
+          {/* Venue Selection */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium text-white">Select Venue</h3>
+              <button 
+                onClick={() => {
+                  console.log('🔄 Refreshing venues for business:', selectedBusiness.id);
+                  fetchVenues(selectedBusiness.id);
+                }}
+                className="text-sm text-zinc-400 hover:text-white transition-colors"
+              >
+                🔄 Refresh Venues
+              </button>
+            </div>
+            
+            {menuLoading ? (
+              <div className="text-center py-8">
+                <div className="inline-block w-6 h-6 border-2 border-zinc-600 border-t-white rounded-full animate-spin mb-2"></div>
+                <p className="text-zinc-400 text-sm">Loading venues...</p>
+              </div>
+            ) : venues.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {venues.map((venue) => (
+                  <motion.div
+                    key={venue.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                      selectedVenue?.id === venue.id
+                        ? 'bg-zinc-800 border-zinc-600'
+                        : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
+                    }`}
+                    onClick={() => {
+                      console.log('🔘 Venue selected:', venue.id);
+                      setSelectedVenue(venue);
+                      setSelectedCategory(null);
+                      setProducts([]);
+                      fetchCategories(venue.id);
+                    }}
+                  >
+                    <h4 className="font-medium text-white">{venue.name}</h4>
+                    <p className="text-sm text-zinc-400">{venue.type || 'Venue'}</p>
+                    <p className="text-xs text-zinc-500 mt-1">ID: {venue.id}</p>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-zinc-400">No venues found for this business.</p>
+                <p className="text-sm text-zinc-500 mt-2">Venues are required to manage categories and products.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Categories Management */}
+          {selectedVenue && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-medium text-white">Categories - {selectedVenue.name}</h3>
+                  <p className="text-sm text-zinc-400">{categories.length} categories</p>
+                </div>
+                <button 
+                  onClick={() => {
+                    console.log('🔘 Add Category button clicked');
+                    setShowCreateCategoryModal(true);
+                  }}
+                  className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                >
+                  + Add Category
+                </button>
+              </div>
+              
+              {categories.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {categories.map((category) => (
+                    <motion.div
+                      key={category.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                        selectedCategory?.id === category.id
+                          ? 'bg-zinc-800 border-zinc-600'
+                          : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
+                      }`}
+                      onClick={() => {
+                        console.log('🔘 Category selected:', category.id);
+                        setSelectedCategory(category);
+                        fetchProducts(category.id);
+                      }}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-medium text-white">{category.name}</h4>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          category.isActive 
+                            ? 'bg-green-900/30 text-green-400' 
+                            : 'bg-red-900/30 text-red-400'
+                        }`}>
+                          {category.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-500">Order: {category.sortOrder}</p>
+                      <p className="text-xs text-zinc-500">ID: {category.id}</p>
+                      
+                      <div className="flex space-x-2 mt-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openEditCategoryModal(category);
+                          }}
+                          className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCategory(category.id);
+                          }}
+                          className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-zinc-400">No categories found for this venue.</p>
+                  <button 
+                    onClick={() => setShowCreateCategoryModal(true)}
+                    className="mt-2 bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Create First Category
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Products Management */}
+          {selectedCategory && (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-medium text-white">Products - {selectedCategory.name}</h3>
+                  <p className="text-sm text-zinc-400">{products.length} products</p>
+                </div>
+                <button 
+                  onClick={() => {
+                    console.log('🔘 Add Product button clicked');
+                    setShowCreateProductModal(true);
+                  }}
+                  className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                >
+                  + Add Product
+                </button>
+              </div>
+              
+              {products.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {products.map((product) => (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-white">{product.name}</h4>
+                          <p className="text-sm text-zinc-400 mt-1">{product.description}</p>
+                        </div>
+                        <div className="flex flex-col items-end space-y-1">
+                          <span className={`px-2 py-1 rounded-full text-xs ${
+                            product.isAvailable 
+                              ? 'bg-green-900/30 text-green-400' 
+                              : 'bg-red-900/30 text-red-400'
+                          }`}>
+                            {product.isAvailable ? 'Available' : 'Unavailable'}
+                          </span>
+                          {product.isAlcohol && (
+                            <span className="px-2 py-1 rounded-full text-xs bg-amber-900/30 text-amber-400">
+                              Alcohol
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2 text-sm mb-4">
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Price:</span>
+                          <span className="text-white font-medium">€{product.price.toFixed(2)}</span>
+                        </div>
+                        {product.oldPrice && (
+                          <div className="flex justify-between">
+                            <span className="text-zinc-500">Old Price:</span>
+                            <span className="text-zinc-400 line-through">€{product.oldPrice.toFixed(2)}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">ID:</span>
+                          <span className="text-zinc-300 font-mono text-xs">{product.id}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => {
+                            console.log('🔘 Edit Product button clicked for:', product.id);
+                            openEditProductModal(product);
+                          }}
+                          className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => {
+                            console.log('🔘 Delete Product button clicked for:', product.id);
+                            handleDeleteProduct(product.id);
+                          }}
+                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-zinc-400">No products found in this category.</p>
+                  <button 
+                    onClick={() => setShowCreateProductModal(true)}
+                    className="mt-2 bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Create First Product
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Menu Management API Status */}
+          <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4">
+            <div className="flex items-start space-x-3">
+              <div className="w-5 h-5 text-blue-400 mt-0.5">ℹ️</div>
+              <div>
+                <h4 className="text-blue-400 font-medium mb-1">Menu Management APIs</h4>
+                <p className="text-blue-300 text-sm">
+                  Complete menu management system with venues, categories, and products.
+                </p>
+                <div className="mt-2 space-y-1 text-xs text-blue-300 font-mono">
+                  <div>✅ GET/POST/PUT/DELETE /api/superadmin/venues/{'{venueId}'}/Categories</div>
+                  <div>✅ GET/POST/PUT/DELETE /api/superadmin/categories/{'{categoryId}'}/Products</div>
+                  <div>✅ GET /api/superadmin/businesses/{'{businessId}'}/Venues</div>
+                </div>
+                <p className="text-blue-300 text-sm mt-2">
+                  {error.includes('SuperAdmin') ? 
+                    '⚠️ Currently limited due to JWT role claims configuration.' :
+                    '✅ All menu management features should be fully functional.'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-zinc-400">Select a business to manage menus and products</p>
+        </div>
+      )}
     </div>
   );
 
@@ -1793,6 +2914,36 @@ export default function SuperAdminDashboard() {
           newPassword={newPassword}
           onPasswordChange={setNewPassword}
           onSubmit={handleResetPassword}
+        />
+
+        {/* Menu Management Modals */}
+        <CreateCategoryModal 
+          isOpen={showCreateCategoryModal}
+          onClose={handleCloseCreateCategoryModal}
+          categoryForm={categoryForm}
+          onFormChange={handleCategoryFormChange}
+          onSubmit={handleCreateCategory}
+        />
+        <EditCategoryModal 
+          isOpen={showEditCategoryModal}
+          onClose={handleCloseEditCategoryModal}
+          categoryForm={categoryForm}
+          onFormChange={handleCategoryFormChange}
+          onSubmit={handleUpdateCategory}
+        />
+        <CreateProductModal 
+          isOpen={showCreateProductModal}
+          onClose={handleCloseCreateProductModal}
+          productForm={productForm}
+          onFormChange={handleProductFormChange}
+          onSubmit={handleCreateProduct}
+        />
+        <EditProductModal 
+          isOpen={showEditProductModal}
+          onClose={handleCloseEditProductModal}
+          productForm={productForm}
+          onFormChange={handleProductFormChange}
+          onSubmit={handleUpdateProduct}
         />
       </div>
     </div>
