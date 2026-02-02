@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { businessApi } from '../services/superAdminApi.js';
 
@@ -229,8 +229,35 @@ export default function SuperAdminDashboard() {
     try {
       console.log('🔄 Updating business:', editingBusiness.id);
       
-      await businessApi.superAdmin.update(editingBusiness.id, businessForm);
-      console.log('✅ Business updated');
+      // Try SuperAdmin endpoint first
+      try {
+        await businessApi.superAdmin.update(editingBusiness.id, businessForm);
+        console.log('✅ Business updated via SuperAdmin API');
+      } catch (superAdminError) {
+        console.log('⚠️ SuperAdmin update failed:', {
+          status: superAdminError.response?.status,
+          statusText: superAdminError.response?.statusText,
+          data: superAdminError.response?.data
+        });
+        
+        // If it's 403, show specific error about SuperAdmin access
+        if (superAdminError.response?.status === 403) {
+          setError('Update operation requires SuperAdmin privileges. This feature is currently limited due to JWT role claims configuration.');
+          return;
+        }
+        
+        // If it's 401, redirect to login
+        if (superAdminError.response?.status === 401) {
+          console.log('❌ Authentication failed - redirecting to login');
+          setError('Session expired. Please login again.');
+          localStorage.clear();
+          window.location.href = '/superadmin/login';
+          return;
+        }
+        
+        // For other errors, rethrow
+        throw superAdminError;
+      }
       
       setShowEditBusinessModal(false);
       setEditingBusiness(null);
@@ -242,7 +269,16 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error updating business:', err);
-      setError('Failed to update business: ' + (err.response?.data?.message || err.message));
+      
+      if (err.response?.status === 403) {
+        setError('Update operation requires SuperAdmin privileges. Please contact system administrator to enable proper role claims in JWT tokens.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to update business: ' + (err.response?.data?.message || err.message));
+      }
     }
   };
 
@@ -252,8 +288,35 @@ export default function SuperAdminDashboard() {
     try {
       console.log('🔄 Deleting business:', businessId);
       
-      await businessApi.superAdmin.delete(businessId);
-      console.log('✅ Business deleted');
+      // Try SuperAdmin endpoint first
+      try {
+        await businessApi.superAdmin.delete(businessId);
+        console.log('✅ Business deleted via SuperAdmin API');
+      } catch (superAdminError) {
+        console.log('⚠️ SuperAdmin delete failed:', {
+          status: superAdminError.response?.status,
+          statusText: superAdminError.response?.statusText,
+          data: superAdminError.response?.data
+        });
+        
+        // If it's 403, show specific error about SuperAdmin access
+        if (superAdminError.response?.status === 403) {
+          setError('Delete operation requires SuperAdmin privileges. This feature is currently limited due to JWT role claims configuration.');
+          return;
+        }
+        
+        // If it's 401, redirect to login
+        if (superAdminError.response?.status === 401) {
+          console.log('❌ Authentication failed - redirecting to login');
+          setError('Session expired. Please login again.');
+          localStorage.clear();
+          window.location.href = '/superadmin/login';
+          return;
+        }
+        
+        // For other errors, try regular endpoint (though delete might not be available)
+        throw superAdminError;
+      }
       
       fetchBusinesses();
       if (selectedBusiness?.id === businessId) {
@@ -263,11 +326,20 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error deleting business:', err);
-      setError('Failed to delete business: ' + (err.response?.data?.message || err.message));
+      
+      if (err.response?.status === 403) {
+        setError('Delete operation requires SuperAdmin privileges. Please contact system administrator to enable proper role claims in JWT tokens.');
+      } else if (err.response?.status === 401) {
+        setError('Session expired. Please login again.');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        setError('Failed to delete business: ' + (err.response?.data?.message || err.message));
+      }
     }
   };
 
-  const resetBusinessForm = () => {
+  const resetBusinessForm = useCallback(() => {
     setBusinessForm({
       registeredName: '',
       brandName: '',
@@ -279,7 +351,26 @@ export default function SuperAdminDashboard() {
       logoUrl: '',
       isActive: true
     });
-  };
+  }, []);
+
+  // Form handlers with useCallback to prevent re-renders
+  const handleBusinessFormChange = useCallback((field, value) => {
+    setBusinessForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
+  const handleCloseCreateModal = useCallback(() => {
+    setShowCreateBusinessModal(false);
+    resetBusinessForm();
+  }, [resetBusinessForm]);
+
+  const handleCloseEditModal = useCallback(() => {
+    setShowEditBusinessModal(false);
+    setEditingBusiness(null);
+    resetBusinessForm();
+  }, [resetBusinessForm]);
 
   const openEditModal = (business) => {
     setEditingBusiness(business);
@@ -306,10 +397,7 @@ export default function SuperAdminDashboard() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={(e) => {
-            e.preventDefault();
-            setShowCreateBusinessModal(false);
-          }}
+          onClick={handleCloseCreateModal}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -335,7 +423,7 @@ export default function SuperAdminDashboard() {
                     value={businessForm.registeredName}
                     onChange={(e) => {
                       e.preventDefault();
-                      setBusinessForm({...businessForm, registeredName: e.target.value});
+                      handleBusinessFormChange('registeredName', e.target.value);
                     }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="Enter registered business name"
@@ -351,7 +439,7 @@ export default function SuperAdminDashboard() {
                     value={businessForm.brandName}
                     onChange={(e) => {
                       e.preventDefault();
-                      setBusinessForm({...businessForm, brandName: e.target.value});
+                      handleBusinessFormChange('brandName', e.target.value);
                     }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="Enter brand name"
@@ -367,7 +455,7 @@ export default function SuperAdminDashboard() {
                     value={businessForm.taxId}
                     onChange={(e) => {
                       e.preventDefault();
-                      setBusinessForm({...businessForm, taxId: e.target.value});
+                      handleBusinessFormChange('taxId', e.target.value);
                     }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="Enter tax ID"
@@ -384,7 +472,7 @@ export default function SuperAdminDashboard() {
                     value={businessForm.contactEmail}
                     onChange={(e) => {
                       e.preventDefault();
-                      setBusinessForm({...businessForm, contactEmail: e.target.value});
+                      handleBusinessFormChange('contactEmail', e.target.value);
                     }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="Enter contact email"
@@ -399,7 +487,7 @@ export default function SuperAdminDashboard() {
                   checked={businessForm.isActive}
                   onChange={(e) => {
                     e.preventDefault();
-                    setBusinessForm({...businessForm, isActive: e.target.checked});
+                    handleBusinessFormChange('isActive', e.target.checked);
                   }}
                   className="mr-2"
                 />
@@ -411,11 +499,7 @@ export default function SuperAdminDashboard() {
               <div className="flex justify-end space-x-4 pt-4">
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowCreateBusinessModal(false);
-                    resetBusinessForm();
-                  }}
+                  onClick={handleCloseCreateModal}
                   className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
                 >
                   Cancel
@@ -442,10 +526,7 @@ export default function SuperAdminDashboard() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={(e) => {
-            e.preventDefault();
-            setShowEditBusinessModal(false);
-          }}
+          onClick={handleCloseEditModal}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
@@ -471,7 +552,7 @@ export default function SuperAdminDashboard() {
                     value={businessForm.registeredName}
                     onChange={(e) => {
                       e.preventDefault();
-                      setBusinessForm({...businessForm, registeredName: e.target.value});
+                      handleBusinessFormChange('registeredName', e.target.value);
                     }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   />
@@ -486,7 +567,7 @@ export default function SuperAdminDashboard() {
                     value={businessForm.brandName}
                     onChange={(e) => {
                       e.preventDefault();
-                      setBusinessForm({...businessForm, brandName: e.target.value});
+                      handleBusinessFormChange('brandName', e.target.value);
                     }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   />
@@ -502,7 +583,7 @@ export default function SuperAdminDashboard() {
                     value={businessForm.contactEmail}
                     onChange={(e) => {
                       e.preventDefault();
-                      setBusinessForm({...businessForm, contactEmail: e.target.value});
+                      handleBusinessFormChange('contactEmail', e.target.value);
                     }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   />
@@ -517,7 +598,7 @@ export default function SuperAdminDashboard() {
                     value={businessForm.taxId}
                     onChange={(e) => {
                       e.preventDefault();
-                      setBusinessForm({...businessForm, taxId: e.target.value});
+                      handleBusinessFormChange('taxId', e.target.value);
                     }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   />
@@ -531,7 +612,7 @@ export default function SuperAdminDashboard() {
                   checked={businessForm.isActive}
                   onChange={(e) => {
                     e.preventDefault();
-                    setBusinessForm({...businessForm, isActive: e.target.checked});
+                    handleBusinessFormChange('isActive', e.target.checked);
                   }}
                   className="mr-2"
                 />
@@ -543,12 +624,7 @@ export default function SuperAdminDashboard() {
               <div className="flex justify-end space-x-4 pt-4">
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowEditBusinessModal(false);
-                    setEditingBusiness(null);
-                    resetBusinessForm();
-                  }}
+                  onClick={handleCloseEditModal}
                   className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
                 >
                   Cancel
