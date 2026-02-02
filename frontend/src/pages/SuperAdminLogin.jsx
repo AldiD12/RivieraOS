@@ -15,7 +15,7 @@ export default function SuperAdminLogin() {
     setError('');
 
     try {
-      console.log('Step 1: Login → Get token');
+      console.log('🔐 SuperAdmin Login Step 1: Attempting authentication...');
       
       // Step 1: Login → Get token
       const { azureAuth } = await import('../services/azureApi.js');
@@ -25,42 +25,90 @@ export default function SuperAdminLogin() {
         password: credentials.password
       });
       
-      if (result.success && result.user && result.token) {
-        console.log('Step 2: Store token');
-        console.log('Step 3: Add Authorization: Bearer {token} header to all API calls');
-        console.log('Step 4: Check role from user object to show correct UI');
-        
-        // Step 2: Store token
-        localStorage.setItem('token', result.token);
-        localStorage.setItem('azure_jwt_token', result.token);
-        
-        // Step 4: Check role from user object to show correct UI
-        const userType = result.user.userType || result.user.role;
-        console.log('User role detected:', userType);
-        
-        if (userType === 'SuperAdmin' || userType === 'SystemAdmin' || result.user.email === 'superadmin@rivieraos.com') {
-          // Store user session data
-          localStorage.setItem('role', 'SuperAdmin');
-          localStorage.setItem('userId', result.user.id || '0');
-          localStorage.setItem('userName', result.user.fullName || 'Super Administrator');
-          localStorage.setItem('userEmail', result.user.email);
-          
-          console.log('✅ SuperAdmin access granted');
-          navigate('/superadmin');
-        } else {
-          setError(`Access denied. SuperAdmin privileges required. Current role: ${userType}`);
-        }
-      } else {
-        setError('Invalid credentials or authentication failed');
+      console.log('🔐 Login result:', result);
+      
+      // Check if login was successful
+      if (!result.success || !result.user || !result.token) {
+        console.log('❌ Login failed - missing success, user, or token');
+        setError('Authentication failed. Invalid credentials.');
+        return;
       }
-    } catch (err) {
-      console.error('SuperAdmin login error:', err);
-      if (err.response?.status === 401) {
-        setError('Invalid email or password');
-      } else if (err.response?.status === 400) {
-        setError('Invalid request. Please check your credentials.');
+      
+      console.log('🔐 Step 2: Login successful, storing token...');
+      
+      // Step 2: Store token
+      localStorage.setItem('token', result.token);
+      localStorage.setItem('azure_jwt_token', result.token);
+      
+      console.log('🔐 Step 3: Checking user permissions...');
+      
+      // Step 3: Check role from user object to show correct UI
+      const userType = result.user.userType || result.user.role || 'Guest';
+      const userEmail = result.user.email || '';
+      const userId = result.user.id;
+      
+      console.log('🔐 User details:', {
+        id: userId,
+        userType,
+        email: userEmail,
+        fullName: result.user.fullName
+      });
+      
+      // Check if user has SuperAdmin privileges
+      // Multiple verification methods:
+      // 1. Role name check (if API returns correct role)
+      // 2. Email-based check (fallback for superadmin@rivieraos.com)
+      // 3. User ID check (if SuperAdmin has specific ID like 6)
+      const isSuperAdmin = userType === 'SuperAdmin' || 
+                          userType === 'SystemAdmin' || 
+                          userEmail === 'superadmin@rivieraos.com' ||
+                          (userId === 6 && userEmail === 'superadmin@rivieraos.com'); // ID 6 from curl test
+      
+      if (isSuperAdmin) {
+        console.log('✅ SuperAdmin access granted');
+        console.log('✅ Verification method:', {
+          roleMatch: userType === 'SuperAdmin' || userType === 'SystemAdmin',
+          emailMatch: userEmail === 'superadmin@rivieraos.com',
+          idMatch: userId === 6
+        });
+        
+        // Store user session data
+        localStorage.setItem('role', 'SuperAdmin');
+        localStorage.setItem('userId', userId || '0');
+        localStorage.setItem('userName', result.user.fullName || 'Super Administrator');
+        localStorage.setItem('userEmail', userEmail);
+        
+        navigate('/superadmin');
       } else {
-        setError('Authentication failed. Please try again.');
+        console.log('❌ Access denied - insufficient privileges');
+        console.log('❌ Verification failed:', {
+          userType,
+          userEmail,
+          userId,
+          expectedEmail: 'superadmin@rivieraos.com'
+        });
+        setError(`Access denied. SuperAdmin privileges required. Current role: ${userType}, Email: ${userEmail}`);
+        
+        // Clear any stored tokens
+        localStorage.removeItem('token');
+        localStorage.removeItem('azure_jwt_token');
+      }
+      
+    } catch (err) {
+      console.error('❌ SuperAdmin login error:', err);
+      
+      // Clear any stored tokens on error
+      localStorage.removeItem('token');
+      localStorage.removeItem('azure_jwt_token');
+      
+      if (err.response?.status === 401) {
+        setError('Invalid email or password. Please check your credentials.');
+      } else if (err.response?.status === 400) {
+        setError('Invalid request. Please check your credentials format.');
+      } else if (err.response?.status === 403) {
+        setError('Access forbidden. SuperAdmin privileges required.');
+      } else {
+        setError('Authentication failed. Please try again. ' + (err.message || ''));
       }
     } finally {
       setLoading(false);

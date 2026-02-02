@@ -50,20 +50,59 @@ export const azureAuth = {
   
   login: async (loginData) => {
     try {
+      console.log('🔐 Attempting Azure API login for:', loginData.email);
+      console.log('🔐 Request URL:', `${AZURE_BASE_URL}/Auth/login`);
+      console.log('🔐 Request data:', loginData);
+      
       const response = await azureApi.post('/Auth/login', loginData);
+      
+      console.log('🔐 Azure login response status:', response.status);
+      console.log('🔐 Azure login response headers:', response.headers);
+      console.log('🔐 Azure login response data:', response.data);
+      
+      // Validate response structure
+      if (!response.data) {
+        throw new Error('No response data received');
+      }
+      
       // Store JWT token if returned
       if (response.data.token) {
         localStorage.setItem('azure_jwt_token', response.data.token);
+        console.log('🔐 Token stored successfully');
+      } else {
+        console.log('⚠️ No token in response');
       }
+      
       // Transform Azure response to match frontend expectations
-      return {
+      const result = {
         success: true,
-        user: response.data.user,
+        user: response.data.user || response.data,
         token: response.data.token
       };
+      
+      console.log('🔐 Transformed result:', result);
+      return result;
+      
     } catch (error) {
-      // Handle login errors
-      console.error('Azure login error:', error);
+      // Handle login errors with detailed logging
+      console.error('❌ Azure login error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method,
+          headers: error.config?.headers,
+          data: error.config?.data
+        }
+      });
+      
+      // Don't store any tokens on error
+      localStorage.removeItem('azure_jwt_token');
+      localStorage.removeItem('token');
+      
+      // Re-throw the error for the calling code to handle
       throw error;
     }
   }
