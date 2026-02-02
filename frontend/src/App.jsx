@@ -74,10 +74,14 @@ function App() {
         {/* Super Admin Login - Separate from regular staff login */}
         <Route path="/superadmin/login" element={<SuperAdminLogin />} />
 
-        {/* Super Admin Dashboard - Temporarily remove protection for testing */}
+        {/* Super Admin Dashboard - Protected Route */}
         <Route 
           path="/superadmin" 
-          element={<SuperAdminDashboard />} 
+          element={
+            <ProtectedRoute role="SuperAdmin">
+              <SuperAdminDashboard />
+            </ProtectedRoute>
+          } 
         />
 
         {/* Manager Dashboard */}

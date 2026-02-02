@@ -13,9 +13,13 @@ export const azureApi = axios.create({
 
 // Add JWT token to requests if available
 azureApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('azure_jwt_token');
+  // Step 3: Add Authorization: Bearer {token} header to all API calls
+  const token = localStorage.getItem('azure_jwt_token') || localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+    console.log('✅ Added Authorization header to API call:', config.url);
+  } else {
+    console.log('⚠️ No token found for API call:', config.url);
   }
   return config;
 });

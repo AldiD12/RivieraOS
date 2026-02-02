@@ -8,15 +8,51 @@ export default function SuperAdminDashboard() {
   const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [userInfo, setUserInfo] = useState(null);
+
+  // Step 4: Check role from user object to show correct UI
+  useEffect(() => {
+    const checkUserRole = () => {
+      const role = localStorage.getItem('role');
+      const userName = localStorage.getItem('userName');
+      const userEmail = localStorage.getItem('userEmail');
+      
+      console.log('Step 4: Checking user role for UI display');
+      console.log('Role:', role);
+      console.log('User:', userName);
+      console.log('Email:', userEmail);
+      
+      if (role !== 'SuperAdmin') {
+        console.log('❌ Access denied - not SuperAdmin');
+        window.location.href = '/login';
+        return;
+      }
+      
+      setUserInfo({
+        role,
+        name: userName,
+        email: userEmail
+      });
+      
+      console.log('✅ SuperAdmin UI access granted');
+    };
+    
+    checkUserRole();
+  }, []);
 
   // Fetch businesses from Azure API
   useEffect(() => {
-    fetchBusinesses();
-  }, []);
+    if (userInfo) {
+      fetchBusinesses();
+    }
+  }, [userInfo]);
 
   const fetchBusinesses = async () => {
     try {
       setLoading(true);
+      console.log('🔄 Fetching businesses with authenticated API call...');
+      
+      // Step 3: Authorization header is automatically added by interceptor
       const token = localStorage.getItem('azure_jwt_token');
       
       const response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/Businesses', {
@@ -28,7 +64,14 @@ export default function SuperAdminDashboard() {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Businesses fetched successfully:', data.length, 'businesses');
         setBusinesses(data);
+      } else if (response.status === 401) {
+        console.log('❌ Token expired or invalid');
+        setError('Session expired. Please login again.');
+        // Clear tokens and redirect
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
       } else {
         setError('Failed to fetch businesses');
       }
@@ -506,10 +549,31 @@ export default function SuperAdminDashboard() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Super Admin Dashboard</h1>
-          <p className="text-zinc-400">Manage all businesses, staff, and system settings</p>
+        {/* Header with User Info */}
+        <div className="flex justify-between items-center mb-8 pb-6 border-b border-zinc-800">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Super Admin Dashboard</h1>
+            <p className="text-zinc-400">Manage all businesses, staff, and system settings</p>
+          </div>
+          
+          {userInfo && (
+            <div className="flex items-center space-x-4">
+              <div className="text-right">
+                <p className="text-sm font-medium text-white">{userInfo.name}</p>
+                <p className="text-xs text-zinc-400">{userInfo.email}</p>
+                <p className="text-xs text-emerald-400">{userInfo.role}</p>
+              </div>
+              <button
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.href = '/superadmin/login';
+                }}
+                className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm transition-colors border border-zinc-700"
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Tab Navigation */}

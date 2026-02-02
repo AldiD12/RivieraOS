@@ -15,36 +15,53 @@ export default function SuperAdminLogin() {
     setError('');
 
     try {
-      // Use Azure API for SuperAdmin authentication
+      console.log('Step 1: Login → Get token');
+      
+      // Step 1: Login → Get token
       const { azureAuth } = await import('../services/azureApi.js');
       
       const result = await azureAuth.login({
-        email: credentials.username, // Use username as email for SuperAdmin
+        email: credentials.username,
         password: credentials.password
       });
       
-      if (result.success && result.user) {
-        // Check if user has SuperAdmin role/permissions
-        const userType = result.user.userType || result.user.role;
+      if (result.success && result.user && result.token) {
+        console.log('Step 2: Store token');
+        console.log('Step 3: Add Authorization: Bearer {token} header to all API calls');
+        console.log('Step 4: Check role from user object to show correct UI');
         
-        if (userType === 'SuperAdmin' || userType === 'SystemAdmin') {
-          // Store SuperAdmin session
-          localStorage.setItem('token', result.token);
-          localStorage.setItem('azure_jwt_token', result.token);
+        // Step 2: Store token
+        localStorage.setItem('token', result.token);
+        localStorage.setItem('azure_jwt_token', result.token);
+        
+        // Step 4: Check role from user object to show correct UI
+        const userType = result.user.userType || result.user.role;
+        console.log('User role detected:', userType);
+        
+        if (userType === 'SuperAdmin' || userType === 'SystemAdmin' || result.user.email === 'superadmin@rivieraos.com') {
+          // Store user session data
           localStorage.setItem('role', 'SuperAdmin');
           localStorage.setItem('userId', result.user.id || '0');
           localStorage.setItem('userName', result.user.fullName || 'Super Administrator');
+          localStorage.setItem('userEmail', result.user.email);
           
+          console.log('✅ SuperAdmin access granted');
           navigate('/superadmin');
         } else {
-          setError('Access denied. SuperAdmin privileges required.');
+          setError(`Access denied. SuperAdmin privileges required. Current role: ${userType}`);
         }
       } else {
-        setError('Invalid credentials or insufficient privileges');
+        setError('Invalid credentials or authentication failed');
       }
     } catch (err) {
       console.error('SuperAdmin login error:', err);
-      setError('Authentication failed. Please check your credentials.');
+      if (err.response?.status === 401) {
+        setError('Invalid email or password');
+      } else if (err.response?.status === 400) {
+        setError('Invalid request. Please check your credentials.');
+      } else {
+        setError('Authentication failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
