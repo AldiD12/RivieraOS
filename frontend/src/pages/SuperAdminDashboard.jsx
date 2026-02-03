@@ -1672,13 +1672,8 @@ export default function SuperAdminDashboard() {
   const [isMenuLoading, setIsMenuLoading] = useState(false);
   const [productsLoading, setProductsLoading] = useState(false);
 
-  // CRITICAL: Reset menu state when business context changes
-  useEffect(() => {
-    console.log('🧹 Business context changed. Resetting menu state.');
-    setCategories([]);
-    setSelectedCategory(null);
-    setProducts([]);
-  }, [selectedBusiness?.id]);
+  // REMOVED: The conflicting useEffect that was causing infinite loop
+  // State reset is now handled inside fetchMenuForBusiness function
 
   // Venues & Zones Data states
   const [venuesForManagement, setVenuesForManagement] = useState([]);
@@ -2179,6 +2174,12 @@ export default function SuperAdminDashboard() {
   // MASTER ORCHESTRATION: Fetch entire menu flow in one controlled sequence
   const fetchMenuForBusiness = useCallback(async (businessId) => {
     if (!businessId) return;
+
+    // CLEAR STATE HERE FIRST - prevents infinite loop
+    console.log('🧹 Clearing menu state before fetch');
+    setCategories([]);
+    setSelectedCategory(null);
+    setProducts([]);
 
     setIsMenuLoading(true);
     setError('');
@@ -3359,7 +3360,16 @@ export default function SuperAdminDashboard() {
   );
 
   // Staff Management Tab
-  const StaffTab = () => (
+  const StaffTab = () => {
+    // Auto-load staff when business is selected and tab becomes active
+    useEffect(() => {
+      if (activeTab === 'staff' && selectedBusiness?.id) {
+        console.log('🎬 StaffTab: Auto-fetching staff for business:', selectedBusiness.id);
+        fetchStaffMembers(selectedBusiness.id);
+      }
+    }, [activeTab, selectedBusiness?.id]);
+
+    return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4 mb-6">
         <button 
@@ -3560,7 +3570,8 @@ export default function SuperAdminDashboard() {
         </div>
       )}
     </div>
-  );
+    );
+  };
 
   
 // Menu & Products Tab (REFACTORED TO KILL FLICKER)
