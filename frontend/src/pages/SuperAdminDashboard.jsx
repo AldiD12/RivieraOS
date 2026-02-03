@@ -1669,7 +1669,8 @@ export default function SuperAdminDashboard() {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [products, setProducts] = useState([]);
-  const [menuLoading, setMenuLoading] = useState(false);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [productsLoading, setProductsLoading] = useState(false);
 
   // Venues & Zones Data states
   const [venuesForManagement, setVenuesForManagement] = useState([]);
@@ -2170,7 +2171,7 @@ export default function SuperAdminDashboard() {
   // Menu Management Functions
   const fetchCategories = useCallback(async (businessId) => {
     try {
-      setMenuLoading(true);
+      setCategoriesLoading(true);
       console.log('🔄 Fetching categories for business:', businessId);
       
       const categoryData = await categoryApi.business.getByBusiness(businessId);
@@ -2190,13 +2191,13 @@ export default function SuperAdminDashboard() {
         setError('Failed to fetch categories: ' + (err.response?.data?.message || err.message));
       }
     } finally {
-      setMenuLoading(false);
+      setCategoriesLoading(false);
     }
   }, []);
 
   const fetchProducts = useCallback(async (categoryId) => {
     try {
-      setMenuLoading(true);
+      setProductsLoading(true);
       console.log('🔄 Fetching products for category:', categoryId);
       
       const productData = await productApi.getByCategory(categoryId);
@@ -2216,7 +2217,7 @@ export default function SuperAdminDashboard() {
         setError('Failed to fetch products: ' + (err.response?.data?.message || err.message));
       }
     } finally {
-      setMenuLoading(false);
+      setProductsLoading(false);
     }
   }, []);
 
@@ -3570,7 +3571,12 @@ export default function SuperAdminDashboard() {
                 </button>
               </div>
               
-              {categories.length > 0 ? (
+              {categoriesLoading ? (
+                <div className="text-center py-8">
+                  <div className="inline-block w-6 h-6 border-2 border-zinc-600 border-t-white rounded-full animate-spin mb-2"></div>
+                  <p className="text-zinc-400 text-sm">Loading categories...</p>
+                </div>
+              ) : categories.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {categories.map((category) => (
                     <motion.div
@@ -3743,7 +3749,12 @@ export default function SuperAdminDashboard() {
                   </button>
                 </div>
                 
-                {products.length > 0 ? (
+                {productsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="inline-block w-6 h-6 border-2 border-zinc-600 border-t-white rounded-full animate-spin mb-2"></div>
+                    <p className="text-zinc-400 text-sm">Loading products...</p>
+                  </div>
+                ) : products.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {products.map((product) => (
                       <motion.div
