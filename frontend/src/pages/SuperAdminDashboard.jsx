@@ -1797,7 +1797,7 @@ export default function SuperAdminDashboard() {
     }
   }, [userInfo]);
 
-  const fetchBusinesses = async () => {
+  const fetchBusinesses = useCallback(async () => {
     try {
       setLoading(true);
       console.log('🔄 Fetching businesses with authenticated API call...');
@@ -1924,9 +1924,9 @@ export default function SuperAdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // useCallback dependency array
 
-  const fetchBusinessDetails = async (businessId) => {
+  const fetchBusinessDetails = useCallback(async (businessId) => {
     try {
       console.log('🔄 Fetching business details for ID:', businessId);
       
@@ -1948,10 +1948,10 @@ export default function SuperAdminDashboard() {
       console.error('Error fetching business details:', err);
       setError('Failed to fetch business details');
     }
-  };
+  }, [fetchStaffMembers]); // useCallback dependency array
 
   // Staff Management Functions
-  const fetchStaffMembers = async (businessId) => {
+  const fetchStaffMembers = useCallback(async (businessId) => {
     try {
       setStaffLoading(true);
       console.log('🔄 Fetching staff members for business:', businessId);
@@ -1980,7 +1980,7 @@ export default function SuperAdminDashboard() {
     } finally {
       setStaffLoading(false);
     }
-  };
+  }, []); // useCallback dependency array
 
   const handleCreateStaff = async (e) => {
     e.preventDefault();
@@ -3571,7 +3571,7 @@ const MenuTab = () => {
       console.log('🎬 MenuTab: Triggering master menu fetch for business:', selectedBusiness.id);
       fetchMenuForBusiness(selectedBusiness.id);
     }
-  }, [selectedBusiness?.id, activeTab, fetchMenuForBusiness]);
+  }, [selectedBusiness?.id, activeTab]);
 
   // DERIVED STATE: Determine the overall status to simplify JSX logic
   const menuStatus = isMenuLoading ? 'loading' : (categories.length === 0 ? 'empty' : 'loaded');
@@ -3721,7 +3721,6 @@ const MenuTab = () => {
             </AnimatePresence>
           </div>
 
-          {/* ... API Status block ... */}
         </div>
       )}
     </div>
