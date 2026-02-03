@@ -22,8 +22,7 @@ function App() {
         {/* Landing Page - Business Setup Check */}
         <Route path="/" element={<LandingPage />} />
         
-        {/* Business Setup Routes */}
-        <Route path="/setup" element={<BusinessSetupPage />} />
+
         
         {/* Staff Login - After Business Setup */}
         <Route path="/login" element={<LoginPage />} />
