@@ -2168,7 +2168,7 @@ export default function SuperAdminDashboard() {
   };
 
   // Menu Management Functions
-  const fetchCategories = async (businessId) => {
+  const fetchCategories = useCallback(async (businessId) => {
     try {
       setMenuLoading(true);
       console.log('🔄 Fetching categories for business:', businessId);
@@ -2192,9 +2192,9 @@ export default function SuperAdminDashboard() {
     } finally {
       setMenuLoading(false);
     }
-  };
+  }, []);
 
-  const fetchProducts = async (categoryId) => {
+  const fetchProducts = useCallback(async (categoryId) => {
     try {
       setMenuLoading(true);
       console.log('🔄 Fetching products for category:', categoryId);
@@ -2218,7 +2218,7 @@ export default function SuperAdminDashboard() {
     } finally {
       setMenuLoading(false);
     }
-  };
+  }, []);
 
   const handleCreateCategory = async (e) => {
     e.preventDefault();
@@ -3511,7 +3511,7 @@ export default function SuperAdminDashboard() {
         console.log('🔄 Auto-loading categories for business:', selectedBusiness.id);
         fetchCategories(selectedBusiness.id);
       }
-    }, [selectedBusiness, activeTab]);
+    }, [selectedBusiness, activeTab, fetchCategories]);
 
     return (
       <div className="space-y-6">
