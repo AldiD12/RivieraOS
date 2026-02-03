@@ -19,8 +19,8 @@ function App() {
     <BrowserRouter>
       <ApiStatus />
       <Routes>
-        {/* Landing Page - Business Setup Check */}
-        <Route path="/" element={<LandingPage />} />
+        {/* Direct Login - Main Entry Point */}
+        <Route path="/" element={<LoginPage />} />
         
 
         
