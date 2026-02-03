@@ -225,45 +225,45 @@ export const zoneApi = {
 export const categoryApi = {
   // Business-level category management (from API Routes Summary)
   business: {
-    // GET /api/superadmin/businesses/{id}/categories - List/create categories for business
+    // GET /api/superadmin/businesses/{id}/Categories - List/create categories for business
     getByBusiness: async (businessId) => {
-      const response = await superAdminApi.get(`/superadmin/businesses/${businessId}/categories`);
+      const response = await superAdminApi.get(`/superadmin/businesses/${businessId}/Categories`);
       return response.data;
     },
 
-    // POST /api/superadmin/businesses/{id}/categories - Create category for business
+    // POST /api/superadmin/businesses/{id}/Categories - Create category for business
     create: async (businessId, categoryData) => {
-      const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/categories`, categoryData);
+      const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Categories`, categoryData);
       return response.data;
     },
 
-    // GET /api/superadmin/businesses/{id}/categories/{id} - Get/update/delete category
+    // GET /api/superadmin/businesses/{id}/Categories/{id} - Get/update/delete category
     getById: async (businessId, categoryId) => {
-      const response = await superAdminApi.get(`/superadmin/businesses/${businessId}/categories/${categoryId}`);
+      const response = await superAdminApi.get(`/superadmin/businesses/${businessId}/Categories/${categoryId}`);
       return response.data;
     },
 
-    // PUT /api/superadmin/businesses/{id}/categories/{id} - Update category
+    // PUT /api/superadmin/businesses/{id}/Categories/{id} - Update category
     update: async (businessId, categoryId, categoryData) => {
-      const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/categories/${categoryId}`, categoryData);
+      const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/Categories/${categoryId}`, categoryData);
       return response.data;
     },
 
-    // DELETE /api/superadmin/businesses/{id}/categories/{id} - Delete category
+    // DELETE /api/superadmin/businesses/{id}/Categories/{id} - Delete category
     delete: async (businessId, categoryId) => {
-      const response = await superAdminApi.delete(`/superadmin/businesses/${businessId}/categories/${categoryId}`);
+      const response = await superAdminApi.delete(`/superadmin/businesses/${businessId}/Categories/${categoryId}`);
       return response.data;
     },
 
-    // GET /api/superadmin/businesses/{id}/categories/{id}/exclusions - Manage venue exclusions
+    // GET /api/superadmin/businesses/{id}/Categories/{id}/exclusions - Manage venue exclusions
     getExclusions: async (businessId, categoryId) => {
-      const response = await superAdminApi.get(`/superadmin/businesses/${businessId}/categories/${categoryId}/exclusions`);
+      const response = await superAdminApi.get(`/superadmin/businesses/${businessId}/Categories/${categoryId}/exclusions`);
       return response.data;
     },
 
-    // POST /api/superadmin/businesses/{id}/categories/{id}/exclusions - Add venue exclusion
+    // POST /api/superadmin/businesses/{id}/Categories/{id}/exclusions - Add venue exclusion
     addExclusion: async (businessId, categoryId, exclusionData) => {
-      const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/categories/${categoryId}/exclusions`, exclusionData);
+      const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Categories/${categoryId}/exclusions`, exclusionData);
       return response.data;
     }
   },
