@@ -1948,7 +1948,7 @@ export default function SuperAdminDashboard() {
       console.error('Error fetching business details:', err);
       setError('Failed to fetch business details');
     }
-  }, [fetchStaffMembers]); // useCallback dependency array
+  }, []); // useCallback dependency array - removed fetchStaffMembers to avoid circular dependency
 
   // Staff Management Functions
   const fetchStaffMembers = useCallback(async (businessId) => {
