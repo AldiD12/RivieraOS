@@ -3562,232 +3562,147 @@ export default function SuperAdminDashboard() {
     </div>
   );
 
-  // Menu & Products Tab
-  const MenuTab = () => {
-    // Auto-load menu when business is selected - triggers master orchestration
-    useEffect(() => {
-      if (selectedBusiness?.id && activeTab === 'menu') {
-        console.log('🎬 MenuTab: Triggering master menu fetch for business:', selectedBusiness.id);
-        fetchMenuForBusiness(selectedBusiness.id);
-      }
-    }, [selectedBusiness?.id, activeTab, fetchMenuForBusiness]);
+  
+// Menu & Products Tab (REFACTORED TO KILL FLICKER)
+const MenuTab = () => {
+  // Auto-load menu when business is selected - triggers master orchestration
+  useEffect(() => {
+    if (selectedBusiness?.id && activeTab === 'menu') {
+      console.log('🎬 MenuTab: Triggering master menu fetch for business:', selectedBusiness.id);
+      fetchMenuForBusiness(selectedBusiness.id);
+    }
+  }, [selectedBusiness?.id, activeTab, fetchMenuForBusiness]);
 
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4 mb-6">
-          <button 
-            onClick={() => setActiveTab('businesses')}
-            className="text-zinc-400 hover:text-white transition-colors"
-          >
-            ← Back to Businesses
-          </button>
-          {selectedBusiness && (
-            <div>
-              <h2 className="text-2xl font-bold text-white">
-                Menu Management - {selectedBusiness.brandName || selectedBusiness.registeredName}
-              </h2>
-              <p className="text-sm text-zinc-400 mt-1">
-                Business ID: {selectedBusiness.id} | Business-level menu shared by all venues
-              </p>
-            </div>
-          )}
+  // DERIVED STATE: Determine the overall status to simplify JSX logic
+  const menuStatus = isMenuLoading ? 'loading' : (categories.length === 0 ? 'empty' : 'loaded');
+  
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center space-x-4 mb-6">
+        <button 
+          onClick={() => setActiveTab('businesses')}
+          className="text-zinc-400 hover:text-white transition-colors"
+        >
+          ← Back to Businesses
+        </button>
+        {selectedBusiness && (
+          <div>
+            <h2 className="text-2xl font-bold text-white">
+              Menu Management - {selectedBusiness.brandName || selectedBusiness.registeredName}
+            </h2>
+            <p className="text-sm text-zinc-400 mt-1">
+              Business ID: {selectedBusiness.id} | Business-level menu shared by all venues
+            </p>
+          </div>
+        )}
+      </div>
+
+      {!selectedBusiness ? (
+        // State 1: No business is selected yet
+        <div className="text-center py-12">
+          <p className="text-zinc-400">Select a business to manage menus and products</p>
         </div>
+      ) : isMenuLoading ? (
+        // State 2: Master loading state for the initial menu fetch
+        <div className="text-center py-8">
+          <div className="inline-block w-8 h-8 border-2 border-zinc-600 border-t-white rounded-full animate-spin mb-4"></div>
+          <p className="text-zinc-400">Loading full menu...</p>
+        </div>
+      ) : (
+        // State 3: Business selected, show the management UI
+        <div className="space-y-8">
+          {/* Business-Level Menu Notice (always visible when business is selected) */}
+          <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4">
+            {/* ... notice content ... */}
+          </div>
 
-        {selectedBusiness ? (
-          <div className="space-y-8">
-            {/* Business-Level Menu Notice */}
-            <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <div className="w-5 h-5 text-blue-400 mt-0.5">ℹ️</div>
-                <div>
-                  <h4 className="text-blue-400 font-medium mb-1">Business-Level Menu System</h4>
-                  <p className="text-blue-300 text-sm">
-                    All venues within "{selectedBusiness.brandName || selectedBusiness.registeredName}" share the same menu categories and products.
-                  </p>
-                  <p className="text-blue-300 text-sm mt-1">
-                    Changes made here will be reflected across all venues in this business.
-                  </p>
-                </div>
+          {/* Categories Management */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-medium text-white">Categories</h3>
+                <p className="text-sm text-zinc-400">{categories.length} categories</p>
               </div>
+              <button 
+                onClick={() => setShowCreateCategoryModal(true)}
+                className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                + Add Category
+              </button>
             </div>
-
-            {/* Categories Management */}
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-lg font-medium text-white">Categories</h3>
-                  <p className="text-sm text-zinc-400">{categories.length} categories</p>
-                </div>
+            
+            {categories.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {categories.map((category) => (
+                  <motion.div
+                    key={category.id} // Stable key
+                    // ... your existing category item JSX ...
+                    onClick={() => handleCategorySelect(category)}
+                  >
+                   {/* ... content of category card ... */}
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-zinc-400">No categories found for this business.</p>
                 <button 
-                  onClick={() => {
-                    console.log('🔘 Add Category button clicked');
-                    setShowCreateCategoryModal(true);
-                  }}
-                  className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  onClick={() => setShowCreateCategoryModal(true)}
+                  className="mt-2 bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
                 >
-                  + Add Category
+                  Create First Category
                 </button>
               </div>
-              
-              {isMenuLoading ? (
-                <div className="text-center py-8">
-                  <div className="inline-block w-6 h-6 border-2 border-zinc-600 border-t-white rounded-full animate-spin mb-2"></div>
-                  <p className="text-zinc-400 text-sm">Loading menu...</p>
-                </div>
-              ) : categories.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {categories.map((category) => (
-                    <motion.div
-                      key={category.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                        selectedCategory?.id === category.id
-                          ? 'bg-zinc-800 border-zinc-600'
-                          : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
-                      }`}
-                      onClick={() => handleCategorySelect(category)}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-medium text-white">{category.name}</h4>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          category.isActive 
-                            ? 'bg-green-900/30 text-green-400' 
-                            : 'bg-red-900/30 text-red-400'
-                        }`}>
-                          {category.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-zinc-500">Order: {category.sortOrder}</p>
-                      <p className="text-xs text-zinc-500">ID: {category.id}</p>
-                      
-                      <div className="flex space-x-2 mt-3">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEditCategoryModal(category);
-                          }}
-                          className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white px-2 py-1 rounded text-xs transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCategory(category.id);
-                          }}
-                          className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-zinc-400">No categories found for this business.</p>
-                  <button 
-                    onClick={() => setShowCreateCategoryModal(true)}
-                    className="mt-2 bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-                  >
-                    Create First Category
-                  </button>
-                </div>
-              )}
-            </div>
+            )}
+          </div>
 
-            {/* Products Management */}
-            {selectedCategory && (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-lg font-medium text-white">Products - {selectedCategory.name}</h3>
-                    <p className="text-sm text-zinc-400">{products.length} products</p>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      console.log('🔘 Add Product button clicked');
-                      setShowCreateProductModal(true);
-                    }}
-                    className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-                  >
-                    + Add Product
-                  </button>
-                </div>
-                
+          {/* Products Management - CRITICAL CHANGE HERE */}
+          {/* This section is NOW ALWAYS RENDERED when categories exist, preventing the layout shift */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-medium text-white">
+                  Products in: {selectedCategory ? `"${selectedCategory.name}"` : 'Select a Category'}
+                </h3>
+                {selectedCategory && (
+                  <p className="text-sm text-zinc-400">{products.length} products</p>
+                )}
+              </div>
+              <button 
+                onClick={() => setShowCreateProductModal(true)}
+                // Disable the button if no category is selected
+                disabled={!selectedCategory} 
+                className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:bg-zinc-700 disabled:cursor-not-allowed"
+              >
+                + Add Product
+              </button>
+            </div>
+            
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={selectedCategory ? selectedCategory.id : 'empty'} // Animate when the category changes
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
                 {productsLoading ? (
                   <div className="text-center py-8">
                     <div className="inline-block w-6 h-6 border-2 border-zinc-600 border-t-white rounded-full animate-spin mb-2"></div>
                     <p className="text-zinc-400 text-sm">Loading products...</p>
                   </div>
+                ) : !selectedCategory ? (
+                  <div className="text-center py-8 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                    <p className="text-zinc-400">← Please select a category to view its products.</p>
+                  </div>
                 ) : products.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {products.map((product) => (
                       <motion.div
-                        key={product.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors"
+                        key={product.id} // Stable key
+                        // ... your existing product item JSX ...
                       >
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1">
-                            <h4 className="font-medium text-white">{product.name}</h4>
-                            <p className="text-sm text-zinc-400 mt-1">{product.description}</p>
-                          </div>
-                          <div className="flex flex-col items-end space-y-1">
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              product.isAvailable 
-                                ? 'bg-green-900/30 text-green-400' 
-                                : 'bg-red-900/30 text-red-400'
-                            }`}>
-                              {product.isAvailable ? 'Available' : 'Unavailable'}
-                            </span>
-                            {product.isAlcohol && (
-                              <span className="px-2 py-1 rounded-full text-xs bg-amber-900/30 text-amber-400">
-                                Alcohol
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-2 text-sm mb-4">
-                          <div className="flex justify-between">
-                            <span className="text-zinc-500">Price:</span>
-                            <span className="text-white font-medium">€{product.price.toFixed(2)}</span>
-                          </div>
-                          {product.oldPrice && (
-                            <div className="flex justify-between">
-                              <span className="text-zinc-500">Old Price:</span>
-                              <span className="text-zinc-400 line-through">€{product.oldPrice.toFixed(2)}</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between">
-                            <span className="text-zinc-500">ID:</span>
-                            <span className="text-zinc-300 font-mono text-xs">{product.id}</span>
-                          </div>
-                        </div>
-
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => {
-                              console.log('🔘 Edit Product button clicked for:', product.id);
-                              openEditProductModal(product);
-                            }}
-                            className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white px-3 py-2 rounded text-sm transition-colors"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => {
-                              console.log('🔘 Delete Product button clicked for:', product.id);
-                              handleDeleteProduct(product.id);
-                            }}
-                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm transition-colors"
-                          >
-                            Delete
-                          </button>
-                        </div>
+                       {/* ... content of product card ... */}
                       </motion.div>
                     ))}
                   </div>
@@ -3802,41 +3717,16 @@ export default function SuperAdminDashboard() {
                     </button>
                   </div>
                 )}
-              </div>
-            )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-            {/* Business-Level Menu API Status */}
-            <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4">
-              <div className="flex items-start space-x-3">
-                <div className="w-5 h-5 text-blue-400 mt-0.5">ℹ️</div>
-                <div>
-                  <h4 className="text-blue-400 font-medium mb-1">Business-Level Menu APIs</h4>
-                  <p className="text-blue-300 text-sm">
-                    Business-level menu management system with shared categories and products.
-                  </p>
-                  <div className="mt-2 space-y-1 text-xs text-blue-300 font-mono">
-                    <div>✅ GET/POST/PUT/DELETE /api/superadmin/businesses/{'{businessId}'}/categories</div>
-                    <div>✅ GET/POST/PUT/DELETE /api/superadmin/categories/{'{categoryId}'}/Products</div>
-                    <div>✅ Business-level category management (no venue dependency)</div>
-                  </div>
-                  <p className="text-blue-300 text-sm mt-2">
-                    {error.includes('SuperAdmin') ? 
-                      '⚠️ Currently limited due to JWT role claims configuration.' :
-                      '✅ All business-level menu management features should be fully functional.'
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-zinc-400">Select a business to manage menus and products</p>
-          </div>
-        )}
-      </div>
-    );
-  };
+          {/* ... API Status block ... */}
+        </div>
+      )}
+    </div>
+  );
+}
 
   // Venues & Zones Tab
   const VenuesTab = () => (
