@@ -2170,6 +2170,11 @@ export default function SuperAdminDashboard() {
 
   // Menu Management Functions
   const fetchCategories = useCallback(async (businessId) => {
+    if (!businessId) {
+      console.error('❌ fetchCategories called without businessId');
+      return;
+    }
+    
     try {
       setCategoriesLoading(true);
       console.log('🔄 Fetching categories for business:', businessId);
@@ -2181,7 +2186,11 @@ export default function SuperAdminDashboard() {
     } catch (err) {
       console.error('❌ Error fetching categories:', err);
       
-      if (err.response?.status === 403) {
+      if (err.response?.status === 404) {
+        console.log('📝 No categories found for business:', businessId);
+        setCategories([]);
+        setError('');
+      } else if (err.response?.status === 403) {
         setError('Category management requires SuperAdmin privileges.');
       } else if (err.response?.status === 401) {
         setError('Session expired. Please login again.');
@@ -2223,7 +2232,7 @@ export default function SuperAdminDashboard() {
 
   const handleCreateCategory = async (e) => {
     e.preventDefault();
-    if (!selectedBusiness) return;
+    if (!selectedBusiness?.id) return;
     
     try {
       console.log('🔄 Creating new category:', categoryForm);
@@ -2252,7 +2261,7 @@ export default function SuperAdminDashboard() {
 
   const handleUpdateCategory = async (e) => {
     e.preventDefault();
-    if (!selectedBusiness || !editingCategory) return;
+    if (!selectedBusiness?.id || !editingCategory) return;
     
     try {
       console.log('🔄 Updating category:', editingCategory.id);
@@ -2281,7 +2290,7 @@ export default function SuperAdminDashboard() {
   };
 
   const handleDeleteCategory = async (categoryId) => {
-    if (!selectedBusiness) return;
+    if (!selectedBusiness?.id) return;
     if (!confirm('Are you sure you want to delete this category? This will also delete all products in this category.')) return;
     
     try {
@@ -3508,11 +3517,11 @@ export default function SuperAdminDashboard() {
   const MenuTab = () => {
     // Auto-load categories when business is selected
     useEffect(() => {
-      if (selectedBusiness && activeTab === 'menu') {
+      if (selectedBusiness?.id && activeTab === 'menu') {
         console.log('🔄 Auto-loading categories for business:', selectedBusiness.id);
         fetchCategories(selectedBusiness.id);
       }
-    }, [selectedBusiness, activeTab, fetchCategories]);
+    }, [selectedBusiness?.id, activeTab, fetchCategories]);
 
     return (
       <div className="space-y-6">
