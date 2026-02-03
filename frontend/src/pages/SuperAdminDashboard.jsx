@@ -1669,8 +1669,16 @@ export default function SuperAdminDashboard() {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [products, setProducts] = useState([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(false);
+  const [isMenuLoading, setIsMenuLoading] = useState(false);
   const [productsLoading, setProductsLoading] = useState(false);
+
+  // CRITICAL: Reset menu state when business context changes
+  useEffect(() => {
+    console.log('🧹 Business context changed. Resetting menu state.');
+    setCategories([]);
+    setSelectedCategory(null);
+    setProducts([]);
+  }, [selectedBusiness?.id]);
 
   // Venues & Zones Data states
   const [venuesForManagement, setVenuesForManagement] = useState([]);
@@ -2168,39 +2176,80 @@ export default function SuperAdminDashboard() {
     }
   };
 
-  // Menu Management Functions
-  const fetchCategories = useCallback(async (businessId) => {
-    if (!businessId) {
-      console.error('❌ fetchCategories called without businessId');
-      return;
-    }
-    
+  // MASTER ORCHESTRATION: Fetch entire menu flow in one controlled sequence
+  const fetchMenuForBusiness = useCallback(async (businessId) => {
+    if (!businessId) return;
+
+    setIsMenuLoading(true);
+    setError('');
+
     try {
-      setCategoriesLoading(true);
-      console.log('🔄 Fetching categories for business:', businessId);
-      
+      console.log('� START: Fetching full menu for business:', businessId);
+
+      // Step 1: Fetch Categories
       const categoryData = await categoryApi.business.getByBusiness(businessId);
-      console.log('✅ Categories fetched:', categoryData.length, 'categories');
+      console.log('✅ Categories fetched:', categoryData.length);
       setCategories(Array.isArray(categoryData) ? categoryData : []);
-      setError('');
+
+      // Step 2: If categories exist, fetch products for the FIRST category automatically
+      if (categoryData && categoryData.length > 0) {
+        const firstCategory = categoryData[0];
+        console.log('🎯 Auto-selecting first category:', firstCategory.name);
+        setSelectedCategory(firstCategory);
+
+        console.log('🔄 Fetching products for first category:', firstCategory.id);
+        const productData = await productApi.getByCategory(firstCategory.id);
+        console.log('✅ Products fetched:', productData.length);
+        setProducts(Array.isArray(productData) ? productData : []);
+      } else {
+        // No categories, so clear products
+        console.log('📝 No categories found. Clearing products.');
+        setSelectedCategory(null);
+        setProducts([]);
+      }
+
+      console.log('🏁 END: Full menu fetch complete.');
     } catch (err) {
-      console.error('❌ Error fetching categories:', err);
+      console.error('❌ FATAL ERROR during menu fetch:', err);
       
       if (err.response?.status === 404) {
-        console.log('📝 No categories found for business:', businessId);
+        console.log('📝 No menu data found for business:', businessId);
         setCategories([]);
+        setSelectedCategory(null);
+        setProducts([]);
         setError('');
       } else if (err.response?.status === 403) {
-        setError('Category management requires SuperAdmin privileges.');
+        setError('Menu management requires SuperAdmin privileges.');
       } else if (err.response?.status === 401) {
         setError('Session expired. Please login again.');
         localStorage.clear();
         window.location.href = '/superadmin/login';
       } else {
-        setError('Failed to fetch categories: ' + (err.response?.data?.message || err.message));
+        setError('Failed to load menu: ' + (err.response?.data?.message || err.message));
       }
     } finally {
-      setCategoriesLoading(false);
+      setIsMenuLoading(false); // Turn off spinner ONLY when everything is done
+    }
+  }, []);
+
+  // SEPARATE: Handle user clicking a different category
+  const handleCategorySelect = useCallback(async (category) => {
+    if (!category) return;
+
+    setSelectedCategory(category);
+    setProductsLoading(true);
+    
+    try {
+      console.log('🔄 User selected category:', category.name);
+      const productData = await productApi.getByCategory(category.id);
+      console.log('✅ Products fetched for selected category:', productData.length);
+      setProducts(Array.isArray(productData) ? productData : []);
+    } catch (err) {
+      console.error('❌ Error fetching products for category:', err);
+      setProducts([]);
+      setError('Failed to fetch products: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setProductsLoading(false);
     }
   }, []);
 
@@ -2242,7 +2291,7 @@ export default function SuperAdminDashboard() {
       
       setShowCreateCategoryModal(false);
       resetCategoryForm();
-      await fetchCategories(selectedBusiness.id);
+      await fetchMenuForBusiness(selectedBusiness.id);
       setError('');
     } catch (err) {
       console.error('❌ Error creating category:', err);
@@ -2272,7 +2321,7 @@ export default function SuperAdminDashboard() {
       setShowEditCategoryModal(false);
       setEditingCategory(null);
       resetCategoryForm();
-      await fetchCategories(selectedBusiness.id);
+      await fetchMenuForBusiness(selectedBusiness.id);
       setError('');
     } catch (err) {
       console.error('❌ Error updating category:', err);
@@ -2299,7 +2348,7 @@ export default function SuperAdminDashboard() {
       await categoryApi.business.delete(selectedBusiness.id, categoryId);
       console.log('✅ Category deleted successfully');
       
-      await fetchCategories(selectedBusiness.id);
+      await fetchMenuForBusiness(selectedBusiness.id);
       if (selectedCategory?.id === categoryId) {
         setSelectedCategory(null);
         setProducts([]);
@@ -3515,13 +3564,13 @@ export default function SuperAdminDashboard() {
 
   // Menu & Products Tab
   const MenuTab = () => {
-    // Auto-load categories when business is selected
+    // Auto-load menu when business is selected - triggers master orchestration
     useEffect(() => {
       if (selectedBusiness?.id && activeTab === 'menu') {
-        console.log('🔄 Auto-loading categories for business:', selectedBusiness.id);
-        fetchCategories(selectedBusiness.id);
+        console.log('🎬 MenuTab: Triggering master menu fetch for business:', selectedBusiness.id);
+        fetchMenuForBusiness(selectedBusiness.id);
       }
-    }, [selectedBusiness?.id, activeTab, fetchCategories]);
+    }, [selectedBusiness?.id, activeTab, fetchMenuForBusiness]);
 
     return (
       <div className="space-y-6">
@@ -3580,10 +3629,10 @@ export default function SuperAdminDashboard() {
                 </button>
               </div>
               
-              {categoriesLoading ? (
+              {isMenuLoading ? (
                 <div className="text-center py-8">
                   <div className="inline-block w-6 h-6 border-2 border-zinc-600 border-t-white rounded-full animate-spin mb-2"></div>
-                  <p className="text-zinc-400 text-sm">Loading categories...</p>
+                  <p className="text-zinc-400 text-sm">Loading menu...</p>
                 </div>
               ) : categories.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -3597,11 +3646,7 @@ export default function SuperAdminDashboard() {
                           ? 'bg-zinc-800 border-zinc-600'
                           : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
                       }`}
-                      onClick={() => {
-                        console.log('🔘 Category selected:', category.id);
-                        setSelectedCategory(category);
-                        fetchProducts(category.id);
-                      }}
+                      onClick={() => handleCategorySelect(category)}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="font-medium text-white">{category.name}</h4>
@@ -3654,93 +3699,6 @@ export default function SuperAdminDashboard() {
 
             {/* Products Management */}
             {selectedCategory && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="text-lg font-medium text-white">Categories - {selectedVenue.name}</h3>
-                  <p className="text-sm text-zinc-400">{categories.length} categories</p>
-                </div>
-                <button 
-                  onClick={() => {
-                    console.log('🔘 Add Category button clicked');
-                    setShowCreateCategoryModal(true);
-                  }}
-                  className="bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-                >
-                  + Add Category
-                </button>
-              </div>
-              
-              {categories.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {categories.map((category) => (
-                    <motion.div
-                      key={category.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                        selectedCategory?.id === category.id
-                          ? 'bg-zinc-800 border-zinc-600'
-                          : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
-                      }`}
-                      onClick={() => {
-                        console.log('🔘 Category selected:', category.id);
-                        setSelectedCategory(category);
-                        fetchProducts(category.id);
-                      }}
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-medium text-white">{category.name}</h4>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          category.isActive 
-                            ? 'bg-green-900/30 text-green-400' 
-                            : 'bg-red-900/30 text-red-400'
-                        }`}>
-                          {category.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-zinc-500">Order: {category.sortOrder}</p>
-                      <p className="text-xs text-zinc-500">ID: {category.id}</p>
-                      
-                      <div className="flex space-x-2 mt-3">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEditCategoryModal(category);
-                          }}
-                          className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white px-2 py-1 rounded text-xs transition-colors"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteCategory(category.id);
-                          }}
-                          className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-zinc-400">No categories found for this venue.</p>
-                  <button 
-                    onClick={() => setShowCreateCategoryModal(true)}
-                    className="mt-2 bg-white text-black px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-colors"
-                  >
-                    Create First Category
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Products Management */}
-          {selectedCategory && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <div>
