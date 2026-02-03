@@ -13,24 +13,12 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if business is configured
-    const businessId = localStorage.getItem('business_id');
-    const businessDataStr = localStorage.getItem('business_data');
-    
-    if (!businessId || !businessDataStr) {
-      // No business configured - redirect to setup
-      navigate('/');
-      return;
-    }
-
-    try {
-      const parsedBusinessData = JSON.parse(businessDataStr);
-      setBusinessData(parsedBusinessData);
-    } catch (error) {
-      console.error('Error parsing business data:', error);
-      navigate('/');
-    }
-  }, [navigate]);
+    // Set default business data for direct login
+    setBusinessData({
+      name: 'RivieraOS',
+      location: 'Staff Login'
+    });
+  }, []);
 
   const handlePinPress = (digit) => {
     if (pin.length < 4) {
@@ -51,32 +39,18 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const businessId = localStorage.getItem('business_id');
-      
-      // Mock staff data per business
+      // Simple PIN-based authentication without business dependency
       const mockStaffData = {
-        '1': { // Hotel Coral Beach
-          '1111': { id: 1, name: 'Marco Rossi', role: 'Collector', email: 'marco@hotelcoral.al' },
-          '2222': { id: 2, name: 'Sofia Bianchi', role: 'Bar', email: 'sofia@hotelcoral.al' },
-          '3333': { id: 3, name: 'Luca Verde', role: 'Collector', email: 'luca@hotelcoral.al' },
-          '4444': { id: 4, name: 'Test Staff', role: 'Collector', email: 'test@hotelcoral.al' }
-        },
-        '2': { // Marina Resort
-          '1111': { id: 5, name: 'John Smith', role: 'Collector', email: 'john@marina.al' },
-          '2222': { id: 6, name: 'Lisa Brown', role: 'Bar', email: 'lisa@marina.al' },
-          '5555': { id: 7, name: 'Mike Johnson', role: 'Collector', email: 'mike@marina.al' }
-        },
-        '3': { // Mountain Lodge
-          '1111': { id: 8, name: 'Anna White', role: 'Collector', email: 'anna@mountain.al' },
-          '6666': { id: 9, name: 'David Black', role: 'Bar', email: 'david@mountain.al' }
-        }
+        '1111': { id: 1, name: 'Marco Rossi', role: 'Collector', email: 'marco@hotelcoral.al' },
+        '2222': { id: 2, name: 'Sofia Bianchi', role: 'Bar', email: 'sofia@hotelcoral.al' },
+        '3333': { id: 3, name: 'Luca Verde', role: 'Collector', email: 'luca@hotelcoral.al' },
+        '4444': { id: 4, name: 'Test Staff', role: 'Collector', email: 'test@hotelcoral.al' }
       };
 
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      const businessStaff = mockStaffData[businessId];
-      const staffMember = businessStaff?.[pin];
+      const staffMember = mockStaffData[pin];
       
       if (staffMember) {
         // Store authentication data
@@ -97,7 +71,7 @@ export default function LoginPage() {
         
         navigate(roleRoutes[staffMember.role] || '/collector');
       } else {
-        throw new Error('Invalid PIN for this business');
+        throw new Error('Invalid PIN');
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -119,27 +93,18 @@ export default function LoginPage() {
     setError('');
 
     try {
-      const businessId = localStorage.getItem('business_id');
-      
-      // Use unified API for admin authentication
-      const { loginUser } = await import('../services/api.js');
-      const result = await loginUser({
-        email: 'admin@hotelcoral.al', // This should be dynamic based on business
-        password: password,
-        businessId: parseInt(businessId)
-      });
-      
-      if (result.success) {
+      // Simple manager authentication
+      if (password === 'admin123') {
         // Store authentication data
-        localStorage.setItem('token', result.token || 'mock-admin-token');
-        localStorage.setItem('userId', result.user?.id || '999');
-        localStorage.setItem('userName', result.user?.name || 'Administrator');
+        localStorage.setItem('token', 'mock-manager-token');
+        localStorage.setItem('userId', '999');
+        localStorage.setItem('userName', 'Manager');
         localStorage.setItem('role', 'Admin');
         
-        console.log('Admin login successful, redirecting...');
+        console.log('Manager login successful');
         navigate('/manager');
       } else {
-        throw new Error('Authentication failed');
+        throw new Error('Invalid password');
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -150,48 +115,25 @@ export default function LoginPage() {
     }
   };
 
-  const handleResetBusiness = () => {
-    localStorage.removeItem('business_id');
-    localStorage.removeItem('business_data');
-    navigate('/');
-  };
-
   // Auto-submit when 4 digits entered
   if (pin.length === 4 && !loading) {
     handlePinSubmit();
   }
 
-  if (!businessData) {
-    return (
-      <div className="min-h-screen bg-zinc-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900 mx-auto mb-4"></div>
-          <p className="text-zinc-600">Loading business configuration...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-6">
       <div className="w-full max-w-md">
-        {/* Business Header */}
+        {/* App Header */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-4">
             <Building2 className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-zinc-900 mb-1 tracking-tight">
-            {businessData.name || 'Business Name'}
+            RivieraOS
           </h1>
           <p className="text-sm text-zinc-600">
-            {businessData.location || 'Business Location'}
+            Staff Login
           </p>
-          <button
-            onClick={handleResetBusiness}
-            className="text-xs text-zinc-500 hover:text-zinc-700 mt-2 transition-colors"
-          >
-            Wrong business? Reset setup
-          </button>
         </div>
 
         {/* Tabs */}
