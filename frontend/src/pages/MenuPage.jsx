@@ -55,14 +55,14 @@ const MaterialIcon = ({ name, className = "", filled = false }) => (
 );
 
 // Menu Item Component
-function MenuItem({ item, addToCart, cart, updateQuantity }) {
+function MenuItem({ item, addToCart, cart, updateQuantity, isDigitalOrderingEnabled }) {
   const cartItem = cart.find(cartItem => cartItem.id === item.id);
   const isInCart = !!cartItem;
 
   return (
     <article className="group flex flex-col items-center text-center">
       <div className="relative w-full aspect-[4/5] mb-8">
-        {isInCart && (
+        {isInCart && isDigitalOrderingEnabled && (
           <div className="absolute top-4 right-4 z-10 bg-black text-white rounded-full p-1 opacity-100 transition-opacity duration-300">
             <MaterialIcon name="check" className="text-[16px]" />
           </div>
@@ -83,40 +83,51 @@ function MenuItem({ item, addToCart, cart, updateQuantity }) {
         <p className="font-sans text-sm text-black/60 leading-relaxed font-light max-w-[90%] mx-auto mb-8">
           {item.description}
         </p>
-        <div className="flex items-center justify-center gap-4 w-full max-w-[280px] mx-auto">
-          {isInCart ? (
-            <>
-              <div className="flex items-center gap-3 border border-black/10 px-3 py-2 bg-white">
+        
+        {/* Conditional rendering based on digital ordering enabled */}
+        {isDigitalOrderingEnabled ? (
+          <div className="flex items-center justify-center gap-4 w-full max-w-[280px] mx-auto">
+            {isInCart ? (
+              <>
+                <div className="flex items-center gap-3 border border-black/10 px-3 py-2 bg-white">
+                  <button 
+                    onClick={() => updateQuantity(item.id, 'decrease')}
+                    className="text-black hover:opacity-60 transition-opacity flex items-center"
+                  >
+                    <MaterialIcon name="remove" className="text-[16px]" />
+                  </button>
+                  <span className="font-serif text-base min-w-[1ch] text-center w-4">{cartItem.quantity}</span>
+                  <button 
+                    onClick={() => updateQuantity(item.id, 'increase')}
+                    className="text-black hover:opacity-60 transition-opacity flex items-center"
+                  >
+                    <MaterialIcon name="add" className="text-[16px]" />
+                  </button>
+                </div>
                 <button 
-                  onClick={() => updateQuantity(item.id, 'decrease')}
-                  className="text-black hover:opacity-60 transition-opacity flex items-center"
+                  onClick={() => addToCart(item)}
+                  className="flex-1 bg-black text-white font-serif text-sm uppercase tracking-widest py-3 px-4 hover:bg-black/80 transition-colors duration-300"
                 >
-                  <MaterialIcon name="remove" className="text-[16px]" />
+                  Add
                 </button>
-                <span className="font-serif text-base min-w-[1ch] text-center w-4">{cartItem.quantity}</span>
-                <button 
-                  onClick={() => updateQuantity(item.id, 'increase')}
-                  className="text-black hover:opacity-60 transition-opacity flex items-center"
-                >
-                  <MaterialIcon name="add" className="text-[16px]" />
-                </button>
-              </div>
-              <button 
+              </>
+            ) : (
+              <button
                 onClick={() => addToCart(item)}
-                className="flex-1 bg-black text-white font-serif text-sm uppercase tracking-widest py-3 px-4 hover:bg-black/80 transition-colors duration-300"
+                className="flex-1 bg-black text-white font-serif text-sm uppercase tracking-widest py-3 px-8 hover:bg-black/80 transition-colors duration-300 flex items-center justify-center gap-2"
               >
-                Add
+                <span>Add to Order</span>
               </button>
-            </>
-          ) : (
-            <button
-              onClick={() => addToCart(item)}
-              className="flex-1 bg-black text-white font-serif text-sm uppercase tracking-widest py-3 px-8 hover:bg-black/80 transition-colors duration-300 flex items-center justify-center gap-2"
-            >
-              <span>Add to Order</span>
-            </button>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          // View-only mode - no ordering controls
+          <div className="flex items-center justify-center w-full max-w-[280px] mx-auto">
+            <div className="text-center py-3 px-8 border border-stone-300/60 bg-stone-50/30 text-stone-600 font-serif text-sm uppercase tracking-widest">
+              View Only
+            </div>
+          </div>
+        )}
       </div>
     </article>
   );
@@ -135,6 +146,8 @@ export default function MenuPage() {
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [rating, setRating] = useState(0);
   const [feedbackNote, setFeedbackNote] = useState('');
+  const [venueData, setVenueData] = useState(null);
+  const [isDigitalOrderingEnabled, setIsDigitalOrderingEnabled] = useState(true);
 
   useEffect(() => {
     fetchVenueData();
@@ -149,6 +162,21 @@ export default function MenuPage() {
 
   const fetchVenueData = async () => {
     try {
+      // Fetch venue details to get isDigitalOrderingEnabled flag
+      try {
+        const venueResponse = await fetch(`${API_URL}/venues/${VENUE_ID}`);
+        if (venueResponse.ok) {
+          const venue = await venueResponse.json();
+          setVenueData(venue);
+          setIsDigitalOrderingEnabled(venue.isDigitalOrderingEnabled ?? true);
+          console.log('🏨 Venue digital ordering enabled:', venue.isDigitalOrderingEnabled);
+        }
+      } catch (err) {
+        console.error('Error fetching venue details:', err);
+        // Default to enabled if API fails
+        setIsDigitalOrderingEnabled(true);
+      }
+
       // If bedId is provided, fetch sunbed info from Discovery endpoint
       if (bedId) {
         try {
@@ -349,6 +377,16 @@ export default function MenuPage() {
               Sunbed {sunbedName}
             </p>
           )}
+          {!isDigitalOrderingEnabled && (
+            <div className="mt-6 max-w-sm mx-auto">
+              <div className="bg-stone-50/80 border border-stone-200/60 rounded-2xl p-4">
+                <p className="text-stone-600 font-sans text-sm leading-relaxed">
+                  <span className="font-medium">Menu Catalog</span><br/>
+                  Please order with your waiter
+                </p>
+              </div>
+            </div>
+          )}
         </header>
 
         {/* Category Navigation */}
@@ -380,13 +418,14 @@ export default function MenuPage() {
                 addToCart={addToCart}
                 cart={cart}
                 updateQuantity={updateQuantity}
+                isDigitalOrderingEnabled={isDigitalOrderingEnabled}
               />
             ))}
           </div>
         </main>
 
-        {/* Floating Cart Button */}
-        {cart.length > 0 && (
+        {/* Floating Cart Button - Only show if digital ordering is enabled */}
+        {cart.length > 0 && isDigitalOrderingEnabled && (
           <motion.div
             initial={{ y: 100 }}
             animate={{ y: 0 }}
