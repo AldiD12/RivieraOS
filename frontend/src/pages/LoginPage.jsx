@@ -108,7 +108,7 @@ export default function LoginPage() {
       
       console.log('✅ Staff login successful with real API:', data.user);
       
-      // Route based on role - Updated to match ProtectedRoute requirements
+      // Route based on role - Updated to match ProtectedRoute requirements (v2.0)
       const roleRoutes = {
         'Owner': '/admin',
         'Manager': '/admin', // Manager goes directly to /admin
@@ -122,7 +122,7 @@ export default function LoginPage() {
       
       const targetRoute = roleRoutes[data.user.role] || '/collector';
       console.log('🔄 Redirecting to:', targetRoute);
-      console.log('🔍 Role mapping debug:', {
+      console.log('🔍 Role mapping debug (v2):', {
         userRole: data.user.role,
         availableRoutes: roleRoutes,
         selectedRoute: targetRoute
