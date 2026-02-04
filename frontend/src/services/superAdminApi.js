@@ -116,7 +116,8 @@ export const staffApi = {
       password: paddedPassword, // PIN padded to meet minimum length
       fullName: staffData.fullName,
       phoneNumber: staffData.phoneNumber,
-      role: staffData.role
+      role: staffData.role,
+      pin: staffData.pin // Include original 4-digit PIN to enable PIN login
     };
     
     console.log('📤 Creating staff with data:', {
@@ -125,6 +126,7 @@ export const staffApi = {
       fullName: apiData.fullName,
       phoneNumber: apiData.phoneNumber,
       role: apiData.role,
+      pin: '****', // Hide PIN in logs
       originalPin: staffData.pin,
       paddedLength: paddedPassword.length
     });
@@ -151,7 +153,8 @@ export const staffApi = {
       password: paddedPassword, // PIN padded to meet minimum length
       fullName: staffData.fullName,
       phoneNumber: staffData.phoneNumber,
-      role: staffData.role
+      role: staffData.role,
+      pin: staffData.pin // Include original 4-digit PIN to enable PIN login
     };
     
     console.log('📤 Updating staff with data:', {
@@ -160,6 +163,7 @@ export const staffApi = {
       fullName: apiData.fullName,
       phoneNumber: apiData.phoneNumber,
       role: apiData.role,
+      pin: '****', // Hide PIN in logs
       originalPin: staffData.pin,
       paddedLength: paddedPassword.length
     });
