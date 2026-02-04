@@ -10,6 +10,7 @@ import ReviewPage from './pages/ReviewPage';
 import ManagerLeaderboardPage from './pages/ManagerLeaderboardPage';
 import OurAdmin from './pages/OurAdmin';
 import SuperAdminLogin from './pages/SuperAdminLogin';
+import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import ApiStatus from './components/ApiStatus';
 
@@ -78,6 +79,16 @@ function App() {
 
         {/* Super Admin Login - Separate from regular staff login */}
         <Route path="/superadmin/login" element={<SuperAdminLogin />} />
+
+        {/* Super Admin Dashboard - Protected Route */}
+        <Route 
+          path="/superadmin" 
+          element={
+            <ProtectedRoute role="SuperAdmin">
+              <SuperAdminDashboard />
+            </ProtectedRoute>
+          } 
+        />
 
         {/* Manager Dashboard */}
         <Route 
