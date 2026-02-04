@@ -108,9 +108,12 @@ export const staffApi = {
   create: async (businessId, staffData) => {
     // Transform phone number + PIN data to match API expectations
     // The PIN is stored as the password field (backend requirement)
+    // Backend requires minimum 6 characters, so we pad the 4-digit PIN
+    const paddedPassword = staffData.pin.padStart(6, '0'); // Pad with zeros to meet 6-char minimum
+    
     const apiData = {
       email: staffData.phoneNumber + '@staff.local', // Use phone as email identifier
-      password: staffData.pin, // PIN is stored as password
+      password: paddedPassword, // PIN padded to meet minimum length
       fullName: staffData.fullName,
       phoneNumber: staffData.phoneNumber,
       role: staffData.role
@@ -121,7 +124,9 @@ export const staffApi = {
       password: '****', // Hide PIN in logs
       fullName: apiData.fullName,
       phoneNumber: apiData.phoneNumber,
-      role: apiData.role
+      role: apiData.role,
+      originalPin: staffData.pin,
+      paddedLength: paddedPassword.length
     });
     
     const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Users`, apiData);
@@ -138,9 +143,12 @@ export const staffApi = {
   update: async (businessId, staffId, staffData) => {
     // Transform phone number + PIN data to match API expectations
     // The PIN is stored as the password field (backend requirement)
+    // Backend requires minimum 6 characters, so we pad the 4-digit PIN
+    const paddedPassword = staffData.pin.padStart(6, '0'); // Pad with zeros to meet 6-char minimum
+    
     const apiData = {
       email: staffData.phoneNumber + '@staff.local', // Use phone as email identifier
-      password: staffData.pin, // PIN is stored as password
+      password: paddedPassword, // PIN padded to meet minimum length
       fullName: staffData.fullName,
       phoneNumber: staffData.phoneNumber,
       role: staffData.role
@@ -151,7 +159,9 @@ export const staffApi = {
       password: '****', // Hide PIN in logs
       fullName: apiData.fullName,
       phoneNumber: apiData.phoneNumber,
-      role: apiData.role
+      role: apiData.role,
+      originalPin: staffData.pin,
+      paddedLength: paddedPassword.length
     });
     
     const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/Users/${staffId}`, apiData);
