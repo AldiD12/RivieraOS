@@ -32,16 +32,17 @@ const CreateStaffModal = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Email *
+                  Phone Number *
                 </label>
                 <input
-                  type="email"
+                  type="tel"
                   required
-                  value={staffForm.email}
-                  onChange={(e) => onFormChange('email', e.target.value)}
+                  value={staffForm.phoneNumber}
+                  onChange={(e) => onFormChange('phoneNumber', e.target.value)}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter email address"
+                  placeholder="Enter phone number"
                 />
+                <p className="text-xs text-zinc-500 mt-1">Primary identifier for staff login</p>
               </div>
               
               <div>
@@ -54,21 +55,6 @@ const CreateStaffModal = ({
                   onChange={(e) => onFormChange('fullName', e.target.value)}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   placeholder="Enter full name"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Password *
-                </label>
-                <input
-                  type="password"
-                  required
-                  minLength="6"
-                  value={staffForm.password}
-                  onChange={(e) => onFormChange('password', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter password (min 6 characters)"
                 />
               </div>
               
@@ -96,19 +82,6 @@ const CreateStaffModal = ({
               
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={staffForm.phoneNumber}
-                  onChange={(e) => onFormChange('phoneNumber', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter phone number"
-                />
-              </div>
-              
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
                   Role *
                 </label>
                 <select
@@ -122,8 +95,23 @@ const CreateStaffModal = ({
                   <option value="Manager">Manager</option>
                   <option value="Admin">Admin</option>
                   <option value="Collector">Collector</option>
+                  <option value="Bar">Bar</option>
+                  <option value="Waiter">Waiter</option>
                 </select>
               </div>
+            </div>
+            
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="createStaffIsActive"
+                checked={staffForm.isActive}
+                onChange={(e) => onFormChange('isActive', e.target.checked)}
+                className="mr-2"
+              />
+              <label htmlFor="createStaffIsActive" className="text-sm text-zinc-300">
+                Active Staff Member
+              </label>
             </div>
             
             <div className="flex justify-end space-x-4 pt-4">
@@ -177,15 +165,17 @@ const EditStaffModal = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Email *
+                  Phone Number *
                 </label>
                 <input
-                  type="email"
+                  type="tel"
                   required
-                  value={staffForm.email}
-                  onChange={(e) => onFormChange('email', e.target.value)}
+                  value={staffForm.phoneNumber}
+                  onChange={(e) => onFormChange('phoneNumber', e.target.value)}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter phone number"
                 />
+                <p className="text-xs text-zinc-500 mt-1">Primary identifier for staff login</p>
               </div>
               
               <div>
@@ -197,18 +187,7 @@ const EditStaffModal = ({
                   value={staffForm.fullName}
                   onChange={(e) => onFormChange('fullName', e.target.value)}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={staffForm.phoneNumber}
-                  onChange={(e) => onFormChange('phoneNumber', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter full name"
                 />
               </div>
               
@@ -249,6 +228,8 @@ const EditStaffModal = ({
                   <option value="Manager">Manager</option>
                   <option value="Admin">Admin</option>
                   <option value="Collector">Collector</option>
+                  <option value="Bar">Bar</option>
+                  <option value="Waiter">Waiter</option>
                 </select>
               </div>
             </div>
@@ -764,7 +745,7 @@ const StaffTab = ({
                         {staff.fullName || 'No name'}
                       </div>
                       <div className="text-sm text-zinc-400">
-                        {staff.email}
+                        {staff.phoneNumber || 'No phone number'}
                       </div>
                     </div>
                   </td>
@@ -1231,10 +1212,8 @@ export default function SuperAdminDashboard() {
   
   // Form states
   const [staffForm, setStaffForm] = useState({
-    email: '',
-    password: '',
-    fullName: '',
     phoneNumber: '',
+    fullName: '',
     role: '',
     pin: '',
     isActive: true
@@ -1451,22 +1430,31 @@ export default function SuperAdminDashboard() {
     if (!selectedBusiness) return;
     
     try {
-      await staffApi.create(selectedBusiness.id, staffForm);
+      // Create staff member with phone number and PIN for authentication
+      const staffData = {
+        phoneNumber: staffForm.phoneNumber,
+        fullName: staffForm.fullName,
+        role: staffForm.role,
+        pin: staffForm.pin,
+        isActive: staffForm.isActive
+      };
+      
+      await staffApi.create(selectedBusiness.id, staffData);
       setShowCreateStaffModal(false);
       setStaffForm({
-        email: '',
-        password: '',
-        fullName: '',
         phoneNumber: '',
+        fullName: '',
         role: '',
         pin: '',
         isActive: true
       });
       
       // Refresh staff list
-      const staffData = await staffApi.getByBusiness(selectedBusiness.id);
-      setStaffMembers(Array.isArray(staffData) ? staffData : []);
+      const refreshedStaffData = await staffApi.getByBusiness(selectedBusiness.id);
+      setStaffMembers(Array.isArray(refreshedStaffData) ? refreshedStaffData : []);
       setError('');
+      
+      console.log('✅ Staff member created with phone number + PIN authentication');
     } catch (err) {
       console.error('Error creating staff:', err);
       setError('Failed to create staff member: ' + (err.response?.data?.message || err.message));
@@ -1478,22 +1466,29 @@ export default function SuperAdminDashboard() {
     if (!selectedBusiness || !editingStaff) return;
     
     try {
-      await staffApi.update(selectedBusiness.id, editingStaff.id, staffForm);
+      // Update staff member with phone number and PIN
+      const staffData = {
+        phoneNumber: staffForm.phoneNumber,
+        fullName: staffForm.fullName,
+        role: staffForm.role,
+        pin: staffForm.pin,
+        isActive: staffForm.isActive
+      };
+      
+      await staffApi.update(selectedBusiness.id, editingStaff.id, staffData);
       setShowEditStaffModal(false);
       setEditingStaff(null);
       setStaffForm({
-        email: '',
-        password: '',
-        fullName: '',
         phoneNumber: '',
+        fullName: '',
         role: '',
         pin: '',
         isActive: true
       });
       
       // Refresh staff list
-      const staffData = await staffApi.getByBusiness(selectedBusiness.id);
-      setStaffMembers(Array.isArray(staffData) ? staffData : []);
+      const refreshedStaffData = await staffApi.getByBusiness(selectedBusiness.id);
+      setStaffMembers(Array.isArray(refreshedStaffData) ? refreshedStaffData : []);
       setError('');
     } catch (err) {
       console.error('Error updating staff:', err);
@@ -1942,10 +1937,8 @@ export default function SuperAdminDashboard() {
             onEditStaff={(staff) => {
               setEditingStaff(staff);
               setStaffForm({
-                email: staff.email || '',
-                password: '',
-                fullName: staff.fullName || '',
                 phoneNumber: staff.phoneNumber || '',
+                fullName: staff.fullName || '',
                 role: staff.role || '',
                 pin: staff.pin || '',
                 isActive: staff.isActive

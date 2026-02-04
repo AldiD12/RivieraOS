@@ -501,14 +501,14 @@
         }
       }
     },
-    "/api/superadmin/venues/{venueId}/Categories": {
+    "/api/superadmin/businesses/{businessId}/Categories": {
       "get": {
         "tags": [
           "Categories"
         ],
         "parameters": [
           {
-            "name": "venueId",
+            "name": "businessId",
             "in": "path",
             "required": true,
             "schema": {
@@ -555,7 +555,7 @@
         ],
         "parameters": [
           {
-            "name": "venueId",
+            "name": "businessId",
             "in": "path",
             "required": true,
             "schema": {
@@ -607,14 +607,14 @@
         }
       }
     },
-    "/api/superadmin/venues/{venueId}/Categories/{id}": {
+    "/api/superadmin/businesses/{businessId}/Categories/{id}": {
       "get": {
         "tags": [
           "Categories"
         ],
         "parameters": [
           {
-            "name": "venueId",
+            "name": "businessId",
             "in": "path",
             "required": true,
             "schema": {
@@ -661,7 +661,7 @@
         ],
         "parameters": [
           {
-            "name": "venueId",
+            "name": "businessId",
             "in": "path",
             "required": true,
             "schema": {
@@ -710,7 +710,7 @@
         ],
         "parameters": [
           {
-            "name": "venueId",
+            "name": "businessId",
             "in": "path",
             "required": true,
             "schema": {
@@ -731,6 +731,128 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/superadmin/businesses/{businessId}/Categories/{id}/exclusions": {
+      "post": {
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "businessId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Categories"
+        ],
+        "parameters": [
+          {
+            "name": "businessId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -994,6 +1116,128 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/superadmin/categories/{categoryId}/Products/{id}/exclusions": {
+      "post": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "text/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Products"
+        ],
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1549,6 +1793,38 @@
         }
       }
     },
+    "/api/superadmin/businesses/{businessId}/Venues/{id}/activate": {
+      "post": {
+        "tags": [
+          "Venues"
+        ],
+        "parameters": [
+          {
+            "name": "businessId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/superadmin/businesses/{businessId}/Venues/{id}/config": {
       "get": {
         "tags": [
@@ -1952,6 +2228,20 @@
               "$ref": "#/components/schemas/Venue"
             },
             "nullable": true
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "nullable": true
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2146,17 +2436,24 @@
             "format": "date-time",
             "nullable": true
           },
-          "venueId": {
+          "businessId": {
             "type": "integer",
             "format": "int32"
           },
-          "venue": {
-            "$ref": "#/components/schemas/Venue"
+          "business": {
+            "$ref": "#/components/schemas/Business"
           },
           "products": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Product"
+            },
+            "nullable": true
+          },
+          "venueExclusions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryVenueExclusion"
             },
             "nullable": true
           }
@@ -2181,11 +2478,11 @@
           "isActive": {
             "type": "boolean"
           },
-          "venueId": {
+          "businessId": {
             "type": "integer",
             "format": "int32"
           },
-          "venueName": {
+          "businessName": {
             "type": "string",
             "nullable": true
           },
@@ -2193,6 +2490,14 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductListItemDto"
+            },
+            "nullable": true
+          },
+          "excludedVenueIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
             },
             "nullable": true
           }
@@ -2220,6 +2525,30 @@
           "productCount": {
             "type": "integer",
             "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CategoryVenueExclusion": {
+        "type": "object",
+        "properties": {
+          "categoryId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "venueId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/Venue"
           }
         },
         "additionalProperties": false
@@ -2429,6 +2758,9 @@
             "type": "number",
             "format": "double",
             "nullable": true
+          },
+          "orderingEnabled": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -2600,15 +2932,22 @@
             "type": "integer",
             "format": "int32"
           },
-          "venueId": {
+          "businessId": {
             "type": "integer",
             "format": "int32"
           },
           "category": {
             "$ref": "#/components/schemas/Category"
           },
-          "venue": {
-            "$ref": "#/components/schemas/Venue"
+          "business": {
+            "$ref": "#/components/schemas/Business"
+          },
+          "venueExclusions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductVenueExclusion"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2659,12 +2998,20 @@
             "type": "string",
             "nullable": true
           },
-          "venueId": {
+          "businessId": {
             "type": "integer",
             "format": "int32"
           },
-          "venueName": {
+          "businessName": {
             "type": "string",
+            "nullable": true
+          },
+          "excludedVenueIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            },
             "nullable": true
           }
         },
@@ -2711,6 +3058,30 @@
           "categoryName": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProductVenueExclusion": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "venueId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/Venue"
           }
         },
         "additionalProperties": false
@@ -3085,6 +3456,9 @@
             "type": "number",
             "format": "double",
             "nullable": true
+          },
+          "orderingEnabled": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -3364,6 +3738,12 @@
             "type": "string",
             "format": "date-time"
           },
+          "isActive": {
+            "type": "boolean"
+          },
+          "orderingEnabled": {
+            "type": "boolean"
+          },
           "isDeleted": {
             "type": "boolean"
           },
@@ -3389,24 +3769,24 @@
             },
             "nullable": true
           },
-          "categories": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Category"
-            },
-            "nullable": true
-          },
-          "products": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Product"
-            },
-            "nullable": true
-          },
           "scheduledEvents": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ScheduledEvent"
+            },
+            "nullable": true
+          },
+          "categoryExclusions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CategoryVenueExclusion"
+            },
+            "nullable": true
+          },
+          "productExclusions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductVenueExclusion"
             },
             "nullable": true
           }
@@ -3515,6 +3895,12 @@
             "type": "string",
             "format": "date-time"
           },
+          "isActive": {
+            "type": "boolean"
+          },
+          "orderingEnabled": {
+            "type": "boolean"
+          },
           "businessId": {
             "type": "integer",
             "format": "int32"
@@ -3563,15 +3949,13 @@
             "type": "string",
             "format": "date-time"
           },
+          "isActive": {
+            "type": "boolean"
+          },
+          "orderingEnabled": {
+            "type": "boolean"
+          },
           "zoneCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "categoryCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "productCount": {
             "type": "integer",
             "format": "int32"
           },

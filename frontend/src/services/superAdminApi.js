@@ -106,7 +106,19 @@ export const staffApi = {
 
   // POST /api/superadmin/businesses/{businessId}/Users - Create staff member
   create: async (businessId, staffData) => {
-    const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Users`, staffData);
+    // Transform phone number + PIN data to match API expectations
+    const apiData = {
+      phoneNumber: staffData.phoneNumber,
+      fullName: staffData.fullName,
+      role: staffData.role,
+      pin: staffData.pin,
+      isActive: staffData.isActive,
+      // For API compatibility, we might need to provide email as phone number
+      email: staffData.phoneNumber + '@staff.local', // Temporary email format
+      password: 'temp-' + staffData.pin // Temporary password based on PIN
+    };
+    
+    const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Users`, apiData);
     return response.data;
   },
 
@@ -118,7 +130,18 @@ export const staffApi = {
 
   // PUT /api/superadmin/businesses/{businessId}/Users/{id} - Update staff member
   update: async (businessId, staffId, staffData) => {
-    const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/Users/${staffId}`, staffData);
+    // Transform phone number + PIN data to match API expectations
+    const apiData = {
+      phoneNumber: staffData.phoneNumber,
+      fullName: staffData.fullName,
+      role: staffData.role,
+      pin: staffData.pin,
+      isActive: staffData.isActive,
+      // For API compatibility, we might need to provide email as phone number
+      email: staffData.phoneNumber + '@staff.local' // Temporary email format
+    };
+    
+    const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/Users/${staffId}`, apiData);
     return response.data;
   },
 

@@ -1,24 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, User, X, Building2 } from 'lucide-react';
+import { Lock, User, X, Building2, Phone } from 'lucide-react';
 
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState('staff'); // 'staff' or 'manager'
   const [pin, setPin] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [shake, setShake] = useState(false);
-  const [businessData, setBusinessData] = useState(null);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Set default business data for direct login
-    setBusinessData({
-      name: 'RivieraOS',
-      location: 'Staff Login'
-    });
-  }, []);
 
   const handlePinPress = (digit) => {
     if (pin.length < 4) {
@@ -32,50 +24,54 @@ export default function LoginPage() {
     setError('');
   };
 
-  const handlePinSubmit = async () => {
-    if (pin.length !== 4) return;
+  const handleStaffLogin = async () => {
+    if (pin.length !== 4 || !phoneNumber) return;
 
     setLoading(true);
     setError('');
 
     try {
-      // Simple PIN-based authentication without business dependency
-      const mockStaffData = {
-        '1111': { id: 1, name: 'Marco Rossi', role: 'Collector', email: 'marco@hotelcoral.al' },
-        '2222': { id: 2, name: 'Sofia Bianchi', role: 'Bar', email: 'sofia@hotelcoral.al' },
-        '3333': { id: 3, name: 'Luca Verde', role: 'Collector', email: 'luca@hotelcoral.al' },
-        '4444': { id: 4, name: 'Test Staff', role: 'Collector', email: 'test@hotelcoral.al' }
-      };
+      // Real API call to the new PIN login endpoint
+      const response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: phoneNumber,
+          pin: pin
+        })
+      });
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const staffMember = mockStaffData[pin];
-      
-      if (staffMember) {
-        // Store authentication data
-        localStorage.setItem('token', 'mock-token-' + staffMember.id);
-        localStorage.setItem('userId', staffMember.id.toString());
-        localStorage.setItem('userName', staffMember.name);
-        localStorage.setItem('role', staffMember.role);
-        
-        console.log('Login successful:', staffMember);
-        
-        // Route based on role
-        const roleRoutes = {
-          'Collector': '/collector',
-          'Bar': '/bar',
-          'Waiter': '/collector',
-          'Staff': '/collector'
-        };
-        
-        navigate(roleRoutes[staffMember.role] || '/collector');
-      } else {
-        throw new Error('Invalid PIN');
+      if (!response.ok) {
+        throw new Error('Invalid phone number or PIN');
       }
+
+      const data = await response.json();
+      
+      // Store authentication data
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userId', data.user.id.toString());
+      localStorage.setItem('userName', data.user.fullName || data.user.email);
+      localStorage.setItem('role', data.user.role);
+      localStorage.setItem('phoneNumber', phoneNumber);
+      
+      console.log('✅ Staff login successful with real API:', data.user);
+      
+      // Route based on role
+      const roleRoutes = {
+        'Collector': '/collector',
+        'Bar': '/bar',
+        'Waiter': '/collector',
+        'Staff': '/collector',
+        'Manager': '/manager',
+        'Admin': '/admin'
+      };
+      
+      navigate(roleRoutes[data.user.role] || '/collector');
     } catch (err) {
-      console.error('Login error:', err);
-      setError('Invalid PIN');
+      console.error('Staff login error:', err);
+      setError('Invalid phone number or PIN');
       setShake(true);
       setPin('');
       setTimeout(() => setShake(false), 500);
@@ -84,7 +80,7 @@ export default function LoginPage() {
     }
   };
 
-  const handlePasswordSubmit = async (e) => {
+  const handleManagerSubmit = async (e) => {
     e.preventDefault();
     
     if (!password) return;
@@ -107,7 +103,7 @@ export default function LoginPage() {
         throw new Error('Invalid password');
       }
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('Manager login error:', err);
       setError('Invalid password');
       setPassword('');
     } finally {
@@ -115,9 +111,9 @@ export default function LoginPage() {
     }
   };
 
-  // Auto-submit when 4 digits entered
-  if (pin.length === 4 && !loading) {
-    handlePinSubmit();
+  // Auto-submit when 4 digits entered and phone number provided
+  if (pin.length === 4 && phoneNumber && !loading && activeTab === 'staff') {
+    handleStaffLogin();
   }
 
   return (
@@ -176,8 +172,38 @@ export default function LoginPage() {
         <div className="bg-white rounded-lg border border-zinc-200 p-8">
           {activeTab === 'staff' ? (
             <div>
-              <h2 className="text-lg font-bold text-zinc-900 mb-2 tracking-tight">Enter PIN</h2>
-              <p className="text-sm text-zinc-600 mb-6">Enter your 4-digit staff PIN</p>
+              <h2 className="text-lg font-bold text-zinc-900 mb-2 tracking-tight">Staff Login</h2>
+              <p className="text-sm text-zinc-600 mb-6">Enter your phone number and 4-digit PIN</p>
+
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">
+                  {error}
+                </div>
+              )}
+
+              {/* Phone Number Input */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                  Phone Number
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => {
+                      setPhoneNumber(e.target.value);
+                      setError('');
+                    }}
+                    className="w-full pl-10 pr-4 py-3 border border-zinc-200 rounded-lg focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 outline-none transition-all"
+                    placeholder="Enter your phone number"
+                    disabled={loading}
+                    autoFocus
+                  />
+                </div>
+                <p className="text-xs text-zinc-500 mt-1">Example: +355691234567</p>
+              </div>
 
               {/* PIN Display */}
               <div className={`flex justify-center gap-3 mb-8 ${shake ? 'animate-shake' : ''}`}>
@@ -197,20 +223,13 @@ export default function LoginPage() {
                 ))}
               </div>
 
-              {/* Error Message */}
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">
-                  {error}
-                </div>
-              )}
-
               {/* PIN Pad */}
               <div className="grid grid-cols-3 gap-3 mb-4">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
                   <button
                     key={digit}
                     onClick={() => handlePinPress(digit.toString())}
-                    disabled={loading}
+                    disabled={loading || !phoneNumber}
                     className="aspect-square bg-white border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 rounded-lg text-2xl font-bold text-zinc-900 transition-all active:scale-95 disabled:opacity-50"
                   >
                     {digit}
@@ -225,7 +244,7 @@ export default function LoginPage() {
                 </button>
                 <button
                   onClick={() => handlePinPress('0')}
-                  disabled={loading}
+                  disabled={loading || !phoneNumber}
                   className="aspect-square bg-white border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 rounded-lg text-2xl font-bold text-zinc-900 transition-all active:scale-95 disabled:opacity-50"
                 >
                   0
@@ -234,13 +253,20 @@ export default function LoginPage() {
               </div>
 
               {loading && (
+                <div className="text-center text-sm text-zinc-500 mb-4">
+                  Verifying credentials...
+                </div>
+              )}
+
+              {!phoneNumber && (
                 <div className="text-center text-sm text-zinc-500">
-                  Verifying...
+                  Please enter your phone number first
                 </div>
               )}
             </div>
           ) : (
-            <form onSubmit={handlePasswordSubmit}>
+            // Manager Login
+            <form onSubmit={handleManagerSubmit}>
               <h2 className="text-lg font-bold text-zinc-900 mb-2 tracking-tight">Manager Access</h2>
               <p className="text-sm text-zinc-600 mb-6">Enter your password to continue</p>
 
