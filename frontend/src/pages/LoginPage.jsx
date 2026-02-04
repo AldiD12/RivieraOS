@@ -104,23 +104,34 @@ export default function LoginPage() {
       localStorage.setItem('token', data.token);
       localStorage.setItem('userId', data.user.id.toString());
       localStorage.setItem('userName', data.user.fullName || data.user.email);
-      localStorage.setItem('role', data.user.role);
       localStorage.setItem('phoneNumber', phoneNumber);
       
       console.log('✅ Staff login successful with real API:', data.user);
       
-      // Route based on role
+      // Route based on role - Updated to match ProtectedRoute requirements
       const roleRoutes = {
         'Collector': '/collector',
-        'Bar': '/bar',
+        'Bar': '/bar', 
         'Waiter': '/collector',
-        'Staff': '/collector',
+        'Staff': '/collector', // Staff should go to collector dashboard
         'Manager': '/manager',
-        'Admin': '/admin'
+        'Admin': '/admin',
+        'SuperAdmin': '/superadmin'
       };
       
       const targetRoute = roleRoutes[data.user.role] || '/collector';
       console.log('🔄 Redirecting to:', targetRoute);
+      
+      // Store the correct role for ProtectedRoute validation
+      // Map Staff role to Waiter for route protection
+      const protectedRole = data.user.role === 'Staff' ? 'Waiter' : data.user.role;
+      localStorage.setItem('role', protectedRole);
+      
+      console.log('🔐 Role mapping:', {
+        originalRole: data.user.role,
+        storedRole: protectedRole,
+        targetRoute
+      });
       
       // Clear form and navigate
       setPin('');
