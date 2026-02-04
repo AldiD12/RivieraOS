@@ -131,8 +131,25 @@ export const staffApi = {
       paddedLength: paddedPassword.length
     });
     
-    const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Users`, apiData);
-    return response.data;
+    try {
+      const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Users`, apiData);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Staff creation failed:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        sentData: {
+          email: apiData.email,
+          phoneNumber: apiData.phoneNumber,
+          role: apiData.role,
+          fullName: apiData.fullName,
+          pin: apiData.pin,
+          passwordLength: apiData.password.length
+        }
+      });
+      throw error;
+    }
   },
 
   // GET /api/superadmin/businesses/{businessId}/Users/{id} - Get staff details
