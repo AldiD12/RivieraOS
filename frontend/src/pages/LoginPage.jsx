@@ -31,10 +31,8 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Pad the PIN to match backend storage (6 characters minimum)
-      const paddedPin = pin.padStart(6, '0');
-      
       // Real API call to the new PIN login endpoint
+      // Use original 4-digit PIN for login (backend PIN endpoint expects original format)
       const response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
         method: 'POST',
         headers: {
@@ -42,7 +40,7 @@ export default function LoginPage() {
         },
         body: JSON.stringify({
           phoneNumber: phoneNumber,
-          pin: paddedPin // Send padded PIN to match backend storage
+          pin: pin // Use original 4-digit PIN for login
         })
       });
 
