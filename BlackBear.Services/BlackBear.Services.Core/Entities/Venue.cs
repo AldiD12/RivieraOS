@@ -40,6 +40,12 @@ namespace BlackBear.Services.Core.Entities
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        [Column("is_active")]
+        public bool IsActive { get; set; } = true;
+
+        [Column("ordering_enabled")]
+        public bool OrderingEnabled { get; set; } = false;
+
         [Column("is_deleted")]
         public bool IsDeleted { get; set; } = false;
 
@@ -56,8 +62,8 @@ namespace BlackBear.Services.Core.Entities
 
         public VenueConfig? VenueConfig { get; set; }
         public ICollection<VenueZone> VenueZones { get; set; } = new List<VenueZone>();
-        public ICollection<Category> Categories { get; set; } = new List<Category>();
-        public ICollection<Product> Products { get; set; } = new List<Product>();
         public ICollection<ScheduledEvent> ScheduledEvents { get; set; } = new List<ScheduledEvent>();
+        public ICollection<CategoryVenueExclusion> CategoryExclusions { get; set; } = new List<CategoryVenueExclusion>();
+        public ICollection<ProductVenueExclusion> ProductExclusions { get; set; } = new List<ProductVenueExclusion>();
     }
 }

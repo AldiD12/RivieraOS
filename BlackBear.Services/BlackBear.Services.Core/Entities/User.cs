@@ -27,6 +27,10 @@ namespace BlackBear.Services.Core.Entities
         [Column("phone_number")]
         public string? PhoneNumber { get; set; }
 
+        [MaxLength(100)]
+        [Column("pin_hash")]
+        public string? PinHash { get; set; }
+
         [MaxLength(50)]
         [Column("user_type")]
         public string? UserType { get; set; }

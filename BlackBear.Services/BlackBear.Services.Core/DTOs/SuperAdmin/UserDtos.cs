@@ -24,6 +24,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? UserType { get; set; }
         public string? Role { get; set; }
         public bool IsActive { get; set; }
+        public bool HasPinSet { get; set; }
         public DateTime CreatedAt { get; set; }
         public int? BusinessId { get; set; }
         public string? BusinessName { get; set; }
@@ -46,6 +47,10 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         [MaxLength(50)]
         public string? PhoneNumber { get; set; }
 
+        [StringLength(4, MinimumLength = 4)]
+        [RegularExpression(@"^\d{4}$", ErrorMessage = "PIN must be exactly 4 digits")]
+        public string? Pin { get; set; }
+
         [Required]
         public string Role { get; set; } = "Staff";
     }
@@ -65,6 +70,10 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
 
         [Required]
         public string Role { get; set; } = "Staff";
+
+        [StringLength(4, MinimumLength = 4)]
+        [RegularExpression(@"^\d{4}$", ErrorMessage = "PIN must be exactly 4 digits")]
+        public string? Pin { get; set; }
 
         public bool IsActive { get; set; } = true;
     }

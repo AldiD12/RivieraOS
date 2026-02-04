@@ -4,6 +4,7 @@ using BlackBear.Services.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlackBear.Services.Core.Migrations
 {
     [DbContext(typeof(BlackBearDbContext))]
-    partial class BlackBearDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260203111706_MoveMenuToBusinessLevel")]
+    partial class MoveMenuToBusinessLevel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -407,11 +410,6 @@ namespace BlackBear.Services.Core.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("phone_number");
-
-                    b.Property<string>("PinHash")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("pin_hash");
 
                     b.Property<string>("UserType")
                         .HasMaxLength(50)

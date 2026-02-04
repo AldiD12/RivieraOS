@@ -33,6 +33,8 @@ namespace BlackBear.Services.Core.Data
         public DbSet<VenueZone> VenueZones { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<CategoryVenueExclusion> CategoryVenueExclusions { get; set; }
+        public DbSet<ProductVenueExclusion> ProductVenueExclusions { get; set; }
 
         // Events schema entities
         public DbSet<ScheduledEvent> ScheduledEvents { get; set; }
@@ -59,11 +61,19 @@ namespace BlackBear.Services.Core.Data
             // VenueZone: soft delete only (filtered through Venue relationship)
             modelBuilder.Entity<VenueZone>().HasQueryFilter(vz => !vz.IsDeleted);
 
-            // Category: soft delete only (filtered through Venue relationship)
-            modelBuilder.Entity<Category>().HasQueryFilter(c => !c.IsDeleted);
+            // Category: soft delete + multi-tenancy (now at Business level)
+            modelBuilder.Entity<Category>().HasQueryFilter(c =>
+                !c.IsDeleted &&
+                (_currentUserService == null ||
+                 _currentUserService.BusinessId == null ||
+                 c.BusinessId == _currentUserService.BusinessId));
 
-            // Product: soft delete only (filtered through Venue relationship)
-            modelBuilder.Entity<Product>().HasQueryFilter(p => !p.IsDeleted);
+            // Product: soft delete + multi-tenancy (now at Business level)
+            modelBuilder.Entity<Product>().HasQueryFilter(p =>
+                !p.IsDeleted &&
+                (_currentUserService == null ||
+                 _currentUserService.BusinessId == null ||
+                 p.BusinessId == _currentUserService.BusinessId));
 
             // User: multi-tenancy only (no soft delete for users, uses IsActive)
             modelBuilder.Entity<User>().HasQueryFilter(u =>
@@ -85,6 +95,16 @@ namespace BlackBear.Services.Core.Data
                 entity.HasMany(b => b.Venues)
                     .WithOne(v => v.Business)
                     .HasForeignKey(v => v.BusinessId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(b => b.Categories)
+                    .WithOne(c => c.Business)
+                    .HasForeignKey(c => c.BusinessId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(b => b.Products)
+                    .WithOne(p => p.Business)
+                    .HasForeignKey(p => p.BusinessId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
@@ -130,20 +150,20 @@ namespace BlackBear.Services.Core.Data
                     .HasForeignKey(vz => vz.VenueId)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                entity.HasMany(v => v.Categories)
-                    .WithOne(c => c.Venue)
-                    .HasForeignKey(c => c.VenueId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasMany(v => v.Products)
-                    .WithOne(p => p.Venue)
-                    .HasForeignKey(p => p.VenueId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
                 entity.HasMany(v => v.ScheduledEvents)
                     .WithOne(se => se.Venue)
                     .HasForeignKey(se => se.VenueId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasMany(v => v.CategoryExclusions)
+                    .WithOne(ce => ce.Venue)
+                    .HasForeignKey(ce => ce.VenueId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasMany(v => v.ProductExclusions)
+                    .WithOne(pe => pe.Venue)
+                    .HasForeignKey(pe => pe.VenueId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Category configuration
@@ -153,6 +173,20 @@ namespace BlackBear.Services.Core.Data
                     .WithOne(p => p.Category)
                     .HasForeignKey(p => p.CategoryId)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasMany(c => c.VenueExclusions)
+                    .WithOne(ce => ce.Category)
+                    .HasForeignKey(ce => ce.CategoryId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Product configuration
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.HasMany(p => p.VenueExclusions)
+                    .WithOne(pe => pe.Product)
+                    .HasForeignKey(pe => pe.ProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // === EVENTS MODULE ===

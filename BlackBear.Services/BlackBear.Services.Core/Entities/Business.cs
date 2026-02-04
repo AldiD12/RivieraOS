@@ -50,5 +50,7 @@ namespace BlackBear.Services.Core.Entities
         // Navigation properties
         public ICollection<User> Users { get; set; } = new List<User>();
         public ICollection<Venue> Venues { get; set; } = new List<Venue>();
+        public ICollection<Category> Categories { get; set; } = new List<Category>();
+        public ICollection<Product> Products { get; set; } = new List<Product>();
     }
 }

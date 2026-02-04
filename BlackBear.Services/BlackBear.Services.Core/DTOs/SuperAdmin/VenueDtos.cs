@@ -11,9 +11,9 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? Address { get; set; }
         public string? ImageUrl { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool IsActive { get; set; }
+        public bool OrderingEnabled { get; set; }
         public int ZoneCount { get; set; }
-        public int CategoryCount { get; set; }
-        public int ProductCount { get; set; }
         public bool HasConfig { get; set; }
     }
 
@@ -29,6 +29,8 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool IsActive { get; set; }
+        public bool OrderingEnabled { get; set; }
         public int BusinessId { get; set; }
         public string? BusinessName { get; set; }
         public VenueConfigDto? Config { get; set; }
@@ -76,6 +78,8 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
 
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
+
+        public bool OrderingEnabled { get; set; } = false;
     }
 
     // Update venue request
@@ -98,6 +102,8 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
 
         public double? Latitude { get; set; }
         public double? Longitude { get; set; }
+
+        public bool OrderingEnabled { get; set; }
     }
 
     // Update config request

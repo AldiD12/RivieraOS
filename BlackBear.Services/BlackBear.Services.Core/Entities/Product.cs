@@ -48,14 +48,16 @@ namespace BlackBear.Services.Core.Entities
         [Column("category_id")]
         public int CategoryId { get; set; }
 
-        [Column("venue_id")]
-        public int VenueId { get; set; }
+        [Column("business_id")]
+        public int BusinessId { get; set; }
 
         // Navigation properties
         [ForeignKey("CategoryId")]
         public Category? Category { get; set; }
 
-        [ForeignKey("VenueId")]
-        public Venue? Venue { get; set; }
+        [ForeignKey("BusinessId")]
+        public Business? Business { get; set; }
+
+        public ICollection<ProductVenueExclusion> VenueExclusions { get; set; } = new List<ProductVenueExclusion>();
     }
 }

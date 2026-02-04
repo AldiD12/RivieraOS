@@ -4,6 +4,7 @@ using BlackBear.Services.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlackBear.Services.Core.Migrations
 {
     [DbContext(typeof(BlackBearDbContext))]
-    partial class BlackBearDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260202193644_AddVenueIsActive")]
+    partial class AddVenueIsActive
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,10 +96,6 @@ namespace BlackBear.Services.Core.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BusinessId")
-                        .HasColumnType("int")
-                        .HasColumnName("business_id");
-
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("deleted_at");
@@ -119,32 +118,15 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("int")
                         .HasColumnName("sort_order");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("BusinessId");
-
-                    b.ToTable("catalog_categories");
-                });
-
-            modelBuilder.Entity("BlackBear.Services.Core.Entities.CategoryVenueExclusion", b =>
-                {
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int")
-                        .HasColumnName("category_id");
-
                     b.Property<int>("VenueId")
                         .HasColumnType("int")
                         .HasColumnName("venue_id");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
-
-                    b.HasKey("CategoryId", "VenueId");
+                    b.HasKey("Id");
 
                     b.HasIndex("VenueId");
 
-                    b.ToTable("catalog_category_venue_exclusions");
+                    b.ToTable("catalog_categories");
                 });
 
             modelBuilder.Entity("BlackBear.Services.Core.Entities.EventBooking", b =>
@@ -200,10 +182,6 @@ namespace BlackBear.Services.Core.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BusinessId")
-                        .HasColumnType("int")
-                        .HasColumnName("business_id");
-
                     b.Property<int>("CategoryId")
                         .HasColumnType("int")
                         .HasColumnName("category_id");
@@ -252,34 +230,17 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("decimal(10,2)")
                         .HasColumnName("price");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("BusinessId");
-
-                    b.HasIndex("CategoryId");
-
-                    b.ToTable("catalog_products");
-                });
-
-            modelBuilder.Entity("BlackBear.Services.Core.Entities.ProductVenueExclusion", b =>
-                {
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int")
-                        .HasColumnName("product_id");
-
                     b.Property<int>("VenueId")
                         .HasColumnType("int")
                         .HasColumnName("venue_id");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
+                    b.HasKey("Id");
 
-                    b.HasKey("ProductId", "VenueId");
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("VenueId");
 
-                    b.ToTable("catalog_product_venue_exclusions");
+                    b.ToTable("catalog_products");
                 });
 
             modelBuilder.Entity("BlackBear.Services.Core.Entities.Role", b =>
@@ -408,11 +369,6 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("phone_number");
 
-                    b.Property<string>("PinHash")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("pin_hash");
-
                     b.Property<string>("UserType")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
@@ -501,10 +457,6 @@ namespace BlackBear.Services.Core.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)")
                         .HasColumnName("name");
-
-                    b.Property<bool>("OrderingEnabled")
-                        .HasColumnType("bit")
-                        .HasColumnName("ordering_enabled");
 
                     b.Property<string>("Type")
                         .HasMaxLength(50)
@@ -608,30 +560,11 @@ namespace BlackBear.Services.Core.Migrations
 
             modelBuilder.Entity("BlackBear.Services.Core.Entities.Category", b =>
                 {
-                    b.HasOne("BlackBear.Services.Core.Entities.Business", "Business")
-                        .WithMany("Categories")
-                        .HasForeignKey("BusinessId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Business");
-                });
-
-            modelBuilder.Entity("BlackBear.Services.Core.Entities.CategoryVenueExclusion", b =>
-                {
-                    b.HasOne("BlackBear.Services.Core.Entities.Category", "Category")
-                        .WithMany("VenueExclusions")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("BlackBear.Services.Core.Entities.Venue", "Venue")
-                        .WithMany("CategoryExclusions")
+                        .WithMany("Categories")
                         .HasForeignKey("VenueId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Category");
 
                     b.Navigation("Venue");
                 });
@@ -657,38 +590,19 @@ namespace BlackBear.Services.Core.Migrations
 
             modelBuilder.Entity("BlackBear.Services.Core.Entities.Product", b =>
                 {
-                    b.HasOne("BlackBear.Services.Core.Entities.Business", "Business")
-                        .WithMany("Products")
-                        .HasForeignKey("BusinessId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("BlackBear.Services.Core.Entities.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Business");
-
-                    b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("BlackBear.Services.Core.Entities.ProductVenueExclusion", b =>
-                {
-                    b.HasOne("BlackBear.Services.Core.Entities.Product", "Product")
-                        .WithMany("VenueExclusions")
-                        .HasForeignKey("ProductId")
+                    b.HasOne("BlackBear.Services.Core.Entities.Venue", "Venue")
+                        .WithMany("Products")
+                        .HasForeignKey("VenueId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BlackBear.Services.Core.Entities.Venue", "Venue")
-                        .WithMany("ProductExclusions")
-                        .HasForeignKey("VenueId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Product");
+                    b.Navigation("Category");
 
                     b.Navigation("Venue");
                 });
@@ -768,10 +682,6 @@ namespace BlackBear.Services.Core.Migrations
 
             modelBuilder.Entity("BlackBear.Services.Core.Entities.Business", b =>
                 {
-                    b.Navigation("Categories");
-
-                    b.Navigation("Products");
-
                     b.Navigation("Users");
 
                     b.Navigation("Venues");
@@ -780,13 +690,6 @@ namespace BlackBear.Services.Core.Migrations
             modelBuilder.Entity("BlackBear.Services.Core.Entities.Category", b =>
                 {
                     b.Navigation("Products");
-
-                    b.Navigation("VenueExclusions");
-                });
-
-            modelBuilder.Entity("BlackBear.Services.Core.Entities.Product", b =>
-                {
-                    b.Navigation("VenueExclusions");
                 });
 
             modelBuilder.Entity("BlackBear.Services.Core.Entities.Role", b =>
@@ -808,9 +711,9 @@ namespace BlackBear.Services.Core.Migrations
 
             modelBuilder.Entity("BlackBear.Services.Core.Entities.Venue", b =>
                 {
-                    b.Navigation("CategoryExclusions");
+                    b.Navigation("Categories");
 
-                    b.Navigation("ProductExclusions");
+                    b.Navigation("Products");
 
                     b.Navigation("ScheduledEvents");
 

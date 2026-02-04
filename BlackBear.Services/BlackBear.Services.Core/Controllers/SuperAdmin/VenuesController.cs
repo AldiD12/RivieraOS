@@ -41,9 +41,9 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                     Address = v.Address,
                     ImageUrl = v.ImageUrl,
                     CreatedAt = v.CreatedAt,
+                    IsActive = v.IsActive,
+                    OrderingEnabled = v.OrderingEnabled,
                     ZoneCount = v.VenueZones.Count,
-                    CategoryCount = v.Categories.Count,
-                    ProductCount = v.Products.Count,
                     HasConfig = v.VenueConfig != null
                 })
                 .ToListAsync();
@@ -77,6 +77,8 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 Latitude = venue.Latitude,
                 Longitude = venue.Longitude,
                 CreatedAt = venue.CreatedAt,
+                IsActive = venue.IsActive,
+                OrderingEnabled = venue.OrderingEnabled,
                 BusinessId = venue.BusinessId,
                 BusinessName = venue.Business?.BrandName ?? venue.Business?.RegisteredName,
                 Config = venue.VenueConfig != null ? new VenueConfigDto
@@ -121,6 +123,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 ImageUrl = request.ImageUrl,
                 Latitude = request.Latitude,
                 Longitude = request.Longitude,
+                OrderingEnabled = request.OrderingEnabled,
                 BusinessId = businessId,
                 CreatedAt = DateTime.UtcNow
             };
@@ -153,6 +156,8 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 Latitude = venue.Latitude,
                 Longitude = venue.Longitude,
                 CreatedAt = venue.CreatedAt,
+                IsActive = venue.IsActive,
+                OrderingEnabled = venue.OrderingEnabled,
                 BusinessId = venue.BusinessId,
                 BusinessName = business.BrandName ?? business.RegisteredName,
                 Config = new VenueConfigDto
@@ -187,6 +192,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
             venue.ImageUrl = request.ImageUrl;
             venue.Latitude = request.Latitude;
             venue.Longitude = request.Longitude;
+            venue.OrderingEnabled = request.OrderingEnabled;
 
             await _context.SaveChangesAsync();
 
@@ -212,6 +218,26 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // POST: api/superadmin/businesses/5/venues/10/activate
+        [HttpPost("{id}/activate")]
+        public async Task<IActionResult> ActivateVenue(int businessId, int id)
+        {
+            var venue = await _context.Venues
+                .FirstOrDefaultAsync(v => v.Id == id && v.BusinessId == businessId);
+
+            if (venue == null)
+            {
+                return NotFound();
+            }
+
+            // Toggle IsActive status
+            venue.IsActive = !venue.IsActive;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { venue.Id, venue.IsActive });
         }
 
         // GET: api/superadmin/businesses/5/venues/10/config

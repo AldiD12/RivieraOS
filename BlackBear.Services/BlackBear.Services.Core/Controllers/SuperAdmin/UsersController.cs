@@ -80,6 +80,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 UserType = user.UserType,
                 Role = user.UserRoles.FirstOrDefault()?.Role?.RoleName,
                 IsActive = user.IsActive,
+                HasPinSet = !string.IsNullOrEmpty(user.PinHash),
                 CreatedAt = user.CreatedAt,
                 BusinessId = user.BusinessId,
                 BusinessName = user.Business?.BrandName ?? user.Business?.RegisteredName
@@ -126,6 +127,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 PasswordHash = HashPassword(request.Password),
                 FullName = request.FullName,
                 PhoneNumber = request.PhoneNumber,
+                PinHash = !string.IsNullOrEmpty(request.Pin) ? HashPin(request.Pin) : null,
                 BusinessId = businessId,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
@@ -151,6 +153,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 PhoneNumber = user.PhoneNumber,
                 Role = role.RoleName,
                 IsActive = user.IsActive,
+                HasPinSet = !string.IsNullOrEmpty(user.PinHash),
                 CreatedAt = user.CreatedAt,
                 BusinessId = user.BusinessId,
                 BusinessName = business.BrandName ?? business.RegisteredName
@@ -198,6 +201,12 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
             user.FullName = request.FullName;
             user.PhoneNumber = request.PhoneNumber;
             user.IsActive = request.IsActive;
+
+            // Update PIN if provided
+            if (!string.IsNullOrEmpty(request.Pin))
+            {
+                user.PinHash = HashPin(request.Pin);
+            }
 
             // Update role (remove old, add new)
             var existingRoles = user.UserRoles.ToList();
@@ -277,6 +286,13 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
         {
             var salt = RandomNumberGenerator.GetBytes(16);
             var hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, 100000, HashAlgorithmName.SHA256, 32);
+            return Convert.ToBase64String(salt) + ":" + Convert.ToBase64String(hash);
+        }
+
+        private static string HashPin(string pin)
+        {
+            var salt = RandomNumberGenerator.GetBytes(16);
+            var hash = Rfc2898DeriveBytes.Pbkdf2(pin, salt, 100000, HashAlgorithmName.SHA256, 32);
             return Convert.ToBase64String(salt) + ":" + Convert.ToBase64String(hash);
         }
     }

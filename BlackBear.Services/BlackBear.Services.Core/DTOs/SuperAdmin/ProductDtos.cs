@@ -29,8 +29,9 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public DateTime CreatedAt { get; set; }
         public int CategoryId { get; set; }
         public string? CategoryName { get; set; }
-        public int VenueId { get; set; }
-        public string? VenueName { get; set; }
+        public int BusinessId { get; set; }
+        public string? BusinessName { get; set; }
+        public List<int> ExcludedVenueIds { get; set; } = new();
     }
 
     public class CreateProductRequest

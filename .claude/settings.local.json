@@ -15,7 +15,11 @@
       "Bash(docker build:*)",
       "Bash(docker push:*)",
       "Bash(az containerapp update:*)",
-      "Bash(az:*)"
+      "Bash(az:*)",
+      "Bash(curl:*)",
+      "Bash(Start-Process \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\")",
+      "Bash(cmd /c start \"\" \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\")",
+      "Bash(docker info:*)"
     ]
   }
 }

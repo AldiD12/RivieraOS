@@ -128,6 +128,73 @@ namespace BlackBear.Services.Core.Controllers
             return Ok(new { token, user = userProfile });
         }
 
+        // POST: api/auth/login/pin
+        [HttpPost("login/pin")]
+        public async Task<IActionResult> LoginWithPin(PinLoginRequest request)
+        {
+            // Normalize phone number (remove spaces, dashes, etc.)
+            var normalizedPhone = NormalizePhoneNumber(request.PhoneNumber);
+
+            // Find user by phone number
+            var user = await _context.Users
+                .IgnoreQueryFilters()
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.PhoneNumber != null &&
+                    u.PhoneNumber.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "") == normalizedPhone);
+
+            if (user == null)
+            {
+                return Unauthorized("Invalid phone number or PIN.");
+            }
+
+            // Check if user has a PIN set
+            if (string.IsNullOrEmpty(user.PinHash))
+            {
+                return Unauthorized("PIN login not enabled for this account.");
+            }
+
+            // Verify PIN
+            if (!VerifyPin(request.Pin, user.PinHash))
+            {
+                return Unauthorized("Invalid phone number or PIN.");
+            }
+
+            // Check if user is active
+            if (!user.IsActive)
+            {
+                return Unauthorized("User account is deactivated.");
+            }
+
+            // Check if user belongs to a business (staff requirement)
+            if (!user.BusinessId.HasValue)
+            {
+                return Unauthorized("PIN login is only available for staff members.");
+            }
+
+            // Get user's role and verify it's Staff
+            var roleName = user.UserRoles.FirstOrDefault()?.Role?.RoleName;
+            if (roleName != "Staff" && roleName != "Manager")
+            {
+                return Unauthorized("PIN login is only available for staff members.");
+            }
+
+            // Generate JWT token
+            var token = GenerateJwtToken(user, roleName);
+
+            // Map user to profile DTO
+            var userProfile = new UserProfileDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                Role = roleName,
+                BusinessId = user.BusinessId
+            };
+
+            return Ok(new { token, user = userProfile });
+        }
+
         private string GenerateJwtToken(User user, string? roleName)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
@@ -183,6 +250,30 @@ namespace BlackBear.Services.Core.Controllers
 
             var computedHash = Rfc2898DeriveBytes.Pbkdf2(password, salt, 100000, HashAlgorithmName.SHA256, 32);
             return CryptographicOperations.FixedTimeEquals(computedHash, hash);
+        }
+
+        public static string HashPin(string pin)
+        {
+            var salt = RandomNumberGenerator.GetBytes(16);
+            var hash = Rfc2898DeriveBytes.Pbkdf2(pin, salt, 100000, HashAlgorithmName.SHA256, 32);
+            return Convert.ToBase64String(salt) + ":" + Convert.ToBase64String(hash);
+        }
+
+        private static bool VerifyPin(string pin, string storedHash)
+        {
+            var parts = storedHash.Split(':');
+            if (parts.Length != 2) return false;
+
+            var salt = Convert.FromBase64String(parts[0]);
+            var hash = Convert.FromBase64String(parts[1]);
+
+            var computedHash = Rfc2898DeriveBytes.Pbkdf2(pin, salt, 100000, HashAlgorithmName.SHA256, 32);
+            return CryptographicOperations.FixedTimeEquals(computedHash, hash);
+        }
+
+        private static string NormalizePhoneNumber(string phone)
+        {
+            return phone.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "").Replace("+", "");
         }
     }
 }

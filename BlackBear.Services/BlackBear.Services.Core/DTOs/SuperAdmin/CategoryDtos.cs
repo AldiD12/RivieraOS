@@ -17,9 +17,10 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string Name { get; set; } = string.Empty;
         public int SortOrder { get; set; }
         public bool IsActive { get; set; }
-        public int VenueId { get; set; }
-        public string? VenueName { get; set; }
+        public int BusinessId { get; set; }
+        public string? BusinessName { get; set; }
         public List<ProductListItemDto> Products { get; set; } = new();
+        public List<int> ExcludedVenueIds { get; set; } = new();
     }
 
     public class CreateCategoryRequest

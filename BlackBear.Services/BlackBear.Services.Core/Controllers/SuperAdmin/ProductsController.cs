@@ -58,7 +58,8 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
         {
             var product = await _context.Products
                 .Include(p => p.Category)
-                .Include(p => p.Venue)
+                .Include(p => p.Business)
+                .Include(p => p.VenueExclusions)
                 .FirstOrDefaultAsync(p => p.Id == id && p.CategoryId == categoryId);
 
             if (product == null)
@@ -79,8 +80,9 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 CreatedAt = product.CreatedAt,
                 CategoryId = product.CategoryId,
                 CategoryName = product.Category?.Name,
-                VenueId = product.VenueId,
-                VenueName = product.Venue?.Name
+                BusinessId = product.BusinessId,
+                BusinessName = product.Business?.BrandName ?? product.Business?.RegisteredName,
+                ExcludedVenueIds = product.VenueExclusions.Select(e => e.VenueId).ToList()
             });
         }
 
@@ -89,7 +91,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
         public async Task<ActionResult<ProductDetailDto>> CreateProduct(int categoryId, CreateProductRequest request)
         {
             var category = await _context.Categories
-                .Include(c => c.Venue)
+                .Include(c => c.Business)
                 .FirstOrDefaultAsync(c => c.Id == categoryId);
 
             if (category == null)
@@ -107,7 +109,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 IsAvailable = request.IsAvailable,
                 IsAlcohol = request.IsAlcohol,
                 CategoryId = categoryId,
-                VenueId = category.VenueId,
+                BusinessId = category.BusinessId,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -127,8 +129,9 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 CreatedAt = product.CreatedAt,
                 CategoryId = product.CategoryId,
                 CategoryName = category.Name,
-                VenueId = product.VenueId,
-                VenueName = category.Venue?.Name
+                BusinessId = product.BusinessId,
+                BusinessName = category.Business?.BrandName ?? category.Business?.RegisteredName,
+                ExcludedVenueIds = new List<int>()
             });
         }
 
@@ -144,7 +147,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 return NotFound();
             }
 
-            // If category is changing, verify new category exists and get its venueId
+            // If category is changing, verify new category exists and belongs to same business
             if (request.CategoryId != categoryId)
             {
                 var newCategory = await _context.Categories.FindAsync(request.CategoryId);
@@ -152,8 +155,11 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 {
                     return BadRequest("New category not found");
                 }
+                if (newCategory.BusinessId != product.BusinessId)
+                {
+                    return BadRequest("Cannot move product to a category in a different business");
+                }
                 product.CategoryId = request.CategoryId;
-                product.VenueId = newCategory.VenueId;
             }
 
             product.Name = request.Name;
@@ -189,6 +195,60 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // POST: api/superadmin/categories/5/products/10/exclusions
+        [HttpPost("{id}/exclusions")]
+        public async Task<IActionResult> SetVenueExclusions(int categoryId, int id, [FromBody] List<int> venueIds)
+        {
+            var product = await _context.Products
+                .Include(p => p.VenueExclusions)
+                .FirstOrDefaultAsync(p => p.Id == id && p.CategoryId == categoryId);
+
+            if (product == null)
+            {
+                return NotFound("Product not found");
+            }
+
+            // Verify all venues belong to this product's business
+            var validVenueIds = await _context.Venues
+                .Where(v => v.BusinessId == product.BusinessId && venueIds.Contains(v.Id))
+                .Select(v => v.Id)
+                .ToListAsync();
+
+            // Remove existing exclusions
+            _context.ProductVenueExclusions.RemoveRange(product.VenueExclusions);
+
+            // Add new exclusions
+            foreach (var venueId in validVenueIds)
+            {
+                _context.ProductVenueExclusions.Add(new ProductVenueExclusion
+                {
+                    ProductId = id,
+                    VenueId = venueId,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { ExcludedVenueIds = validVenueIds });
+        }
+
+        // GET: api/superadmin/categories/5/products/10/exclusions
+        [HttpGet("{id}/exclusions")]
+        public async Task<ActionResult<List<int>>> GetVenueExclusions(int categoryId, int id)
+        {
+            var product = await _context.Products
+                .Include(p => p.VenueExclusions)
+                .FirstOrDefaultAsync(p => p.Id == id && p.CategoryId == categoryId);
+
+            if (product == null)
+            {
+                return NotFound("Product not found");
+            }
+
+            return Ok(product.VenueExclusions.Select(e => e.VenueId).ToList());
         }
     }
 }
