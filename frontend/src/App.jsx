@@ -44,7 +44,7 @@ function App() {
         <Route 
           path="/bar" 
           element={
-            <ProtectedRoute role="Waiter">
+            <ProtectedRoute role="Bartender">
               <BarDisplay />
             </ProtectedRoute>
           } 
@@ -53,7 +53,7 @@ function App() {
         <Route 
           path="/manager" 
           element={
-            <ProtectedRoute role="Admin">
+            <ProtectedRoute role="Manager">
               <AdminDashboard />
             </ProtectedRoute>
           } 
@@ -62,7 +62,7 @@ function App() {
         <Route 
           path="/admin" 
           element={
-            <ProtectedRoute role="Admin">
+            <ProtectedRoute role="Manager">
               <AdminDashboard />
             </ProtectedRoute>
           } 
@@ -71,7 +71,7 @@ function App() {
         <Route 
           path="/ouradmin" 
           element={
-            <ProtectedRoute role="Admin">
+            <ProtectedRoute role="Manager">
               <OurAdmin />
             </ProtectedRoute>
           } 
@@ -94,7 +94,7 @@ function App() {
         <Route 
           path="/manager/leaderboard" 
           element={
-            <ProtectedRoute role="Admin">
+            <ProtectedRoute role="Manager">
               <ManagerLeaderboardPage />
             </ProtectedRoute>
           } 

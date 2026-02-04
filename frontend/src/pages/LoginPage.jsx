@@ -128,22 +128,13 @@ export default function LoginPage() {
         selectedRoute: targetRoute
       });
       
-      // Store the correct role for ProtectedRoute validation
-      // Map backend roles to frontend ProtectedRoute expectations
-      let protectedRole;
-      if (['Owner', 'Manager', 'Admin'].includes(data.user.role)) {
-        protectedRole = 'Admin'; // Admin access
-      } else if (['Waiter', 'Bartender', 'Guest', 'Staff'].includes(data.user.role)) {
-        protectedRole = 'Waiter'; // Staff access
-      } else {
-        protectedRole = data.user.role; // SuperAdmin, etc.
-      }
-      
-      localStorage.setItem('role', protectedRole);
+      // Store the actual role for ProtectedRoute validation
+      // Now using exact database roles in ProtectedRoute
+      localStorage.setItem('role', data.user.role);
       
       console.log('🔐 Role mapping:', {
         originalRole: data.user.role,
-        storedRole: protectedRole,
+        storedRole: data.user.role,
         targetRoute
       });
       
