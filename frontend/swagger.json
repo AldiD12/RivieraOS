@@ -151,6 +151,37 @@
         }
       }
     },
+    "/api/Auth/login/pin": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinLoginRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinLoginRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinLoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Businesses": {
       "get": {
         "tags": [
@@ -2712,6 +2743,13 @@
             "type": "string",
             "nullable": true
           },
+          "pin": {
+            "maxLength": 4,
+            "minLength": 4,
+            "pattern": "^\\d{4}$",
+            "type": "string",
+            "nullable": true
+          },
           "role": {
             "minLength": 1,
             "type": "string"
@@ -2871,6 +2909,27 @@
           },
           "password": {
             "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PinLoginRequest": {
+        "required": [
+          "phoneNumber",
+          "pin"
+        ],
+        "type": "object",
+        "properties": {
+          "phoneNumber": {
+            "minLength": 1,
+            "type": "string",
+            "format": "tel"
+          },
+          "pin": {
+            "maxLength": 4,
+            "minLength": 4,
+            "pattern": "^\\d{4}$",
             "type": "string"
           }
         },
@@ -3388,6 +3447,13 @@
             "minLength": 1,
             "type": "string"
           },
+          "pin": {
+            "maxLength": 4,
+            "minLength": 4,
+            "pattern": "^\\d{4}$",
+            "type": "string",
+            "nullable": true
+          },
           "isActive": {
             "type": "boolean"
           }
@@ -3520,6 +3586,11 @@
             "type": "string",
             "nullable": true
           },
+          "pinHash": {
+            "maxLength": 100,
+            "type": "string",
+            "nullable": true
+          },
           "userType": {
             "maxLength": 50,
             "type": "string",
@@ -3585,6 +3656,9 @@
             "nullable": true
           },
           "isActive": {
+            "type": "boolean"
+          },
+          "hasPinSet": {
             "type": "boolean"
           },
           "createdAt": {

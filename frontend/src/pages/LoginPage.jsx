@@ -110,25 +110,33 @@ export default function LoginPage() {
       
       // Route based on role - Updated to match ProtectedRoute requirements
       const roleRoutes = {
-        'Collector': '/collector',
-        'Bar': '/bar', 
+        'Owner': '/admin',
+        'Manager': '/admin', // Manager goes directly to /admin
         'Waiter': '/collector',
-        'Staff': '/collector', // Staff should go to collector dashboard
-        'Manager': '/manager',
-        'Admin': '/admin',
+        'Bartender': '/bar',
+        'Guest': '/collector',
+        'Staff': '/collector', // Legacy support
+        'Admin': '/admin', // Legacy support
         'SuperAdmin': '/superadmin'
       };
       
       const targetRoute = roleRoutes[data.user.role] || '/collector';
       console.log('🔄 Redirecting to:', targetRoute);
+      console.log('🔍 Role mapping debug:', {
+        userRole: data.user.role,
+        availableRoutes: roleRoutes,
+        selectedRoute: targetRoute
+      });
       
       // Store the correct role for ProtectedRoute validation
-      // Only map Staff role to Waiter, keep other roles as-is
+      // Map backend roles to frontend ProtectedRoute expectations
       let protectedRole;
-      if (data.user.role === 'Staff') {
-        protectedRole = 'Waiter'; // Staff users access collector dashboard
+      if (['Owner', 'Manager', 'Admin'].includes(data.user.role)) {
+        protectedRole = 'Admin'; // Admin access
+      } else if (['Waiter', 'Bartender', 'Guest', 'Staff'].includes(data.user.role)) {
+        protectedRole = 'Waiter'; // Staff access
       } else {
-        protectedRole = data.user.role; // Admin, Manager, etc. keep their original role
+        protectedRole = data.user.role; // SuperAdmin, etc.
       }
       
       localStorage.setItem('role', protectedRole);
