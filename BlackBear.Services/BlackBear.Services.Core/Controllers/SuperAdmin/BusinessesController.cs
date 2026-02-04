@@ -121,7 +121,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
         [HttpPost]
         public async Task<ActionResult<BusinessDetailDto>> CreateBusiness(CreateBusinessRequest request)
         {
-            var business = new Business
+            var business = new Entities.Business
             {
                 RegisteredName = request.RegisteredName,
                 BrandName = request.BrandName,

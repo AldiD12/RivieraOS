@@ -20,14 +20,14 @@ namespace BlackBear.Services.Core.Controllers
 
         // GET: api/businesses
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Business>>> GetBusinesses()
+        public async Task<ActionResult<IEnumerable<Entities.Business>>> GetBusinesses()
         {
             return await _context.Businesses.ToListAsync();
         }
 
         // GET: api/businesses/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Business>> GetBusiness(int id)
+        public async Task<ActionResult<Entities.Business>> GetBusiness(int id)
         {
             var business = await _context.Businesses.FindAsync(id);
 
@@ -41,7 +41,7 @@ namespace BlackBear.Services.Core.Controllers
 
         // POST: api/businesses
         [HttpPost]
-        public async Task<ActionResult<Business>> CreateBusiness(Business business)
+        public async Task<ActionResult<Entities.Business>> CreateBusiness(Entities.Business business)
         {
             // Force create timestamp
             // Note: Ideally we use DTOs, but for Sprint 1, this is fine.

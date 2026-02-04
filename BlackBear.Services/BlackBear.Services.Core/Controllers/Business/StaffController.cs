@@ -1,0 +1,371 @@
+using System.Security.Cryptography;
+using BlackBear.Services.Core.Data;
+using BlackBear.Services.Core.DTOs.Business;
+using BlackBear.Services.Core.Entities;
+using BlackBear.Services.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace BlackBear.Services.Core.Controllers.Business
+{
+    [Route("api/business/[controller]")]
+    [ApiController]
+    [Authorize(Policy = "Manager")]
+    public class StaffController : ControllerBase
+    {
+        private readonly BlackBearDbContext _context;
+        private readonly ICurrentUserService _currentUserService;
+
+        public StaffController(BlackBearDbContext context, ICurrentUserService currentUserService)
+        {
+            _context = context;
+            _currentUserService = currentUserService;
+        }
+
+        // GET: api/business/staff
+        [HttpGet]
+        public async Task<ActionResult<List<BizStaffListItemDto>>> GetStaff()
+        {
+            var businessId = _currentUserService.BusinessId;
+            if (!businessId.HasValue)
+            {
+                return Forbid("User is not associated with a business");
+            }
+
+            var staff = await _context.Users
+                .Where(u => u.BusinessId == businessId.Value)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .OrderByDescending(u => u.CreatedAt)
+                .Select(u => new BizStaffListItemDto
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    FullName = u.FullName,
+                    PhoneNumber = u.PhoneNumber,
+                    Role = u.UserRoles.FirstOrDefault() != null ? u.UserRoles.FirstOrDefault()!.Role!.RoleName : null,
+                    IsActive = u.IsActive,
+                    HasPinSet = u.PinHash != null,
+                    CreatedAt = u.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(staff);
+        }
+
+        // GET: api/business/staff/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<BizStaffDetailDto>> GetStaffMember(int id)
+        {
+            var businessId = _currentUserService.BusinessId;
+            if (!businessId.HasValue)
+            {
+                return Forbid("User is not associated with a business");
+            }
+
+            var user = await _context.Users
+                .Where(u => u.Id == id && u.BusinessId == businessId.Value)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(new BizStaffDetailDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
+                Role = user.UserRoles.FirstOrDefault()?.Role?.RoleName,
+                IsActive = user.IsActive,
+                HasPinSet = !string.IsNullOrEmpty(user.PinHash),
+                CreatedAt = user.CreatedAt
+            });
+        }
+
+        // POST: api/business/staff
+        [HttpPost]
+        [Authorize(Policy = "BusinessOwner")]
+        public async Task<ActionResult<BizStaffDetailDto>> CreateStaff(BizCreateStaffRequest request)
+        {
+            var businessId = _currentUserService.BusinessId;
+            if (!businessId.HasValue)
+            {
+                return Forbid("User is not associated with a business");
+            }
+
+            // Check if email already exists
+            var emailExists = await _context.Users
+                .IgnoreQueryFilters()
+                .AnyAsync(u => u.Email == request.Email);
+            if (emailExists)
+            {
+                return BadRequest("Email already exists");
+            }
+
+            // Only allow Staff or Manager roles
+            if (request.Role != "Staff" && request.Role != "Manager")
+            {
+                return BadRequest("Can only create Staff or Manager users");
+            }
+
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == request.Role);
+            if (role == null)
+            {
+                return BadRequest($"Role '{request.Role}' not found");
+            }
+
+            var user = new User
+            {
+                Email = request.Email,
+                PasswordHash = HashPassword(request.Password),
+                FullName = request.FullName,
+                PhoneNumber = request.PhoneNumber,
+                PinHash = !string.IsNullOrEmpty(request.Pin) ? HashPin(request.Pin) : null,
+                BusinessId = businessId.Value,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var userRole = new UserRole
+            {
+                UserId = user.Id,
+                RoleId = role.Id
+            };
+            _context.UserRoles.Add(userRole);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetStaffMember), new { id = user.Id }, new BizStaffDetailDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
+                Role = role.RoleName,
+                IsActive = user.IsActive,
+                HasPinSet = !string.IsNullOrEmpty(user.PinHash),
+                CreatedAt = user.CreatedAt
+            });
+        }
+
+        // PUT: api/business/staff/5
+        [HttpPut("{id}")]
+        [Authorize(Policy = "BusinessOwner")]
+        public async Task<IActionResult> UpdateStaff(int id, BizUpdateStaffRequest request)
+        {
+            var businessId = _currentUserService.BusinessId;
+            if (!businessId.HasValue)
+            {
+                return Forbid("User is not associated with a business");
+            }
+
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                .FirstOrDefaultAsync(u => u.Id == id && u.BusinessId == businessId.Value);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            // Check if email is taken by another user
+            var emailExists = await _context.Users
+                .IgnoreQueryFilters()
+                .AnyAsync(u => u.Email == request.Email && u.Id != id);
+            if (emailExists)
+            {
+                return BadRequest("Email already exists");
+            }
+
+            // Only allow Staff or Manager roles
+            if (request.Role != "Staff" && request.Role != "Manager")
+            {
+                return BadRequest("Can only assign Staff or Manager roles");
+            }
+
+            var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == request.Role);
+            if (role == null)
+            {
+                return BadRequest($"Role '{request.Role}' not found");
+            }
+
+            user.Email = request.Email;
+            user.FullName = request.FullName;
+            user.PhoneNumber = request.PhoneNumber;
+            user.IsActive = request.IsActive;
+
+            if (!string.IsNullOrEmpty(request.Pin))
+            {
+                user.PinHash = HashPin(request.Pin);
+            }
+
+            // Update role
+            var existingRoles = user.UserRoles.ToList();
+            _context.UserRoles.RemoveRange(existingRoles);
+
+            var userRole = new UserRole
+            {
+                UserId = user.Id,
+                RoleId = role.Id
+            };
+            _context.UserRoles.Add(userRole);
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // DELETE: api/business/staff/5 (deactivate)
+        [HttpDelete("{id}")]
+        [Authorize(Policy = "BusinessOwner")]
+        public async Task<IActionResult> DeactivateStaff(int id)
+        {
+            var businessId = _currentUserService.BusinessId;
+            if (!businessId.HasValue)
+            {
+                return Forbid("User is not associated with a business");
+            }
+
+            // Prevent self-deactivation
+            if (int.TryParse(_currentUserService.UserId, out var currentUserId) && currentUserId == id)
+            {
+                return BadRequest("Cannot deactivate your own account");
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == id && u.BusinessId == businessId.Value);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.IsActive = false;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // POST: api/business/staff/5/activate
+        [HttpPost("{id}/activate")]
+        [Authorize(Policy = "BusinessOwner")]
+        public async Task<IActionResult> ActivateStaff(int id)
+        {
+            var businessId = _currentUserService.BusinessId;
+            if (!businessId.HasValue)
+            {
+                return Forbid("User is not associated with a business");
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == id && u.BusinessId == businessId.Value);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.IsActive = true;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // POST: api/business/staff/5/reset-password
+        [HttpPost("{id}/reset-password")]
+        [Authorize(Policy = "BusinessOwner")]
+        public async Task<IActionResult> ResetPassword(int id, BizResetStaffPasswordRequest request)
+        {
+            var businessId = _currentUserService.BusinessId;
+            if (!businessId.HasValue)
+            {
+                return Forbid("User is not associated with a business");
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == id && u.BusinessId == businessId.Value);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.PasswordHash = HashPassword(request.NewPassword);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // POST: api/business/staff/5/set-pin
+        [HttpPost("{id}/set-pin")]
+        [Authorize(Policy = "BusinessOwner")]
+        public async Task<IActionResult> SetPin(int id, BizSetStaffPinRequest request)
+        {
+            var businessId = _currentUserService.BusinessId;
+            if (!businessId.HasValue)
+            {
+                return Forbid("User is not associated with a business");
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == id && u.BusinessId == businessId.Value);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.PinHash = HashPin(request.Pin);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // DELETE: api/business/staff/5/pin
+        [HttpDelete("{id}/pin")]
+        [Authorize(Policy = "BusinessOwner")]
+        public async Task<IActionResult> RemovePin(int id)
+        {
+            var businessId = _currentUserService.BusinessId;
+            if (!businessId.HasValue)
+            {
+                return Forbid("User is not associated with a business");
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == id && u.BusinessId == businessId.Value);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.PinHash = null;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private static string HashPassword(string password)
+        {
+            var salt = RandomNumberGenerator.GetBytes(16);
+            var hash = Rfc2898DeriveBytes.Pbkdf2(password, salt, 100000, HashAlgorithmName.SHA256, 32);
+            return Convert.ToBase64String(salt) + ":" + Convert.ToBase64String(hash);
+        }
+
+        private static string HashPin(string pin)
+        {
+            var salt = RandomNumberGenerator.GetBytes(16);
+            var hash = Rfc2898DeriveBytes.Pbkdf2(pin, salt, 100000, HashAlgorithmName.SHA256, 32);
+            return Convert.ToBase64String(salt) + ":" + Convert.ToBase64String(hash);
+        }
+    }
+}
