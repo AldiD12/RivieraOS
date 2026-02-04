@@ -25,7 +25,7 @@ export default function LoginPage() {
   };
 
   const handleStaffLogin = async () => {
-    if (pin.length !== 4 || !phoneNumber) return;
+    if (pin.length !== 4 || !phoneNumber || loading) return;
 
     setLoading(true);
     setError('');
@@ -42,21 +42,11 @@ export default function LoginPage() {
         pinLength: pin.length
       });
 
-      // First try with padded PIN (since that's how we store it)
-      let response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          phoneNumber: phoneNumber,
-          pin: paddedPin // Try padded PIN first
-        })
-      });
+      let response;
+      let loginSuccessful = false;
 
-      // If padded PIN fails, try original PIN
-      if (!response.ok) {
-        console.log('🔐 Padded PIN failed, trying original PIN...');
+      // First try with padded PIN (since that's how we store it)
+      try {
         response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
           method: 'POST',
           headers: {
@@ -64,16 +54,45 @@ export default function LoginPage() {
           },
           body: JSON.stringify({
             phoneNumber: phoneNumber,
-            pin: originalPin // Try original PIN
+            pin: paddedPin
           })
         });
+
+        if (response.ok) {
+          loginSuccessful = true;
+        }
+      } catch (error) {
+        console.log('🔐 Padded PIN attempt failed:', error);
       }
 
-      if (!response.ok) {
-        const errorText = await response.text();
+      // If padded PIN fails, try original PIN
+      if (!loginSuccessful) {
+        console.log('🔐 Padded PIN failed, trying original PIN...');
+        try {
+          response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              phoneNumber: phoneNumber,
+              pin: originalPin
+            })
+          });
+
+          if (response.ok) {
+            loginSuccessful = true;
+          }
+        } catch (error) {
+          console.log('🔐 Original PIN attempt failed:', error);
+        }
+      }
+
+      if (!loginSuccessful || !response.ok) {
+        const errorText = await response?.text() || 'Unknown error';
         console.error('🔐 Both PIN formats failed:', {
-          status: response.status,
-          statusText: response.statusText,
+          status: response?.status,
+          statusText: response?.statusText,
           errorText
         });
         throw new Error('Invalid phone number or PIN');
@@ -100,7 +119,14 @@ export default function LoginPage() {
         'Admin': '/admin'
       };
       
-      navigate(roleRoutes[data.user.role] || '/collector');
+      const targetRoute = roleRoutes[data.user.role] || '/collector';
+      console.log('🔄 Redirecting to:', targetRoute);
+      
+      // Clear form and navigate
+      setPin('');
+      setPhoneNumber('');
+      navigate(targetRoute);
+      
     } catch (err) {
       console.error('Staff login error:', err);
       setError('Invalid phone number or PIN');
@@ -143,10 +169,12 @@ export default function LoginPage() {
     }
   };
 
-  // Auto-submit when 4 digits entered and phone number provided
-  if (pin.length === 4 && phoneNumber && !loading && activeTab === 'staff') {
-    handleStaffLogin();
-  }
+  // Auto-submit when 4 digits entered and phone number provided (but only once)
+  useEffect(() => {
+    if (pin.length === 4 && phoneNumber && !loading && activeTab === 'staff') {
+      handleStaffLogin();
+    }
+  }, [pin, phoneNumber, loading, activeTab]); // Dependencies to prevent multiple calls
 
   return (
     <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-6">
