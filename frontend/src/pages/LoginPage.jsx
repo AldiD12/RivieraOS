@@ -31,20 +31,51 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Real API call to the new PIN login endpoint
-      // Use original 4-digit PIN for login (backend PIN endpoint expects original format)
-      const response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
+      // Try both PIN formats to see which one works
+      const originalPin = pin;
+      const paddedPin = pin.padStart(6, '0');
+      
+      console.log('🔐 Attempting login with:', {
+        phoneNumber,
+        originalPin,
+        paddedPin,
+        pinLength: pin.length
+      });
+
+      // First try with padded PIN (since that's how we store it)
+      let response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           phoneNumber: phoneNumber,
-          pin: pin // Use original 4-digit PIN for login
+          pin: paddedPin // Try padded PIN first
         })
       });
 
+      // If padded PIN fails, try original PIN
       if (!response.ok) {
+        console.log('🔐 Padded PIN failed, trying original PIN...');
+        response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phoneNumber: phoneNumber,
+            pin: originalPin // Try original PIN
+          })
+        });
+      }
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔐 Both PIN formats failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText
+        });
         throw new Error('Invalid phone number or PIN');
       }
 
