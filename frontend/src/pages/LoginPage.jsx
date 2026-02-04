@@ -123,8 +123,14 @@ export default function LoginPage() {
       console.log('🔄 Redirecting to:', targetRoute);
       
       // Store the correct role for ProtectedRoute validation
-      // Map Staff role to Waiter for route protection
-      const protectedRole = data.user.role === 'Staff' ? 'Waiter' : data.user.role;
+      // Only map Staff role to Waiter, keep other roles as-is
+      let protectedRole;
+      if (data.user.role === 'Staff') {
+        protectedRole = 'Waiter'; // Staff users access collector dashboard
+      } else {
+        protectedRole = data.user.role; // Admin, Manager, etc. keep their original role
+      }
+      
       localStorage.setItem('role', protectedRole);
       
       console.log('🔐 Role mapping:', {
