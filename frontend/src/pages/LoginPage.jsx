@@ -118,13 +118,57 @@ export default function LoginPage() {
 
       const data = await response.json();
       
+      console.log('✅ Login response received:', data);
+      
+      // Handle different response structures - be more flexible
+      let user = data.user || data;
+      
+      // The backend might return LoginResponse (with UserId) or UserDetailDto (with id)
+      // Handle both structures
+      let userId, businessId, fullName, role;
+      
+      if (data.UserId) {
+        // LoginResponse structure
+        userId = data.UserId;
+        fullName = data.FullName || data.fullName;
+        // For LoginResponse, we might not have role/businessId directly
+        // Try to extract from token or use defaults
+        role = user.role || 'Manager'; // Default for business login
+        businessId = user.businessId || data.businessId;
+      } else if (data.id || data.userId) {
+        // UserDetailDto structure
+        userId = data.id || data.userId;
+        fullName = data.fullName || data.FullName;
+        role = data.role;
+        businessId = data.businessId;
+      } else {
+        console.error('❌ Invalid response structure - no user ID found:', data);
+        throw new Error('Invalid login response format - missing user ID');
+      }
+      
+      if (!userId) {
+        console.error('❌ No user ID found in response:', data);
+        throw new Error('Invalid login response - missing user ID');
+      }
+      
       // Store authentication data
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userId', data.user.id.toString());
-      localStorage.setItem('userName', data.user.fullName || data.user.email);
+      localStorage.setItem('token', data.token || data.Token);
+      localStorage.setItem('userId', userId.toString());
+      localStorage.setItem('userName', fullName || 'User');
       localStorage.setItem('phoneNumber', phoneNumber);
       
-      console.log('✅ Staff login successful with real API:', data.user);
+      // Store businessId if available (needed for business-level API calls)
+      if (businessId) {
+        localStorage.setItem('businessId', businessId.toString());
+        console.log('💼 Business ID stored:', businessId);
+      }
+      
+      console.log('✅ Staff login successful with real API:', {
+        userId,
+        fullName,
+        role,
+        businessId
+      });
       
       // Route based on role - Updated to match ProtectedRoute requirements (v2.0)
       const roleRoutes = {
@@ -138,21 +182,21 @@ export default function LoginPage() {
         'SuperAdmin': '/superadmin'
       };
       
-      const targetRoute = roleRoutes[data.user.role] || '/collector';
+      const targetRoute = roleRoutes[role] || '/collector';
       console.log('🔄 Redirecting to:', targetRoute);
-      console.log('🔍 Role mapping debug (v2):', {
-        userRole: data.user.role,
+      console.log('🔍 Role mapping debug (v3):', {
+        userRole: role,
         availableRoutes: roleRoutes,
         selectedRoute: targetRoute
       });
       
       // Store the actual role for ProtectedRoute validation
       // Now using exact database roles in ProtectedRoute
-      localStorage.setItem('role', data.user.role);
+      localStorage.setItem('role', role);
       
       console.log('🔐 Role mapping:', {
-        originalRole: data.user.role,
-        storedRole: data.user.role,
+        originalRole: role,
+        storedRole: role,
         targetRoute
       });
       

@@ -65,9 +65,12 @@ export default function BusinessAdminDashboard() {
   useEffect(() => {
     const checkAuth = () => {
       const role = localStorage.getItem('role');
-      const token = localStorage.getItem('azure_jwt_token') || localStorage.getItem('token');
+      const token = localStorage.getItem('token') || localStorage.getItem('azure_jwt_token');
+      
+      console.log('🔐 Business dashboard auth check:', { role, hasToken: !!token });
       
       if (!token || !['Manager', 'Owner'].includes(role)) {
+        console.log('❌ Authentication failed - redirecting to login');
         localStorage.clear();
         navigate('/login');
         return false;
@@ -99,12 +102,24 @@ export default function BusinessAdminDashboard() {
           if (err.message?.includes('CORS') || err.status === undefined) {
             throw new Error('Business API endpoints not available. Please contact your administrator.');
           }
+          if (err.status === 401) {
+            throw new Error('Authentication failed. Please login again.');
+          }
+          if (err.status === 403) {
+            throw new Error('Access denied. You do not have permission to access business data.');
+          }
           return null;
         }),
         businessApi.dashboard.get().catch(err => {
           console.warn('Dashboard fetch failed:', err);
           if (err.message?.includes('CORS') || err.status === undefined) {
             throw new Error('Business API endpoints not available. Please contact your administrator.');
+          }
+          if (err.status === 401) {
+            throw new Error('Authentication failed. Please login again.');
+          }
+          if (err.status === 403) {
+            throw new Error('Access denied. You do not have permission to access business data.');
           }
           return null;
         })

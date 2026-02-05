@@ -14,11 +14,14 @@ const api = axios.create({
 // Add request interceptor to include auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('azure_jwt_token') || localStorage.getItem('token');
+    // Try multiple token storage locations for compatibility
+    const token = localStorage.getItem('token') || localStorage.getItem('azure_jwt_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
       console.log('🔐 Business API call with token:', config.method.toUpperCase(), config.url);
       console.log('🔐 Token preview:', token.substring(0, 20) + '...');
+    } else {
+      console.warn('⚠️ No authentication token found for business API call');
     }
     return config;
   },

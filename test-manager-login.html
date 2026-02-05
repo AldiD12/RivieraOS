@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Login Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #4CAF50; }
+        .error { border-left: 4px solid #f44336; }
+        .pending { border-left: 4px solid #ff9800; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Manager Login Test</h1>
+    <p>Test the Manager login flow with phone number + PIN</p>
+
+    <div class="test-section pending">
+        <h3>Manager Login Test</h3>
+        <div class="form-group">
+            <label>Phone Number:</label>
+            <input type="tel" id="phoneNumber" value="0698754321" placeholder="Enter phone number">
+        </div>
+        <div class="form-group">
+            <label>PIN:</label>
+            <input type="text" id="pin" value="9999" maxlength="4" placeholder="Enter 4-digit PIN">
+        </div>
+        <button onclick="testManagerLogin()">Test Manager Login</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <div class="test-section pending">
+        <h3>Business API Test (After Login)</h3>
+        <button onclick="testBusinessProfile()" disabled id="profileBtn">Test Business Profile</button>
+        <button onclick="testBusinessDashboard()" disabled id="dashboardBtn">Test Business Dashboard</button>
+        <div id="businessResult"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+        let authToken = null;
+
+        async function testManagerLogin() {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const pin = document.getElementById('pin').value;
+            const resultDiv = document.getElementById('loginResult');
+            
+            if (!phoneNumber || !pin) {
+                resultDiv.innerHTML = '<div class="error"><strong>Error:</strong> Please enter both phone number and PIN</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="pending">🔄 Testing login...</div>';
+
+            try {
+                console.log('🔐 Testing login with:', { phoneNumber, pin });
+
+                const response = await fetch(`${API_BASE}/auth/login/pin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phoneNumber: phoneNumber,
+                        pin: pin
+                    })
+                });
+
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response headers:', [...response.headers.entries()]);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('✅ Login response:', data);
+
+                // Parse response based on actual structure
+                let userId, businessId, fullName, role, token;
+                
+                if (data.UserId) {
+                    // LoginResponse structure
+                    userId = data.UserId;
+                    fullName = data.FullName || data.fullName;
+                    token = data.Token || data.token;
+                    role = data.role || 'Manager'; // Default for business login
+                    businessId = data.businessId;
+                } else if (data.id || data.userId) {
+                    // UserDetailDto structure
+                    userId = data.id || data.userId;
+                    fullName = data.fullName || data.FullName;
+                    role = data.role;
+                    businessId = data.businessId;
+                    token = data.token || data.Token;
+                } else {
+                    throw new Error('Invalid response structure - no user ID found');
+                }
+
+                authToken = token;
+
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Login Successful!</h4>
+                        <pre>${JSON.stringify({
+                            userId,
+                            fullName,
+                            role,
+                            businessId,
+                            hasToken: !!token
+                        }, null, 2)}</pre>
+                        <p><strong>Raw Response:</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+
+                // Enable business API test buttons
+                document.getElementById('profileBtn').disabled = false;
+                document.getElementById('dashboardBtn').disabled = false;
+
+            } catch (error) {
+                console.error('❌ Login failed:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Login Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <pre>${error.stack || 'No stack trace available'}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function testBusinessProfile() {
+            const resultDiv = document.getElementById('businessResult');
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="error"><strong>Error:</strong> Please login first</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="pending">🔄 Testing business profile...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/business/Profile`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                console.log('📡 Business Profile Response status:', response.status);
+                console.log('📡 Business Profile Response headers:', [...response.headers.entries()]);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('✅ Business Profile response:', data);
+
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Business Profile Success!</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('❌ Business Profile failed:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Business Profile Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>This might be a CORS issue or authentication problem.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testBusinessDashboard() {
+            const resultDiv = document.getElementById('businessResult');
+            
+            if (!authToken) {
+                resultDiv.innerHTML = '<div class="error"><strong>Error:</strong> Please login first</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="pending">🔄 Testing business dashboard...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/business/Dashboard`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                console.log('📡 Business Dashboard Response status:', response.status);
+                console.log('📡 Business Dashboard Response headers:', [...response.headers.entries()]);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const data = await response.json();
+                console.log('✅ Business Dashboard response:', data);
+
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h4>✅ Business Dashboard Success!</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('❌ Business Dashboard failed:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Business Dashboard Failed</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>This might be a CORS issue or authentication problem.</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
