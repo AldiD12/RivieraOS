@@ -1,0 +1,157 @@
+{
+  "info": {
+    "name": "BlackBear API - Login Testing",
+    "description": "Test PIN login and JWT token validation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "PIN Login - Manager Test",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phoneNumber\": \"0688998000\",\n  \"pin\": \"9999\"\n}"
+        },
+        "url": {
+          "raw": "https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin",
+          "protocol": "https",
+          "host": [
+            "blackbear-api",
+            "kindhill-9a9eea44",
+            "italynorth",
+            "azurecontainerapps",
+            "io"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "login",
+            "pin"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Business Profile - Test with JWT",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "description": "JWT token from login response"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/business/Profile",
+          "protocol": "https",
+          "host": [
+            "blackbear-api",
+            "kindhill-9a9eea44",
+            "italynorth",
+            "azurecontainerapps",
+            "io"
+          ],
+          "path": [
+            "api",
+            "business",
+            "Profile"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Business Dashboard - Test with JWT",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "description": "JWT token from login response"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/business/Dashboard",
+          "protocol": "https",
+          "host": [
+            "blackbear-api",
+            "kindhill-9a9eea44",
+            "italynorth",
+            "azurecontainerapps",
+            "io"
+          ],
+          "path": [
+            "api",
+            "business",
+            "Dashboard"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Business Staff - Test with JWT",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwt_token}}",
+            "description": "JWT token from login response"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/business/Staff",
+          "protocol": "https",
+          "host": [
+            "blackbear-api",
+            "kindhill-9a9eea44",
+            "italynorth",
+            "azurecontainerapps",
+            "io"
+          ],
+          "path": [
+            "api",
+            "business",
+            "Staff"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "jwt_token",
+      "value": "",
+      "description": "JWT token from login response"
+    },
+    {
+      "key": "base_url",
+      "value": "https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api",
+      "description": "Base API URL"
+    }
+  ]
+}

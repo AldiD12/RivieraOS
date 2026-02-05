@@ -1162,13 +1162,19 @@ function JWTDebugPanel() {
         issues: []
       };
 
+      // Extract role from Microsoft claim format or simple format
+      const role = payload.role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+      
       // Check for issues
       if (!payload.businessId) {
         analysis.issues.push('Missing businessId claim - business API calls will fail');
       }
-      if (!payload.role || !['Owner', 'Manager', 'Waiter', 'Bartender', 'Guest'].includes(payload.role)) {
-        analysis.issues.push(`Invalid role: ${payload.role || 'undefined'}`);
+      if (!role || !['Owner', 'Manager', 'Waiter', 'Bartender', 'Guest'].includes(role)) {
+        analysis.issues.push(`Invalid role: ${role || 'undefined'}`);
       }
+      
+      // Add role to analysis for display
+      analysis.role = role;
       if (analysis.isExpired) {
         analysis.issues.push('Token is expired');
       }
@@ -1259,7 +1265,7 @@ function JWTDebugPanel() {
           <h3 className="text-lg font-semibold mb-3 text-blue-400">Token Claims</h3>
           <div className="bg-zinc-800 rounded-lg p-4 font-mono text-sm space-y-2">
             <div><span className="text-purple-400">sub:</span> <span className="text-yellow-400">{tokenInfo.payload.sub}</span></div>
-            <div><span className="text-purple-400">role:</span> <span className="text-yellow-400">{tokenInfo.payload.role}</span></div>
+            <div><span className="text-purple-400">role:</span> <span className="text-yellow-400">{tokenInfo.role || tokenInfo.payload.role || tokenInfo.payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'undefined'}</span></div>
             <div><span className="text-purple-400">businessId:</span> <span className="text-yellow-400">{tokenInfo.payload.businessId || 'undefined'}</span></div>
             <div><span className="text-purple-400">userId:</span> <span className="text-yellow-400">{tokenInfo.payload.userId}</span></div>
             <div><span className="text-purple-400">email:</span> <span className="text-yellow-400">{tokenInfo.payload.email}</span></div>
