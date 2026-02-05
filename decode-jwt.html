@@ -280,15 +280,16 @@
                 }
                 
                 // Role validation
+                const role = payload.role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
                 const validRoles = ['Owner', 'Manager', 'Waiter', 'Bartender', 'Guest'];
-                if (payload.role) {
-                    if (validRoles.includes(payload.role)) {
-                        result += `<span class="success">✅ Valid role: ${payload.role}</span>\n`;
+                if (role) {
+                    if (validRoles.includes(role)) {
+                        result += `<span class="success">✅ Valid role: ${role}</span>\n`;
                     } else {
-                        result += `<span class="error">❌ Invalid role: ${payload.role} (valid: ${validRoles.join(', ')})</span>\n`;
+                        result += `<span class="error">❌ Invalid role: ${role} (valid: ${validRoles.join(', ')})</span>\n`;
                     }
                 } else {
-                    result += `<span class="error">❌ No role claim found</span>\n`;
+                    result += `<span class="error">❌ No role claim found (checked both 'role' and Microsoft claim format)</span>\n`;
                 }
                 
                 // Business access check
@@ -333,7 +334,17 @@
                         displayValue = `${value} (${new Date(value * 1000).toLocaleString()})`;
                     }
                     
-                    result += `${spaces}<span class="key">${key}:</span> <span class="value">${displayValue}</span>\n`;
+                    // Handle Microsoft claim URIs - show both key and simplified name
+                    let displayKey = key;
+                    if (key === 'http://schemas.microsoft.com/ws/2008/06/identity/claims/role') {
+                        displayKey = 'role (Microsoft claim)';
+                    } else if (key === 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier') {
+                        displayKey = 'nameidentifier (Microsoft claim)';
+                    } else if (key === 'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress') {
+                        displayKey = 'emailaddress (Microsoft claim)';
+                    }
+                    
+                    result += `${spaces}<span class="key">${displayKey}:</span> <span class="value">${displayValue}</span>\n`;
                 }
             }
             
