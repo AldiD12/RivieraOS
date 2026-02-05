@@ -71,6 +71,23 @@ export default function BusinessAdminDashboard() {
       
       console.log('🔐 Business dashboard auth check:', { role, hasToken: !!token });
       
+      // Debug JWT token contents
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          console.log('🔍 JWT Token payload:', payload);
+          console.log('🔍 JWT Token claims:', {
+            sub: payload.sub,
+            role: payload.role,
+            businessId: payload.businessId,
+            exp: payload.exp,
+            iat: payload.iat
+          });
+        } catch (e) {
+          console.warn('⚠️ Could not decode JWT token:', e);
+        }
+      }
+      
       if (!token || !['Manager', 'Owner'].includes(role)) {
         console.log('❌ Authentication failed - redirecting to login');
         localStorage.clear();
