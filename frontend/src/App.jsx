@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import AdminDashboard from './pages/AdminDashboard';
+import BusinessAdminDashboard from './pages/BusinessAdminDashboard';
 import CollectorDashboard from './pages/CollectorDashboard';
 import MenuPage from './pages/MenuPage';
 import BarDisplay from './pages/BarDisplay';
@@ -54,7 +55,7 @@ function App() {
           path="/manager" 
           element={
             <ProtectedRoute role="Manager">
-              <AdminDashboard />
+              <BusinessAdminDashboard />
             </ProtectedRoute>
           } 
         />
@@ -63,7 +64,7 @@ function App() {
           path="/admin" 
           element={
             <ProtectedRoute role="Manager">
-              <AdminDashboard />
+              <BusinessAdminDashboard />
             </ProtectedRoute>
           } 
         />
