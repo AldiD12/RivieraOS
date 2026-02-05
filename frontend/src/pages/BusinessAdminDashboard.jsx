@@ -38,8 +38,10 @@ export default function BusinessAdminDashboard() {
 
   // Form states
   const [staffForm, setStaffForm] = useState({
-    phoneNumber: '',
+    email: '',
+    password: '',
     fullName: '',
+    phoneNumber: '',
     role: '',
     pin: '',
     isActive: true
@@ -202,8 +204,10 @@ export default function BusinessAdminDashboard() {
       
       // Reset form and close modal
       setStaffForm({
-        phoneNumber: '',
+        email: '',
+        password: '',
         fullName: '',
+        phoneNumber: '',
         role: '',
         pin: '',
         isActive: true
@@ -539,6 +543,8 @@ export default function BusinessAdminDashboard() {
                               onClick={() => {
                                 setEditingStaff(staff);
                                 setStaffForm({
+                                  email: staff.email || '',
+                                  password: '', // Don't pre-fill password for security
                                   phoneNumber: staff.phoneNumber || '',
                                   fullName: staff.fullName || '',
                                   role: staff.role || '',
@@ -718,11 +724,39 @@ export default function BusinessAdminDashboard() {
               <form onSubmit={handleCreateStaff} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Phone Number *
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={staffForm.email}
+                    onChange={(e) => handleStaffFormChange('email', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="Enter email address"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Password *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    minLength="6"
+                    value={staffForm.password}
+                    onChange={(e) => handleStaffFormChange('password', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="Enter password (min 6 characters)"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Phone Number
                   </label>
                   <input
                     type="tel"
-                    required
                     value={staffForm.phoneNumber}
                     onChange={(e) => handleStaffFormChange('phoneNumber', e.target.value)}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
