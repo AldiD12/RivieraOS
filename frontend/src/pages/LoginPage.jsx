@@ -31,12 +31,22 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Try both PIN formats to see which one works
+      // Try different phone number formats
+      const phoneFormats = [
+        phoneNumber, // Original format
+        phoneNumber.startsWith('+') ? phoneNumber : `+355${phoneNumber.replace(/^0/, '')}`, // Add country code
+        phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber, // Remove leading 0
+        phoneNumber.startsWith('+355') ? phoneNumber.substring(4) : phoneNumber, // Remove country code
+      ];
+      
+      // Remove duplicates
+      const uniquePhoneFormats = [...new Set(phoneFormats)];
+      
       const originalPin = pin;
       const paddedPin = pin.padStart(6, '0');
       
       console.log('🔐 Attempting login with:', {
-        phoneNumber,
+        phoneFormats: uniquePhoneFormats,
         originalPin,
         paddedPin,
         pinLength: pin.length
@@ -45,52 +55,60 @@ export default function LoginPage() {
       let response;
       let loginSuccessful = false;
 
-      // First try with padded PIN (since that's how we store it)
-      try {
-        response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            phoneNumber: phoneNumber,
-            pin: paddedPin
-          })
-        });
-
-        if (response.ok) {
-          loginSuccessful = true;
-        }
-      } catch (error) {
-        console.log('🔐 Padded PIN attempt failed:', error);
-      }
-
-      // If padded PIN fails, try original PIN
-      if (!loginSuccessful) {
-        console.log('🔐 Padded PIN failed, trying original PIN...');
+      // Try each phone format with both PIN formats
+      for (const phoneFormat of uniquePhoneFormats) {
+        if (loginSuccessful) break;
+        
+        // Try with padded PIN first
         try {
+          console.log(`🔐 Trying phone: ${phoneFormat} with padded PIN`);
           response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              phoneNumber: phoneNumber,
+              phoneNumber: phoneFormat,
+              pin: paddedPin
+            })
+          });
+
+          if (response.ok) {
+            loginSuccessful = true;
+            console.log(`✅ Login successful with phone: ${phoneFormat} and padded PIN`);
+            break;
+          }
+        } catch (error) {
+          console.log(`🔐 Failed with phone: ${phoneFormat} and padded PIN:`, error);
+        }
+
+        // Try with original PIN
+        try {
+          console.log(`🔐 Trying phone: ${phoneFormat} with original PIN`);
+          response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              phoneNumber: phoneFormat,
               pin: originalPin
             })
           });
 
           if (response.ok) {
             loginSuccessful = true;
+            console.log(`✅ Login successful with phone: ${phoneFormat} and original PIN`);
+            break;
           }
         } catch (error) {
-          console.log('🔐 Original PIN attempt failed:', error);
+          console.log(`🔐 Failed with phone: ${phoneFormat} and original PIN:`, error);
         }
       }
 
       if (!loginSuccessful || !response.ok) {
         const errorText = await response?.text() || 'Unknown error';
-        console.error('🔐 Both PIN formats failed:', {
+        console.error('🔐 All phone/PIN combinations failed:', {
           status: response?.status,
           statusText: response?.statusText,
           errorText

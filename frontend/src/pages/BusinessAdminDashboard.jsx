@@ -86,14 +86,26 @@ export default function BusinessAdminDashboard() {
       setLoading(true);
       setError('');
 
+      // Check if we have businessId (required for business API calls)
+      const businessId = localStorage.getItem('businessId');
+      if (!businessId) {
+        console.warn('⚠️ No businessId found in localStorage - business API calls may fail');
+      }
+
       // Fetch business profile and dashboard data
       const [profile, dashboard] = await Promise.all([
         businessApi.profile.get().catch(err => {
           console.warn('Profile fetch failed:', err);
+          if (err.message?.includes('CORS') || err.status === undefined) {
+            throw new Error('Business API endpoints not available. Please contact your administrator.');
+          }
           return null;
         }),
         businessApi.dashboard.get().catch(err => {
           console.warn('Dashboard fetch failed:', err);
+          if (err.message?.includes('CORS') || err.status === undefined) {
+            throw new Error('Business API endpoints not available. Please contact your administrator.');
+          }
           return null;
         })
       ]);
@@ -106,7 +118,11 @@ export default function BusinessAdminDashboard() {
 
     } catch (err) {
       console.error('Error fetching initial data:', err);
-      setError('Failed to load dashboard data');
+      if (err.message?.includes('Business API endpoints not available')) {
+        setError('Business management features are not yet available. The backend developer needs to implement the business-level API endpoints.');
+      } else {
+        setError('Failed to load dashboard data');
+      }
     } finally {
       setLoading(false);
     }
