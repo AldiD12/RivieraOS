@@ -99,27 +99,29 @@ export default function BusinessAdminDashboard() {
       const [profile, dashboard] = await Promise.all([
         businessApi.profile.get().catch(err => {
           console.warn('Profile fetch failed:', err);
+          if (err.status === 403) {
+            console.warn('⚠️ Profile access denied - continuing without profile data');
+            return null; // Continue without profile
+          }
           if (err.message?.includes('CORS') || err.status === undefined) {
             throw new Error('Business API endpoints not available. Please contact your administrator.');
           }
           if (err.status === 401) {
             throw new Error('Authentication failed. Please login again.');
-          }
-          if (err.status === 403) {
-            throw new Error('Access denied. You do not have permission to access business data.');
           }
           return null;
         }),
         businessApi.dashboard.get().catch(err => {
           console.warn('Dashboard fetch failed:', err);
+          if (err.status === 403) {
+            console.warn('⚠️ Dashboard access denied - continuing without dashboard data');
+            return null; // Continue without dashboard
+          }
           if (err.message?.includes('CORS') || err.status === undefined) {
             throw new Error('Business API endpoints not available. Please contact your administrator.');
           }
           if (err.status === 401) {
             throw new Error('Authentication failed. Please login again.');
-          }
-          if (err.status === 403) {
-            throw new Error('Access denied. You do not have permission to access business data.');
           }
           return null;
         })
@@ -151,7 +153,12 @@ export default function BusinessAdminDashboard() {
       setStaffMembers(staff);
     } catch (err) {
       console.error('Error fetching staff:', err);
-      setError('Failed to load staff members');
+      if (err.status === 403) {
+        console.warn('⚠️ Staff access denied - staff management will be disabled');
+        setStaffMembers([]); // Empty array, don't show error
+      } else {
+        setError('Failed to load staff members');
+      }
     } finally {
       setStaffLoading(false);
     }
