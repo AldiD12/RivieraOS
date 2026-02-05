@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Token Debugger - BlackBear API</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #4ade80;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            background: #2a2a2a;
+            border: 1px solid #404040;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            color: #60a5fa;
+            margin-top: 0;
+            border-bottom: 1px solid #404040;
+            padding-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: #1a1a1a;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            color: #e0e0e0;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+        button {
+            background: #4ade80;
+            color: #1a1a1a;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px 5px 0 0;
+        }
+        button:hover {
+            background: #22c55e;
+        }
+        button.secondary {
+            background: #6b7280;
+            color: white;
+        }
+        button.secondary:hover {
+            background: #4b5563;
+        }
+        .output {
+            background: #1a1a1a;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #ef4444;
+        }
+        .success {
+            color: #4ade80;
+        }
+        .warning {
+            color: #f59e0b;
+        }
+        .info {
+            color: #60a5fa;
+        }
+        .key {
+            color: #a78bfa;
+            font-weight: bold;
+        }
+        .value {
+            color: #fbbf24;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .test-section {
+            background: #1e293b;
+            border: 1px solid #334155;
+        }
+        .test-section h2 {
+            color: #fbbf24;
+        }
+        .endpoint {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .endpoint-url {
+            color: #60a5fa;
+            font-weight: bold;
+        }
+        .status-200 { color: #4ade80; }
+        .status-403 { color: #ef4444; }
+        .status-401 { color: #f59e0b; }
+        .status-500 { color: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 JWT Token Debugger - BlackBear API</h1>
+        
+        <div class="grid">
+            <div class="section">
+                <h2>📋 Token Input</h2>
+                <textarea id="tokenInput" placeholder="Paste your JWT token here..."></textarea>
+                <button onclick="decodeToken()">🔍 Decode Token</button>
+                <button onclick="getFromLocalStorage()" class="secondary">📱 Get from localStorage</button>
+                <button onclick="clearAll()" class="secondary">🗑️ Clear</button>
+            </div>
+            
+            <div class="section">
+                <h2>🔐 Token Analysis</h2>
+                <div id="tokenAnalysis" class="output">No token analyzed yet...</div>
+            </div>
+        </div>
+        
+        <div class="section test-section">
+            <h2>🧪 API Endpoint Tester</h2>
+            <p>Test business API endpoints with the decoded token:</p>
+            <button onclick="testAllEndpoints()">🚀 Test All Business Endpoints</button>
+            <button onclick="testSpecificEndpoint('/business/Profile')" class="secondary">👤 Test Profile</button>
+            <button onclick="testSpecificEndpoint('/business/Dashboard')" class="secondary">📊 Test Dashboard</button>
+            <button onclick="testSpecificEndpoint('/business/Staff')" class="secondary">👥 Test Staff</button>
+            <div id="apiResults" class="output">Click "Test All Business Endpoints" to start testing...</div>
+        </div>
+        
+        <div class="section">
+            <h2>📚 Token Claims Reference</h2>
+            <div class="output">
+<span class="key">Standard JWT Claims:</span>
+• <span class="key">sub</span> (Subject): User identifier
+• <span class="key">iat</span> (Issued At): Token creation timestamp
+• <span class="key">exp</span> (Expires): Token expiration timestamp
+• <span class="key">iss</span> (Issuer): Token issuer
+• <span class="key">aud</span> (Audience): Token audience
+
+<span class="key">BlackBear Custom Claims:</span>
+• <span class="key">role</span>: User role (Manager, Owner, Waiter, Bartender, etc.)
+• <span class="key">businessId</span>: Associated business ID (CRITICAL for business API access)
+• <span class="key">userId</span>: User ID in the system
+• <span class="key">email</span>: User email address
+• <span class="key">fullName</span>: User's full name
+
+<span class="warning">⚠️ Common 403 Error Causes:</span>
+1. Missing <span class="key">businessId</span> claim in token
+2. Incorrect <span class="key">role</span> value (must be exact match)
+3. Token expired (<span class="key">exp</span> timestamp passed)
+4. Backend authorization rules restricting Manager role
+5. Business not properly associated with user account
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+        let currentToken = null;
+
+        function getFromLocalStorage() {
+            const token = localStorage.getItem('token') || localStorage.getItem('azure_jwt_token');
+            if (token) {
+                document.getElementById('tokenInput').value = token;
+                decodeToken();
+            } else {
+                showError('No token found in localStorage');
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('tokenInput').value = '';
+            document.getElementById('tokenAnalysis').innerHTML = 'No token analyzed yet...';
+            document.getElementById('apiResults').innerHTML = 'Click "Test All Business Endpoints" to start testing...';
+            currentToken = null;
+        }
+
+        function decodeToken() {
+            const tokenInput = document.getElementById('tokenInput').value.trim();
+            const output = document.getElementById('tokenAnalysis');
+            
+            if (!tokenInput) {
+                showError('Please enter a JWT token');
+                return;
+            }
+
+            try {
+                // Split the token into parts
+                const parts = tokenInput.split('.');
+                if (parts.length !== 3) {
+                    throw new Error('Invalid JWT format - must have 3 parts separated by dots');
+                }
+
+                // Decode header
+                const header = JSON.parse(atob(parts[0]));
+                
+                // Decode payload
+                const payload = JSON.parse(atob(parts[1]));
+                
+                // Store token for API testing
+                currentToken = tokenInput;
+                
+                // Format output
+                let result = '';
+                
+                // Header analysis
+                result += `<span class="info">🔒 JWT HEADER:</span>\n`;
+                result += formatObject(header) + '\n\n';
+                
+                // Payload analysis
+                result += `<span class="info">📋 JWT PAYLOAD:</span>\n`;
+                result += formatObject(payload) + '\n\n';
+                
+                // Token validation
+                result += `<span class="info">✅ TOKEN VALIDATION:</span>\n`;
+                
+                // Check expiration
+                if (payload.exp) {
+                    const expDate = new Date(payload.exp * 1000);
+                    const now = new Date();
+                    const isExpired = expDate < now;
+                    
+                    result += `<span class="key">Expires:</span> <span class="${isExpired ? 'error' : 'success'}">${expDate.toLocaleString()}</span>\n`;
+                    result += `<span class="key">Status:</span> <span class="${isExpired ? 'error' : 'success'}">${isExpired ? '❌ EXPIRED' : '✅ VALID'}</span>\n`;
+                    
+                    if (!isExpired) {
+                        const timeLeft = Math.floor((expDate - now) / 1000 / 60);
+                        result += `<span class="key">Time Left:</span> <span class="value">${timeLeft} minutes</span>\n`;
+                    }
+                } else {
+                    result += `<span class="warning">⚠️ No expiration claim found</span>\n`;
+                }
+                
+                result += '\n';
+                
+                // Business API compatibility check
+                result += `<span class="info">🏢 BUSINESS API COMPATIBILITY:</span>\n`;
+                
+                const requiredClaims = ['role', 'businessId', 'sub'];
+                const missingClaims = requiredClaims.filter(claim => !payload[claim]);
+                
+                if (missingClaims.length === 0) {
+                    result += `<span class="success">✅ All required claims present</span>\n`;
+                } else {
+                    result += `<span class="error">❌ Missing claims: ${missingClaims.join(', ')}</span>\n`;
+                }
+                
+                // Role validation
+                const validRoles = ['Owner', 'Manager', 'Waiter', 'Bartender', 'Guest'];
+                if (payload.role) {
+                    if (validRoles.includes(payload.role)) {
+                        result += `<span class="success">✅ Valid role: ${payload.role}</span>\n`;
+                    } else {
+                        result += `<span class="error">❌ Invalid role: ${payload.role} (valid: ${validRoles.join(', ')})</span>\n`;
+                    }
+                } else {
+                    result += `<span class="error">❌ No role claim found</span>\n`;
+                }
+                
+                // Business access check
+                if (payload.businessId) {
+                    result += `<span class="success">✅ Business ID present: ${payload.businessId}</span>\n`;
+                } else {
+                    result += `<span class="error">❌ No businessId claim - business API calls will fail</span>\n`;
+                }
+                
+                // Manager-specific checks
+                if (payload.role === 'Manager') {
+                    result += `\n<span class="info">👔 MANAGER ROLE ANALYSIS:</span>\n`;
+                    result += `<span class="key">Expected Access:</span> <span class="value">Business Profile, Dashboard, Staff Management</span>\n`;
+                    
+                    if (!payload.businessId) {
+                        result += `<span class="error">❌ CRITICAL: Manager role requires businessId claim</span>\n`;
+                    }
+                    
+                    result += `<span class="info">💡 If getting 403 errors, check backend authorization rules for Manager role</span>\n`;
+                }
+                
+                output.innerHTML = result;
+                
+            } catch (error) {
+                showError(`Failed to decode token: ${error.message}`);
+            }
+        }
+
+        function formatObject(obj, indent = 0) {
+            let result = '';
+            const spaces = '  '.repeat(indent);
+            
+            for (const [key, value] of Object.entries(obj)) {
+                if (typeof value === 'object' && value !== null) {
+                    result += `${spaces}<span class="key">${key}:</span>\n`;
+                    result += formatObject(value, indent + 1);
+                } else {
+                    let displayValue = value;
+                    
+                    // Format timestamps
+                    if ((key === 'exp' || key === 'iat') && typeof value === 'number') {
+                        displayValue = `${value} (${new Date(value * 1000).toLocaleString()})`;
+                    }
+                    
+                    result += `${spaces}<span class="key">${key}:</span> <span class="value">${displayValue}</span>\n`;
+                }
+            }
+            
+            return result;
+        }
+
+        function showError(message) {
+            document.getElementById('tokenAnalysis').innerHTML = `<span class="error">❌ ${message}</span>`;
+        }
+
+        async function testSpecificEndpoint(endpoint) {
+            if (!currentToken) {
+                document.getElementById('apiResults').innerHTML = '<span class="error">❌ Please decode a token first</span>';
+                return;
+            }
+
+            const output = document.getElementById('apiResults');
+            output.innerHTML = `<span class="info">🧪 Testing ${endpoint}...</span>\n`;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const statusClass = `status-${response.status}`;
+                let result = `<span class="endpoint-url">${endpoint}</span>\n`;
+                result += `<span class="key">Status:</span> <span class="${statusClass}">${response.status} ${response.statusText}</span>\n`;
+
+                if (response.ok) {
+                    const data = await response.json();
+                    result += `<span class="key">Response:</span> <span class="success">${JSON.stringify(data, null, 2)}</span>\n`;
+                } else {
+                    const errorText = await response.text();
+                    result += `<span class="key">Error:</span> <span class="error">${errorText || 'No error details'}</span>\n`;
+                }
+
+                output.innerHTML = result;
+
+            } catch (error) {
+                output.innerHTML = `<span class="error">❌ Network error: ${error.message}</span>`;
+            }
+        }
+
+        async function testAllEndpoints() {
+            if (!currentToken) {
+                document.getElementById('apiResults').innerHTML = '<span class="error">❌ Please decode a token first</span>';
+                return;
+            }
+
+            const endpoints = [
+                '/business/Profile',
+                '/business/Dashboard', 
+                '/business/Staff',
+                '/business/Categories',
+                '/business/Venues'
+            ];
+
+            const output = document.getElementById('apiResults');
+            output.innerHTML = '<span class="info">🧪 Testing all business endpoints...</span>\n\n';
+
+            let results = '';
+
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${currentToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const statusClass = `status-${response.status}`;
+                    results += `<div class="endpoint">`;
+                    results += `<span class="endpoint-url">${endpoint}</span>\n`;
+                    results += `<span class="key">Status:</span> <span class="${statusClass}">${response.status} ${response.statusText}</span>\n`;
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        results += `<span class="key">✅ Success:</span> <span class="success">Data received (${JSON.stringify(data).length} chars)</span>\n`;
+                    } else {
+                        const errorText = await response.text();
+                        results += `<span class="key">❌ Error:</span> <span class="error">${errorText || 'No error details'}</span>\n`;
+                        
+                        // Provide specific guidance for 403 errors
+                        if (response.status === 403) {
+                            results += `<span class="warning">💡 403 Forbidden - Check if Manager role has access to this endpoint</span>\n`;
+                        }
+                    }
+                    results += `</div>\n`;
+
+                } catch (error) {
+                    results += `<div class="endpoint">`;
+                    results += `<span class="endpoint-url">${endpoint}</span>\n`;
+                    results += `<span class="error">❌ Network error: ${error.message}</span>\n`;
+                    results += `</div>\n`;
+                }
+
+                // Update output progressively
+                output.innerHTML = '<span class="info">🧪 Testing all business endpoints...</span>\n\n' + results;
+                
+                // Small delay to show progress
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+
+            // Add summary
+            const successCount = (results.match(/status-200/g) || []).length;
+            const errorCount = endpoints.length - successCount;
+            
+            results += `\n<span class="info">📊 SUMMARY:</span>\n`;
+            results += `<span class="success">✅ Successful: ${successCount}/${endpoints.length}</span>\n`;
+            results += `<span class="error">❌ Failed: ${errorCount}/${endpoints.length}</span>\n`;
+            
+            if (errorCount > 0) {
+                results += `\n<span class="warning">💡 TROUBLESHOOTING:</span>\n`;
+                results += `• Check if businessId claim is present in token\n`;
+                results += `• Verify Manager role has proper permissions in backend\n`;
+                results += `• Confirm business is properly associated with user account\n`;
+                results += `• Check backend logs for detailed authorization errors\n`;
+            }
+
+            output.innerHTML = '<span class="info">🧪 Testing complete!</span>\n\n' + results;
+        }
+
+        // Auto-load token from localStorage on page load
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('token') || localStorage.getItem('azure_jwt_token');
+            if (token) {
+                document.getElementById('tokenInput').value = token;
+                // Don't auto-decode to avoid overwhelming the user
+            }
+        });
+    </script>
+</body>
+</html>

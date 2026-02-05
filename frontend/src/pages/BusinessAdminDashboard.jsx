@@ -80,9 +80,31 @@ export default function BusinessAdminDashboard() {
             sub: payload.sub,
             role: payload.role,
             businessId: payload.businessId,
+            userId: payload.userId,
+            email: payload.email,
+            fullName: payload.fullName,
             exp: payload.exp,
             iat: payload.iat
           });
+          
+          // Check for potential issues
+          const issues = [];
+          if (!payload.businessId) {
+            issues.push('❌ Missing businessId claim - business API calls will fail');
+          }
+          if (!payload.role || !['Owner', 'Manager', 'Waiter', 'Bartender', 'Guest'].includes(payload.role)) {
+            issues.push(`❌ Invalid role: ${payload.role}`);
+          }
+          if (payload.exp && new Date(payload.exp * 1000) < new Date()) {
+            issues.push('❌ Token expired');
+          }
+          
+          if (issues.length > 0) {
+            console.error('🚨 JWT Token Issues:', issues);
+          } else {
+            console.log('✅ JWT Token appears valid for business API access');
+          }
+          
         } catch (e) {
           console.warn('⚠️ Could not decode JWT token:', e);
         }
@@ -430,7 +452,8 @@ export default function BusinessAdminDashboard() {
               { id: 'overview', label: 'Overview' },
               { id: 'staff', label: 'Staff Management' },
               { id: 'menu', label: 'Menu Management' },
-              { id: 'venues', label: 'Venues' }
+              { id: 'venues', label: 'Venues' },
+              { id: 'debug', label: 'JWT Debug' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -714,6 +737,16 @@ export default function BusinessAdminDashboard() {
             <h2 className="text-xl font-semibold">Venues Management</h2>
             <div className="bg-zinc-900 rounded-lg p-6">
               <p className="text-zinc-400">Venues management will be implemented here.</p>
+            </div>
+          </div>
+        )}
+
+        {/* JWT Debug Tab */}
+        {activeTab === 'debug' && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold">JWT Token Debug</h2>
+            <div className="bg-zinc-900 rounded-lg p-6">
+              <JWTDebugPanel />
             </div>
           </div>
         )}
@@ -1088,6 +1121,240 @@ export default function BusinessAdminDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+// JWT Debug Panel Component
+function JWTDebugPanel() {
+  const [tokenInfo, setTokenInfo] = useState(null);
+  const [testResults, setTestResults] = useState([]);
+  const [testing, setTesting] = useState(false);
+
+  useEffect(() => {
+    analyzeToken();
+  }, []);
+
+  const analyzeToken = () => {
+    const token = localStorage.getItem('token') || localStorage.getItem('azure_jwt_token');
+    
+    if (!token) {
+      setTokenInfo({ error: 'No token found in localStorage' });
+      return;
+    }
+
+    try {
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        throw new Error('Invalid JWT format');
+      }
+
+      const header = JSON.parse(atob(parts[0]));
+      const payload = JSON.parse(atob(parts[1]));
+      
+      // Analyze token
+      const analysis = {
+        header,
+        payload,
+        isExpired: payload.exp ? new Date(payload.exp * 1000) < new Date() : false,
+        expiresAt: payload.exp ? new Date(payload.exp * 1000).toLocaleString() : 'No expiration',
+        timeLeft: payload.exp ? Math.max(0, Math.floor((new Date(payload.exp * 1000) - new Date()) / 1000 / 60)) : null,
+        issues: []
+      };
+
+      // Check for issues
+      if (!payload.businessId) {
+        analysis.issues.push('Missing businessId claim - business API calls will fail');
+      }
+      if (!payload.role || !['Owner', 'Manager', 'Waiter', 'Bartender', 'Guest'].includes(payload.role)) {
+        analysis.issues.push(`Invalid role: ${payload.role || 'undefined'}`);
+      }
+      if (analysis.isExpired) {
+        analysis.issues.push('Token is expired');
+      }
+
+      setTokenInfo(analysis);
+    } catch (error) {
+      setTokenInfo({ error: `Failed to decode token: ${error.message}` });
+    }
+  };
+
+  const testBusinessEndpoints = async () => {
+    const token = localStorage.getItem('token') || localStorage.getItem('azure_jwt_token');
+    if (!token) return;
+
+    setTesting(true);
+    setTestResults([]);
+
+    const endpoints = [
+      { url: '/business/Profile', name: 'Business Profile' },
+      { url: '/business/Dashboard', name: 'Business Dashboard' },
+      { url: '/business/Staff', name: 'Staff Management' },
+      { url: '/business/Categories', name: 'Categories' },
+      { url: '/business/Venues', name: 'Venues' }
+    ];
+
+    const results = [];
+
+    for (const endpoint of endpoints) {
+      try {
+        const response = await fetch(`https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api${endpoint.url}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        results.push({
+          name: endpoint.name,
+          url: endpoint.url,
+          status: response.status,
+          statusText: response.statusText,
+          success: response.ok,
+          error: response.ok ? null : await response.text()
+        });
+
+      } catch (error) {
+        results.push({
+          name: endpoint.name,
+          url: endpoint.url,
+          status: 0,
+          statusText: 'Network Error',
+          success: false,
+          error: error.message
+        });
+      }
+
+      setTestResults([...results]);
+      await new Promise(resolve => setTimeout(resolve, 300)); // Small delay for UX
+    }
+
+    setTesting(false);
+  };
+
+  if (!tokenInfo) {
+    return <div className="text-zinc-400">Loading token analysis...</div>;
+  }
+
+  if (tokenInfo.error) {
+    return (
+      <div className="space-y-4">
+        <div className="text-red-400">❌ {tokenInfo.error}</div>
+        <button 
+          onClick={analyzeToken}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Retry Analysis
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Token Info */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <h3 className="text-lg font-semibold mb-3 text-blue-400">Token Claims</h3>
+          <div className="bg-zinc-800 rounded-lg p-4 font-mono text-sm space-y-2">
+            <div><span className="text-purple-400">sub:</span> <span className="text-yellow-400">{tokenInfo.payload.sub}</span></div>
+            <div><span className="text-purple-400">role:</span> <span className="text-yellow-400">{tokenInfo.payload.role}</span></div>
+            <div><span className="text-purple-400">businessId:</span> <span className="text-yellow-400">{tokenInfo.payload.businessId || 'undefined'}</span></div>
+            <div><span className="text-purple-400">userId:</span> <span className="text-yellow-400">{tokenInfo.payload.userId}</span></div>
+            <div><span className="text-purple-400">email:</span> <span className="text-yellow-400">{tokenInfo.payload.email}</span></div>
+            <div><span className="text-purple-400">fullName:</span> <span className="text-yellow-400">{tokenInfo.payload.fullName}</span></div>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-lg font-semibold mb-3 text-blue-400">Token Status</h3>
+          <div className="bg-zinc-800 rounded-lg p-4 space-y-2">
+            <div className="flex items-center space-x-2">
+              <span className={`w-3 h-3 rounded-full ${tokenInfo.isExpired ? 'bg-red-500' : 'bg-green-500'}`}></span>
+              <span>{tokenInfo.isExpired ? 'Expired' : 'Valid'}</span>
+            </div>
+            <div className="text-sm text-zinc-400">
+              Expires: {tokenInfo.expiresAt}
+            </div>
+            {tokenInfo.timeLeft !== null && !tokenInfo.isExpired && (
+              <div className="text-sm text-zinc-400">
+                Time left: {tokenInfo.timeLeft} minutes
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Issues */}
+      {tokenInfo.issues.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold mb-3 text-red-400">Issues Found</h3>
+          <div className="bg-red-900/20 border border-red-800 rounded-lg p-4">
+            {tokenInfo.issues.map((issue, index) => (
+              <div key={index} className="text-red-400">❌ {issue}</div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* API Testing */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-blue-400">API Endpoint Testing</h3>
+          <button
+            onClick={testBusinessEndpoints}
+            disabled={testing}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+          >
+            {testing ? 'Testing...' : 'Test Business APIs'}
+          </button>
+        </div>
+
+        {testResults.length > 0 && (
+          <div className="space-y-2">
+            {testResults.map((result, index) => (
+              <div key={index} className="bg-zinc-800 rounded-lg p-3 flex items-center justify-between">
+                <div>
+                  <div className="font-medium">{result.name}</div>
+                  <div className="text-sm text-zinc-400">{result.url}</div>
+                </div>
+                <div className="text-right">
+                  <div className={`font-mono text-sm ${
+                    result.success ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    {result.status} {result.statusText}
+                  </div>
+                  {result.error && (
+                    <div className="text-xs text-red-400 mt-1 max-w-xs truncate">
+                      {result.error}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Troubleshooting Guide */}
+      <div>
+        <h3 className="text-lg font-semibold mb-3 text-yellow-400">Troubleshooting 403 Errors</h3>
+        <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-4 text-sm space-y-2">
+          <div>💡 <strong>Common causes of 403 Forbidden errors:</strong></div>
+          <div>• Missing <code className="bg-zinc-700 px-1 rounded">businessId</code> claim in JWT token</div>
+          <div>• Backend authorization rules don't allow Manager role for business endpoints</div>
+          <div>• Business not properly associated with user account in database</div>
+          <div>• Token issued before business association was created</div>
+          <div className="mt-3">
+            <strong>Solutions:</strong>
+          </div>
+          <div>• Re-login to get fresh token with businessId claim</div>
+          <div>• Check backend logs for detailed authorization errors</div>
+          <div>• Verify business-user association in database</div>
+          <div>• Contact backend developer to check Manager role permissions</div>
+        </div>
+      </div>
     </div>
   );
 }
