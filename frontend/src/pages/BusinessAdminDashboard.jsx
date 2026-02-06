@@ -1057,8 +1057,8 @@ export default function BusinessAdminDashboard() {
                   >
                     <option value="">Select role</option>
                     <option value="Manager">Manager</option>
-                    <option value="Waiter">Waiter</option>
                     <option value="Bartender">Bartender</option>
+                    <option value="Collector">Collector</option>
                   </select>
                 </div>
                 
@@ -1088,6 +1088,151 @@ export default function BusinessAdminDashboard() {
                     className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
                   >
                     Create Staff Member
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Staff Modal */}
+      <AnimatePresence>
+        {editingStaff && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+            onClick={() => setEditingStaff(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-zinc-900 rounded-lg p-6 w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-xl font-bold text-white mb-6">Edit Staff Member</h2>
+              
+              <form onSubmit={handleEditStaff} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={staffForm.email}
+                    onChange={(e) => handleStaffFormChange('email', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="Enter email address"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Password (leave blank to keep current)
+                  </label>
+                  <input
+                    type="password"
+                    minLength="6"
+                    value={staffForm.password}
+                    onChange={(e) => handleStaffFormChange('password', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="Enter new password (optional)"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={staffForm.phoneNumber}
+                    onChange={(e) => handleStaffFormChange('phoneNumber', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="Enter phone number"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={staffForm.fullName}
+                    onChange={(e) => handleStaffFormChange('fullName', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="Enter full name"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    PIN Code (leave blank to keep current)
+                  </label>
+                  <input
+                    type="text"
+                    maxLength="4"
+                    pattern="[0-9]{4}"
+                    value={staffForm.pin}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 4) {
+                        handleStaffFormChange('pin', value);
+                      }
+                    }}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none font-mono text-center text-lg tracking-widest"
+                    placeholder="0000"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Role *
+                  </label>
+                  <select
+                    required
+                    value={staffForm.role}
+                    onChange={(e) => handleStaffFormChange('role', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  >
+                    <option value="">Select role</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Bartender">Bartender</option>
+                    <option value="Collector">Collector</option>
+                  </select>
+                </div>
+                
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="editStaffIsActive"
+                    checked={staffForm.isActive}
+                    onChange={(e) => handleStaffFormChange('isActive', e.target.checked)}
+                    className="mr-2"
+                  />
+                  <label htmlFor="editStaffIsActive" className="text-sm text-zinc-300">
+                    Active Staff Member
+                  </label>
+                </div>
+                
+                <div className="flex justify-end space-x-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setEditingStaff(null)}
+                    className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Update Staff Member
                   </button>
                 </div>
               </form>

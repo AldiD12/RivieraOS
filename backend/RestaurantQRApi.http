@@ -1,6 +1,0 @@
-@RestaurantQRApi_HostAddress = http://localhost:5081
-
-GET {{RestaurantQRApi_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
