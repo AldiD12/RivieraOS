@@ -67,17 +67,15 @@ namespace BlackBear.Services.Core.Controllers
             // Generate token and return
             var token = GenerateJwtToken(user, guestRole.RoleName);
 
-            // Map user to profile DTO
-            var userProfile = new UserProfileDto
+            return Ok(new LoginResponse
             {
-                Id = user.Id,
+                Token = token,
+                UserId = user.Id,
                 Email = user.Email,
                 FullName = user.FullName,
                 Role = guestRole.RoleName,
                 BusinessId = user.BusinessId
-            };
-
-            return Ok(new { token, user = userProfile });
+            });
         }
 
         // POST: api/auth/login
@@ -115,17 +113,15 @@ namespace BlackBear.Services.Core.Controllers
             // Generate JWT token
             var token = GenerateJwtToken(user, roleName);
 
-            // Map user to profile DTO
-            var userProfile = new UserProfileDto
+            return Ok(new LoginResponse
             {
-                Id = user.Id,
+                Token = token,
+                UserId = user.Id,
                 Email = user.Email,
                 FullName = user.FullName,
                 Role = roleName,
                 BusinessId = user.BusinessId
-            };
-
-            return Ok(new { token, user = userProfile });
+            });
         }
 
         // POST: api/auth/login/pin
@@ -172,9 +168,9 @@ namespace BlackBear.Services.Core.Controllers
                 return Unauthorized("PIN login is only available for staff members.");
             }
 
-            // Get user's role and verify it's Staff
+            // Get user's role and verify it's a staff role (Staff, Barman, Manager, or Caderman)
             var roleName = user.UserRoles.FirstOrDefault()?.Role?.RoleName;
-            if (roleName != "Staff" && roleName != "Manager")
+            if (roleName != "Staff" && roleName != "Barman" && roleName != "Manager" && roleName != "Caderman")
             {
                 return Unauthorized("PIN login is only available for staff members.");
             }
@@ -182,17 +178,15 @@ namespace BlackBear.Services.Core.Controllers
             // Generate JWT token
             var token = GenerateJwtToken(user, roleName);
 
-            // Map user to profile DTO
-            var userProfile = new UserProfileDto
+            return Ok(new LoginResponse
             {
-                Id = user.Id,
+                Token = token,
+                UserId = user.Id,
                 Email = user.Email,
                 FullName = user.FullName,
                 Role = roleName,
                 BusinessId = user.BusinessId
-            };
-
-            return Ok(new { token, user = userProfile });
+            });
         }
 
         private string GenerateJwtToken(User user, string? roleName)

@@ -29,7 +29,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             // Verify venue belongs to this business (multi-tenancy filter applies)
@@ -62,7 +62,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var zone = await _context.VenueZones
@@ -99,7 +99,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var venue = await _context.Venues.FirstOrDefaultAsync(v => v.Id == venueId);
@@ -139,7 +139,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var zone = await _context.VenueZones
@@ -174,7 +174,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var zone = await _context.VenueZones

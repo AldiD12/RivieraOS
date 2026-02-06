@@ -29,7 +29,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var category = await _context.Categories
@@ -68,7 +68,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var product = await _context.Products
@@ -105,7 +105,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var category = await _context.Categories.FirstOrDefaultAsync(c => c.Id == categoryId);
@@ -156,7 +156,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var product = await _context.Products
@@ -198,7 +198,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var product = await _context.Products
@@ -225,7 +225,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var product = await _context.Products
@@ -269,7 +269,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var product = await _context.Products
@@ -291,7 +291,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var product = await _context.Products

@@ -4,6 +4,7 @@ using BlackBear.Services.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlackBear.Services.Core.Migrations
 {
     [DbContext(typeof(BlackBearDbContext))]
-    partial class BlackBearDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260205102919_CreateOrdersSchema")]
+    partial class CreateOrdersSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -747,199 +750,6 @@ namespace BlackBear.Services.Core.Migrations
                     b.ToTable("catalog_venue_zones");
                 });
 
-            modelBuilder.Entity("BlackBear.Services.Core.Entities.ZoneUnit", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("unit_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal?>("BasePrice")
-                        .HasColumnType("decimal(10,2)")
-                        .HasColumnName("base_price");
-
-                    b.Property<int>("BusinessId")
-                        .HasColumnType("int")
-                        .HasColumnName("business_id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("notes");
-
-                    b.Property<int?>("PositionX")
-                        .HasColumnType("int")
-                        .HasColumnName("position_x");
-
-                    b.Property<int?>("PositionY")
-                        .HasColumnType("int")
-                        .HasColumnName("position_y");
-
-                    b.Property<string>("QrCode")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("qr_code");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("status");
-
-                    b.Property<string>("UnitCode")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("unit_code");
-
-                    b.Property<string>("UnitType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("unit_type");
-
-                    b.Property<int>("VenueId")
-                        .HasColumnType("int")
-                        .HasColumnName("venue_id");
-
-                    b.Property<int>("VenueZoneId")
-                        .HasColumnType("int")
-                        .HasColumnName("zone_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BusinessId");
-
-                    b.HasIndex("QrCode")
-                        .IsUnique();
-
-                    b.HasIndex("VenueId");
-
-                    b.HasIndex("VenueZoneId");
-
-                    b.ToTable("venue_zone_units");
-                });
-
-            modelBuilder.Entity("BlackBear.Services.Core.Entities.ZoneUnitBooking", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasColumnName("booking_id");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("BookingCode")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("booking_code");
-
-                    b.Property<int>("BusinessId")
-                        .HasColumnType("int")
-                        .HasColumnName("business_id");
-
-                    b.Property<DateTime?>("CheckedInAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("checked_in_at");
-
-                    b.Property<DateTime?>("CheckedOutAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("checked_out_at");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("created_at");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("deleted_at");
-
-                    b.Property<DateTime?>("EndTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("end_time");
-
-                    b.Property<int>("GuestCount")
-                        .HasColumnType("int")
-                        .HasColumnName("guest_count");
-
-                    b.Property<string>("GuestEmail")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("guest_email");
-
-                    b.Property<string>("GuestName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)")
-                        .HasColumnName("guest_name");
-
-                    b.Property<string>("GuestPhone")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("guest_phone");
-
-                    b.Property<int?>("HandledByUserId")
-                        .HasColumnType("int")
-                        .HasColumnName("handled_by_user_id");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("notes");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime2")
-                        .HasColumnName("start_time");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("status");
-
-                    b.Property<int>("VenueId")
-                        .HasColumnType("int")
-                        .HasColumnName("venue_id");
-
-                    b.Property<int>("ZoneUnitId")
-                        .HasColumnType("int")
-                        .HasColumnName("zone_unit_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingCode")
-                        .IsUnique();
-
-                    b.HasIndex("BusinessId");
-
-                    b.HasIndex("HandledByUserId");
-
-                    b.HasIndex("VenueId");
-
-                    b.HasIndex("ZoneUnitId");
-
-                    b.ToTable("venue_zone_unit_bookings");
-                });
-
             modelBuilder.Entity("BlackBear.Services.Core.Entities.Category", b =>
                 {
                     b.HasOne("BlackBear.Services.Core.Entities.Business", "Business")
@@ -1153,67 +963,6 @@ namespace BlackBear.Services.Core.Migrations
                     b.Navigation("Venue");
                 });
 
-            modelBuilder.Entity("BlackBear.Services.Core.Entities.ZoneUnit", b =>
-                {
-                    b.HasOne("BlackBear.Services.Core.Entities.Business", "Business")
-                        .WithMany()
-                        .HasForeignKey("BusinessId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("BlackBear.Services.Core.Entities.Venue", "Venue")
-                        .WithMany()
-                        .HasForeignKey("VenueId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("BlackBear.Services.Core.Entities.VenueZone", "VenueZone")
-                        .WithMany()
-                        .HasForeignKey("VenueZoneId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Business");
-
-                    b.Navigation("Venue");
-
-                    b.Navigation("VenueZone");
-                });
-
-            modelBuilder.Entity("BlackBear.Services.Core.Entities.ZoneUnitBooking", b =>
-                {
-                    b.HasOne("BlackBear.Services.Core.Entities.Business", "Business")
-                        .WithMany()
-                        .HasForeignKey("BusinessId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("BlackBear.Services.Core.Entities.User", "HandledByUser")
-                        .WithMany()
-                        .HasForeignKey("HandledByUserId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("BlackBear.Services.Core.Entities.Venue", "Venue")
-                        .WithMany()
-                        .HasForeignKey("VenueId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("BlackBear.Services.Core.Entities.ZoneUnit", "ZoneUnit")
-                        .WithMany("Bookings")
-                        .HasForeignKey("ZoneUnitId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Business");
-
-                    b.Navigation("HandledByUser");
-
-                    b.Navigation("Venue");
-
-                    b.Navigation("ZoneUnit");
-                });
-
             modelBuilder.Entity("BlackBear.Services.Core.Entities.Business", b =>
                 {
                     b.Navigation("Categories");
@@ -1270,11 +1019,6 @@ namespace BlackBear.Services.Core.Migrations
                     b.Navigation("VenueConfig");
 
                     b.Navigation("VenueZones");
-                });
-
-            modelBuilder.Entity("BlackBear.Services.Core.Entities.ZoneUnit", b =>
-                {
-                    b.Navigation("Bookings");
                 });
 #pragma warning restore 612, 618
         }

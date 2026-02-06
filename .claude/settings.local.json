@@ -22,7 +22,9 @@
       "Bash(docker info:*)",
       "WebFetch(domain:blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io)",
       "Bash(python3:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(docker tag:*)",
+      "Bash(ls:*)"
     ]
   }
 }

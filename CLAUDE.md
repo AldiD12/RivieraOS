@@ -49,18 +49,38 @@ BlackBear Services is a multi-tenant SaaS platform built with .NET 10 for managi
 BlackBear.Services/
 └── BlackBear.Services.Core/
     ├── Controllers/
-    │   ├── AuthController.cs          # Authentication (login/register)
-    │   ├── BusinessesController.cs    # Business operations
-    │   └── SuperAdmin/                # Admin-only endpoints
+    │   ├── AuthController.cs              # Authentication (login/register/PIN)
+    │   ├── BusinessesController.cs        # Business operations
+    │   ├── Business/                      # Business owner/manager endpoints
+    │   │   ├── VenuesController.cs
+    │   │   ├── ZonesController.cs
+    │   │   ├── CategoriesController.cs
+    │   │   ├── ProductsController.cs
+    │   │   ├── StaffController.cs
+    │   │   ├── EventsController.cs
+    │   │   ├── OrdersController.cs
+    │   │   ├── UnitsController.cs         # Zone unit management (Caderman)
+    │   │   └── UnitBookingsController.cs  # Unit booking management (Caderman)
+    │   ├── Public/                        # Public endpoints (no auth)
+    │   │   ├── EventsController.cs
+    │   │   ├── OrdersController.cs
+    │   │   └── ReservationsController.cs  # Guest unit reservations
+    │   └── SuperAdmin/                    # Admin-only endpoints
     │       ├── DashboardController.cs
     │       ├── BusinessesController.cs
     │       ├── VenuesController.cs
     │       ├── ZonesController.cs
     │       ├── CategoriesController.cs
     │       ├── ProductsController.cs
-    │       └── UsersController.cs
-    ├── DTOs/                          # Data Transfer Objects
-    ├── Entities/                      # Database entities
+    │       ├── UsersController.cs
+    │       ├── EventsController.cs
+    │       └── OrdersController.cs
+    ├── DTOs/
+    │   ├── Auth/                          # Authentication DTOs
+    │   ├── Business/                      # Business admin DTOs (Biz prefix)
+    │   ├── Public/                        # Public DTOs
+    │   └── SuperAdmin/                    # SuperAdmin DTOs
+    ├── Entities/                          # Database entities
     │   ├── User.cs
     │   ├── Business.cs
     │   ├── Venue.cs
@@ -70,11 +90,15 @@ BlackBear.Services/
     │   ├── Role.cs
     │   ├── UserRole.cs
     │   ├── ScheduledEvent.cs
-    │   └── EventBooking.cs
+    │   ├── EventBooking.cs
+    │   ├── Order.cs
+    │   ├── OrderItem.cs
+    │   ├── ZoneUnit.cs
+    │   └── ZoneUnitBooking.cs
     ├── Data/
-    │   └── BlackBearDbContext.cs      # EF Core DbContext
+    │   └── BlackBearDbContext.cs          # EF Core DbContext
     ├── Services/
-    │   └── CurrentUserService.cs      # User context service
+    │   └── CurrentUserService.cs          # User context service
     ├── Interfaces/
     │   └── ICurrentUserService.cs
     └── Migrations/
@@ -86,6 +110,8 @@ BlackBear.Services/
 | **SuperAdmin** | Full system access, all businesses |
 | **BusinessOwner** | Full access to owned business |
 | **Manager** | Manage venues, products, staff |
+| **Caderman** | Manage sunbeds/umbrellas and guest check-in/out |
+| **Barman** | Handle drink/food orders |
 | **Staff** | Limited operational access |
 | **Guest** | Default role for new registrations |
 
@@ -105,20 +131,293 @@ All major entities support soft delete with:
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | POST | `/api/auth/register` | Register new user (Guest role) |
-| POST | `/api/auth/login` | Login and receive JWT token |
+| POST | `/api/auth/login` | Login with email/password, receive JWT token |
+| POST | `/api/auth/pin-login` | Login with PIN code (for staff) |
 
 ### SuperAdmin APIs (`/api/superadmin/*`)
-Requires `SuperAdmin` role.
+Requires `SuperAdmin` role. Full access to all resources across all businesses.
 
-| Controller | Endpoints |
-|------------|-----------|
-| Dashboard | GET stats, metrics |
-| Businesses | CRUD operations for businesses |
-| Venues | CRUD operations for venues |
-| Zones | CRUD operations for venue zones |
-| Categories | CRUD operations for product categories |
-| Products | CRUD operations for products |
-| Users | CRUD operations for users |
+#### Dashboard (`/api/superadmin/dashboard`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/stats` | Platform-wide statistics |
+| GET | `/recent-activity` | Recent platform activity |
+
+#### Businesses (`/api/superadmin/businesses`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List all businesses (paginated, searchable) |
+| GET | `/{id}` | Get business details |
+| POST | `/` | Create new business |
+| PUT | `/{id}` | Update business |
+| DELETE | `/{id}` | Soft delete business |
+| POST | `/{id}/restore` | Restore deleted business |
+
+#### Venues (`/api/superadmin/venues`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List all venues (paginated, filterable by business) |
+| GET | `/{id}` | Get venue details |
+| POST | `/` | Create new venue |
+| PUT | `/{id}` | Update venue |
+| DELETE | `/{id}` | Soft delete venue |
+| POST | `/{id}/restore` | Restore deleted venue |
+
+#### Zones (`/api/superadmin/zones`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List all zones (filterable by venue) |
+| GET | `/{id}` | Get zone details |
+| POST | `/` | Create new zone |
+| PUT | `/{id}` | Update zone |
+| DELETE | `/{id}` | Soft delete zone |
+| POST | `/{id}/restore` | Restore deleted zone |
+
+#### Categories (`/api/superadmin/categories`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List all categories (filterable by business) |
+| GET | `/{id}` | Get category details |
+| POST | `/` | Create new category |
+| PUT | `/{id}` | Update category |
+| DELETE | `/{id}` | Soft delete category |
+| POST | `/{id}/restore` | Restore deleted category |
+
+#### Products (`/api/superadmin/products`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List all products (paginated, filterable) |
+| GET | `/{id}` | Get product details |
+| POST | `/` | Create new product |
+| PUT | `/{id}` | Update product |
+| DELETE | `/{id}` | Soft delete product |
+| POST | `/{id}/restore` | Restore deleted product |
+
+#### Users (`/api/superadmin/users`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List all users (paginated, filterable) |
+| GET | `/{id}` | Get user details |
+| POST | `/` | Create new user |
+| PUT | `/{id}` | Update user |
+| DELETE | `/{id}` | Soft delete user |
+| POST | `/{id}/restore` | Restore deleted user |
+
+#### Events (`/api/superadmin/events`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List all events (paginated, filterable) |
+| GET | `/{id}` | Get event details |
+| POST | `/` | Create new event |
+| PUT | `/{id}` | Update event |
+| DELETE | `/{id}` | Soft delete event |
+| POST | `/{id}/publish` | Publish event |
+| POST | `/{id}/unpublish` | Unpublish event |
+| POST | `/{id}/restore` | Restore deleted event |
+
+#### Orders (`/api/superadmin/orders`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List all orders (paginated, filterable) |
+| GET | `/{id}` | Get order details |
+| DELETE | `/{id}` | Soft delete order |
+| POST | `/{id}/restore` | Restore deleted order |
+
+**Query Parameters for GET `/`:**
+- `page`, `pageSize` - Pagination
+- `venueId` - Filter by venue
+- `businessId` - Filter by business
+- `zoneId` - Filter by zone
+- `status` - Filter by status (Pending, Preparing, Ready, Delivered, Cancelled)
+- `search` - Search by order number or customer name
+
+### Business Admin APIs (`/api/business/*`)
+Requires `BusinessOwner` or `Manager` role. Access scoped to user's business.
+
+#### Venues (`/api/business/venues`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List business venues |
+| GET | `/{id}` | Get venue details |
+| GET | `/{id}/config` | Get venue configuration |
+| POST | `/` | Create venue (BusinessOwner only) |
+| PUT | `/{id}` | Update venue (BusinessOwner only) |
+| PUT | `/{id}/config` | Update venue config (BusinessOwner only) |
+| DELETE | `/{id}` | Soft delete venue (BusinessOwner only) |
+
+#### Zones (`/api/business/zones`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List zones (filterable by venue) |
+| GET | `/{id}` | Get zone details |
+| POST | `/` | Create zone |
+| PUT | `/{id}` | Update zone |
+| DELETE | `/{id}` | Soft delete zone |
+
+#### Categories (`/api/business/categories`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List business categories |
+| GET | `/{id}` | Get category details |
+| POST | `/` | Create category |
+| PUT | `/{id}` | Update category |
+| DELETE | `/{id}` | Soft delete category |
+
+#### Products (`/api/business/products`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List products (paginated, filterable) |
+| GET | `/{id}` | Get product details |
+| POST | `/` | Create product |
+| PUT | `/{id}` | Update product |
+| DELETE | `/{id}` | Soft delete product |
+
+#### Staff (`/api/business/staff`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List staff members |
+| GET | `/{id}` | Get staff details |
+| POST | `/` | Create staff member |
+| PUT | `/{id}` | Update staff member |
+| DELETE | `/{id}` | Soft delete staff member |
+| POST | `/{id}/reset-password` | Reset staff password |
+| POST | `/{id}/set-pin` | Set staff PIN code |
+
+#### Events (`/api/business/events`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List business events (Manager+) |
+| GET | `/{id}` | Get event details (Manager+) |
+| POST | `/` | Create event (BusinessOwner only) |
+| PUT | `/{id}` | Update event (BusinessOwner only) |
+| DELETE | `/{id}` | Soft delete event (BusinessOwner only) |
+| POST | `/{id}/publish` | Publish event (BusinessOwner only) |
+| POST | `/{id}/unpublish` | Unpublish event (BusinessOwner only) |
+
+#### Orders (`/api/business/orders`)
+Requires `Barman`, `Manager`, or `BusinessOwner` role.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List orders (filterable by venue, status, zone) |
+| GET | `/active` | Get all active orders (Pending, Preparing, Ready) |
+| GET | `/zone/{zoneId}` | Get orders for specific zone |
+| GET | `/{id}` | Get order details |
+| PUT | `/{id}/status` | Update order status |
+
+**Order Status Flow:**
+```
+Pending → Preparing → Ready → Delivered
+    ↓         ↓         ↓
+         Cancelled
+```
+
+#### Units (`/api/business/venues/{venueId}/units`)
+Requires `Caderman`, `Manager`, or `BusinessOwner` role.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List all units (filter by zone, status, type) |
+| GET | `/{id}` | Get unit details |
+| GET | `/by-qr/{qrCode}` | Get unit by QR code (for scanning) |
+| GET | `/stats` | Get unit/booking statistics |
+| POST | `/` | Create unit (Manager+) |
+| POST | `/bulk` | Create multiple units at once (Manager+) |
+| PUT | `/{id}` | Update unit (Manager+) |
+| PUT | `/{id}/status` | Update unit status (Caderman can do this) |
+| DELETE | `/{id}` | Soft delete unit (Manager+) |
+
+**Unit Status Flow:**
+```
+Available ←→ Reserved ←→ Occupied
+    ↑           ↓           ↓
+    └── Maintenance ←───────┘
+```
+
+#### Unit Bookings (`/api/business/venues/{venueId}/bookings`)
+Requires `Caderman`, `Manager`, or `BusinessOwner` role.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List bookings (filter by date, status, zone) |
+| GET | `/active` | Get active bookings (Reserved, Active) |
+| GET | `/{id}` | Get booking details |
+| POST | `/` | Create walk-in booking |
+| POST | `/{id}/check-in` | Check in guest |
+| POST | `/{id}/check-out` | Check out guest |
+| POST | `/{id}/cancel` | Cancel booking |
+| POST | `/{id}/no-show` | Mark as no-show |
+
+**Booking Status Flow:**
+```
+Reserved → Active → Completed
+    ↓         ↓
+  NoShow  Cancelled
+```
+
+### Public APIs (`/api/public/*`)
+No authentication required. Read-only access to published content.
+
+#### Events (`/api/public/events`)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | List upcoming published events |
+| GET | `/{id}` | Get event details (published only) |
+| GET | `/venue/{venueId}` | List events by venue |
+| GET | `/business/{businessId}` | List events by business |
+
+**Query Parameters for GET `/`:**
+- `venueId` - Filter by venue
+- `businessId` - Filter by business
+- `limit` - Max results (default: 50)
+
+#### Orders (`/api/public/orders`)
+No authentication required. For guest QR code ordering.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/menu?venueId=1` | Get venue menu (categories with products) |
+| POST | `/` | Create new order (guest places order) |
+| GET | `/{orderNumber}?venueId=1` | Check order status |
+
+**Create Order Request Body:**
+```json
+{
+  "venueId": 1,
+  "zoneId": 5,
+  "customerName": "John",
+  "notes": "No ice please",
+  "items": [
+    { "productId": 10, "quantity": 2, "notes": "Extra lemon" }
+  ]
+}
+```
+
+#### Reservations (`/api/public/reservations`)
+No authentication required. For guest sunbed/umbrella reservations.
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/availability?venueId=1&date=2024-01-15` | Get available units by venue/date |
+| GET | `/zones?venueId=1` | Get zones with availability counts |
+| POST | `/` | Create reservation |
+| GET | `/{bookingCode}` | Check reservation status |
+| DELETE | `/{bookingCode}` | Cancel reservation |
+
+**Create Reservation Request Body:**
+```json
+{
+  "venueId": 1,
+  "zoneUnitId": 5,
+  "guestName": "John Doe",
+  "guestPhone": "+39123456789",
+  "guestEmail": "john@example.com",
+  "guestCount": 2,
+  "startTime": "2024-01-15T09:00:00Z",
+  "endTime": "2024-01-15T18:00:00Z",
+  "notes": "Need an umbrella with shade"
+}
+```
 
 ### Health Checks
 | Endpoint | Description |
@@ -155,6 +454,13 @@ Requires `SuperAdmin` role.
      --image blackbearapiark.azurecr.io/blackbear-api:latest
    ```
 
+5. **Force New Revision (if needed)**
+   ```bash
+   az containerapp revision copy \
+     --name blackbear-api \
+     --resource-group rg-blackbear-dev-001
+   ```
+
 ### Environment Variables (Container App)
 Set via Azure Portal or CLI:
 - `ConnectionStrings__DefaultConnection` - Database connection string
@@ -165,34 +471,11 @@ Set via Azure Portal or CLI:
 
 ## Future APIs (Planned)
 
-### Business Owner APIs (`/api/business/*`)
-- Business profile management
-- Staff/user management within business
-- Venue management for owned business
-- Reports and analytics
-
-### Venue Management (`/api/venues/*`)
-- Zone configuration
-- Capacity management
-- Operating hours
-
-### Events & Bookings (`/api/events/*`)
-- Create/manage scheduled events
-- Event bookings
+### Event Bookings (`/api/bookings/*`)
+- Create/manage event bookings
 - Ticket management
 - Guest lists
-
-### Products & Menu (`/api/menu/*`)
-- Product catalog management
-- Category organization
-- Pricing and variants
-- Inventory tracking
-
-### Orders (`/api/orders/*`)
-- Order creation
-- Order status tracking
-- Payment integration
-- Order history
+- Check-in functionality
 
 ### Notifications (`/api/notifications/*`)
 - Push notifications
@@ -205,10 +488,8 @@ Set via Azure Portal or CLI:
 - Performance metrics
 - Revenue tracking
 
-### Public APIs (`/api/public/*`)
+### Public APIs (Additional)
 - Public venue information
-- Event discovery
-- Menu browsing (no auth required)
 
 ## Development
 
@@ -244,3 +525,10 @@ dotnet ef database update
 | `appsettings.Development.json` | Development overrides |
 | `appsettings.Production.json` | Production overrides (CORS only) |
 | `Dockerfile` | Container build instructions |
+
+## DTO Naming Conventions
+
+To avoid Swagger schema ID conflicts between namespaces:
+- **SuperAdmin DTOs**: Standard names (e.g., `VenueListItemDto`, `CreateVenueRequest`)
+- **Business DTOs**: Prefixed with `Biz` (e.g., `BizVenueListItemDto`, `BizCreateVenueRequest`)
+- **Public DTOs**: Prefixed with `Public` (e.g., `PublicEventListItemDto`, `PublicEventDetailDto`)

@@ -37,8 +37,18 @@ namespace BlackBear.Services.Core.Entities
         [Column("max_guests")]
         public int MaxGuests { get; set; } = 0;
 
+        [Column("is_published")]
+        public bool IsPublished { get; set; } = false;
+
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Soft delete
+        [Column("is_deleted")]
+        public bool IsDeleted { get; set; } = false;
+
+        [Column("deleted_at")]
+        public DateTime? DeletedAt { get; set; }
 
         // Foreign key
         [Column("venue_id")]

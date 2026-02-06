@@ -40,6 +40,14 @@ namespace BlackBear.Services.Core.Data
         public DbSet<ScheduledEvent> ScheduledEvents { get; set; }
         public DbSet<EventBooking> EventBookings { get; set; }
 
+        // Orders schema entities
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+
+        // Zone Units schema entities
+        public DbSet<ZoneUnit> ZoneUnits { get; set; }
+        public DbSet<ZoneUnitBooking> ZoneUnitBookings { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -80,6 +88,30 @@ namespace BlackBear.Services.Core.Data
                 _currentUserService == null ||
                 _currentUserService.BusinessId == null ||
                 u.BusinessId == _currentUserService.BusinessId);
+
+            // ScheduledEvent: soft delete only (filtered through Venue for multi-tenancy)
+            modelBuilder.Entity<ScheduledEvent>().HasQueryFilter(e => !e.IsDeleted);
+
+            // Order: soft delete + multi-tenancy
+            modelBuilder.Entity<Order>().HasQueryFilter(o =>
+                !o.IsDeleted &&
+                (_currentUserService == null ||
+                 _currentUserService.BusinessId == null ||
+                 o.BusinessId == _currentUserService.BusinessId));
+
+            // ZoneUnit: soft delete + multi-tenancy
+            modelBuilder.Entity<ZoneUnit>().HasQueryFilter(zu =>
+                !zu.IsDeleted &&
+                (_currentUserService == null ||
+                 _currentUserService.BusinessId == null ||
+                 zu.BusinessId == _currentUserService.BusinessId));
+
+            // ZoneUnitBooking: soft delete + multi-tenancy
+            modelBuilder.Entity<ZoneUnitBooking>().HasQueryFilter(zub =>
+                !zub.IsDeleted &&
+                (_currentUserService == null ||
+                 _currentUserService.BusinessId == null ||
+                 zub.BusinessId == _currentUserService.BusinessId));
 
 
             // === CORE MODULE ===
@@ -198,6 +230,95 @@ namespace BlackBear.Services.Core.Data
                     .WithOne(eb => eb.ScheduledEvent)
                     .HasForeignKey(eb => eb.EventId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // === ORDERS MODULE ===
+
+            // Order configuration
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.HasOne(o => o.Venue)
+                    .WithMany()
+                    .HasForeignKey(o => o.VenueId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(o => o.VenueZone)
+                    .WithMany()
+                    .HasForeignKey(o => o.VenueZoneId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(o => o.Business)
+                    .WithMany()
+                    .HasForeignKey(o => o.BusinessId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(o => o.HandledByUser)
+                    .WithMany()
+                    .HasForeignKey(o => o.HandledByUserId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasMany(o => o.OrderItems)
+                    .WithOne(oi => oi.Order)
+                    .HasForeignKey(oi => oi.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // OrderItem configuration
+            modelBuilder.Entity<OrderItem>(entity =>
+            {
+                entity.HasOne(oi => oi.Product)
+                    .WithMany()
+                    .HasForeignKey(oi => oi.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // === ZONE UNITS MODULE ===
+
+            // ZoneUnit configuration
+            modelBuilder.Entity<ZoneUnit>(entity =>
+            {
+                entity.HasIndex(zu => zu.QrCode).IsUnique();
+
+                entity.HasOne(zu => zu.VenueZone)
+                    .WithMany()
+                    .HasForeignKey(zu => zu.VenueZoneId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(zu => zu.Venue)
+                    .WithMany()
+                    .HasForeignKey(zu => zu.VenueId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(zu => zu.Business)
+                    .WithMany()
+                    .HasForeignKey(zu => zu.BusinessId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasMany(zu => zu.Bookings)
+                    .WithOne(zub => zub.ZoneUnit)
+                    .HasForeignKey(zub => zub.ZoneUnitId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // ZoneUnitBooking configuration
+            modelBuilder.Entity<ZoneUnitBooking>(entity =>
+            {
+                entity.HasIndex(zub => zub.BookingCode).IsUnique();
+
+                entity.HasOne(zub => zub.Venue)
+                    .WithMany()
+                    .HasForeignKey(zub => zub.VenueId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(zub => zub.Business)
+                    .WithMany()
+                    .HasForeignKey(zub => zub.BusinessId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(zub => zub.HandledByUser)
+                    .WithMany()
+                    .HasForeignKey(zub => zub.HandledByUserId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
         }
     }

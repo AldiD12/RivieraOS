@@ -30,7 +30,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var staff = await _context.Users
@@ -61,7 +61,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var user = await _context.Users
@@ -96,7 +96,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             // Check if email already exists
@@ -108,10 +108,11 @@ namespace BlackBear.Services.Core.Controllers.Business
                 return BadRequest("Email already exists");
             }
 
-            // Only allow Staff or Manager roles
-            if (request.Role != "Staff" && request.Role != "Manager")
+            // Only allow Staff, Manager, Barman, or Caderman roles
+            var allowedRoles = new[] { "Staff", "Manager", "Barman", "Caderman" };
+            if (!allowedRoles.Contains(request.Role))
             {
-                return BadRequest("Can only create Staff or Manager users");
+                return BadRequest("Can only create Staff, Manager, Barman, or Caderman users");
             }
 
             var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == request.Role);
@@ -164,7 +165,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var user = await _context.Users
@@ -185,10 +186,11 @@ namespace BlackBear.Services.Core.Controllers.Business
                 return BadRequest("Email already exists");
             }
 
-            // Only allow Staff or Manager roles
-            if (request.Role != "Staff" && request.Role != "Manager")
+            // Only allow Staff, Manager, Barman, or Caderman roles
+            var allowedRoles = new[] { "Staff", "Manager", "Barman", "Caderman" };
+            if (!allowedRoles.Contains(request.Role))
             {
-                return BadRequest("Can only assign Staff or Manager roles");
+                return BadRequest("Can only assign Staff, Manager, Barman, or Caderman roles");
             }
 
             var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == request.Role);
@@ -231,7 +233,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             // Prevent self-deactivation
@@ -262,7 +264,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var user = await _context.Users
@@ -287,7 +289,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var user = await _context.Users
@@ -312,7 +314,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var user = await _context.Users
@@ -337,7 +339,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var businessId = _currentUserService.BusinessId;
             if (!businessId.HasValue)
             {
-                return Forbid("User is not associated with a business");
+                return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
             var user = await _context.Users
