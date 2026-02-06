@@ -75,7 +75,7 @@ export default function LoginPage() {
             },
             body: JSON.stringify({
               phoneNumber: phoneFormat,
-              pin: originalPin
+              pin: pin
             })
           });
 
