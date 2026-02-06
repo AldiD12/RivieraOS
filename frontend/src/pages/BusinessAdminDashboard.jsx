@@ -132,42 +132,6 @@ export default function BusinessAdminDashboard() {
           setError('Authentication error: Invalid token. Please re-login.');
         }
       }
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          console.log('🔍 JWT Token payload:', payload);
-          console.log('🔍 JWT Token claims:', {
-            sub: payload.sub,
-            role: payload.role,
-            businessId: payload.businessId,
-            userId: payload.userId,
-            email: payload.email,
-            fullName: payload.fullName,
-            exp: payload.exp,
-            iat: payload.iat
-          });
-          
-          // Check for potential issues
-          const issues = [];
-          if (!payload.businessId) {
-            issues.push('❌ Missing businessId claim - business API calls will fail');
-          }
-          if (!payload.role || !['Owner', 'Manager', 'Waiter', 'Bartender', 'Guest'].includes(payload.role)) {
-            issues.push(`❌ Invalid role: ${payload.role}`);
-          }
-          if (payload.exp && new Date(payload.exp * 1000) < new Date()) {
-            issues.push('❌ Token expired');
-          }
-          
-          if (issues.length > 0) {
-            console.error('🚨 JWT Token Issues:', issues);
-          } else {
-            console.log('✅ JWT Token appears valid for business API access');
-          }
-          
-        } catch (e) {
-          console.warn('⚠️ Could not decode JWT token:', e);
-        }
-      }
       
       if (!token || !['Manager', 'Owner'].includes(role)) {
         console.log('❌ Authentication failed - redirecting to login');
