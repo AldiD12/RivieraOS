@@ -166,16 +166,11 @@ export default function LoginPage() {
         businessId
       });
       
-      // Route based on role - Updated to match ProtectedRoute requirements (v2.0)
+      // Route based on role - Business roles only: Manager, Bartender, Collector
       const roleRoutes = {
-        'Owner': '/admin',
-        'Manager': '/admin', // Manager goes directly to /admin
-        'Waiter': '/collector',
-        'Bartender': '/bar',
-        'Guest': '/collector',
-        'Staff': '/collector', // Legacy support
-        'Admin': '/admin', // Legacy support
-        'SuperAdmin': '/superadmin'
+        'Manager': '/admin',     // Manager goes to admin dashboard
+        'Bartender': '/bar',     // Bartender goes to bar dashboard
+        'Collector': '/collector' // Collector goes to collector dashboard
       };
       
       const targetRoute = roleRoutes[role] || '/collector';

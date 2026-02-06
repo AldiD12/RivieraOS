@@ -91,11 +91,9 @@ const CreateStaffModal = ({
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                 >
                   <option value="">Select role</option>
-                  <option value="Owner">Owner</option>
                   <option value="Manager">Manager</option>
-                  <option value="Waiter">Waiter</option>
                   <option value="Bartender">Bartender</option>
-                  <option value="Guest">Guest</option>
+                  <option value="Collector">Collector</option>
                 </select>
                 <p className="text-xs text-zinc-500 mt-1">
                   ✅ These are the correct database roles. Use "Bartender" for bar staff.
@@ -226,11 +224,9 @@ const EditStaffModal = ({
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                 >
                   <option value="">Select role</option>
-                  <option value="Owner">Owner</option>
                   <option value="Manager">Manager</option>
-                  <option value="Waiter">Waiter</option>
                   <option value="Bartender">Bartender</option>
-                  <option value="Guest">Guest</option>
+                  <option value="Collector">Collector</option>
                 </select>
                 <p className="text-xs text-zinc-500 mt-1">
                   ✅ These are the correct database roles. Use "Bartender" for bar staff.
