@@ -31,60 +31,40 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Try different phone number formats
+      // Normalize phone number - remove all non-digits first
+      const cleanPhone = phoneNumber.replace(/\D/g, '');
+      
+      // Generate multiple phone formats to try
       const phoneFormats = [
-        phoneNumber, // Original format
-        phoneNumber.startsWith('+') ? phoneNumber : `+355${phoneNumber.replace(/^0/, '')}`, // Add country code
-        phoneNumber.startsWith('0') ? phoneNumber.substring(1) : phoneNumber, // Remove leading 0
-        phoneNumber.startsWith('+355') ? phoneNumber.substring(4) : phoneNumber, // Remove country code
+        phoneNumber.trim(), // Original format as entered
+        cleanPhone, // Just digits
+        `0${cleanPhone}`, // With leading 0
+        `+355${cleanPhone}`, // With Albania country code
+        cleanPhone.startsWith('355') ? cleanPhone.substring(3) : cleanPhone, // Remove country code if present
+        cleanPhone.startsWith('0') ? cleanPhone.substring(1) : cleanPhone, // Remove leading 0 if present
       ];
       
-      // Remove duplicates
-      const uniquePhoneFormats = [...new Set(phoneFormats)];
+      // Remove duplicates and empty strings
+      const uniquePhoneFormats = [...new Set(phoneFormats)].filter(p => p && p.length > 0);
       
       const originalPin = pin;
-      const paddedPin = pin.padStart(6, '0');
       
       console.log('🔐 Attempting login with:', {
         phoneFormats: uniquePhoneFormats,
-        originalPin,
-        paddedPin,
+        originalPin: '****', // Hide PIN in logs
         pinLength: pin.length
       });
 
       let response;
       let loginSuccessful = false;
+      let lastError = null;
 
-      // Try each phone format with both PIN formats
+      // Try each phone format
       for (const phoneFormat of uniquePhoneFormats) {
         if (loginSuccessful) break;
         
-        // Try with padded PIN first
         try {
-          console.log(`🔐 Trying phone: ${phoneFormat} with padded PIN`);
-          response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              phoneNumber: phoneFormat,
-              pin: paddedPin
-            })
-          });
-
-          if (response.ok) {
-            loginSuccessful = true;
-            console.log(`✅ Login successful with phone: ${phoneFormat} and padded PIN`);
-            break;
-          }
-        } catch (error) {
-          console.log(`🔐 Failed with phone: ${phoneFormat} and padded PIN:`, error);
-        }
-
-        // Try with original PIN
-        try {
-          console.log(`🔐 Trying phone: ${phoneFormat} with original PIN`);
+          console.log(`🔐 Trying phone: ${phoneFormat} with PIN`);
           response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
             method: 'POST',
             headers: {
@@ -98,22 +78,38 @@ export default function LoginPage() {
 
           if (response.ok) {
             loginSuccessful = true;
-            console.log(`✅ Login successful with phone: ${phoneFormat} and original PIN`);
+            console.log(`✅ Login successful with phone: ${phoneFormat}`);
             break;
+          } else {
+            // Store the error for debugging
+            const errorText = await response.text();
+            lastError = { status: response.status, statusText: response.statusText, errorText };
+            console.log(`❌ Failed with phone: ${phoneFormat} - ${response.status}: ${errorText}`);
           }
         } catch (error) {
-          console.log(`🔐 Failed with phone: ${phoneFormat} and original PIN:`, error);
+          console.log(`🔐 Network error with phone: ${phoneFormat}:`, error.message);
+          lastError = { status: 0, statusText: 'Network Error', errorText: error.message };
         }
       }
 
-      if (!loginSuccessful || !response.ok) {
-        const errorText = await response?.text() || 'Unknown error';
-        console.error('🔐 All phone/PIN combinations failed:', {
-          status: response?.status,
-          statusText: response?.statusText,
-          errorText
-        });
-        throw new Error('Invalid phone number or PIN');
+      if (!loginSuccessful) {
+        console.log('🔐 All phone/PIN combinations failed:', lastError);
+        
+        // Show user-friendly error message
+        if (lastError?.status === 401) {
+          setError('Invalid phone number or PIN. Please check your credentials.');
+        } else if (lastError?.status === 400) {
+          setError('Invalid phone number format. Please enter a valid phone number.');
+        } else if (lastError?.status === 0) {
+          setError('Network error. Please check your internet connection.');
+        } else {
+          setError('Login failed. Please try again or contact support.');
+        }
+        
+        setShake(true);
+        setTimeout(() => setShake(false), 500);
+        setLoading(false);
+        return;
       }
 
       const data = await response.json();

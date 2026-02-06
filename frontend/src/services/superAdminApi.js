@@ -106,29 +106,31 @@ export const staffApi = {
 
   // POST /api/superadmin/businesses/{businessId}/Users - Create staff member
   create: async (businessId, staffData) => {
-    // Transform phone number + PIN data to match API expectations
-    // The PIN is stored as the password field (backend requirement)
-    // Backend requires minimum 6 characters, so we pad the 4-digit PIN
-    const paddedPassword = staffData.pin.padStart(6, '0'); // Pad with zeros to meet 6-char minimum
+    // Backend schema requirements (from swagger.json):
+    // - email: required, valid email format
+    // - password: required, minimum 6 characters
+    // - phoneNumber: optional, for phone storage
+    // - pin: optional, 4-digit string for PIN login
+    // - role: required
+    // - fullName: optional
     
     const apiData = {
-      email: staffData.phoneNumber + '@staff.local', // Use phone as email identifier
-      password: paddedPassword, // PIN padded to meet minimum length
-      fullName: staffData.fullName,
+      email: staffData.phoneNumber + '@staff.local', // Generate email from phone
+      password: 'temp123', // Temporary password (6+ chars) - staff will use PIN login
+      fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
       role: staffData.role,
-      pin: staffData.pin // Include original 4-digit PIN to enable PIN login
+      pin: staffData.pin // 4-digit PIN for login
     };
     
     console.log('📤 Creating staff with data:', {
       email: apiData.email,
-      password: '****', // Hide PIN in logs
+      password: '****', // Hide password in logs
       fullName: apiData.fullName,
       phoneNumber: apiData.phoneNumber,
       role: apiData.role,
       pin: '****', // Hide PIN in logs
-      originalPin: staffData.pin,
-      paddedLength: paddedPassword.length
+      originalPin: staffData.pin
     });
     
     try {
@@ -144,7 +146,7 @@ export const staffApi = {
           phoneNumber: apiData.phoneNumber,
           role: apiData.role,
           fullName: apiData.fullName,
-          pin: apiData.pin,
+          hasPin: !!apiData.pin,
           passwordLength: apiData.password.length
         }
       });
@@ -160,29 +162,31 @@ export const staffApi = {
 
   // PUT /api/superadmin/businesses/{businessId}/Users/{id} - Update staff member
   update: async (businessId, staffId, staffData) => {
-    // Transform phone number + PIN data to match API expectations
-    // The PIN is stored as the password field (backend requirement)
-    // Backend requires minimum 6 characters, so we pad the 4-digit PIN
-    const paddedPassword = staffData.pin.padStart(6, '0'); // Pad with zeros to meet 6-char minimum
+    // Backend schema requirements (from swagger.json):
+    // - email: required, valid email format
+    // - password: required, minimum 6 characters
+    // - phoneNumber: optional, for phone storage
+    // - pin: optional, 4-digit string for PIN login
+    // - role: required
+    // - fullName: optional
     
     const apiData = {
-      email: staffData.phoneNumber + '@staff.local', // Use phone as email identifier
-      password: paddedPassword, // PIN padded to meet minimum length
-      fullName: staffData.fullName,
+      email: staffData.phoneNumber + '@staff.local', // Generate email from phone
+      password: 'temp123', // Temporary password (6+ chars) - staff will use PIN login
+      fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
       role: staffData.role,
-      pin: staffData.pin // Include original 4-digit PIN to enable PIN login
+      pin: staffData.pin // 4-digit PIN for login
     };
     
     console.log('📤 Updating staff with data:', {
       email: apiData.email,
-      password: '****', // Hide PIN in logs
+      password: '****', // Hide password in logs
       fullName: apiData.fullName,
       phoneNumber: apiData.phoneNumber,
       role: apiData.role,
       pin: '****', // Hide PIN in logs
-      originalPin: staffData.pin,
-      paddedLength: paddedPassword.length
+      originalPin: staffData.pin
     });
     
     const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/Users/${staffId}`, apiData);
