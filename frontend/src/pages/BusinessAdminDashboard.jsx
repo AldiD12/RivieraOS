@@ -630,14 +630,20 @@ export default function BusinessAdminDashboard() {
     setProductForm(prev => ({ ...prev, [field]: value }));
   }, []);
 
+  const handleVenueFormChange = useCallback((field, value) => {
+    setVenueForm(prev => ({ ...prev, [field]: value }));
+  }, []);
+
   // Load data when tab changes
   useEffect(() => {
     if (activeTab === 'staff' && staffMembers.length === 0) {
       fetchStaffMembers();
     } else if (activeTab === 'menu' && categories.length === 0) {
       fetchCategories();
+    } else if (activeTab === 'venues' && venues.length === 0) {
+      fetchVenues();
     }
-  }, [activeTab, staffMembers.length, categories.length, fetchStaffMembers, fetchCategories]);
+  }, [activeTab, staffMembers.length, categories.length, venues.length, fetchStaffMembers, fetchCategories, fetchVenues]);
 
   // Load products when category is selected
   useEffect(() => {
@@ -985,10 +991,93 @@ export default function BusinessAdminDashboard() {
         {/* Venues Tab */}
         {activeTab === 'venues' && (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold">Venues Management</h2>
-            <div className="bg-zinc-900 rounded-lg p-6">
-              <p className="text-zinc-400">Venues management will be implemented here.</p>
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Venues Management</h2>
+              <button
+                onClick={() => setShowCreateVenueModal(true)}
+                className="bg-white text-black px-4 py-2 rounded-lg hover:bg-zinc-200 transition-colors"
+              >
+                + Create Venue
+              </button>
             </div>
+
+            {venuesLoading ? (
+              <div className="bg-zinc-900 rounded-lg p-6">
+                <p className="text-zinc-400">Loading venues...</p>
+              </div>
+            ) : venues.length === 0 ? (
+              <div className="bg-zinc-900 rounded-lg p-6">
+                <p className="text-zinc-400">No venues found. Create your first venue to get started.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {venues.map((venue) => (
+                  <div key={venue.id} className="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
+                    {venue.imageUrl && (
+                      <img 
+                        src={venue.imageUrl} 
+                        alt={venue.name}
+                        className="w-full h-40 object-cover rounded-lg mb-4"
+                      />
+                    )}
+                    <h3 className="text-lg font-semibold mb-2">{venue.name}</h3>
+                    <div className="space-y-2 text-sm text-zinc-400 mb-4">
+                      <p><span className="text-zinc-500">Type:</span> {venue.type || 'N/A'}</p>
+                      {venue.address && <p><span className="text-zinc-500">Address:</span> {venue.address}</p>}
+                      {venue.description && <p className="line-clamp-2">{venue.description}</p>}
+                      <p>
+                        <span className="text-zinc-500">Status:</span>{' '}
+                        <span className={venue.isActive ? 'text-green-400' : 'text-red-400'}>
+                          {venue.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </p>
+                      <p>
+                        <span className="text-zinc-500">Ordering:</span>{' '}
+                        <span className={venue.orderingEnabled ? 'text-green-400' : 'text-zinc-400'}>
+                          {venue.orderingEnabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingVenue(venue);
+                          setVenueForm({
+                            name: venue.name,
+                            type: venue.type || '',
+                            description: venue.description || '',
+                            address: venue.address || '',
+                            imageUrl: venue.imageUrl || '',
+                            latitude: venue.latitude,
+                            longitude: venue.longitude,
+                            orderingEnabled: venue.orderingEnabled
+                          });
+                        }}
+                        className="flex-1 bg-zinc-800 text-white px-3 py-2 rounded-lg hover:bg-zinc-700 transition-colors text-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleToggleVenueActive(venue.id)}
+                        className="flex-1 bg-zinc-800 text-white px-3 py-2 rounded-lg hover:bg-zinc-700 transition-colors text-sm"
+                      >
+                        {venue.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (window.confirm(`Delete venue "${venue.name}"? This cannot be undone.`)) {
+                            handleDeleteVenue(venue.id);
+                          }
+                        }}
+                        className="bg-red-900 text-white px-3 py-2 rounded-lg hover:bg-red-800 transition-colors text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -1510,6 +1599,302 @@ export default function BusinessAdminDashboard() {
                     className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
                   >
                     Create Product
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Create Venue Modal */}
+      <AnimatePresence>
+        {showCreateVenueModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowCreateVenueModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="bg-zinc-900 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-semibold mb-4">Create New Venue</h3>
+              <form onSubmit={handleCreateVenue} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Venue Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={venueForm.name}
+                    onChange={(e) => handleVenueFormChange('name', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="e.g., Beach Club, Pool Bar"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Type
+                  </label>
+                  <input
+                    type="text"
+                    value={venueForm.type}
+                    onChange={(e) => handleVenueFormChange('type', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="e.g., Beach, Pool, Restaurant"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={venueForm.description}
+                    onChange={(e) => handleVenueFormChange('description', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    rows="3"
+                    placeholder="Brief description of the venue"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    value={venueForm.address}
+                    onChange={(e) => handleVenueFormChange('address', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="Full address"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Image URL
+                  </label>
+                  <input
+                    type="url"
+                    value={venueForm.imageUrl}
+                    onChange={(e) => handleVenueFormChange('imageUrl', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      Latitude
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={venueForm.latitude || ''}
+                      onChange={(e) => handleVenueFormChange('latitude', e.target.value ? parseFloat(e.target.value) : null)}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                      placeholder="e.g., 41.3275"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      Longitude
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={venueForm.longitude || ''}
+                      onChange={(e) => handleVenueFormChange('longitude', e.target.value ? parseFloat(e.target.value) : null)}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                      placeholder="e.g., 19.8187"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="venueOrderingEnabled"
+                    checked={venueForm.orderingEnabled}
+                    onChange={(e) => handleVenueFormChange('orderingEnabled', e.target.checked)}
+                    className="mr-2"
+                  />
+                  <label htmlFor="venueOrderingEnabled" className="text-sm text-zinc-300">
+                    Enable Ordering
+                  </label>
+                </div>
+
+                <div className="flex justify-end space-x-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateVenueModal(false)}
+                    className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Create Venue
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Venue Modal */}
+      <AnimatePresence>
+        {editingVenue && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setEditingVenue(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="bg-zinc-900 rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-semibold mb-4">Edit Venue</h3>
+              <form onSubmit={handleUpdateVenue} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Venue Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={venueForm.name}
+                    onChange={(e) => handleVenueFormChange('name', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="e.g., Beach Club, Pool Bar"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Type
+                  </label>
+                  <input
+                    type="text"
+                    value={venueForm.type}
+                    onChange={(e) => handleVenueFormChange('type', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="e.g., Beach, Pool, Restaurant"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={venueForm.description}
+                    onChange={(e) => handleVenueFormChange('description', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    rows="3"
+                    placeholder="Brief description of the venue"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Address
+                  </label>
+                  <input
+                    type="text"
+                    value={venueForm.address}
+                    onChange={(e) => handleVenueFormChange('address', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="Full address"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Image URL
+                  </label>
+                  <input
+                    type="url"
+                    value={venueForm.imageUrl}
+                    onChange={(e) => handleVenueFormChange('imageUrl', e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      Latitude
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={venueForm.latitude || ''}
+                      onChange={(e) => handleVenueFormChange('latitude', e.target.value ? parseFloat(e.target.value) : null)}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                      placeholder="e.g., 41.3275"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-300 mb-2">
+                      Longitude
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={venueForm.longitude || ''}
+                      onChange={(e) => handleVenueFormChange('longitude', e.target.value ? parseFloat(e.target.value) : null)}
+                      className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                      placeholder="e.g., 19.8187"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="editVenueOrderingEnabled"
+                    checked={venueForm.orderingEnabled}
+                    onChange={(e) => handleVenueFormChange('orderingEnabled', e.target.checked)}
+                    className="mr-2"
+                  />
+                  <label htmlFor="editVenueOrderingEnabled" className="text-sm text-zinc-300">
+                    Enable Ordering
+                  </label>
+                </div>
+
+                <div className="flex justify-end space-x-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setEditingVenue(null)}
+                    className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Update Venue
                   </button>
                 </div>
               </form>
