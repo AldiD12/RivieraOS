@@ -26,15 +26,22 @@ export default function BusinessAdminDashboard() {
   
   // Venues data
   const [venues, setVenues] = useState([]);
+  const [selectedVenue, setSelectedVenue] = useState(null);
+  const [zones, setZones] = useState([]);
   const [venuesLoading, setVenuesLoading] = useState(false);
+  const [zonesLoading, setZonesLoading] = useState(false);
 
   // Modal states
   const [showCreateStaffModal, setShowCreateStaffModal] = useState(false);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
+  const [showCreateVenueModal, setShowCreateVenueModal] = useState(false);
+  const [showCreateZoneModal, setShowCreateZoneModal] = useState(false);
   const [editingStaff, setEditingStaff] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [editingVenue, setEditingVenue] = useState(null);
+  const [editingZone, setEditingZone] = useState(null);
 
   // Form states
   const [staffForm, setStaffForm] = useState({
@@ -61,6 +68,24 @@ export default function BusinessAdminDashboard() {
     oldPrice: null,
     isAvailable: true,
     isAlcohol: false
+  });
+
+  const [venueForm, setVenueForm] = useState({
+    name: '',
+    type: '',
+    description: '',
+    address: '',
+    imageUrl: '',
+    latitude: null,
+    longitude: null,
+    orderingEnabled: true
+  });
+
+  const [zoneForm, setZoneForm] = useState({
+    name: '',
+    zoneType: '',
+    capacityPerUnit: 1,
+    basePrice: 0
   });
 
   // Authentication check
@@ -363,6 +388,178 @@ export default function BusinessAdminDashboard() {
     } catch (err) {
       console.error('Error toggling product availability:', err);
       setError(`Failed to toggle product availability: ${err.data || err.message}`);
+    }
+  };
+
+  // Venue management functions
+  const fetchVenues = useCallback(async () => {
+    try {
+      setVenuesLoading(true);
+      const venueList = await businessApi.venues.list();
+      setVenues(venueList);
+    } catch (err) {
+      console.error('Error fetching venues:', err);
+      if (err.status === 403) {
+        console.warn('⚠️ Venues access denied - venue management will be disabled');
+        setVenues([]);
+      } else {
+        setError('Failed to load venues');
+      }
+    } finally {
+      setVenuesLoading(false);
+    }
+  }, []);
+
+  const fetchZones = useCallback(async (venueId) => {
+    if (!venueId) return;
+    
+    try {
+      setZonesLoading(true);
+      const zoneList = await businessApi.zones.list(venueId);
+      setZones(zoneList);
+    } catch (err) {
+      console.error('Error fetching zones:', err);
+      setError('Failed to load zones');
+    } finally {
+      setZonesLoading(false);
+    }
+  }, []);
+
+  const handleCreateVenue = async (e) => {
+    e.preventDefault();
+    try {
+      await businessApi.venues.create(venueForm);
+      
+      setVenueForm({
+        name: '',
+        type: '',
+        description: '',
+        address: '',
+        imageUrl: '',
+        latitude: null,
+        longitude: null,
+        orderingEnabled: true
+      });
+      setShowCreateVenueModal(false);
+      
+      await fetchVenues();
+      
+    } catch (err) {
+      console.error('Error creating venue:', err);
+      setError(`Failed to create venue: ${err.data || err.message}`);
+    }
+  };
+
+  const handleEditVenue = async (e) => {
+    e.preventDefault();
+    if (!editingVenue) return;
+
+    try {
+      await businessApi.venues.update(editingVenue.id, venueForm);
+      
+      setVenueForm({
+        name: '',
+        type: '',
+        description: '',
+        address: '',
+        imageUrl: '',
+        latitude: null,
+        longitude: null,
+        orderingEnabled: true
+      });
+      setEditingVenue(null);
+      
+      await fetchVenues();
+      
+    } catch (err) {
+      console.error('Error updating venue:', err);
+      setError(`Failed to update venue: ${err.data || err.message}`);
+    }
+  };
+
+  const handleDeleteVenue = async (venueId) => {
+    if (!confirm('Are you sure you want to delete this venue? This will also delete all zones within it.')) return;
+
+    try {
+      await businessApi.venues.delete(venueId);
+      await fetchVenues();
+      
+      // Clear selected venue if it was deleted
+      if (selectedVenue?.id === venueId) {
+        setSelectedVenue(null);
+        setZones([]);
+      }
+    } catch (err) {
+      console.error('Error deleting venue:', err);
+      setError(`Failed to delete venue: ${err.data || err.message}`);
+    }
+  };
+
+  const handleToggleVenueActive = async (venueId) => {
+    try {
+      await businessApi.venues.toggleActive(venueId);
+      await fetchVenues();
+    } catch (err) {
+      console.error('Error toggling venue status:', err);
+      setError(`Failed to toggle venue status: ${err.data || err.message}`);
+    }
+  };
+
+  const handleCreateZone = async (e) => {
+    e.preventDefault();
+    if (!selectedVenue) return;
+
+    try {
+      await businessApi.zones.create(selectedVenue.id, zoneForm);
+      
+      setZoneForm({
+        name: '',
+        zoneType: '',
+        capacityPerUnit: 1,
+        basePrice: 0
+      });
+      setShowCreateZoneModal(false);
+      
+      await fetchZones(selectedVenue.id);
+      
+    } catch (err) {
+      console.error('Error creating zone:', err);
+      setError(`Failed to create zone: ${err.data || err.message}`);
+    }
+  };
+
+  const handleEditZone = async (e) => {
+    e.preventDefault();
+    if (!editingZone || !selectedVenue) return;
+
+    try {
+      await businessApi.zones.update(selectedVenue.id, editingZone.id, zoneForm);
+      
+      setZoneForm({
+        name: '',
+        zoneType: '',
+        capacityPerUnit: 1,
+        basePrice: 0
+      });
+      setEditingZone(null);
+      
+      await fetchZones(selectedVenue.id);
+      
+    } catch (err) {
+      console.error('Error updating zone:', err);
+      setError(`Failed to update zone: ${err.data || err.message}`);
+    }
+  };
+
+  const handleDeleteZone = async (zoneId) => {
+    if (!confirm('Are you sure you want to delete this zone?') || !selectedVenue) return;
+
+    try {
+      await businessApi.zones.delete(selectedVenue.id, zoneId);
+      await fetchZones(selectedVenue.id);
+    } catch (err) {
+      console.error('Error deleting zone:', err);
+      setError(`Failed to delete zone: ${err.data || err.message}`);
     }
   };
 
