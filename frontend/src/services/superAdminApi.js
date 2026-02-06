@@ -106,20 +106,21 @@ export const staffApi = {
 
   // POST /api/superadmin/businesses/{businessId}/Users - Create staff member
   create: async (businessId, staffData) => {
-    // Backend schema requirements (from swagger.json):
-    // - email: required, valid email format
-    // - password: required, minimum 6 characters
-    // - phoneNumber: optional, for phone storage
-    // - pin: optional, 4-digit string for PIN login
-    // - role: required
-    // - fullName: optional
+    // Map frontend roles to backend database roles
+    const roleMapping = {
+      'Manager': 'Manager',
+      'Bartender': 'Barman',      // Frontend: Bartender → Backend: Barman
+      'Collector': 'Caderman'      // Frontend: Collector → Backend: Caderman
+    };
+
+    const backendRole = roleMapping[staffData.role] || staffData.role;
     
     const apiData = {
       email: staffData.phoneNumber + '@staff.local', // Generate email from phone
-      password: 'temp123', // Temporary password (6+ chars) - staff will use PIN login
+      password: 'TempPass123!', // Temporary password (12+ chars) - staff will use PIN login
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
-      role: staffData.role,
+      role: backendRole, // Use mapped backend role
       pin: staffData.pin // 4-digit PIN for login
     };
     
@@ -128,7 +129,8 @@ export const staffApi = {
       password: '****', // Hide password in logs
       fullName: apiData.fullName,
       phoneNumber: apiData.phoneNumber,
-      role: apiData.role,
+      frontendRole: staffData.role,
+      backendRole: apiData.role,
       pin: '****', // Hide PIN in logs
       originalPin: staffData.pin
     });
@@ -144,7 +146,8 @@ export const staffApi = {
         sentData: {
           email: apiData.email,
           phoneNumber: apiData.phoneNumber,
-          role: apiData.role,
+          frontendRole: staffData.role,
+          backendRole: apiData.role,
           fullName: apiData.fullName,
           hasPin: !!apiData.pin,
           passwordLength: apiData.password.length
@@ -162,22 +165,38 @@ export const staffApi = {
 
   // PUT /api/superadmin/businesses/{businessId}/Users/{id} - Update staff member
   update: async (businessId, staffId, staffData) => {
-    // Backend schema requirements (from swagger.json):
-    // - email: required, valid email format
-    // - password: required, minimum 6 characters
-    // - phoneNumber: optional, for phone storage
-    // - pin: optional, 4-digit string for PIN login
-    // - role: required
-    // - fullName: optional
+    // Map frontend roles to backend database roles
+    const roleMapping = {
+      'Manager': 'Manager',
+      'Bartender': 'Barman',      // Frontend: Bartender → Backend: Barman
+      'Collector': 'Caderman'      // Frontend: Collector → Backend: Caderman
+    };
+
+    const backendRole = roleMapping[staffData.role] || staffData.role;
     
     const apiData = {
       email: staffData.phoneNumber + '@staff.local', // Generate email from phone
-      password: 'temp123', // Temporary password (6+ chars) - staff will use PIN login
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
-      role: staffData.role,
+      role: backendRole, // Use mapped backend role
+      isActive: staffData.isActive !== undefined ? staffData.isActive : true,
       pin: staffData.pin // 4-digit PIN for login
     };
+    
+    console.log('📤 Updating staff with data:', {
+      email: apiData.email,
+      fullName: apiData.fullName,
+      phoneNumber: apiData.phoneNumber,
+      frontendRole: staffData.role,
+      backendRole: apiData.role,
+      isActive: apiData.isActive,
+      pin: '****', // Hide PIN in logs
+      originalPin: staffData.pin
+    });
+    
+    const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/Users/${staffId}`, apiData);
+    return response.data;
+  },
     
     console.log('📤 Updating staff with data:', {
       email: apiData.email,
