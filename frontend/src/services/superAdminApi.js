@@ -106,21 +106,14 @@ export const staffApi = {
 
   // POST /api/superadmin/businesses/{businessId}/Users - Create staff member
   create: async (businessId, staffData) => {
-    // Map frontend roles to backend database roles
-    const roleMapping = {
-      'Manager': 'Manager',
-      'Bartender': 'Barman',      // Frontend: Bartender → Backend: Barman
-      'Collector': 'Caderman'      // Frontend: Collector → Backend: Caderman
-    };
-
-    const backendRole = roleMapping[staffData.role] || staffData.role;
-    
+    // Use the NEW database roles (Bartender, Collector) not old ones (Barman, Caderman)
+    // Backend has both but StaffController only allows: Manager, Bartender, Collector
     const apiData = {
       email: staffData.phoneNumber + '@staff.local', // Generate email from phone
       password: 'TempPass123!', // Temporary password (12+ chars) - staff will use PIN login
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
-      role: backendRole, // Use mapped backend role
+      role: staffData.role, // Use role as-is (Manager, Bartender, Collector)
       pin: staffData.pin // 4-digit PIN for login
     };
     
@@ -129,8 +122,7 @@ export const staffApi = {
       password: '****', // Hide password in logs
       fullName: apiData.fullName,
       phoneNumber: apiData.phoneNumber,
-      frontendRole: staffData.role,
-      backendRole: apiData.role,
+      role: apiData.role,
       pin: '****', // Hide PIN in logs
       originalPin: staffData.pin
     });
@@ -146,8 +138,7 @@ export const staffApi = {
         sentData: {
           email: apiData.email,
           phoneNumber: apiData.phoneNumber,
-          frontendRole: staffData.role,
-          backendRole: apiData.role,
+          role: apiData.role,
           fullName: apiData.fullName,
           hasPin: !!apiData.pin,
           passwordLength: apiData.password.length
@@ -165,20 +156,12 @@ export const staffApi = {
 
   // PUT /api/superadmin/businesses/{businessId}/Users/{id} - Update staff member
   update: async (businessId, staffId, staffData) => {
-    // Map frontend roles to backend database roles
-    const roleMapping = {
-      'Manager': 'Manager',
-      'Bartender': 'Barman',      // Frontend: Bartender → Backend: Barman
-      'Collector': 'Caderman'      // Frontend: Collector → Backend: Caderman
-    };
-
-    const backendRole = roleMapping[staffData.role] || staffData.role;
-    
+    // Use the NEW database roles (Bartender, Collector) not old ones (Barman, Caderman)
     const apiData = {
       email: staffData.phoneNumber + '@staff.local', // Generate email from phone
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
-      role: backendRole, // Use mapped backend role
+      role: staffData.role, // Use role as-is (Manager, Bartender, Collector)
       isActive: staffData.isActive !== undefined ? staffData.isActive : true,
       pin: staffData.pin // 4-digit PIN for login
     };
@@ -187,8 +170,7 @@ export const staffApi = {
       email: apiData.email,
       fullName: apiData.fullName,
       phoneNumber: apiData.phoneNumber,
-      frontendRole: staffData.role,
-      backendRole: apiData.role,
+      role: apiData.role,
       isActive: apiData.isActive,
       pin: '****', // Hide PIN in logs
       originalPin: staffData.pin
