@@ -1057,8 +1057,8 @@ export default function BusinessAdminDashboard() {
                   >
                     <option value="">Select role</option>
                     <option value="Manager">Manager</option>
-                    <option value="Bartender">Bartender</option>
-                    <option value="Collector">Collector</option>
+                    <option value="Barman">Bartender</option>
+                    <option value="Staff">Staff</option>
                   </select>
                 </div>
                 
@@ -1202,8 +1202,8 @@ export default function BusinessAdminDashboard() {
                   >
                     <option value="">Select role</option>
                     <option value="Manager">Manager</option>
-                    <option value="Bartender">Bartender</option>
-                    <option value="Collector">Collector</option>
+                    <option value="Barman">Bartender</option>
+                    <option value="Staff">Staff</option>
                   </select>
                 </div>
                 

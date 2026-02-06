@@ -92,11 +92,11 @@ const CreateStaffModal = ({
                 >
                   <option value="">Select role</option>
                   <option value="Manager">Manager</option>
-                  <option value="Bartender">Bartender</option>
-                  <option value="Collector">Collector</option>
+                  <option value="Barman">Bartender</option>
+                  <option value="Staff">Staff</option>
                 </select>
                 <p className="text-xs text-zinc-500 mt-1">
-                  ✅ These are the correct database roles. Use "Bartender" for bar staff.
+                  ✅ Backend roles: Manager, Barman, Staff. Frontend shows friendly names.
                 </p>
               </div>
             </div>
@@ -225,11 +225,11 @@ const EditStaffModal = ({
                 >
                   <option value="">Select role</option>
                   <option value="Manager">Manager</option>
-                  <option value="Bartender">Bartender</option>
-                  <option value="Collector">Collector</option>
+                  <option value="Barman">Bartender</option>
+                  <option value="Staff">Staff</option>
                 </select>
                 <p className="text-xs text-zinc-500 mt-1">
-                  ✅ These are the correct database roles. Use "Bartender" for bar staff.
+                  ✅ Backend roles: Manager, Barman, Staff. Frontend shows friendly names.
                 </p>
               </div>
             </div>
