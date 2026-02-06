@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User, X, Building2, Phone } from 'lucide-react';
 
+// Utility function to normalize phone numbers (match backend format)
+const normalizePhoneNumber = (phone) => {
+  if (!phone) return '';
+  return phone.replace(/[\s\-\(\)\+]/g, '');
+};
+
 export default function LoginPage() {
   const [activeTab, setActiveTab] = useState('staff'); // 'staff' or 'manager'
   const [pin, setPin] = useState('');
@@ -31,27 +37,24 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Normalize phone number - remove all non-digits first
-      const cleanPhone = phoneNumber.replace(/\D/g, '');
+      // Use backend-compatible phone normalization
+      const normalizedPhone = normalizePhoneNumber(phoneNumber);
       
-      // Generate multiple phone formats to try
+      // Generate multiple phone formats to try (backend expects normalized format)
       const phoneFormats = [
-        phoneNumber.trim(), // Original format as entered
-        cleanPhone, // Just digits
-        `0${cleanPhone}`, // With leading 0
-        `+355${cleanPhone}`, // With Albania country code
-        cleanPhone.startsWith('355') ? cleanPhone.substring(3) : cleanPhone, // Remove country code if present
-        cleanPhone.startsWith('0') ? cleanPhone.substring(1) : cleanPhone, // Remove leading 0 if present
+        normalizedPhone, // Backend normalized format (primary)
+        phoneNumber.trim(), // Original format as fallback
+        `0${normalizedPhone}`, // With leading 0
+        normalizedPhone.startsWith('0') ? normalizedPhone.substring(1) : normalizedPhone, // Remove leading 0
       ];
       
       // Remove duplicates and empty strings
       const uniquePhoneFormats = [...new Set(phoneFormats)].filter(p => p && p.length > 0);
       
-      const originalPin = pin;
-      
-      console.log('🔐 Attempting login with:', {
-        phoneFormats: uniquePhoneFormats,
-        originalPin: '****', // Hide PIN in logs
+      console.log('🔐 Attempting login with normalized phone:', {
+        original: phoneNumber,
+        normalized: normalizedPhone,
+        formats: uniquePhoneFormats,
         pinLength: pin.length
       });
 

@@ -2,6 +2,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { businessApi, staffApi, venueApi, zoneApi, categoryApi, productApi, adminUsersApi, authApi, dashboardApi } from '../services/superAdminApi.js';
 
+// Utility function to normalize phone numbers (match backend format)
+const normalizePhoneNumber = (phone) => {
+  if (!phone) return '';
+  return phone.replace(/[\s\-\(\)\+]/g, '');
+};
+
 // Staff Modal Components - Defined OUTSIDE to prevent re-creation on every render
 const CreateStaffModal = ({ 
   isOpen, 
@@ -1431,13 +1437,21 @@ export default function SuperAdminDashboard() {
     
     try {
       // Create staff member with phone number and PIN for authentication
+      // Normalize phone number to match backend format
       const staffData = {
-        phoneNumber: staffForm.phoneNumber,
+        phoneNumber: normalizePhoneNumber(staffForm.phoneNumber),
         fullName: staffForm.fullName,
         role: staffForm.role,
         pin: staffForm.pin,
         isActive: staffForm.isActive
       };
+      
+      console.log('📤 Creating staff with normalized phone:', {
+        original: staffForm.phoneNumber,
+        normalized: staffData.phoneNumber,
+        role: staffData.role,
+        businessId: selectedBusiness.id
+      });
       
       await staffApi.create(selectedBusiness.id, staffData);
       setShowCreateStaffModal(false);

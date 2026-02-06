@@ -3,6 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import businessApi from '../services/businessApi';
 
+// Utility function to normalize phone numbers (match backend format)
+const normalizePhoneNumber = (phone) => {
+  if (!phone) return '';
+  return phone.replace(/[\s\-\(\)\+]/g, '');
+};
+
 // Business Admin Dashboard - For Manager/Owner role
 export default function BusinessAdminDashboard() {
   const navigate = useNavigate();
@@ -98,6 +104,34 @@ export default function BusinessAdminDashboard() {
       
       // Debug JWT token contents
       if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          console.log('🔑 JWT Token Analysis:', {
+            userId: payload.sub,
+            email: payload.email,
+            role: payload.role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'],
+            businessId: payload.businessId,
+            exp: new Date(payload.exp * 1000).toLocaleString(),
+            isExpired: payload.exp * 1000 < Date.now()
+          });
+          
+          // Check for critical missing claims
+          if (!payload.businessId) {
+            console.error('❌ CRITICAL: JWT token missing businessId claim');
+            setError('Authentication error: Missing business context. Please re-login.');
+          }
+          
+          const userRole = payload.role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+          if (!userRole) {
+            console.error('❌ CRITICAL: JWT token missing role claim');
+            setError('Authentication error: Missing role information. Please re-login.');
+          }
+          
+        } catch (err) {
+          console.error('❌ Failed to parse JWT token:', err);
+          setError('Authentication error: Invalid token. Please re-login.');
+        }
+      }
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           console.log('🔍 JWT Token payload:', payload);
@@ -233,12 +267,18 @@ export default function BusinessAdminDashboard() {
   const handleCreateStaff = async (e) => {
     e.preventDefault();
     try {
-      console.log('📤 Creating staff with data:', {
+      // Normalize phone number to match backend format
+      const normalizedStaffForm = {
         ...staffForm,
+        phoneNumber: normalizePhoneNumber(staffForm.phoneNumber)
+      };
+      
+      console.log('📤 Creating staff with normalized data:', {
+        ...normalizedStaffForm,
         pin: '****' // Hide PIN in logs
       });
 
-      await businessApi.staff.create(staffForm);
+      await businessApi.staff.create(normalizedStaffForm);
       
       // Reset form and close modal
       setStaffForm({
@@ -254,7 +294,7 @@ export default function BusinessAdminDashboard() {
       await fetchStaffMembers();
       
     } catch (err) {
-      console.error('Error creating staff:', err);
+      console.error('❌ Error creating staff:', err);
       setError(`Failed to create staff member: ${err.data || err.message}`);
     }
   };
@@ -264,7 +304,13 @@ export default function BusinessAdminDashboard() {
     if (!editingStaff) return;
 
     try {
-      await businessApi.staff.update(editingStaff.id, staffForm);
+      // Normalize phone number to match backend format
+      const normalizedStaffForm = {
+        ...staffForm,
+        phoneNumber: normalizePhoneNumber(staffForm.phoneNumber)
+      };
+      
+      await businessApi.staff.update(editingStaff.id, normalizedStaffForm);
       
       // Reset form and close modal
       setStaffForm({
