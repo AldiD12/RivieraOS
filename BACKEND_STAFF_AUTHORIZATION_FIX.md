@@ -1,16 +1,59 @@
-# Backend Fix Required: Staff Management Authorization
+# Backend Fix Required: Staff Management & PIN Login Authorization
 
 ## 🚨 Issue Summary
 - ✅ Manager role works perfectly for Categories, Products, Venues (can create/edit/delete)
 - ❌ Manager role fails on Staff endpoints (403 Forbidden on POST /business/Staff)
+- ❌ **NEW**: Bartender/Waiter roles fail on PIN login (401 "PIN login is only available for staff members")
+- ✅ Manager role works for PIN login
 - ✅ JWT token is correct with role: "Manager" and businessId: 4
 
 ## 🎯 Root Cause
-Staff endpoints are missing Manager role in authorization attributes.
+1. Staff endpoints are missing Manager role in authorization attributes
+2. **PIN login endpoint is restricting which roles can use PIN authentication**
 
 ## 🔧 Required Changes
 
-### 1. Check Staff Controller Authorization
+### 1. Fix PIN Login Authorization (NEW ISSUE)
+
+The `/api/auth/login/pin` endpoint is likely restricting PIN login to only certain roles. Check the PIN login controller:
+
+```csharp
+// CURRENT (WRONG) - Only allows Manager/Owner for PIN login
+[HttpPost("login/pin")]
+public async Task<IActionResult> PinLogin([FromBody] PinLoginRequest request)
+{
+    var user = await _userService.GetByPhoneNumber(request.PhoneNumber);
+    
+    // PROBLEM: This check is too restrictive
+    if (user.Role != "Manager" && user.Role != "Owner")
+    {
+        return Unauthorized("PIN login is only available for staff members.");
+    }
+    
+    // PIN validation logic...
+}
+```
+
+**CHANGE TO:**
+```csharp
+// FIXED - Allow all staff roles for PIN login
+[HttpPost("login/pin")]
+public async Task<IActionResult> PinLogin([FromBody] PinLoginRequest request)
+{
+    var user = await _userService.GetByPhoneNumber(request.PhoneNumber);
+    
+    // Allow all staff roles to use PIN login
+    var allowedRoles = new[] { "Owner", "Manager", "Waiter", "Bartender", "Guest" };
+    if (!allowedRoles.Contains(user.Role))
+    {
+        return Unauthorized("PIN login is only available for staff members.");
+    }
+    
+    // PIN validation logic...
+}
+```
+
+### 2. Check Staff Controller Authorization
 Look for the Staff controller (likely `BusinessStaffController.cs` or similar) and find these methods:
 
 ```csharp
@@ -80,12 +123,22 @@ public async Task<IActionResult> CreateStaff([FromBody] BizCreateStaffRequest re
 
 ## 🧪 Test After Changes
 
+### Test 1: PIN Login for All Staff Roles
+1. **Create staff** with different roles: Bartender, Waiter, Guest
+2. **Test PIN login** for each role
+3. **Expected result**: All staff roles should be able to login with PIN
+
+### Test 2: Staff Management as Manager
 1. **Redeploy backend** with the authorization changes
 2. **Test in frontend**: Try creating a staff member as Manager
 3. **Expected result**: Should return 200 OK instead of 403 Forbidden
 
 ## 📋 Specific Endpoints to Fix
 
+### PIN Login Endpoint (HIGH PRIORITY)
+- `POST /api/auth/login/pin` - Allow all staff roles (Owner, Manager, Waiter, Bartender, Guest)
+
+### Staff Management Endpoints
 Based on swagger.json, these endpoints need Manager role added:
 
 - `POST /api/business/Staff` - Create staff
