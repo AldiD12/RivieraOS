@@ -88,11 +88,26 @@ export const businessStaffApi = {
 
   // Create new staff member
   create: async (staffData) => {
+    // Backend requires email + password even though staff uses phone + PIN
+    const apiData = {
+      email: staffData.phoneNumber + '@staff.local', // Generate email from phone
+      password: 'temp123', // Temporary password (6+ chars) - staff will use PIN login
+      fullName: staffData.fullName || '',
+      phoneNumber: staffData.phoneNumber,
+      role: staffData.role,
+      pin: staffData.pin // 4-digit PIN for login
+    };
+    
     console.log('📤 Creating business staff member:', {
-      ...staffData,
-      pin: '****' // Hide PIN in logs
+      email: apiData.email,
+      password: '****', // Hide password in logs
+      fullName: apiData.fullName,
+      phoneNumber: apiData.phoneNumber,
+      role: apiData.role,
+      pin: '****', // Hide PIN in logs
     });
-    const response = await api.post('/business/Staff', staffData);
+    
+    const response = await api.post('/business/Staff', apiData);
     return response.data;
   },
 
@@ -105,11 +120,26 @@ export const businessStaffApi = {
 
   // Update staff member
   update: async (staffId, staffData) => {
+    // Backend requires email + password even though staff uses phone + PIN
+    const apiData = {
+      email: staffData.phoneNumber + '@staff.local', // Generate email from phone
+      fullName: staffData.fullName || '',
+      phoneNumber: staffData.phoneNumber,
+      role: staffData.role,
+      isActive: staffData.isActive !== undefined ? staffData.isActive : true,
+      pin: staffData.pin || undefined // Only include PIN if provided
+    };
+    
     console.log('📤 Updating business staff member:', staffId, {
-      ...staffData,
-      pin: staffData.pin ? '****' : undefined
+      email: apiData.email,
+      fullName: apiData.fullName,
+      phoneNumber: apiData.phoneNumber,
+      role: apiData.role,
+      isActive: apiData.isActive,
+      pin: apiData.pin ? '****' : undefined
     });
-    const response = await api.put(`/business/Staff/${staffId}`, staffData);
+    
+    const response = await api.put(`/business/Staff/${staffId}`, apiData);
     return response.data;
   },
 
