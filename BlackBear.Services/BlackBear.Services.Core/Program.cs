@@ -92,6 +92,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Staff", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager", "Staff"));
     options.AddPolicy("Barman", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager", "Barman"));
     options.AddPolicy("Caderman", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager", "Caderman"));
+    options.AddPolicy("Bartender", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager", "Bartender"));
+    options.AddPolicy("Collector", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager", "Collector"));
 });
 
 // 4. Add Database Context (Azure SQL Server Connection)

@@ -11,7 +11,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 {
     [Route("api/business/[controller]")]
     [ApiController]
-    [Authorize(Policy = "Manager")]
+    [Authorize(Roles = "BusinessOwner,Manager")]
     public class StaffController : ControllerBase
     {
         private readonly BlackBearDbContext _context;
@@ -90,7 +90,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 
         // POST: api/business/staff
         [HttpPost]
-        [Authorize(Policy = "BusinessOwner")]
+        [Authorize(Roles = "BusinessOwner,Manager")]
         public async Task<ActionResult<BizStaffDetailDto>> CreateStaff(BizCreateStaffRequest request)
         {
             var businessId = _currentUserService.BusinessId;
@@ -108,11 +108,11 @@ namespace BlackBear.Services.Core.Controllers.Business
                 return BadRequest("Email already exists");
             }
 
-            // Only allow Staff, Manager, Barman, or Caderman roles
-            var allowedRoles = new[] { "Staff", "Manager", "Barman", "Caderman" };
+            // Only allow Manager, Bartender, or Collector roles
+            var allowedRoles = new[] { "Manager", "Bartender", "Collector" };
             if (!allowedRoles.Contains(request.Role))
             {
-                return BadRequest("Can only create Staff, Manager, Barman, or Caderman users");
+                return BadRequest("Can only create Manager, Bartender, or Collector users");
             }
 
             var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == request.Role);
@@ -159,7 +159,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 
         // PUT: api/business/staff/5
         [HttpPut("{id}")]
-        [Authorize(Policy = "BusinessOwner")]
+        [Authorize(Roles = "BusinessOwner,Manager")]
         public async Task<IActionResult> UpdateStaff(int id, BizUpdateStaffRequest request)
         {
             var businessId = _currentUserService.BusinessId;
@@ -186,11 +186,11 @@ namespace BlackBear.Services.Core.Controllers.Business
                 return BadRequest("Email already exists");
             }
 
-            // Only allow Staff, Manager, Barman, or Caderman roles
-            var allowedRoles = new[] { "Staff", "Manager", "Barman", "Caderman" };
+            // Only allow Manager, Bartender, or Collector roles
+            var allowedRoles = new[] { "Manager", "Bartender", "Collector" };
             if (!allowedRoles.Contains(request.Role))
             {
-                return BadRequest("Can only assign Staff, Manager, Barman, or Caderman roles");
+                return BadRequest("Can only assign Manager, Bartender, or Collector roles");
             }
 
             var role = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == request.Role);
@@ -227,7 +227,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 
         // DELETE: api/business/staff/5 (deactivate)
         [HttpDelete("{id}")]
-        [Authorize(Policy = "BusinessOwner")]
+        [Authorize(Roles = "BusinessOwner,Manager")]
         public async Task<IActionResult> DeactivateStaff(int id)
         {
             var businessId = _currentUserService.BusinessId;
@@ -258,7 +258,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 
         // POST: api/business/staff/5/activate
         [HttpPost("{id}/activate")]
-        [Authorize(Policy = "BusinessOwner")]
+        [Authorize(Roles = "BusinessOwner,Manager")]
         public async Task<IActionResult> ActivateStaff(int id)
         {
             var businessId = _currentUserService.BusinessId;
@@ -283,7 +283,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 
         // POST: api/business/staff/5/reset-password
         [HttpPost("{id}/reset-password")]
-        [Authorize(Policy = "BusinessOwner")]
+        [Authorize(Roles = "BusinessOwner,Manager")]
         public async Task<IActionResult> ResetPassword(int id, BizResetStaffPasswordRequest request)
         {
             var businessId = _currentUserService.BusinessId;
@@ -308,7 +308,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 
         // POST: api/business/staff/5/set-pin
         [HttpPost("{id}/set-pin")]
-        [Authorize(Policy = "BusinessOwner")]
+        [Authorize(Roles = "BusinessOwner,Manager")]
         public async Task<IActionResult> SetPin(int id, BizSetStaffPinRequest request)
         {
             var businessId = _currentUserService.BusinessId;
@@ -333,7 +333,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 
         // DELETE: api/business/staff/5/pin
         [HttpDelete("{id}/pin")]
-        [Authorize(Policy = "BusinessOwner")]
+        [Authorize(Roles = "BusinessOwner,Manager")]
         public async Task<IActionResult> RemovePin(int id)
         {
             var businessId = _currentUserService.BusinessId;
