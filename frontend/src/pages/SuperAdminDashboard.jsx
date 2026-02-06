@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { businessApi, staffApi, venueApi, zoneApi, categoryApi, productApi, adminUsersApi, authApi, dashboardApi } from '../services/superAdminApi.js';
-import { businessStaffApi } from '../services/businessApi.js';
 
 // Utility function to normalize phone numbers (match backend format)
 const normalizePhoneNumber = (phone) => {
@@ -1351,7 +1350,7 @@ export default function SuperAdminDashboard() {
     // Fetch staff for selected business
     try {
       setStaffLoading(true);
-      const staffData = await businessStaffApi.list();
+      const staffData = await staffApi.getByBusiness(business.id);
       setStaffMembers(Array.isArray(staffData) ? staffData : []);
     } catch (err) {
       console.error('Error fetching staff:', err);
@@ -1454,7 +1453,7 @@ export default function SuperAdminDashboard() {
         businessId: selectedBusiness.id
       });
       
-      await businessStaffApi.create(staffData);
+      await staffApi.create(selectedBusiness.id, staffData);
       setShowCreateStaffModal(false);
       setStaffForm({
         phoneNumber: '',
@@ -1465,7 +1464,7 @@ export default function SuperAdminDashboard() {
       });
       
       // Refresh staff list
-      const refreshedStaffData = await businessStaffApi.list();
+      const refreshedStaffData = await staffApi.getByBusiness(selectedBusiness.id);
       setStaffMembers(Array.isArray(refreshedStaffData) ? refreshedStaffData : []);
       setError('');
       
@@ -1490,7 +1489,7 @@ export default function SuperAdminDashboard() {
         isActive: staffForm.isActive
       };
       
-      await businessStaffApi.update(editingStaff.id, staffData);
+      await staffApi.update(selectedBusiness.id, editingStaff.id, staffData);
       setShowEditStaffModal(false);
       setEditingStaff(null);
       setStaffForm({
@@ -1502,7 +1501,7 @@ export default function SuperAdminDashboard() {
       });
       
       // Refresh staff list
-      const refreshedStaffData = await businessStaffApi.list();
+      const refreshedStaffData = await staffApi.getByBusiness(selectedBusiness.id);
       setStaffMembers(Array.isArray(refreshedStaffData) ? refreshedStaffData : []);
       setError('');
     } catch (err) {
@@ -1516,10 +1515,10 @@ export default function SuperAdminDashboard() {
     if (!confirm('Are you sure you want to delete this staff member?')) return;
     
     try {
-      await businessStaffApi.delete(staffId);
+      await staffApi.delete(selectedBusiness.id, staffId);
       
       // Refresh staff list
-      const staffData = await businessStaffApi.list();
+      const staffData = await staffApi.getByBusiness(selectedBusiness.id);
       setStaffMembers(Array.isArray(staffData) ? staffData : []);
       setError('');
     } catch (err) {
@@ -1533,7 +1532,7 @@ export default function SuperAdminDashboard() {
     if (!selectedBusiness || !editingStaff || !newPassword) return;
     
     try {
-      await businessStaffApi.resetPassword(editingStaff.id, newPassword);
+      await staffApi.resetPassword(selectedBusiness.id, editingStaff.id, newPassword);
       setShowResetPasswordModal(false);
       setEditingStaff(null);
       setNewPassword('');
@@ -1549,10 +1548,10 @@ export default function SuperAdminDashboard() {
     if (!selectedBusiness) return;
     
     try {
-      await businessStaffApi.activate(staffId);
+      await staffApi.toggleActivation(selectedBusiness.id, staffId);
       
       // Refresh staff list
-      const staffData = await businessStaffApi.list();
+      const staffData = await staffApi.getByBusiness(selectedBusiness.id);
       setStaffMembers(Array.isArray(staffData) ? staffData : []);
       setError('');
     } catch (err) {
