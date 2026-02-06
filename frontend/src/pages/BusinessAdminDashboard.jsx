@@ -652,6 +652,13 @@ export default function BusinessAdminDashboard() {
     }
   }, [selectedCategory, fetchProducts]);
 
+  // Load zones when venue is selected
+  useEffect(() => {
+    if (selectedVenue) {
+      fetchZones(selectedVenue.id);
+    }
+  }, [selectedVenue, fetchZones]);
+
   const handleLogout = () => {
     localStorage.clear();
     navigate('/login');
@@ -992,90 +999,186 @@ export default function BusinessAdminDashboard() {
         {activeTab === 'venues' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">Venues Management</h2>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Venues & Zones</h2>
+                <p className="text-zinc-400">Manage your business venues and zones</p>
+              </div>
               <button
                 onClick={() => setShowCreateVenueModal(true)}
-                className="bg-white text-black px-4 py-2 rounded-lg hover:bg-zinc-200 transition-colors"
+                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
               >
                 + Create Venue
               </button>
             </div>
 
             {venuesLoading ? (
-              <div className="bg-zinc-900 rounded-lg p-6">
-                <p className="text-zinc-400">Loading venues...</p>
-              </div>
-            ) : venues.length === 0 ? (
-              <div className="bg-zinc-900 rounded-lg p-6">
-                <p className="text-zinc-400">No venues found. Create your first venue to get started.</p>
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {venues.map((venue) => (
-                  <div key={venue.id} className="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
-                    {venue.imageUrl && (
-                      <img 
-                        src={venue.imageUrl} 
-                        alt={venue.name}
-                        className="w-full h-40 object-cover rounded-lg mb-4"
-                      />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Venues Column */}
+                <div>
+                  <div className="bg-zinc-800 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Venues</h3>
+                    <div className="space-y-3">
+                      {venues.map((venue) => (
+                        <div
+                          key={venue.id}
+                          className={`p-4 rounded cursor-pointer transition-colors ${
+                            selectedVenue?.id === venue.id 
+                              ? 'bg-blue-600 text-white' 
+                              : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                          }`}
+                          onClick={() => setSelectedVenue(venue)}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h4 className="font-medium">{venue.name}</h4>
+                              {venue.type && <p className="text-sm opacity-75">{venue.type}</p>}
+                            </div>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              venue.isActive 
+                                ? 'bg-green-900 text-green-300' 
+                                : 'bg-red-900 text-red-300'
+                            }`}>
+                              {venue.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                          
+                          {venue.address && (
+                            <p className="text-sm opacity-75 mb-2">{venue.address}</p>
+                          )}
+                          
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">
+                              {venue.orderingEnabled ? '🛒 Ordering Enabled' : '🚫 Ordering Disabled'}
+                            </span>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingVenue(venue);
+                                  setVenueForm({
+                                    name: venue.name,
+                                    type: venue.type || '',
+                                    description: venue.description || '',
+                                    address: venue.address || '',
+                                    imageUrl: venue.imageUrl || '',
+                                    latitude: venue.latitude,
+                                    longitude: venue.longitude,
+                                    orderingEnabled: venue.orderingEnabled
+                                  });
+                                }}
+                                className="text-blue-400 hover:text-blue-300 text-sm"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm(`Delete venue "${venue.name}"? This cannot be undone.`)) {
+                                    handleDeleteVenue(venue.id);
+                                  }
+                                }}
+                                className="text-red-400 hover:text-red-300 text-sm"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {venues.length === 0 && (
+                      <p className="text-zinc-400 text-sm">No venues found. Create one to get started.</p>
                     )}
-                    <h3 className="text-lg font-semibold mb-2">{venue.name}</h3>
-                    <div className="space-y-2 text-sm text-zinc-400 mb-4">
-                      <p><span className="text-zinc-500">Type:</span> {venue.type || 'N/A'}</p>
-                      {venue.address && <p><span className="text-zinc-500">Address:</span> {venue.address}</p>}
-                      {venue.description && <p className="line-clamp-2">{venue.description}</p>}
-                      <p>
-                        <span className="text-zinc-500">Status:</span>{' '}
-                        <span className={venue.isActive ? 'text-green-400' : 'text-red-400'}>
-                          {venue.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </p>
-                      <p>
-                        <span className="text-zinc-500">Ordering:</span>{' '}
-                        <span className={venue.orderingEnabled ? 'text-green-400' : 'text-zinc-400'}>
-                          {venue.orderingEnabled ? 'Enabled' : 'Disabled'}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          setEditingVenue(venue);
-                          setVenueForm({
-                            name: venue.name,
-                            type: venue.type || '',
-                            description: venue.description || '',
-                            address: venue.address || '',
-                            imageUrl: venue.imageUrl || '',
-                            latitude: venue.latitude,
-                            longitude: venue.longitude,
-                            orderingEnabled: venue.orderingEnabled
-                          });
-                        }}
-                        className="flex-1 bg-zinc-800 text-white px-3 py-2 rounded-lg hover:bg-zinc-700 transition-colors text-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleToggleVenueActive(venue.id)}
-                        className="flex-1 bg-zinc-800 text-white px-3 py-2 rounded-lg hover:bg-zinc-700 transition-colors text-sm"
-                      >
-                        {venue.isActive ? 'Deactivate' : 'Activate'}
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (window.confirm(`Delete venue "${venue.name}"? This cannot be undone.`)) {
-                            handleDeleteVenue(venue.id);
-                          }
-                        }}
-                        className="bg-red-900 text-white px-3 py-2 rounded-lg hover:bg-red-800 transition-colors text-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
                   </div>
-                ))}
+                </div>
+
+                {/* Zones Column */}
+                <div>
+                  <div className="bg-zinc-800 rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-white">
+                        Zones {selectedVenue && `- ${selectedVenue.name}`}
+                      </h3>
+                      {selectedVenue && (
+                        <button
+                          onClick={() => setShowCreateZoneModal(true)}
+                          className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+                        >
+                          + Add Zone
+                        </button>
+                      )}
+                    </div>
+
+                    {!selectedVenue ? (
+                      <p className="text-zinc-400 text-sm">Select a venue to view and manage zones.</p>
+                    ) : zonesLoading ? (
+                      <div className="flex justify-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {zones.map((zone) => (
+                          <div key={zone.id} className="bg-zinc-700 rounded-lg p-4">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h4 className="font-medium text-white">{zone.name}</h4>
+                                {zone.zoneType && <p className="text-sm text-zinc-400">{zone.zoneType}</p>}
+                              </div>
+                              <span className={`px-2 py-1 rounded text-xs ${
+                                zone.isActive 
+                                  ? 'bg-green-900 text-green-300' 
+                                  : 'bg-red-900 text-red-300'
+                              }`}>
+                                {zone.isActive ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                            
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm text-zinc-400">
+                                Capacity: {zone.capacityPerUnit || 'N/A'} | Price: €{zone.basePrice || 0}
+                              </span>
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => {
+                                    setEditingZone(zone);
+                                    setZoneForm({
+                                      name: zone.name,
+                                      zoneType: zone.zoneType || '',
+                                      capacityPerUnit: zone.capacityPerUnit || 1,
+                                      basePrice: zone.basePrice || 0
+                                    });
+                                  }}
+                                  className="text-blue-400 hover:text-blue-300 text-sm"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (window.confirm(`Delete zone "${zone.name}"? This cannot be undone.`)) {
+                                      handleDeleteZone(zone.id);
+                                    }
+                                  }}
+                                  className="text-red-400 hover:text-red-300 text-sm"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {zones.length === 0 && (
+                          <p className="text-zinc-400 text-sm">No zones found for this venue. Add one to get started.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -1895,6 +1998,204 @@ export default function BusinessAdminDashboard() {
                     className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
                   >
                     Update Venue
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Create Zone Modal */}
+      <AnimatePresence>
+        {showCreateZoneModal && selectedVenue && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowCreateZoneModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="bg-zinc-900 rounded-lg p-6 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-semibold mb-4">Create New Zone for {selectedVenue.name}</h3>
+              <form onSubmit={handleCreateZone} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Zone Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={zoneForm.name}
+                    onChange={(e) => setZoneForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="e.g., VIP Section, Pool Area"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Zone Type *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={zoneForm.zoneType}
+                    onChange={(e) => setZoneForm(prev => ({ ...prev, zoneType: e.target.value }))}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="e.g., Sunbed, Table, Cabana"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Capacity Per Unit *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={zoneForm.capacityPerUnit}
+                    onChange={(e) => setZoneForm(prev => ({ ...prev, capacityPerUnit: parseInt(e.target.value) }))}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="e.g., 2"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Base Price (€) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    step="0.01"
+                    value={zoneForm.basePrice}
+                    onChange={(e) => setZoneForm(prev => ({ ...prev, basePrice: parseFloat(e.target.value) }))}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="e.g., 50.00"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateZoneModal(false)}
+                    className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Create Zone
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Zone Modal */}
+      <AnimatePresence>
+        {editingZone && selectedVenue && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setEditingZone(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="bg-zinc-900 rounded-lg p-6 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-semibold mb-4">Edit Zone</h3>
+              <form onSubmit={handleUpdateZone} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Zone Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={zoneForm.name}
+                    onChange={(e) => setZoneForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="e.g., VIP Section, Pool Area"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Zone Type *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={zoneForm.zoneType}
+                    onChange={(e) => setZoneForm(prev => ({ ...prev, zoneType: e.target.value }))}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="e.g., Sunbed, Table, Cabana"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Capacity Per Unit *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="1"
+                    value={zoneForm.capacityPerUnit}
+                    onChange={(e) => setZoneForm(prev => ({ ...prev, capacityPerUnit: parseInt(e.target.value) }))}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="e.g., 2"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Base Price (€) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    step="0.01"
+                    value={zoneForm.basePrice}
+                    onChange={(e) => setZoneForm(prev => ({ ...prev, basePrice: parseFloat(e.target.value) }))}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                    placeholder="e.g., 50.00"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setEditingZone(null)}
+                    className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Update Zone
                   </button>
                 </div>
               </form>
