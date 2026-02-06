@@ -197,20 +197,6 @@ export const staffApi = {
     const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/Users/${staffId}`, apiData);
     return response.data;
   },
-    
-    console.log('📤 Updating staff with data:', {
-      email: apiData.email,
-      password: '****', // Hide password in logs
-      fullName: apiData.fullName,
-      phoneNumber: apiData.phoneNumber,
-      role: apiData.role,
-      pin: '****', // Hide PIN in logs
-      originalPin: staffData.pin
-    });
-    
-    const response = await superAdminApi.put(`/superadmin/businesses/${businessId}/Users/${staffId}`, apiData);
-    return response.data;
-  },
 
   // DELETE /api/superadmin/businesses/{businessId}/Users/{id} - Delete staff member
   delete: async (businessId, staffId) => {
