@@ -88,27 +88,58 @@ export const businessStaffApi = {
 
   // Create new staff member
   create: async (staffData) => {
+    // Validate required fields
+    if (!staffData.phoneNumber || !staffData.role || !staffData.pin) {
+      throw new Error('Phone number, role, and PIN are required');
+    }
+
+    // Validate PIN format (exactly 4 digits)
+    if (!/^\d{4}$/.test(staffData.pin)) {
+      throw new Error('PIN must be exactly 4 digits');
+    }
+
+    // Validate role
+    const allowedRoles = ['Manager', 'Bartender', 'Collector'];
+    if (!allowedRoles.includes(staffData.role)) {
+      throw new Error(`Role must be one of: ${allowedRoles.join(', ')}`);
+    }
+
     // Backend requires email + password even though staff uses phone + PIN
+    // Generate email from phone number and use temporary password
     const apiData = {
-      email: staffData.phoneNumber + '@staff.local', // Generate email from phone
-      password: 'temp123', // Temporary password (6+ chars) - staff will use PIN login
+      email: `${staffData.phoneNumber.toLowerCase()}@staff.local`,
+      password: 'TempPass123!', // 12 chars, meets all requirements
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
       role: staffData.role,
-      pin: staffData.pin // 4-digit PIN for login
+      pin: staffData.pin
     };
     
     console.log('📤 Creating business staff member:', {
       email: apiData.email,
-      password: '****', // Hide password in logs
+      password: '************',
       fullName: apiData.fullName,
       phoneNumber: apiData.phoneNumber,
       role: apiData.role,
-      pin: '****', // Hide PIN in logs
+      pin: '****',
+      pinLength: apiData.pin.length
     });
     
-    const response = await api.post('/business/Staff', apiData);
-    return response.data;
+    try {
+      const response = await api.post('/business/Staff', apiData);
+      console.log('✅ Staff member created successfully');
+      return response.data;
+    } catch (error) {
+      // Enhanced error handling for 403
+      if (error.status === 403) {
+        console.error('❌ 403 Forbidden - Possible causes:');
+        console.error('   1. JWT token missing "businessId" claim');
+        console.error('   2. User role is not "Manager" or "BusinessOwner"');
+        console.error('   3. User is not associated with a business');
+        throw new Error('Permission denied. Your account may not have the required permissions to create staff members. Please contact your administrator.');
+      }
+      throw error;
+    }
   },
 
   // Get staff member details
@@ -120,14 +151,26 @@ export const businessStaffApi = {
 
   // Update staff member
   update: async (staffId, staffData) => {
-    // Backend requires email + password even though staff uses phone + PIN
+    // Validate role if provided
+    if (staffData.role) {
+      const allowedRoles = ['Manager', 'Bartender', 'Collector'];
+      if (!allowedRoles.includes(staffData.role)) {
+        throw new Error(`Role must be one of: ${allowedRoles.join(', ')}`);
+      }
+    }
+
+    // Validate PIN format if provided
+    if (staffData.pin && !/^\d{4}$/.test(staffData.pin)) {
+      throw new Error('PIN must be exactly 4 digits');
+    }
+
     const apiData = {
-      email: staffData.phoneNumber + '@staff.local', // Generate email from phone
+      email: `${staffData.phoneNumber.toLowerCase()}@staff.local`,
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
       role: staffData.role,
       isActive: staffData.isActive !== undefined ? staffData.isActive : true,
-      pin: staffData.pin || undefined // Only include PIN if provided
+      pin: staffData.pin || undefined
     };
     
     console.log('📤 Updating business staff member:', staffId, {
@@ -168,10 +211,11 @@ export const businessStaffApi = {
 
   // Set staff PIN
   setPin: async (staffId, pin) => {
+    if (!/^\d{4}$/.test(pin)) {
+      throw new Error('PIN must be exactly 4 digits');
+    }
     console.log('📤 Setting business staff PIN:', staffId);
-    const response = await api.post(`/business/Staff/${staffId}/set-pin`, {
-      pin
-    });
+    const response = await api.post(`/business/Staff/${staffId}/set-pin`, { pin });
     return response.data;
   },
 

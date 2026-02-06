@@ -230,19 +230,52 @@ export default function BusinessAdminDashboard() {
 
   const handleCreateStaff = async (e) => {
     e.preventDefault();
+    
     try {
-      // Normalize phone number to match backend format
+      // Client-side validation
+      if (!staffForm.phoneNumber || !staffForm.role || !staffForm.pin) {
+        setError('Phone number, role, and PIN are required');
+        return;
+      }
+
+      // Validate PIN format
+      if (!/^\d{4}$/.test(staffForm.pin)) {
+        setError('PIN must be exactly 4 digits');
+        return;
+      }
+
+      // Validate role
+      const allowedRoles = ['Manager', 'Bartender', 'Collector'];
+      if (!allowedRoles.includes(staffForm.role)) {
+        setError(`Role must be one of: ${allowedRoles.join(', ')}`);
+        return;
+      }
+
+      // Normalize phone number to match backend format (remove spaces, dashes, parentheses, plus signs)
+      const normalizedPhone = normalizePhoneNumber(staffForm.phoneNumber);
+      
+      if (!normalizedPhone) {
+        setError('Please enter a valid phone number');
+        return;
+      }
+
       const normalizedStaffForm = {
         ...staffForm,
-        phoneNumber: normalizePhoneNumber(staffForm.phoneNumber)
+        phoneNumber: normalizedPhone
       };
       
       console.log('📤 Creating staff with normalized data:', {
-        ...normalizedStaffForm,
-        pin: '****' // Hide PIN in logs
+        phoneNumber: normalizedStaffForm.phoneNumber,
+        fullName: normalizedStaffForm.fullName,
+        role: normalizedStaffForm.role,
+        pin: '****',
+        isActive: normalizedStaffForm.isActive
       });
 
+      // Call API
       await businessApi.staff.create(normalizedStaffForm);
+      
+      console.log('✅ Staff member created successfully');
       
       // Reset form and close modal
       setStaffForm({
@@ -253,13 +286,24 @@ export default function BusinessAdminDashboard() {
         isActive: true
       });
       setShowCreateStaffModal(false);
+      setError(null);
       
       // Refresh staff list
       await fetchStaffMembers();
       
     } catch (err) {
       console.error('❌ Error creating staff:', err);
-      setError(`Failed to create staff member: ${err.data || err.message}`);
+      
+      // Provide user-friendly error messages
+      if (err.status === 403) {
+        setError('Permission denied. Your account may not have the required permissions to create staff members. Please ensure you are logged in as a Manager or Business Owner.');
+      } else if (err.status === 400) {
+        setError(err.data?.message || err.data || 'Invalid data. Please check all fields and try again.');
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError('Failed to create staff member. Please try again.');
+      }
     }
   };
 
