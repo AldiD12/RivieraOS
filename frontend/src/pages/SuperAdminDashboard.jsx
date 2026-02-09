@@ -1520,6 +1520,7 @@ export default function SuperAdminDashboard() {
       
       // Refresh staff list
       const refreshedStaffData = await staffApi.getByBusiness(selectedBusiness.id);
+      console.log('📊 Refreshed staff data:', refreshedStaffData);
       setStaffMembers(Array.isArray(refreshedStaffData) ? refreshedStaffData : []);
       setError('');
       
