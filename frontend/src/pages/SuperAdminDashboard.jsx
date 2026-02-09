@@ -38,6 +38,35 @@ const CreateStaffModal = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={staffForm.email}
+                  onChange={(e) => onFormChange('email', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter email address"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength="6"
+                  value={staffForm.password}
+                  onChange={(e) => onFormChange('password', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter password (min 6 characters)"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
                   Phone Number *
                 </label>
                 <input
@@ -1236,6 +1265,7 @@ export default function SuperAdminDashboard() {
   // Form states
   const [staffForm, setStaffForm] = useState({
     email: '',
+    password: '',
     phoneNumber: '',
     fullName: '',
     role: '',
@@ -1454,9 +1484,11 @@ export default function SuperAdminDashboard() {
     if (!selectedBusiness) return;
     
     try {
-      // Create staff member with phone number and PIN for authentication
+      // Create staff member with email, password, phone number and PIN
       // Normalize phone number to match backend format
       const staffData = {
+        email: staffForm.email,
+        password: staffForm.password,
         phoneNumber: normalizePhoneNumber(staffForm.phoneNumber),
         fullName: staffForm.fullName,
         role: staffForm.role,
@@ -1464,16 +1496,21 @@ export default function SuperAdminDashboard() {
         isActive: staffForm.isActive
       };
       
-      console.log('📤 Creating staff with normalized phone:', {
-        original: staffForm.phoneNumber,
-        normalized: staffData.phoneNumber,
+      console.log('📤 Creating staff with data:', {
+        email: staffData.email,
+        password: '************',
+        phoneNumber: staffData.phoneNumber,
+        fullName: staffData.fullName,
         role: staffData.role,
+        pin: '****',
         businessId: selectedBusiness.id
       });
       
       await staffApi.create(selectedBusiness.id, staffData);
       setShowCreateStaffModal(false);
       setStaffForm({
+        email: '',
+        password: '',
         phoneNumber: '',
         fullName: '',
         role: '',
@@ -1486,7 +1523,7 @@ export default function SuperAdminDashboard() {
       setStaffMembers(Array.isArray(refreshedStaffData) ? refreshedStaffData : []);
       setError('');
       
-      console.log('✅ Staff member created with phone number + PIN authentication');
+      console.log('✅ Staff member created successfully');
     } catch (err) {
       console.error('Error creating staff:', err);
       setError('Failed to create staff member: ' + (err.response?.data?.message || err.message));
