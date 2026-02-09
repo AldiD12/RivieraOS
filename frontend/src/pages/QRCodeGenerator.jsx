@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { businessApi } from '../services/businessApi';
+import businessApi from '../services/businessApi';
 
 export default function QRCodeGenerator() {
   const [venues, setVenues] = useState([]);
