@@ -169,11 +169,11 @@ export default function LoginPage() {
         businessId
       });
       
-      // Route based on role - Business roles: Manager, Barman, Caderman (backend role names)
+      // Route based on role - Business roles: Manager, Bartender, Collector
       const roleRoutes = {
         'Manager': '/admin',        // Manager goes to admin dashboard
-        'Barman': '/bar',          // Barman goes to bar dashboard
-        'Caderman': '/collector'   // Caderman goes to collector dashboard
+        'Bartender': '/bar',        // Bartender goes to bar dashboard
+        'Collector': '/collector'   // Collector goes to collector dashboard
       };
       
       const targetRoute = roleRoutes[role] || '/collector';

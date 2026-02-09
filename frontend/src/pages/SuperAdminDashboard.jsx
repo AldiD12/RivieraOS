@@ -98,11 +98,11 @@ const CreateStaffModal = ({
                 >
                   <option value="">Select role</option>
                   <option value="Manager">Manager</option>
-                  <option value="Barman">Barman (Bartender)</option>
-                  <option value="Caderman">Caderman (Collector)</option>
+                  <option value="Bartender">Bartender</option>
+                  <option value="Collector">Collector</option>
                 </select>
                 <p className="text-xs text-zinc-500 mt-1">
-                  ✅ Backend roles: Manager, Barman, Caderman (aligned with backend)
+                  ✅ Backend roles: Manager, Bartender, Collector (aligned with backend)
                 </p>
               </div>
             </div>
@@ -231,11 +231,11 @@ const EditStaffModal = ({
                 >
                   <option value="">Select role</option>
                   <option value="Manager">Manager</option>
-                  <option value="Barman">Barman (Bartender)</option>
-                  <option value="Caderman">Caderman (Collector)</option>
+                  <option value="Bartender">Bartender</option>
+                  <option value="Collector">Collector</option>
                 </select>
                 <p className="text-xs text-zinc-500 mt-1">
-                  ✅ Backend roles: Manager, Barman, Caderman (aligned with backend)
+                  ✅ Backend roles: Manager, Bartender, Collector (aligned with backend)
                 </p>
               </div>
             </div>
