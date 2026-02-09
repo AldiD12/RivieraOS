@@ -13,6 +13,7 @@ import OurAdmin from './pages/OurAdmin';
 import SuperAdminLogin from './pages/SuperAdminLogin';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import QRCodeGenerator from './pages/QRCodeGenerator';
+import TestCronBookings from './pages/TestCronBookings';
 import ProtectedRoute from './components/ProtectedRoute';
 import ApiStatus from './components/ApiStatus';
 
@@ -108,6 +109,16 @@ function App() {
           element={
             <ProtectedRoute role="Manager">
               <QRCodeGenerator />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Test Cron Job Bookings - Manager/Collector Only */}
+        <Route 
+          path="/test-cron" 
+          element={
+            <ProtectedRoute role="Manager">
+              <TestCronBookings />
             </ProtectedRoute>
           } 
         />
