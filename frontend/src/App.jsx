@@ -12,6 +12,7 @@ import ManagerLeaderboardPage from './pages/ManagerLeaderboardPage';
 import OurAdmin from './pages/OurAdmin';
 import SuperAdminLogin from './pages/SuperAdminLogin';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
+import QRCodeGenerator from './pages/QRCodeGenerator';
 import ProtectedRoute from './components/ProtectedRoute';
 import ApiStatus from './components/ApiStatus';
 
@@ -97,6 +98,16 @@ function App() {
           element={
             <ProtectedRoute role="Manager">
               <ManagerLeaderboardPage />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* QR Code Generator - Manager Only */}
+        <Route 
+          path="/qr-generator" 
+          element={
+            <ProtectedRoute role="Manager">
+              <QRCodeGenerator />
             </ProtectedRoute>
           } 
         />
