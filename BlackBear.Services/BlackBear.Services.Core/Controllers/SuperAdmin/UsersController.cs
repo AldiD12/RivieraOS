@@ -45,6 +45,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                     PhoneNumber = u.PhoneNumber,
                     Role = u.UserRoles.FirstOrDefault() != null ? u.UserRoles.FirstOrDefault()!.Role!.RoleName : null,
                     IsActive = u.IsActive,
+                    HasPinSet = !string.IsNullOrEmpty(u.PinHash),
                     CreatedAt = u.CreatedAt,
                     BusinessId = u.BusinessId,
                     BusinessName = u.Business != null ? u.Business.BrandName ?? u.Business.RegisteredName : null

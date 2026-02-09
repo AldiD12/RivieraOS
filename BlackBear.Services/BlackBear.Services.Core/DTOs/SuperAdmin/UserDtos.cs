@@ -10,6 +10,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? PhoneNumber { get; set; }
         public string? Role { get; set; }
         public bool IsActive { get; set; }
+        public bool HasPinSet { get; set; }
         public DateTime CreatedAt { get; set; }
         public int? BusinessId { get; set; }
         public string? BusinessName { get; set; }
