@@ -745,6 +745,7 @@ export default function BusinessAdminDashboard() {
               { id: 'staff', label: 'Staff Management' },
               { id: 'menu', label: 'Menu Management' },
               { id: 'venues', label: 'Venues' },
+              { id: 'qr-generator', label: 'QR Codes' },
               { id: 'debug', label: 'JWT Debug' }
             ].map((tab) => (
               <button
@@ -1221,6 +1222,56 @@ export default function BusinessAdminDashboard() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* QR Generator Tab */}
+        {activeTab === 'qr-generator' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold">QR Code Generator</h2>
+                <p className="text-zinc-400 text-sm mt-1">Generate QR codes for sunbeds and tables</p>
+              </div>
+              <button
+                onClick={() => navigate('/qr-generator')}
+                className="px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Open QR Generator
+              </button>
+            </div>
+
+            <div className="bg-zinc-900 rounded-lg p-6">
+              <div className="space-y-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-medium text-white mb-2">Generate QR Codes</h3>
+                    <p className="text-zinc-400 text-sm leading-relaxed mb-4">
+                      Create unique QR codes for each sunbed and table in your venues. Customers can scan these codes to access the menu and place orders directly from their location.
+                    </p>
+                    <ul className="space-y-2 text-sm text-zinc-400">
+                      <li className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-zinc-600 rounded-full"></span>
+                        View all QR codes for your venues
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-zinc-600 rounded-full"></span>
+                        Download individual QR codes as PNG
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 bg-zinc-600 rounded-full"></span>
+                        Print all QR codes optimized for A4 paper
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

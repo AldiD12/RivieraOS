@@ -16,7 +16,7 @@ export default function QRCodeGenerator() {
 
   const fetchVenues = async () => {
     try {
-      const venuesData = await businessApi.venues.getAll();
+      const venuesData = await businessApi.venues.list();
       setVenues(Array.isArray(venuesData) ? venuesData : []);
       setLoading(false);
     } catch (err) {
@@ -28,7 +28,7 @@ export default function QRCodeGenerator() {
 
   const fetchZones = async (venueId) => {
     try {
-      const zonesData = await businessApi.zones.getByVenue(venueId);
+      const zonesData = await businessApi.zones.list(venueId);
       setZones(Array.isArray(zonesData) ? zonesData : []);
     } catch (err) {
       console.error('Error fetching zones:', err);
