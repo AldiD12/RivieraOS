@@ -1909,7 +1909,20 @@ export default function SuperAdminDashboard() {
     if (!selectedVenue) return;
     
     try {
-      await zoneApi.create(selectedVenue.id, zoneForm);
+      console.log('📤 [SuperAdmin] Creating zone with data:', {
+        name: zoneForm.name,
+        type: zoneForm.type,
+        capacity: zoneForm.capacity,
+        capacityType: typeof zoneForm.capacity,
+        description: zoneForm.description,
+        sortOrder: zoneForm.sortOrder,
+        isActive: zoneForm.isActive
+      });
+      
+      const response = await zoneApi.create(selectedVenue.id, zoneForm);
+      
+      console.log('✅ [SuperAdmin] Zone created successfully:', response);
+      
       setShowCreateZoneModal(false);
       setZoneForm({
         name: '',
@@ -1922,10 +1935,11 @@ export default function SuperAdminDashboard() {
       
       // Refresh zones for current venue
       const zoneData = await zoneApi.getByVenue(selectedVenue.id);
+      console.log('📊 [SuperAdmin] Refreshed zone data:', zoneData);
       setZones(Array.isArray(zoneData) ? zoneData : []);
       setError('');
     } catch (err) {
-      console.error('Error creating zone:', err);
+      console.error('❌ [SuperAdmin] Error creating zone:', err);
       setError('Failed to create zone: ' + (err.response?.data?.message || err.message));
     }
   }, [selectedVenue, zoneForm]);
