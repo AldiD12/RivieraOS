@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const API_URL = 'http://localhost:5171/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5171/api';
 
 export default function TestCronBookings() {
   const [venues, setVenues] = useState([]);
