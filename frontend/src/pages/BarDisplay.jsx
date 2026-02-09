@@ -1,9 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { HubConnectionBuilder } from '@microsoft/signalr';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const API_URL = 'http://localhost:5171/api';
-const HUB_URL = 'http://localhost:5171/hubs/beach';
-const VENUE_ID = 1; // Hotel Coral Beach
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://blackbear-services-core.azurewebsites.net';
 
 // Material Icons Component
 const MaterialIcon = ({ name, className = "", filled = false }) => (
@@ -16,11 +14,11 @@ const MaterialIcon = ({ name, className = "", filled = false }) => (
 
 export default function BarDisplay() {
   const [orders, setOrders] = useState([]);
-  const [connection, setConnection] = useState(null);
-  const audioRef = useRef(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [checkedItems, setCheckedItems] = useState(new Set());
+  const [selectedFilter, setSelectedFilter] = useState('all'); // all, pending, preparing, ready
 
   // Update clock every second
   useEffect(() => {
@@ -46,140 +44,70 @@ export default function BarDisplay() {
     }
   }, []);
 
-  // Get current user from localStorage
-  useEffect(() => {
-    const role = localStorage.getItem('role');
-    const token = localStorage.getItem('token');
-    if (role && token) {
-      setCurrentUser({ role });
-    }
-  }, []);
-
-  // Setup SignalR connection
-  useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-      .withUrl(HUB_URL)
-      .withAutomaticReconnect()
-      .build();
-
-    setConnection(newConnection);
-  }, []);
-
-  // Start SignalR connection and listen for new orders
-  useEffect(() => {
-    if (connection) {
-      connection
-        .start()
-        .then(() => {
-          console.log('Bar Display - SignalR Connected');
-
-          // Listen for new orders
-          connection.on('NewOrder', (orderData) => {
-            console.log('New order received:', orderData);
-            
-            // Play notification sound
-            playNotificationSound();
-            
-            // Add order to display
-            setOrders((prevOrders) => [
-              {
-                id: orderData.orderId,
-                sunbedCode: orderData.sunbedCode,
-                items: orderData.items,
-                totalAmount: orderData.totalAmount,
-                createdAt: orderData.createdAt,
-                assignedUserId: null,
-                assignedUserName: null,
-                userId: orderData.userId,
-                productId: orderData.productId,
-                userName: orderData.userName,
-              },
-              ...prevOrders,
-            ]);
-          });
-
-          // Listen for order assignments
-          connection.on('OrderAssigned', (data) => {
-            console.log('Order assigned:', data);
-            setOrders((prevOrders) =>
-              prevOrders.map((order) =>
-                order.id === data.orderId
-                  ? { ...order, assignedUserId: data.assignedUserId, assignedUserName: data.assignedUserName }
-                  : order
-              )
-            );
-          });
-        })
-        .catch((err) => console.error('SignalR Connection Error:', err));
-    }
-
-    return () => {
-      if (connection) {
-        connection.stop();
-      }
-    };
-  }, [connection]);
-
-  // Fetch existing orders on mount
+  // Fetch active orders on mount and every 10 seconds
   useEffect(() => {
     fetchOrders();
+    const interval = setInterval(fetchOrders, 10000); // Poll every 10 seconds
+    return () => clearInterval(interval);
   }, []);
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch(`${API_URL}/Orders/active/${VENUE_ID}`);
-      const data = await response.json();
-      
-      // Map to display format
-      const formattedOrders = data.map(order => ({
-        id: order.id,
-        sunbedCode: order.unitLabel || 'Unknown',
-        items: order.items.map(item => ({
-          name: item.productName,
-          quantity: item.quantity,
-          price: item.unitPrice
-        })),
-        totalAmount: order.totalAmount,
-        createdAt: order.createdAt,
-        assignedUserId: null,
-        assignedUserName: null,
-        userId: order.waiterId,
-        productId: order.unitId,
-        userName: order.waiterName,
-        status: order.status,
-        isPosSynced: order.isPosSynced
-      }));
-      
-      setOrders(formattedOrders);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-    }
-  };
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError('Not authenticated');
+        return;
+      }
 
-  const claimOrder = async (orderId) => {
-    try {
-      const response = await fetch(`${API_URL}/Orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Preparing' }),
+      // GET /api/business/Orders/active - Get active orders (Pending, Preparing, Ready)
+      const response = await axios.get(`${API_BASE_URL}/api/business/Orders/active`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (response.ok) {
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order.id === orderId
-              ? { ...order, status: 'Preparing', assignedUserId: 2, assignedUserName: 'Staff' }
-              : order
-          )
-        );
-        console.log('Order claimed and set to preparing');
-      }
-    } catch (error) {
-      console.error('Error claiming order:', error);
+      setOrders(response.data);
+      setLoading(false);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching orders:', err);
+      setError(err.response?.data?.error || 'Failed to fetch orders');
+      setLoading(false);
     }
   };
 
-  const playNotificationSound = () => {
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      
+      // PUT /api/business/Orders/{id}/status
+      await axios.put(
+        `${API_BASE_URL}/api/business/Orders/${orderId}/status`,
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Play success sound
+      playSuccessSound();
+
+      // Refresh orders
+      await fetchOrders();
+    } catch (err) {
+      console.error('Error updating order status:', err);
+      alert(err.response?.data || 'Failed to update order status');
+    }
+  };
+
+  const handleOrderAction = (order) => {
+    // Status transitions: Pending → Preparing → Ready → Delivered
+    if (order.status === 'Pending') {
+      updateOrderStatus(order.id, 'Preparing');
+    } else if (order.status === 'Preparing') {
+      updateOrderStatus(order.id, 'Ready');
+    } else if (order.status === 'Ready') {
+      updateOrderStatus(order.id, 'Delivered');
+    }
+  };
+
+  const playSuccessSound = () => {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -187,30 +115,14 @@ export default function BarDisplay() {
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
-    oscillator.frequency.value = 800;
+    oscillator.frequency.value = 600;
     oscillator.type = 'sine';
 
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
 
     oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.5);
-  };
-
-  const completeOrder = async (orderId) => {
-    try {
-      const response = await fetch(`${API_URL}/Orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Delivered' }),
-      });
-
-      if (response.ok) {
-        setOrders((prevOrders) => prevOrders.filter((order) => order.id !== orderId));
-      }
-    } catch (error) {
-      console.error('Error completing order:', error);
-    }
+    oscillator.stop(audioContext.currentTime + 0.3);
   };
 
   const toggleItemCheck = (orderId, itemIndex) => {
@@ -235,8 +147,8 @@ export default function BarDisplay() {
   };
 
   const getOrderPriority = (elapsed) => {
-    if (elapsed >= 2520) return 'critical'; // 42+ minutes
-    if (elapsed >= 1320) return 'warning'; // 22+ minutes  
+    if (elapsed >= 1800) return 'critical'; // 30+ minutes
+    if (elapsed >= 900) return 'warning'; // 15+ minutes  
     if (elapsed <= 60) return 'new'; // < 1 minute
     return 'normal';
   };
@@ -267,15 +179,43 @@ export default function BarDisplay() {
     }
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Pending':
+        return 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30';
+      case 'Preparing':
+        return 'bg-blue-500/20 text-blue-500 border-blue-500/30';
+      case 'Ready':
+        return 'bg-green-500/20 text-green-500 border-green-500/30';
+      default:
+        return 'bg-zinc-800 text-zinc-400 border-zinc-700';
+    }
+  };
+
+  const getActionButtonText = (status) => {
+    switch (status) {
+      case 'Pending':
+        return 'Start Preparing';
+      case 'Preparing':
+        return 'Mark Ready';
+      case 'Ready':
+        return 'Complete';
+      default:
+        return 'Update';
+    }
+  };
+
   const calculateStats = () => {
     const totalOrders = orders.length;
+    const pendingOrders = orders.filter(o => o.status === 'Pending').length;
+    const preparingOrders = orders.filter(o => o.status === 'Preparing').length;
+    const readyOrders = orders.filter(o => o.status === 'Ready').length;
     const lateOrders = orders.filter(order => {
       const elapsed = getElapsedTime(order.createdAt).total;
-      return elapsed >= 2520; // 42+ minutes
+      return elapsed >= 1800; // 30+ minutes
     }).length;
-    const readyOrders = orders.filter(order => order.status === 'Ready').length;
     
-    if (orders.length === 0) return { total: 0, late: 0, ready: 0, avgTime: '14m' };
+    if (orders.length === 0) return { total: 0, pending: 0, preparing: 0, ready: 0, late: 0, avgTime: '0m' };
     
     const totalSeconds = orders.reduce((sum, order) => {
       const elapsed = getElapsedTime(order.createdAt).total;
@@ -287,23 +227,51 @@ export default function BarDisplay() {
     
     return {
       total: totalOrders,
-      late: lateOrders,
+      pending: pendingOrders,
+      preparing: preparingOrders,
       ready: readyOrders,
+      late: lateOrders,
       avgTime: `${avgMinutes}m`
     };
   };
 
-  const handleOrderAction = (order) => {
-    const isAssigned = order.status === 'Preparing';
-    
-    if (!isAssigned) {
-      claimOrder(order.id);
-    } else {
-      completeOrder(order.id);
-    }
-  };
+  const filteredOrders = orders.filter(order => {
+    if (selectedFilter === 'all') return true;
+    if (selectedFilter === 'pending') return order.status === 'Pending';
+    if (selectedFilter === 'preparing') return order.status === 'Preparing';
+    if (selectedFilter === 'ready') return order.status === 'Ready';
+    return true;
+  });
 
   const stats = calculateStats();
+
+  if (loading) {
+    return (
+      <div className="bg-zinc-950 text-white h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl font-bold mb-4">Loading...</div>
+          <div className="text-zinc-500">Connecting to kitchen system</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-zinc-950 text-white h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl font-bold mb-4 text-red-500">Error</div>
+          <div className="text-zinc-400">{error}</div>
+          <button 
+            onClick={fetchOrders}
+            className="mt-6 px-6 py-3 bg-white text-black font-bold rounded-lg hover:bg-zinc-200 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-zinc-950 text-gray-300 h-screen w-full overflow-hidden flex flex-row" style={{ fontFamily: '"JetBrains Mono", monospace' }}>
@@ -311,9 +279,9 @@ export default function BarDisplay() {
       <aside className="w-64 flex-shrink-0 bg-zinc-900/50 border-r border-zinc-800 flex flex-col justify-between z-20">
         <div>
           <div className="h-16 flex items-center px-6 border-b border-zinc-800">
-            <MaterialIcon name="terminal" className="text-cyan-500 mr-2 text-xl" />
+            <MaterialIcon name="local_bar" className="text-cyan-500 mr-2 text-xl" />
             <h1 className="text-sm font-bold tracking-[0.15em] text-white uppercase">
-              Riviera<span className="text-zinc-600">_</span>OS
+              Bar<span className="text-zinc-600">_</span>Display
             </h1>
           </div>
           <div className="p-6 space-y-8">
@@ -325,52 +293,64 @@ export default function BarDisplay() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-white leading-none">{stats.total}</div>
-                  <div className="text-[10px] text-zinc-500 mt-1">Total Orders</div>
+                  <div className="text-[10px] text-zinc-500 mt-1">Active Orders</div>
                 </div>
               </div>
             </div>
+            
             <div>
-              <h3 className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-2">Throughput</h3>
+              <h3 className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-2">Status</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-zinc-400">Pending</span>
+                  <span className="text-sm font-bold text-yellow-500">{stats.pending}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-zinc-400">Preparing</span>
+                  <span className="text-sm font-bold text-blue-500">{stats.preparing}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-zinc-400">Ready</span>
+                  <span className="text-sm font-bold text-green-500">{stats.ready}</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-2">Performance</h3>
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-zinc-800 rounded text-white">
                   <MaterialIcon name="timelapse" />
                 </div>
                 <div>
                   <div className="text-2xl font-bold text-white leading-none">{stats.avgTime}</div>
-                  <div className="text-[10px] text-zinc-500 mt-1">Avg Prep Time</div>
+                  <div className="text-[10px] text-zinc-500 mt-1">Avg Time</div>
                 </div>
               </div>
             </div>
-            <div>
-              <h3 className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-2">Kitchen Crew</h3>
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-zinc-800 rounded text-white">
-                  <MaterialIcon name="groups" />
+
+            {stats.late > 0 && (
+              <div className="p-3 bg-red-500/10 border border-red-500/30 rounded">
+                <div className="flex items-center gap-2 mb-1">
+                  <MaterialIcon name="warning" className="text-red-500 text-sm" />
+                  <span className="text-xs font-bold text-red-500 uppercase">Alert</span>
                 </div>
-                <div>
-                  <div className="text-2xl font-bold text-white leading-none">5</div>
-                  <div className="text-[10px] text-green-500 mt-1 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Active
-                  </div>
-                </div>
+                <div className="text-lg font-bold text-red-500">{stats.late}</div>
+                <div className="text-[10px] text-red-400">Orders over 30min</div>
               </div>
-            </div>
+            )}
           </div>
         </div>
         <div className="p-4 border-t border-zinc-800 bg-zinc-900/80">
-          <div className="flex items-center justify-between text-zinc-400">
-            <button className="hover:text-white transition-colors p-2 rounded hover:bg-zinc-800" title="Sound Settings">
-              <MaterialIcon name="volume_up" />
-            </button>
-            <button className="hover:text-white transition-colors p-2 rounded hover:bg-zinc-800" title="Full Screen">
-              <MaterialIcon name="fullscreen" />
-            </button>
-            <button className="hover:text-white transition-colors p-2 rounded hover:bg-zinc-800" title="Settings">
-              <MaterialIcon name="settings" />
-            </button>
-          </div>
+          <button 
+            onClick={fetchOrders}
+            className="w-full py-2 px-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-sm font-bold"
+          >
+            <MaterialIcon name="refresh" />
+            Refresh
+          </button>
           <div className="mt-4 text-center">
-            <span className="text-[10px] text-zinc-600 font-mono">v2.4.0-stable</span>
+            <span className="text-[10px] text-zinc-600 font-mono">Auto-refresh: 10s</span>
           </div>
         </div>
       </aside>
@@ -380,17 +360,54 @@ export default function BarDisplay() {
         {/* Header */}
         <header className="h-16 flex-shrink-0 border-b border-zinc-800 flex items-center justify-between px-6 bg-zinc-950 z-10">
           <div className="flex items-center gap-4">
-            <h2 className="text-lg font-bold text-white tracking-tight">KITCHEN DISPLAY</h2>
+            <h2 className="text-lg font-bold text-white tracking-tight">BARTENDER DASHBOARD</h2>
             <div className="h-4 w-px bg-zinc-800"></div>
             <div className="flex gap-2">
-              <span className="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-400">ALL</span>
-              <span className="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-xs font-bold text-red-500">LATE ({stats.late})</span>
-              <span className="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-xs font-bold text-green-500">READY ({stats.ready})</span>
+              <button
+                onClick={() => setSelectedFilter('all')}
+                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
+                  selectedFilter === 'all' 
+                    ? 'bg-white text-black' 
+                    : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white'
+                }`}
+              >
+                ALL ({stats.total})
+              </button>
+              <button
+                onClick={() => setSelectedFilter('pending')}
+                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
+                  selectedFilter === 'pending' 
+                    ? 'bg-yellow-500 text-black' 
+                    : 'bg-zinc-900 border border-zinc-800 text-yellow-500 hover:bg-yellow-500/10'
+                }`}
+              >
+                PENDING ({stats.pending})
+              </button>
+              <button
+                onClick={() => setSelectedFilter('preparing')}
+                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
+                  selectedFilter === 'preparing' 
+                    ? 'bg-blue-500 text-black' 
+                    : 'bg-zinc-900 border border-zinc-800 text-blue-500 hover:bg-blue-500/10'
+                }`}
+              >
+                PREPARING ({stats.preparing})
+              </button>
+              <button
+                onClick={() => setSelectedFilter('ready')}
+                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${
+                  selectedFilter === 'ready' 
+                    ? 'bg-green-500 text-black' 
+                    : 'bg-zinc-900 border border-zinc-800 text-green-500 hover:bg-green-500/10'
+                }`}
+              >
+                READY ({stats.ready})
+              </button>
             </div>
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <div className="text-lg font-bold text-white leading-none">
+              <div className="text-lg font-bold text-white leading-none font-mono">
                 {currentTime.toLocaleTimeString('en-US', { 
                   hour: '2-digit', 
                   minute: '2-digit',
@@ -411,29 +428,28 @@ export default function BarDisplay() {
 
         {/* Orders Grid */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 scroll-smooth">
-          {orders.length === 0 ? (
+          {filteredOrders.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <div className="text-8xl font-black text-zinc-800 mb-6">00</div>
                 <p className="text-3xl text-zinc-700 font-black tracking-tight uppercase">
-                  No Pending Orders
+                  {selectedFilter === 'all' ? 'No Active Orders' : `No ${selectedFilter} Orders`}
                 </p>
+                <p className="text-sm text-zinc-600 mt-4">Orders will appear here automatically</p>
               </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 items-start">
-              {orders.map((order) => {
+              {filteredOrders.map((order) => {
                 const elapsed = getElapsedTime(order.createdAt);
                 const priority = getOrderPriority(elapsed.total);
                 const borderClass = getOrderBorderClass(priority);
                 const timerColor = getTimerColor(priority);
-                const isAssigned = order.status === 'Preparing';
 
                 return (
                   <article 
                     key={order.id}
-                    className={`flex flex-col bg-zinc-900 ${borderClass} rounded-lg overflow-hidden relative group h-full min-h-[380px] cursor-pointer hover:scale-[1.02] transition-transform`}
-                    onClick={() => handleOrderAction(order)}
+                    className={`flex flex-col bg-zinc-900 ${borderClass} rounded-lg overflow-hidden relative group h-full min-h-[380px]`}
                   >
                     {priority === 'critical' && (
                       <div className="absolute top-0 left-0 w-full h-1 bg-red-500 shadow-[0_0_10px_#ff3333]"></div>
@@ -442,20 +458,21 @@ export default function BarDisplay() {
                     {/* Header */}
                     <div className="p-4 border-b border-zinc-800 bg-zinc-900/50 flex justify-between items-start">
                       <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
-                            {order.userId ? 'WAITER' : 'QR-CODE'}
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`text-[10px] font-bold px-2 py-1 rounded border ${getStatusColor(order.status)}`}>
+                            {order.status.toUpperCase()}
                           </span>
-                          {order.id && (
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
-                              #{order.id.slice(-4)}
-                            </span>
-                          )}
+                          <span className="text-[10px] font-bold px-2 py-1 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">
+                            #{order.orderNumber}
+                          </span>
                         </div>
-                        <h3 className="text-3xl font-bold text-white">{order.sunbedCode}</h3>
+                        <h3 className="text-2xl font-bold text-white">{order.zoneName || 'Zone'}</h3>
+                        {order.customerName && (
+                          <p className="text-xs text-zinc-500 mt-1">{order.customerName}</p>
+                        )}
                       </div>
                       <div className="text-right">
-                        <div className={`text-2xl font-bold tabular-nums ${timerColor}`}>
+                        <div className={`text-2xl font-bold tabular-nums font-mono ${timerColor}`}>
                           {elapsed.minutes.toString().padStart(2, '0')}:{elapsed.seconds.toString().padStart(2, '0')}
                         </div>
                         {priority === 'critical' && (
@@ -470,7 +487,7 @@ export default function BarDisplay() {
                     {/* Items */}
                     <div className="p-4 flex-1">
                       <ul className="space-y-3">
-                        {order.items.map((item, index) => {
+                        {order.items && order.items.map((item, index) => {
                           const itemKey = `${order.id}-${index}`;
                           const isChecked = checkedItems.has(itemKey);
                           
@@ -485,26 +502,39 @@ export default function BarDisplay() {
                             >
                               <MaterialIcon 
                                 name={isChecked ? "check_box" : "check_box_outline_blank"}
-                                className={`mr-2 text-xl ${isChecked ? 'text-green-500' : 'text-zinc-600 group-hover/item:text-white'}`}
+                                className={`mr-2 text-xl flex-shrink-0 ${isChecked ? 'text-green-500' : 'text-zinc-600 group-hover/item:text-white'}`}
                               />
-                              <div>
+                              <div className="flex-1">
                                 <div className={`text-sm font-bold ${isChecked ? 'text-zinc-400 line-through' : 'text-white'}`}>
                                   <span className={`mr-1 ${priority === 'critical' ? 'text-red-500' : priority === 'warning' ? 'text-yellow-500' : 'text-zinc-500'}`}>
                                     {item.quantity}x
                                   </span> 
-                                  {item.name}
+                                  {item.productName}
                                 </div>
+                                {item.notes && (
+                                  <div className="text-xs text-zinc-500 mt-1 italic">Note: {item.notes}</div>
+                                )}
                               </div>
                             </li>
                           );
                         })}
                       </ul>
+                      
+                      {order.notes && (
+                        <div className="mt-4 p-2 bg-zinc-800/50 rounded border border-zinc-700">
+                          <div className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Order Notes</div>
+                          <div className="text-xs text-zinc-300">{order.notes}</div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Action Button */}
                     <div className="p-3 bg-zinc-800/50 mt-auto border-t border-zinc-800">
-                      <button className="w-full bg-zinc-800 hover:bg-green-600 hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] text-zinc-400 font-bold py-3 px-4 rounded transition-all duration-200 uppercase tracking-widest text-sm flex items-center justify-center gap-2 group/btn">
-                        <span>{isAssigned ? 'Complete' : 'Start'}</span>
+                      <button 
+                        onClick={() => handleOrderAction(order)}
+                        className="w-full bg-white hover:bg-zinc-200 text-black font-bold py-3 px-4 rounded transition-all duration-200 uppercase tracking-widest text-sm flex items-center justify-center gap-2 group/btn"
+                      >
+                        <span>{getActionButtonText(order.status)}</span>
                         <MaterialIcon name="arrow_forward" className="text-lg group-hover/btn:translate-x-1 transition-transform" />
                       </button>
                     </div>
@@ -525,9 +555,6 @@ export default function BarDisplay() {
           ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
         `
       }} />
-
-      {/* Hidden audio element for fallback */}
-      <audio ref={audioRef} style={{ display: 'none' }} />
     </div>
   );
 }

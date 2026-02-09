@@ -98,8 +98,8 @@ export const businessStaffApi = {
       throw new Error('PIN must be exactly 4 digits');
     }
 
-    // Validate role
-    const allowedRoles = ['Manager', 'Bartender', 'Collector'];
+    // Validate role - use backend role names (Barman, Caderman)
+    const allowedRoles = ['Manager', 'Barman', 'Caderman'];
     if (!allowedRoles.includes(staffData.role)) {
       throw new Error(`Role must be one of: ${allowedRoles.join(', ')}`);
     }
@@ -151,9 +151,9 @@ export const businessStaffApi = {
 
   // Update staff member
   update: async (staffId, staffData) => {
-    // Validate role if provided
+    // Validate role if provided - use backend role names (Barman, Caderman)
     if (staffData.role) {
-      const allowedRoles = ['Manager', 'Bartender', 'Collector'];
+      const allowedRoles = ['Manager', 'Barman', 'Caderman'];
       if (!allowedRoles.includes(staffData.role)) {
         throw new Error(`Role must be one of: ${allowedRoles.join(', ')}`);
       }

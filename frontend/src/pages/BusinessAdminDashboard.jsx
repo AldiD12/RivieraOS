@@ -244,8 +244,8 @@ export default function BusinessAdminDashboard() {
         return;
       }
 
-      // Validate role
-      const allowedRoles = ['Manager', 'Bartender', 'Collector'];
+      // Validate role - use backend role names (Barman, Caderman)
+      const allowedRoles = ['Manager', 'Barman', 'Caderman'];
       if (!allowedRoles.includes(staffForm.role)) {
         setError(`Role must be one of: ${allowedRoles.join(', ')}`);
         return;
@@ -1303,8 +1303,8 @@ export default function BusinessAdminDashboard() {
                   >
                     <option value="">Select role</option>
                     <option value="Manager">Manager</option>
-                    <option value="Bartender">Bartender</option>
-                    <option value="Collector">Collector</option>
+                    <option value="Barman">Barman (Bartender)</option>
+                    <option value="Caderman">Caderman (Collector)</option>
                   </select>
                 </div>
                 
@@ -1448,8 +1448,8 @@ export default function BusinessAdminDashboard() {
                   >
                     <option value="">Select role</option>
                     <option value="Manager">Manager</option>
-                    <option value="Bartender">Bartender</option>
-                    <option value="Collector">Collector</option>
+                    <option value="Barman">Barman (Bartender)</option>
+                    <option value="Caderman">Caderman (Collector)</option>
                   </select>
                 </div>
                 

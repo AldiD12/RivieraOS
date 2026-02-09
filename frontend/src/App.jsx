@@ -36,7 +36,7 @@ function App() {
         <Route 
           path="/collector" 
           element={
-            <ProtectedRoute role="Waiter">
+            <ProtectedRoute role="Caderman">
               <CollectorDashboard />
             </ProtectedRoute>
           } 
@@ -45,7 +45,7 @@ function App() {
         <Route 
           path="/bar" 
           element={
-            <ProtectedRoute role="Bartender">
+            <ProtectedRoute role="Barman">
               <BarDisplay />
             </ProtectedRoute>
           } 

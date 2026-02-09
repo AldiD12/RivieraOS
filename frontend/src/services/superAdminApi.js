@@ -107,13 +107,13 @@ export const staffApi = {
   // POST /api/superadmin/businesses/{businessId}/Users - Create staff member
   create: async (businessId, staffData) => {
     // Use the NEW database roles (Bartender, Collector) not old ones (Barman, Caderman)
-    // Backend has both but StaffController only allows: Manager, Bartender, Collector
+    // Backend has both but StaffController only allows: Manager, Barman, Caderman
     const apiData = {
       email: staffData.phoneNumber + '@staff.local', // Generate email from phone
       password: 'TempPass123!', // Temporary password (12+ chars) - staff will use PIN login
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
-      role: staffData.role, // Use role as-is (Manager, Bartender, Collector)
+      role: staffData.role, // Use role as-is (Manager, Barman, Caderman)
       pin: staffData.pin // 4-digit PIN for login
     };
     
@@ -161,7 +161,7 @@ export const staffApi = {
       email: staffData.phoneNumber + '@staff.local', // Generate email from phone
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
-      role: staffData.role, // Use role as-is (Manager, Bartender, Collector)
+      role: staffData.role, // Use role as-is (Manager, Barman, Caderman)
       isActive: staffData.isActive !== undefined ? staffData.isActive : true,
       pin: staffData.pin // 4-digit PIN for login
     };
