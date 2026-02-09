@@ -109,8 +109,8 @@ export const staffApi = {
     // Use the NEW database roles (Bartender, Collector) not old ones (Barman, Caderman)
     // Backend has both but StaffController only allows: Manager, Bartender, Collector
     const apiData = {
-      email: staffData.phoneNumber + '@staff.local', // Generate email from phone
-      password: 'TempPass123!', // Temporary password (12+ chars) - staff will use PIN login
+      email: staffData.email, // Use provided email directly
+      password: staffData.password, // Use provided password directly
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
       role: staffData.role, // Use role as-is (Manager, Bartender, Collector)
