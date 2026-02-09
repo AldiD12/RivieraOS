@@ -155,6 +155,52 @@ export default function TestCronBookings() {
     }
   };
 
+  const createTestUnits = async () => {
+    if (!selectedVenue || zones.length === 0) {
+      setMessage('❌ No zones found. Please create a zone first.');
+      return;
+    }
+
+    setLoading(true);
+    setMessage('🔄 Creating 8 test sunbed units...');
+
+    try {
+      const token = localStorage.getItem('token');
+      const zone = zones[0]; // Use first zone
+
+      const response = await fetch(`${API_URL}/business/venues/${selectedVenue}/Units/bulk`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          venueZoneId: zone.id,
+          unitType: 'Sunbed',
+          prefix: 'TEST',
+          startNumber: 1,
+          count: 8,
+          basePrice: 50
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create units');
+      }
+
+      const result = await response.json();
+      setMessage(`✅ Created ${result.createdCount} test units! Now you can create bookings.`);
+      
+      // Refresh units
+      await fetchUnits(selectedVenue);
+    } catch (error) {
+      setMessage(`❌ Error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const createAllTestBookings = async () => {
     setMessage('🔄 Creating 8 test bookings (2 of each status)...');
     
@@ -210,9 +256,19 @@ export default function TestCronBookings() {
         <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 mb-6">
           <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
           
+          {units.length === 0 && (
+            <button
+              onClick={createTestUnits}
+              disabled={loading}
+              className="w-full bg-yellow-600 text-white px-6 py-4 rounded-lg font-bold text-lg hover:bg-yellow-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
+            >
+              {loading ? '⏳ Creating...' : '🏖️ Create 8 Test Sunbed Units First'}
+            </button>
+          )}
+          
           <button
             onClick={createAllTestBookings}
-            disabled={loading}
+            disabled={loading || units.length === 0}
             className="w-full bg-white text-black px-6 py-4 rounded-lg font-bold text-lg hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
           >
             {loading ? '⏳ Creating...' : '🚀 Create All 8 Test Bookings'}
