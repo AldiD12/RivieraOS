@@ -10,7 +10,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 {
     [Route("api/business/venues/{venueId}/[controller]")]
     [ApiController]
-    [Authorize(Policy = "Caderman")]
+    [Authorize(Policy = "Collector")]
     public class UnitsController : ControllerBase
     {
         private readonly BlackBearDbContext _context;

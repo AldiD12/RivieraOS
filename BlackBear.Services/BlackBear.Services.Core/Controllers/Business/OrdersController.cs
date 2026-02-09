@@ -9,7 +9,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 {
     [Route("api/business/[controller]")]
     [ApiController]
-    [Authorize(Policy = "Barman")]
+    [Authorize(Policy = "Bartender")]
     public class OrdersController : ControllerBase
     {
         private readonly BlackBearDbContext _context;

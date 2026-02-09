@@ -168,9 +168,9 @@ namespace BlackBear.Services.Core.Controllers
                 return Unauthorized("PIN login is only available for staff members.");
             }
 
-            // Get user's role and verify it's a staff role (Staff, Barman, Manager, or Caderman)
+            // Get user's role and verify it's a staff role (Staff, Bartender, Manager, or Collector)
             var roleName = user.UserRoles.FirstOrDefault()?.Role?.RoleName;
-            if (roleName != "Staff" && roleName != "Barman" && roleName != "Manager" && roleName != "Caderman")
+            if (roleName != "Staff" && roleName != "Bartender" && roleName != "Manager" && roleName != "Collector")
             {
                 return Unauthorized("PIN login is only available for staff members.");
             }

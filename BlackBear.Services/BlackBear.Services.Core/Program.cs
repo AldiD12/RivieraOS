@@ -90,8 +90,6 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("BusinessOwner", policy => policy.RequireRole("SuperAdmin", "BusinessOwner"));
     options.AddPolicy("Manager", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager"));
     options.AddPolicy("Staff", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager", "Staff"));
-    options.AddPolicy("Barman", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager", "Barman"));
-    options.AddPolicy("Caderman", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager", "Caderman"));
     options.AddPolicy("Bartender", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager", "Bartender"));
     options.AddPolicy("Collector", policy => policy.RequireRole("SuperAdmin", "BusinessOwner", "Manager", "Collector"));
 });
@@ -114,7 +112,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 6. Add Health Checks
+// 6. Add Background Services
+builder.Services.AddHostedService<DailyUnitResetService>();
+
+// 7. Add Health Checks
 builder.Services.AddHealthChecks()
     .AddSqlServer(connectionString, name: "database", tags: ["db", "sql"]);
 
