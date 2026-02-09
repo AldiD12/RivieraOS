@@ -158,12 +158,13 @@ export const staffApi = {
   update: async (businessId, staffId, staffData) => {
     // Use the NEW database roles (Bartender, Collector) not old ones (Barman, Caderman)
     const apiData = {
-      email: staffData.phoneNumber + '@staff.local', // Generate email from phone
+      email: staffData.email || `${staffData.phoneNumber}@staff.local`, // Use provided email or generate from phone
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
       role: staffData.role, // Use role as-is (Manager, Bartender, Collector)
       isActive: staffData.isActive !== undefined ? staffData.isActive : true,
-      pin: staffData.pin // 4-digit PIN for login
+      // Only include PIN if it's provided and not empty (to allow PIN updates)
+      pin: (staffData.pin && staffData.pin.trim() !== '') ? staffData.pin : undefined
     };
     
     console.log('📤 Updating staff with data:', {
@@ -172,7 +173,7 @@ export const staffApi = {
       phoneNumber: apiData.phoneNumber,
       role: apiData.role,
       isActive: apiData.isActive,
-      pin: '****', // Hide PIN in logs
+      pin: apiData.pin ? '****' : 'not changing',
       originalPin: staffData.pin
     });
     

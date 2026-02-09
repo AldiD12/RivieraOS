@@ -761,8 +761,12 @@ const StaffTab = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="font-mono text-sm text-zinc-300">
-                      {staff.pin || '----'}
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      staff.hasPinSet 
+                        ? 'bg-emerald-900/20 text-emerald-400' 
+                        : 'bg-amber-900/20 text-amber-400'
+                    }`}>
+                      {staff.hasPinSet ? '✓ Set' : '✗ Not Set'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

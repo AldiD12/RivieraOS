@@ -89,8 +89,8 @@ export const businessStaffApi = {
   // Create new staff member
   create: async (staffData) => {
     // Validate required fields
-    if (!staffData.phoneNumber || !staffData.role || !staffData.pin) {
-      throw new Error('Phone number, role, and PIN are required');
+    if (!staffData.email || !staffData.password || !staffData.phoneNumber || !staffData.role || !staffData.pin) {
+      throw new Error('Email, password, phone number, role, and PIN are required');
     }
 
     // Validate PIN format (exactly 4 digits)
@@ -104,11 +104,10 @@ export const businessStaffApi = {
       throw new Error(`Role must be one of: ${allowedRoles.join(', ')}`);
     }
 
-    // Backend requires email + password even though staff uses phone + PIN
-    // Generate email from phone number and use temporary password
+    // Send data directly to backend
     const apiData = {
-      email: `${staffData.phoneNumber.toLowerCase()}@staff.local`,
-      password: 'TempPass123!', // 12 chars, meets all requirements
+      email: staffData.email,
+      password: staffData.password,
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
       role: staffData.role,
@@ -121,8 +120,7 @@ export const businessStaffApi = {
       fullName: apiData.fullName,
       phoneNumber: apiData.phoneNumber,
       role: apiData.role,
-      pin: '****',
-      pinLength: apiData.pin.length
+      pin: '****'
     });
     
     try {
@@ -130,13 +128,8 @@ export const businessStaffApi = {
       console.log('✅ Staff member created successfully');
       return response.data;
     } catch (error) {
-      // Enhanced error handling for 403
       if (error.status === 403) {
-        console.error('❌ 403 Forbidden - Possible causes:');
-        console.error('   1. JWT token missing "businessId" claim');
-        console.error('   2. User role is not "Manager" or "BusinessOwner"');
-        console.error('   3. User is not associated with a business');
-        throw new Error('Permission denied. Your account may not have the required permissions to create staff members. Please contact your administrator.');
+        throw new Error('Permission denied. Your account may not have the required permissions to create staff members.');
       }
       throw error;
     }
@@ -159,18 +152,19 @@ export const businessStaffApi = {
       }
     }
 
-    // Validate PIN format if provided
-    if (staffData.pin && !/^\d{4}$/.test(staffData.pin)) {
+    // Validate PIN format if provided (only if not empty)
+    if (staffData.pin && staffData.pin.trim() !== '' && !/^\d{4}$/.test(staffData.pin)) {
       throw new Error('PIN must be exactly 4 digits');
     }
 
     const apiData = {
-      email: `${staffData.phoneNumber.toLowerCase()}@staff.local`,
+      email: staffData.email,
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
       role: staffData.role,
       isActive: staffData.isActive !== undefined ? staffData.isActive : true,
-      pin: staffData.pin || undefined
+      // Only include PIN if it's provided and not empty (to allow PIN updates)
+      pin: (staffData.pin && staffData.pin.trim() !== '') ? staffData.pin : undefined
     };
     
     console.log('📤 Updating business staff member:', staffId, {
@@ -179,7 +173,7 @@ export const businessStaffApi = {
       phoneNumber: apiData.phoneNumber,
       role: apiData.role,
       isActive: apiData.isActive,
-      pin: apiData.pin ? '****' : undefined
+      pin: apiData.pin ? '****' : 'not changing'
     });
     
     const response = await api.put(`/business/Staff/${staffId}`, apiData);

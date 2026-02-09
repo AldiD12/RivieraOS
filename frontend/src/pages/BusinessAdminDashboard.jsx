@@ -233,8 +233,21 @@ export default function BusinessAdminDashboard() {
     
     try {
       // Client-side validation
-      if (!staffForm.phoneNumber || !staffForm.role || !staffForm.pin) {
-        setError('Phone number, role, and PIN are required');
+      if (!staffForm.email || !staffForm.password || !staffForm.phoneNumber || !staffForm.role || !staffForm.pin) {
+        setError('Email, password, phone number, role, and PIN are required');
+        return;
+      }
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(staffForm.email)) {
+        setError('Please enter a valid email address');
+        return;
+      }
+
+      // Validate password length
+      if (staffForm.password.length < 6) {
+        setError('Password must be at least 6 characters');
         return;
       }
 
@@ -264,7 +277,9 @@ export default function BusinessAdminDashboard() {
         phoneNumber: normalizedPhone
       };
       
-      console.log('📤 Creating staff with normalized data:', {
+      console.log('📤 Creating staff with data:', {
+        email: normalizedStaffForm.email,
+        password: '************',
         phoneNumber: normalizedStaffForm.phoneNumber,
         fullName: normalizedStaffForm.fullName,
         role: normalizedStaffForm.role,
@@ -279,6 +294,8 @@ export default function BusinessAdminDashboard() {
       
       // Reset form and close modal
       setStaffForm({
+        email: '',
+        password: '',
         phoneNumber: '',
         fullName: '',
         role: '',
@@ -564,7 +581,18 @@ export default function BusinessAdminDashboard() {
     if (!selectedVenue) return;
 
     try {
-      await businessApi.zones.create(selectedVenue.id, zoneForm);
+      console.log('📤 Creating zone with data:', {
+        name: zoneForm.name,
+        zoneType: zoneForm.zoneType,
+        capacityPerUnit: zoneForm.capacityPerUnit,
+        capacityType: typeof zoneForm.capacityPerUnit,
+        basePrice: zoneForm.basePrice,
+        basePriceType: typeof zoneForm.basePrice
+      });
+      
+      const response = await businessApi.zones.create(selectedVenue.id, zoneForm);
+      
+      console.log('✅ Zone created successfully:', response);
       
       setZoneForm({
         name: '',
@@ -577,7 +605,7 @@ export default function BusinessAdminDashboard() {
       await fetchZones(selectedVenue.id);
       
     } catch (err) {
-      console.error('Error creating zone:', err);
+      console.error('❌ Error creating zone:', err);
       setError(`Failed to create zone: ${err.data || err.message}`);
     }
   };
@@ -805,6 +833,9 @@ export default function BusinessAdminDashboard() {
                           Phone
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
+                          PIN
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
                           Status
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
@@ -832,6 +863,15 @@ export default function BusinessAdminDashboard() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">
                             {staff.phoneNumber || staff.email || 'No contact'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              staff.hasPinSet 
+                                ? 'bg-emerald-900/20 text-emerald-400' 
+                                : 'bg-amber-900/20 text-amber-400'
+                            }`}>
+                              {staff.hasPinSet ? '✓ Set' : '✗ Not Set'}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${
