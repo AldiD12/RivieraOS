@@ -171,6 +171,20 @@ const EditStaffModal = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Email *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={staffForm.email}
+                  onChange={(e) => onFormChange('email', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter email address"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
                   Phone Number *
                 </label>
                 <input
@@ -199,11 +213,10 @@ const EditStaffModal = ({
               
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  PIN Code *
+                  PIN Code (leave blank to keep current)
                 </label>
                 <input
                   type="text"
-                  required
                   maxLength="4"
                   pattern="[0-9]{4}"
                   value={staffForm.pin}
@@ -216,7 +229,7 @@ const EditStaffModal = ({
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none font-mono text-center text-lg tracking-widest"
                   placeholder="0000"
                 />
-                <p className="text-xs text-zinc-500 mt-1">4-digit PIN for staff login</p>
+                <p className="text-xs text-zinc-500 mt-1">Leave blank to keep existing PIN</p>
               </div>
               
               <div>
@@ -1222,6 +1235,7 @@ export default function SuperAdminDashboard() {
   
   // Form states
   const [staffForm, setStaffForm] = useState({
+    email: '',
     phoneNumber: '',
     fullName: '',
     role: '',
@@ -1484,8 +1498,9 @@ export default function SuperAdminDashboard() {
     if (!selectedBusiness || !editingStaff) return;
     
     try {
-      // Update staff member with phone number and PIN
+      // Update staff member with email, phone number and PIN
       const staffData = {
+        email: staffForm.email,
         phoneNumber: staffForm.phoneNumber,
         fullName: staffForm.fullName,
         role: staffForm.role,
@@ -1497,6 +1512,7 @@ export default function SuperAdminDashboard() {
       setShowEditStaffModal(false);
       setEditingStaff(null);
       setStaffForm({
+        email: '',
         phoneNumber: '',
         fullName: '',
         role: '',
@@ -1955,10 +1971,11 @@ export default function SuperAdminDashboard() {
             onEditStaff={(staff) => {
               setEditingStaff(staff);
               setStaffForm({
+                email: staff.email || '',
                 phoneNumber: staff.phoneNumber || '',
                 fullName: staff.fullName || '',
                 role: staff.role || '',
-                pin: staff.pin || '',
+                pin: '', // Don't pre-fill PIN for security
                 isActive: staff.isActive
               });
               setShowEditStaffModal(true);
