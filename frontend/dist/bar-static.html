@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Riviera OS: Desktop KDS Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              zinc: {
+                800: '#27272a',
+                900: '#18181b',
+                950: '#09090b',
+              },
+              primary: "#ff3333", // Neon Red
+              secondary: "#00e5ff", // Neon Cyan
+              success: "#10b981", // Emerald
+              warning: "#eab308", // Yellow/Gold
+            },
+            fontFamily: {
+              display: ['"JetBrains Mono"', "monospace"],
+              body: ['"JetBrains Mono"', "monospace"],
+            },
+            boxShadow: {
+                'neon-red': '0 0 15px rgba(255, 51, 51, 0.25), inset 0 0 10px rgba(255, 51, 51, 0.05)',
+                'neon-blue': '0 0 15px rgba(0, 229, 255, 0.25), inset 0 0 10px rgba(0, 229, 255, 0.05)',
+            }
+          },
+        },
+      };
+</script>
+<style>::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #09090b; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-zinc-950 text-gray-300 font-body h-screen w-full overflow-hidden flex flex-row">
+<aside class="w-64 flex-shrink-0 bg-zinc-900/50 border-r border-zinc-800 flex flex-col justify-between z-20">
+<div>
+<div class="h-16 flex items-center px-6 border-b border-zinc-800">
+<span class="material-symbols-outlined text-secondary mr-2 text-xl">terminal</span>
+<h1 class="text-sm font-bold tracking-[0.15em] text-white uppercase">
+                Riviera<span class="text-zinc-600">_</span>OS
+            </h1>
+</div>
+<div class="p-6 space-y-8">
+<div>
+<h3 class="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-2">Live Queue</h3>
+<div class="flex items-center space-x-3">
+<div class="p-2 bg-zinc-800 rounded text-white">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<div>
+<div class="text-2xl font-bold text-white leading-none">12</div>
+<div class="text-[10px] text-zinc-500 mt-1">Total Orders</div>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-2">Throughput</h3>
+<div class="flex items-center space-x-3">
+<div class="p-2 bg-zinc-800 rounded text-white">
+<span class="material-symbols-outlined">timelapse</span>
+</div>
+<div>
+<div class="text-2xl font-bold text-white leading-none">14<span class="text-sm text-zinc-500 font-normal">m</span></div>
+<div class="text-[10px] text-zinc-500 mt-1">Avg Prep Time</div>
+</div>
+</div>
+</div>
+<div>
+<h3 class="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-2">Kitchen Crew</h3>
+<div class="flex items-center space-x-3">
+<div class="p-2 bg-zinc-800 rounded text-white">
+<span class="material-symbols-outlined">groups</span>
+</div>
+<div>
+<div class="text-2xl font-bold text-white leading-none">5</div>
+<div class="text-[10px] text-green-500 mt-1 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span> Active
+                        </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-zinc-800 bg-zinc-900/80">
+<div class="flex items-center justify-between text-zinc-400">
+<button class="hover:text-white transition-colors p-2 rounded hover:bg-zinc-800" title="Sound Settings">
+<span class="material-symbols-outlined">volume_up</span>
+</button>
+<button class="hover:text-white transition-colors p-2 rounded hover:bg-zinc-800" title="Full Screen">
+<span class="material-symbols-outlined">fullscreen</span>
+</button>
+<button class="hover:text-white transition-colors p-2 rounded hover:bg-zinc-800" title="Settings">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<div class="mt-4 text-center">
+<span class="text-[10px] text-zinc-600 font-mono">v2.4.0-stable</span>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-zinc-950 relative">
+<header class="h-16 flex-shrink-0 border-b border-zinc-800 flex items-center justify-between px-6 bg-zinc-950 z-10">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-bold text-white tracking-tight">KITCHEN DISPLAY</h2>
+<div class="h-4 w-px bg-zinc-800"></div>
+<div class="flex gap-2">
+<span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-xs font-bold text-zinc-400">ALL</span>
+<span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-xs font-bold text-primary">LATE (2)</span>
+<span class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-xs font-bold text-success">READY (4)</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right">
+<div class="text-lg font-bold text-white leading-none">22:25:41</div>
+<div class="text-[10px] text-zinc-500 uppercase tracking-wider">Fri, Oct 24</div>
+</div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto p-4 sm:p-6 scroll-smooth">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6 items-start">
+<article class="flex flex-col bg-zinc-900 border-2 border-primary rounded-lg shadow-neon-red overflow-hidden relative group h-full min-h-[380px]">
+<div class="absolute top-0 left-0 w-full h-1 bg-primary shadow-[0_0_10px_#ff3333]"></div>
+<div class="p-4 border-b border-zinc-800 bg-zinc-900/50 flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">DINE-IN</span>
+<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">#8902</span>
+</div>
+<h3 class="text-3xl font-bold text-white">T-04</h3>
+</div>
+<div class="text-right">
+<div class="text-2xl font-bold text-primary animate-pulse tabular-nums">42:15</div>
+<div class="text-[10px] text-primary uppercase font-bold tracking-wider">Critical</div>
+</div>
+</div>
+<div class="p-4 flex-1">
+<ul class="space-y-3">
+<li class="flex items-start group/item cursor-pointer">
+<span class="material-symbols-outlined text-zinc-600 mr-2 group-hover/item:text-primary text-xl">check_box_outline_blank</span>
+<div>
+<div class="text-sm font-bold text-white"><span class="text-primary mr-1">2x</span> Wagyu Burger</div>
+<div class="text-xs text-zinc-500 mt-0.5">+ Medium Rare, No Onions</div>
+</div>
+</li>
+<li class="flex items-start group/item cursor-pointer">
+<span class="material-symbols-outlined text-zinc-600 mr-2 group-hover/item:text-primary text-xl">check_box_outline_blank</span>
+<div class="text-sm font-bold text-white"><span class="text-primary mr-1">1x</span> Truffle Fries</div>
+</li>
+<li class="flex items-start group/item cursor-pointer opacity-50">
+<span class="material-symbols-outlined text-success mr-2 text-xl">check_box</span>
+<div class="text-sm font-bold text-zinc-400 line-through"><span class="mr-1">1x</span> Diet Coke</div>
+</li>
+</ul>
+</div>
+<div class="p-3 bg-zinc-800/50 mt-auto border-t border-zinc-800">
+<button class="w-full bg-zinc-800 hover:bg-success hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] text-zinc-400 font-bold py-3 px-4 rounded transition-all duration-200 uppercase tracking-widest text-sm flex items-center justify-center gap-2 group/btn">
+<span>Ready</span>
+<span class="material-symbols-outlined text-lg group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</article>
+<article class="flex flex-col bg-zinc-900 border border-warning/50 rounded-lg overflow-hidden relative group h-full min-h-[380px]">
+<div class="p-4 border-b border-zinc-800 bg-zinc-900/50 flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">TAKEAWAY</span>
+</div>
+<h3 class="text-3xl font-bold text-white">#12B</h3>
+</div>
+<div class="text-right">
+<div class="text-2xl font-bold text-warning tabular-nums">22:05</div>
+</div>
+</div>
+<div class="p-4 flex-1">
+<ul class="space-y-3">
+<li class="flex items-start group/item cursor-pointer">
+<span class="material-symbols-outlined text-zinc-600 mr-2 group-hover/item:text-warning text-xl">check_box_outline_blank</span>
+<div class="text-sm font-bold text-white"><span class="text-warning mr-1">1x</span> Spicy Tuna Roll</div>
+</li>
+<li class="flex items-start group/item cursor-pointer">
+<span class="material-symbols-outlined text-zinc-600 mr-2 group-hover/item:text-warning text-xl">check_box_outline_blank</span>
+<div class="text-sm font-bold text-white"><span class="text-warning mr-1">1x</span> Salmon Nigiri</div>
+</li>
+<li class="flex items-start group/item cursor-pointer">
+<span class="material-symbols-outlined text-zinc-600 mr-2 group-hover/item:text-warning text-xl">check_box_outline_blank</span>
+<div class="text-sm font-bold text-white"><span class="text-warning mr-1">1x</span> Miso Soup</div>
+</li>
+</ul>
+</div>
+<div class="p-3 bg-zinc-800/50 mt-auto border-t border-zinc-800">
+<button class="w-full bg-zinc-800 hover:bg-success hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] text-zinc-400 font-bold py-3 px-4 rounded transition-all duration-200 uppercase tracking-widest text-sm flex items-center justify-center gap-2 group/btn">
+<span>Ready</span>
+<span class="material-symbols-outlined text-lg group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</article>
+<article class="flex flex-col bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden relative group h-full min-h-[380px]">
+<div class="p-4 border-b border-zinc-800 bg-zinc-900/50 flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">DINE-IN</span>
+</div>
+<h3 class="text-3xl font-bold text-white">T-08</h3>
+</div>
+<div class="text-right">
+<div class="text-2xl font-bold text-zinc-400 tabular-nums">08:12</div>
+</div>
+</div>
+<div class="p-4 flex-1">
+<ul class="space-y-3">
+<li class="flex items-start group/item cursor-pointer">
+<span class="material-symbols-outlined text-zinc-600 mr-2 group-hover/item:text-white text-xl">check_box_outline_blank</span>
+<div class="text-sm font-bold text-white"><span class="text-zinc-500 mr-1">1x</span> Margherita Pizza</div>
+<div class="text-xs text-zinc-500 mt-0.5">Extra Basil</div>
+</li>
+<li class="flex items-start group/item cursor-pointer">
+<span class="material-symbols-outlined text-zinc-600 mr-2 group-hover/item:text-white text-xl">check_box_outline_blank</span>
+<div class="text-sm font-bold text-white"><span class="text-zinc-500 mr-1">2x</span> Peroni Draft</div>
+</li>
+</ul>
+</div>
+<div class="p-3 bg-zinc-800/50 mt-auto border-t border-zinc-800">
+<button class="w-full bg-zinc-800 hover:bg-success hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] text-zinc-400 font-bold py-3 px-4 rounded transition-all duration-200 uppercase tracking-widest text-sm flex items-center justify-center gap-2 group/btn">
+<span>Ready</span>
+<span class="material-symbols-outlined text-lg group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</article>
+<article class="flex flex-col bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden relative group h-full min-h-[380px]">
+<div class="p-4 border-b border-zinc-800 bg-zinc-900/50 flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">DELIVERY</span>
+<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-secondary/10 text-secondary border border-secondary/20">UBER</span>
+</div>
+<h3 class="text-3xl font-bold text-white">#991</h3>
+</div>
+<div class="text-right">
+<div class="text-2xl font-bold text-zinc-400 tabular-nums">05:45</div>
+</div>
+</div>
+<div class="p-4 flex-1">
+<ul class="space-y-3">
+<li class="flex items-start group/item cursor-pointer">
+<span class="material-symbols-outlined text-zinc-600 mr-2 group-hover/item:text-white text-xl">check_box_outline_blank</span>
+<div class="text-sm font-bold text-white"><span class="text-zinc-500 mr-1">3x</span> Chicken Tacos</div>
+</li>
+<li class="flex items-start group/item cursor-pointer">
+<span class="material-symbols-outlined text-zinc-600 mr-2 group-hover/item:text-white text-xl">check_box_outline_blank</span>
+<div class="text-sm font-bold text-white"><span class="text-zinc-500 mr-1">1x</span> Guacamole &amp; Chips</div>
+</li>
+</ul>
+</div>
+<div class="p-3 bg-zinc-800/50 mt-auto border-t border-zinc-800">
+<button class="w-full bg-zinc-800 hover:bg-success hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] text-zinc-400 font-bold py-3 px-4 rounded transition-all duration-200 uppercase tracking-widest text-sm flex items-center justify-center gap-2 group/btn">
+<span>Ready</span>
+<span class="material-symbols-outlined text-lg group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</article>
+<article class="flex flex-col bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden relative group h-full min-h-[380px] shadow-neon-blue">
+<div class="p-4 border-b border-zinc-800 bg-zinc-900/50 flex justify-between items-start">
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">DINE-IN</span>
+</div>
+<h3 class="text-3xl font-bold text-white">T-11</h3>
+</div>
+<div class="text-right">
+<div class="text-2xl font-bold text-secondary tabular-nums">00:23</div>
+<div class="text-[10px] text-secondary uppercase font-bold tracking-wider">New</div>
+</div>
+</div>
+<div class="p-4 flex-1">
+<ul class="space-y-3">
+<li class="flex items-start group/item cursor-pointer">
+<span class="material-symbols-outlined text-zinc-600 mr-2 group-hover/item:text-secondary text-xl">check_box_outline_blank</span>
+<div class="text-sm font-bold text-white"><span class="text-zinc-500 mr-1">1x</span> Caesar Salad</div>
+<div class="text-xs text-secondary mt-0.5">ADD: Chicken Breast</div>
+</li>
+</ul>
+</div>
+<div class="p-3 bg-zinc-800/50 mt-auto border-t border-zinc-800">
+<button class="w-full bg-zinc-800 hover:bg-success hover:text-white hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] text-zinc-400 font-bold py-3 px-4 rounded transition-all duration-200 uppercase tracking-widest text-sm flex items-center justify-center gap-2 group/btn">
+<span>Ready</span>
+<span class="material-symbols-outlined text-lg group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</article>
+</div>
+</div>
+</main>
+
+</body></html>
