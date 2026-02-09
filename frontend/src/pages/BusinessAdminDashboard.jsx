@@ -1967,7 +1967,7 @@ export default function BusinessAdminDashboard() {
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-xl font-semibold mb-4">Edit Venue</h3>
-              <form onSubmit={handleUpdateVenue} className="space-y-4">
+              <form onSubmit={handleEditVenue} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-zinc-300 mb-2">
                     Venue Name *
@@ -2214,7 +2214,7 @@ export default function BusinessAdminDashboard() {
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-xl font-semibold mb-4">Edit Zone</h3>
-              <form onSubmit={handleUpdateZone} className="space-y-4">
+              <form onSubmit={handleEditZone} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-zinc-300 mb-2">
                     Zone Name *
