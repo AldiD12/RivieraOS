@@ -1192,6 +1192,15 @@ export default function BusinessAdminDashboard() {
                               <div className="flex space-x-2">
                                 <button
                                   onClick={() => {
+                                    // Navigate to unit creation for this zone
+                                    navigate(`/admin/zones/${zone.id}/units`);
+                                  }}
+                                  className="text-green-400 hover:text-green-300 text-sm"
+                                >
+                                  Units
+                                </button>
+                                <button
+                                  onClick={() => {
                                     setEditingZone(zone);
                                     setZoneForm({
                                       name: zone.name,

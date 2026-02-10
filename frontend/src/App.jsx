@@ -15,6 +15,7 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import QRCodeGenerator from './pages/QRCodeGenerator';
 import TestCronBookings from './pages/TestCronBookings';
 import SpotPage from './pages/SpotPage';
+import ZoneUnitsManager from './pages/ZoneUnitsManager';
 import ProtectedRoute from './components/ProtectedRoute';
 import ApiStatus from './components/ApiStatus';
 
@@ -111,6 +112,16 @@ function App() {
           element={
             <ProtectedRoute role="Manager">
               <QRCodeGenerator />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Zone Units Manager - Manager Only */}
+        <Route 
+          path="/admin/zones/:zoneId/units" 
+          element={
+            <ProtectedRoute role="Manager">
+              <ZoneUnitsManager />
             </ProtectedRoute>
           } 
         />
