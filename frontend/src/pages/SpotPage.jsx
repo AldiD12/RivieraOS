@@ -23,6 +23,7 @@ export default function SpotPage() {
   const [error, setError] = useState('');
   const [orderSuccess, setOrderSuccess] = useState(null);
   const [bookingSuccess, setBookingSuccess] = useState(null);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
 
   // Booking form state
   const [bookingForm, setBookingForm] = useState({
@@ -52,13 +53,48 @@ export default function SpotPage() {
       const menuData = await menuResponse.json();
       setMenu(menuData);
 
-      // Fetch venue info (we'll use the menu data for now, or add a public venue endpoint)
+      // Try to get zone info to determine venue type
+      let venueType = 'GENERAL'; // default
+      let zoneName = '';
+      
+      if (zoneId) {
+        try {
+          // Fetch zone info from reservations endpoint
+          const zonesResponse = await fetch(`${API_URL}/public/Reservations/zones?venueId=${venueId}`);
+          if (zonesResponse.ok) {
+            const zonesData = await zonesResponse.json();
+            const currentZone = zonesData.find(z => z.id === parseInt(zoneId));
+            if (currentZone) {
+              zoneName = currentZone.name;
+              // Infer venue type from zone type
+              if (currentZone.zoneType?.includes('SUNBED') || currentZone.zoneType?.includes('BEACH')) {
+                venueType = 'BEACH';
+              } else if (currentZone.zoneType?.includes('TABLE') || currentZone.zoneType?.includes('RESTAURANT')) {
+                venueType = 'RESTAURANT';
+              } else if (currentZone.zoneType?.includes('POOL')) {
+                venueType = 'POOL';
+              }
+            }
+          }
+        } catch (err) {
+          console.log('Could not fetch zone info:', err);
+        }
+      }
+
+      // Fetch venue info
       setVenue({
         id: venueId,
         name: menuData[0]?.venueName || 'Venue',
+        type: venueType,
         zoneId: zoneId,
+        zoneName: zoneName,
         unitId: unitId
       });
+
+      // Show choice modal for beach/pool zones (not restaurants)
+      if (venueType === 'BEACH' || venueType === 'POOL') {
+        setShowChoiceModal(true);
+      }
 
       setLoading(false);
     } catch (err) {
@@ -188,6 +224,42 @@ export default function SpotPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF9]">
+      {/* Choice Modal for Beach/Pool */}
+      {showChoiceModal && (venue?.type === 'BEACH' || venue?.type === 'POOL') && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+          <div className="bg-gradient-to-br from-white to-stone-50/50 rounded-[2rem] p-12 max-w-md w-full shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)] border border-stone-200/40">
+            <h2 className="font-['Cormorant_Garamond'] text-5xl font-light text-[#1C1917] mb-4 text-center">
+              Welcome
+            </h2>
+            <p className="text-lg text-[#57534E] text-center mb-8 leading-relaxed">
+              What would you like to do?
+            </p>
+            
+            <div className="space-y-4">
+              <button
+                onClick={() => {
+                  setActiveTab('order');
+                  setShowChoiceModal(false);
+                }}
+                className="w-full px-8 py-5 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
+              >
+                Order Food & Drinks
+              </button>
+              
+              <button
+                onClick={() => {
+                  setActiveTab('book');
+                  setShowChoiceModal(false);
+                }}
+                className="w-full px-8 py-5 border-2 border-stone-300 text-stone-700 rounded-full text-sm tracking-widest uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
+              >
+                Book Sunbed
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-gradient-to-br from-white to-stone-50/50 border-b border-stone-200/40">
         <div className="max-w-7xl mx-auto px-6 py-12">
@@ -217,16 +289,20 @@ export default function SpotPage() {
             >
               Order
             </button>
-            <button
-              onClick={() => setActiveTab('book')}
-              className={`py-6 text-sm tracking-widest uppercase transition-all duration-300 ${
-                activeTab === 'book'
-                  ? 'text-[#1C1917] border-b-2 border-stone-900'
-                  : 'text-[#78716C] hover:text-[#57534E]'
-              }`}
-            >
-              Book
-            </button>
+            
+            {/* Only show Book tab for Beach/Pool zones, not restaurants */}
+            {(venue?.type === 'BEACH' || venue?.type === 'POOL') && (
+              <button
+                onClick={() => setActiveTab('book')}
+                className={`py-6 text-sm tracking-widest uppercase transition-all duration-300 ${
+                  activeTab === 'book'
+                    ? 'text-[#1C1917] border-b-2 border-stone-900'
+                    : 'text-[#78716C] hover:text-[#57534E]'
+                }`}
+              >
+                Book Sunbed
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -434,6 +510,34 @@ function OrderTab({ menu, cart, addToCart, removeFromCart, updateQuantity, getTo
 
 // Book Tab Component
 function BookTab({ venue, unitId, bookingForm, setBookingForm, handleBooking, bookingSuccess }) {
+  // Context-aware text based on venue type
+  const getReservationText = () => {
+    if (venue?.type === 'RESTAURANT') {
+      return {
+        title: 'Reserve Your Table',
+        unit: `Table ${unitId}`,
+        success: 'Table Reserved',
+        successMessage: 'Your table has been reserved. We look forward to serving you!'
+      };
+    } else if (venue?.type === 'BEACH' || venue?.type === 'POOL') {
+      return {
+        title: 'Book Your Sunbed',
+        unit: `Sunbed ${unitId}`,
+        success: 'Sunbed Booked',
+        successMessage: 'Your sunbed has been reserved. Enjoy your day!'
+      };
+    } else {
+      return {
+        title: 'Reserve This Spot',
+        unit: `Unit ${unitId}`,
+        success: 'Booking Confirmed',
+        successMessage: 'Your reservation has been confirmed. See you soon!'
+      };
+    }
+  };
+
+  const text = getReservationText();
+
   if (bookingSuccess) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -442,13 +546,13 @@ function BookTab({ venue, unitId, bookingForm, setBookingForm, handleBooking, bo
             <Check className="w-10 h-10 text-emerald-600" />
           </div>
           <h2 className="font-['Cormorant_Garamond'] text-4xl font-light text-[#1C1917] mb-4">
-            Booking Confirmed
+            {text.success}
           </h2>
           <p className="text-lg text-[#57534E] mb-2">
             Booking Code: {bookingSuccess.bookingCode}
           </p>
           <p className="text-[#78716C] leading-relaxed">
-            Your reservation has been confirmed. See you soon!
+            {text.successMessage}
           </p>
         </div>
       </div>
@@ -459,11 +563,11 @@ function BookTab({ venue, unitId, bookingForm, setBookingForm, handleBooking, bo
     <div className="max-w-2xl mx-auto">
       <div className="bg-gradient-to-br from-white to-stone-50/50 rounded-[2rem] p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] border border-stone-200/40">
         <div className="mb-8">
-          <p className="text-sm tracking-widest uppercase text-[#78716C] mb-2">Reserve This Spot</p>
+          <p className="text-sm tracking-widest uppercase text-[#78716C] mb-2">{text.title}</p>
           <h2 className="font-['Cormorant_Garamond'] text-5xl font-light text-[#1C1917] mb-4">
             {venue?.name}
           </h2>
-          <p className="text-lg text-[#57534E]">Unit {unitId}</p>
+          <p className="text-lg text-[#57534E]">{text.unit}</p>
         </div>
 
         <form onSubmit={handleBooking} className="space-y-6">
