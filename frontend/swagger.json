@@ -10793,6 +10793,9 @@
           "isActive": {
             "type": "boolean"
           },
+          "hasPinSet": {
+            "type": "boolean"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -11182,6 +11185,9 @@
           "basePrice": {
             "type": "number",
             "format": "double"
+          },
+          "isActive": {
+            "type": "boolean"
           },
           "isDeleted": {
             "type": "boolean"

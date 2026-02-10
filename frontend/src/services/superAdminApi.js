@@ -445,6 +445,143 @@ export const dashboardApi = {
   }
 };
 
+// Units Management APIs - SuperAdmin uses Business endpoints (no SuperAdmin-specific endpoints exist yet)
+export const unitApi = {
+  // GET /api/business/venues/{venueId}/Units - Get units for a venue
+  getByVenue: async (venueId) => {
+    const response = await superAdminApi.get(`/business/venues/${venueId}/Units`);
+    return response.data;
+  },
+
+  // POST /api/business/venues/{venueId}/Units - Create unit
+  create: async (venueId, unitData) => {
+    const response = await superAdminApi.post(`/business/venues/${venueId}/Units`, unitData);
+    return response.data;
+  },
+
+  // POST /api/business/venues/{venueId}/Units/bulk - Bulk create units
+  bulkCreate: async (venueId, bulkData) => {
+    const response = await superAdminApi.post(`/business/venues/${venueId}/Units/bulk`, bulkData);
+    return response.data;
+  },
+
+  // GET /api/business/venues/{venueId}/Units/{id} - Get unit details
+  getById: async (venueId, unitId) => {
+    const response = await superAdminApi.get(`/business/venues/${venueId}/Units/${unitId}`);
+    return response.data;
+  },
+
+  // PUT /api/business/venues/{venueId}/Units/{id} - Update unit
+  update: async (venueId, unitId, unitData) => {
+    const response = await superAdminApi.put(`/business/venues/${venueId}/Units/${unitId}`, unitData);
+    return response.data;
+  },
+
+  // DELETE /api/business/venues/{venueId}/Units/{id} - Delete unit
+  delete: async (venueId, unitId) => {
+    const response = await superAdminApi.delete(`/business/venues/${venueId}/Units/${unitId}`);
+    return response.data;
+  }
+};
+
+// Bookings Management APIs - SuperAdmin uses Business endpoints (no SuperAdmin-specific endpoints exist yet)
+export const bookingApi = {
+  // GET /api/business/Bookings - Get all bookings with filters
+  list: async (filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.venueId) params.append('venueId', filters.venueId);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.date) params.append('date', filters.date);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/business/Bookings?${queryString}` : '/business/Bookings';
+    
+    const response = await superAdminApi.get(url);
+    return response.data;
+  },
+
+  // GET /api/business/Bookings/{id} - Get booking details
+  getById: async (bookingId) => {
+    const response = await superAdminApi.get(`/business/Bookings/${bookingId}`);
+    return response.data;
+  },
+
+  // POST /api/business/Bookings - Create booking
+  create: async (bookingData) => {
+    const response = await superAdminApi.post('/business/Bookings', bookingData);
+    return response.data;
+  },
+
+  // PUT /api/business/Bookings/{id} - Update booking
+  update: async (bookingId, bookingData) => {
+    const response = await superAdminApi.put(`/business/Bookings/${bookingId}`, bookingData);
+    return response.data;
+  },
+
+  // DELETE /api/business/Bookings/{id} - Delete booking
+  delete: async (bookingId) => {
+    const response = await superAdminApi.delete(`/business/Bookings/${bookingId}`);
+    return response.data;
+  },
+
+  // PUT /api/business/Bookings/{id}/status - Update booking status
+  updateStatus: async (bookingId, status) => {
+    const response = await superAdminApi.put(`/business/Bookings/${bookingId}/status`, { status });
+    return response.data;
+  },
+
+  // PUT /api/business/Bookings/{id}/checkin - Check-in guest
+  checkIn: async (bookingId) => {
+    const response = await superAdminApi.put(`/business/Bookings/${bookingId}/checkin`);
+    return response.data;
+  },
+
+  // PUT /api/business/Bookings/{id}/checkout - Check-out guest
+  checkOut: async (bookingId) => {
+    const response = await superAdminApi.put(`/business/Bookings/${bookingId}/checkout`);
+    return response.data;
+  }
+};
+
+// Orders Management APIs - SuperAdmin uses Business endpoints (no SuperAdmin-specific endpoints exist yet)
+export const orderApi = {
+  // GET /api/business/Orders - Get all orders with filters
+  list: async (filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.venueId) params.append('venueId', filters.venueId);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.zoneId) params.append('zoneId', filters.zoneId);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/business/Orders?${queryString}` : '/business/Orders';
+    
+    const response = await superAdminApi.get(url);
+    return response.data;
+  },
+
+  // GET /api/business/Orders/active - Get active orders
+  getActive: async (venueId = null) => {
+    const url = venueId 
+      ? `/business/Orders/active?venueId=${venueId}` 
+      : '/business/Orders/active';
+    
+    const response = await superAdminApi.get(url);
+    return response.data;
+  },
+
+  // GET /api/business/Orders/{id} - Get order details
+  getById: async (orderId) => {
+    const response = await superAdminApi.get(`/business/Orders/${orderId}`);
+    return response.data;
+  },
+
+  // PUT /api/business/Orders/{id}/status - Update order status
+  updateStatus: async (orderId, statusData) => {
+    const response = await superAdminApi.put(`/business/Orders/${orderId}/status`, statusData);
+    return response.data;
+  }
+};
+
 export default {
   business: businessApi,
   staff: staffApi,
@@ -454,5 +591,8 @@ export default {
   product: productApi,
   adminUsers: adminUsersApi,
   auth: authApi,
-  dashboard: dashboardApi
+  dashboard: dashboardApi,
+  unit: unitApi,
+  booking: bookingApi,
+  order: orderApi
 };
