@@ -442,6 +442,54 @@ export const businessZoneApi = {
 };
 
 // =============================================================================
+// BUSINESS UNITS API
+// =============================================================================
+
+export const businessUnitApi = {
+  // Get all units for a venue
+  list: async (venueId) => {
+    console.log('📤 Getting business units for venue:', venueId);
+    const response = await api.get(`/business/venues/${venueId}/Units`);
+    return response.data;
+  },
+
+  // Create new unit
+  create: async (venueId, unitData) => {
+    console.log('📤 Creating business unit:', venueId, unitData);
+    const response = await api.post(`/business/venues/${venueId}/Units`, unitData);
+    return response.data;
+  },
+
+  // Bulk create units
+  bulkCreate: async (venueId, bulkData) => {
+    console.log('📤 Bulk creating business units:', venueId, bulkData);
+    const response = await api.post(`/business/venues/${venueId}/Units/bulk`, bulkData);
+    return response.data;
+  },
+
+  // Get unit details
+  get: async (venueId, unitId) => {
+    console.log('📤 Getting business unit:', venueId, unitId);
+    const response = await api.get(`/business/venues/${venueId}/Units/${unitId}`);
+    return response.data;
+  },
+
+  // Update unit
+  update: async (venueId, unitId, unitData) => {
+    console.log('📤 Updating business unit:', venueId, unitId, unitData);
+    const response = await api.put(`/business/venues/${venueId}/Units/${unitId}`, unitData);
+    return response.data;
+  },
+
+  // Delete unit
+  delete: async (venueId, unitId) => {
+    console.log('📤 Deleting business unit:', venueId, unitId);
+    const response = await api.delete(`/business/venues/${venueId}/Units/${unitId}`);
+    return response.data;
+  }
+};
+
+// =============================================================================
 // BUSINESS DASHBOARD API
 // =============================================================================
 
@@ -462,5 +510,6 @@ export default {
   products: businessProductApi,
   venues: businessVenueApi,
   zones: businessZoneApi,
+  units: businessUnitApi,
   dashboard: businessDashboardApi
 };
