@@ -805,6 +805,39 @@ export default function BusinessAdminDashboard() {
                 <p className="text-zinc-400">Dashboard data will appear here once loaded.</p>
               </div>
             )}
+
+            {/* Quick Access Section */}
+            <div className="mt-8">
+              <h3 className="text-lg font-semibold mb-4">Quick Access</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button
+                  onClick={() => navigate('/bar')}
+                  className="bg-zinc-900 hover:bg-zinc-800 border-2 border-zinc-800 hover:border-zinc-700 rounded-lg p-6 text-left transition-all"
+                >
+                  <div className="text-2xl mb-2">🍹</div>
+                  <h4 className="text-lg font-semibold mb-1">Bar Display</h4>
+                  <p className="text-sm text-zinc-400">Kitchen/Bar order queue screen</p>
+                </button>
+                
+                <button
+                  onClick={() => navigate('/collector')}
+                  className="bg-zinc-900 hover:bg-zinc-800 border-2 border-zinc-800 hover:border-zinc-700 rounded-lg p-6 text-left transition-all"
+                >
+                  <div className="text-2xl mb-2">🏖️</div>
+                  <h4 className="text-lg font-semibold mb-1">Collector Dashboard</h4>
+                  <p className="text-sm text-zinc-400">Manage bookings and reservations</p>
+                </button>
+                
+                <button
+                  onClick={() => navigate('/qr-generator')}
+                  className="bg-zinc-900 hover:bg-zinc-800 border-2 border-zinc-800 hover:border-zinc-700 rounded-lg p-6 text-left transition-all"
+                >
+                  <div className="text-2xl mb-2">📱</div>
+                  <h4 className="text-lg font-semibold mb-1">QR Code Generator</h4>
+                  <p className="text-sm text-zinc-400">Generate QR codes for zones</p>
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
