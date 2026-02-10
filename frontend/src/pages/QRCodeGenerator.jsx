@@ -62,17 +62,17 @@ export default function QRCodeGenerator() {
     fetchZones(venue.id);
   };
 
-  const getSpotUrl = (venueId, zoneId, unitLabel) => {
+  const getSpotUrl = (venueId, zoneId, unitCode) => {
     const baseUrl = window.location.origin;
-    return `${baseUrl}/spot?v=${venueId}&z=${zoneId}&u=${unitLabel}`;
+    return `${baseUrl}/spot?v=${venueId}&z=${zoneId}&u=${unitCode}`;
   };
 
   const handlePrintAll = () => {
     window.print();
   };
 
-  const handleDownloadQR = (unitLabel, venueId, zoneId) => {
-    const svg = document.getElementById(`qr-${unitLabel}`);
+  const handleDownloadQR = (unitCode, venueId, zoneId) => {
+    const svg = document.getElementById(`qr-${unitCode}`);
     const svgData = new XMLSerializer().serializeToString(svg);
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -85,7 +85,7 @@ export default function QRCodeGenerator() {
       const pngFile = canvas.toDataURL('image/png');
       
       const downloadLink = document.createElement('a');
-      downloadLink.download = `QR-${selectedVenue.name}-${unitLabel}.png`;
+      downloadLink.download = `QR-${selectedVenue.name}-${unitCode}.png`;
       downloadLink.href = pngFile;
       downloadLink.click();
     };
@@ -198,18 +198,18 @@ export default function QRCodeGenerator() {
                         >
                           <div className="bg-white p-4 rounded-lg mb-3">
                             <QRCodeSVG
-                              id={`qr-${unit.unitLabel}`}
-                              value={getSpotUrl(selectedVenue.id, zone.id, unit.unitLabel)}
+                              id={`qr-${unit.unitCode}`}
+                              value={getSpotUrl(selectedVenue.id, zone.id, unit.unitCode)}
                               size={150}
                               level="H"
                               includeMargin={true}
                             />
                           </div>
                           <div className="text-center">
-                            <p className="font-bold text-lg mb-1">{unit.unitLabel}</p>
+                            <p className="font-bold text-lg mb-1">{unit.unitCode}</p>
                             <p className="text-sm text-zinc-400 mb-3">{zone.name}</p>
                             <button
-                              onClick={() => handleDownloadQR(unit.unitLabel, selectedVenue.id, zone.id)}
+                              onClick={() => handleDownloadQR(unit.unitCode, selectedVenue.id, zone.id)}
                               className="text-xs px-3 py-1 bg-zinc-700 hover:bg-zinc-600 rounded transition-colors"
                             >
                               Download PNG
@@ -267,14 +267,14 @@ export default function QRCodeGenerator() {
                 >
                   <div className="mb-4">
                     <QRCodeSVG
-                      value={getSpotUrl(selectedVenue.id, zone.id, unit.unitLabel)}
+                      value={getSpotUrl(selectedVenue.id, zone.id, unit.unitCode)}
                       size={200}
                       level="H"
                       includeMargin={true}
                     />
                   </div>
                   <div className="border-t-2 border-black pt-4">
-                    <p className="text-3xl font-bold text-black mb-2">{unit.unitLabel}</p>
+                    <p className="text-3xl font-bold text-black mb-2">{unit.unitCode}</p>
                     <p className="text-lg text-black">{zone.name}</p>
                     <p className="text-sm text-gray-600 mt-2">{selectedVenue.name}</p>
                   </div>
