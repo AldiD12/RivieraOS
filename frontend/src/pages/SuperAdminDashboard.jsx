@@ -1688,6 +1688,7 @@ export default function SuperAdminDashboard() {
                                     longitude: venue.longitude,
                                     orderingEnabled: venue.orderingEnabled
                                   });
+                                  setShowEditVenueModal(true);
                                 }}
                                 className="text-blue-400 hover:text-blue-300 text-sm"
                               >
@@ -1766,6 +1767,7 @@ export default function SuperAdminDashboard() {
                                       basePrice: zone.basePrice || 0,
                                       prefix: zone.prefix || ''
                                     });
+                                    setShowEditZoneModal(true);
                                   }}
                                   className="text-blue-400 hover:text-blue-300 text-sm"
                                 >
