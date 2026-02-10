@@ -312,6 +312,17 @@ public class VenuesController : ControllerBase
 - ✅ `GET /api/business/venues/{venueId}/Zones` - List zones
 - ✅ `POST /api/business/venues/{venueId}/Units/bulk` - Bulk create units
 - ✅ `GET /api/business/venues/{venueId}/Units` - List units
+- ✅ `PUT /api/business/venues/{venueId}/Units/{id}` - Update unit
+- ✅ `DELETE /api/business/venues/{venueId}/Units/{id}` - Delete unit
+- ✅ `GET /api/business/venues/{venueId}/Units/by-qr/{qrCode}` - QR lookup
+- ✅ `GET /api/business/venues/{venueId}/Units/stats` - Unit statistics
+- ✅ `GET /api/business/venues/{venueId}/bookings` - List bookings
+- ✅ `POST /api/business/venues/{venueId}/bookings` - Create booking
+- ✅ `GET /api/business/venues/{venueId}/bookings/active` - Active bookings
+- ✅ `POST /api/business/venues/{venueId}/bookings/{id}/check-in` - Check-in
+- ✅ `POST /api/business/venues/{venueId}/bookings/{id}/check-out` - Check-out
+- ✅ `POST /api/business/venues/{venueId}/bookings/{id}/cancel` - Cancel
+- ✅ `POST /api/business/venues/{venueId}/bookings/{id}/no-show` - No-show
 - ✅ `POST /api/public/Orders` - Place order
 - ✅ `POST /api/public/Reservations` - Create booking
 - ✅ `GET /api/public/venues/{venueId}/menu` - Get venue menu
