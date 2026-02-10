@@ -1735,7 +1735,7 @@ export default function SuperAdminDashboard() {
 
                     {!selectedVenue ? (
                       <p className="text-zinc-400 text-sm">Select a venue to view zones</p>
-                    ) : zonesLoading ? (
+                    ) : venuesLoading ? (
                       <div className="flex justify-center py-4">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                       </div>
