@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, AlertCircle, Wifi, WifiOff } from 'lucide-react';
-import { businessApi } from '../services/api';
+import businessApi from '../services/businessApi';
 import { createConnection, startConnection } from '../services/signalr';
 
 export default function BarDisplay() {
