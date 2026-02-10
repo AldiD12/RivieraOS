@@ -14,6 +14,7 @@ import SuperAdminLogin from './pages/SuperAdminLogin';
 import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import QRCodeGenerator from './pages/QRCodeGenerator';
 import TestCronBookings from './pages/TestCronBookings';
+import SpotPage from './pages/SpotPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ApiStatus from './components/ApiStatus';
 
@@ -32,6 +33,7 @@ function App() {
         
         {/* Customer-Facing Routes (QR Code Access) */}
         <Route path="/menu" element={<MenuPage />} />
+        <Route path="/spot" element={<SpotPage />} />
         <Route path="/review/:venueId" element={<ReviewPage />} />
         
         {/* Staff Dashboards - Protected */}

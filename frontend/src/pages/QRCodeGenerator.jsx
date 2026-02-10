@@ -41,16 +41,16 @@ export default function QRCodeGenerator() {
     fetchZones(venue.id);
   };
 
-  const getMenuUrl = (venueId, unitLabel) => {
+  const getSpotUrl = (venueId, zoneId, unitLabel) => {
     const baseUrl = window.location.origin;
-    return `${baseUrl}/menu?venueId=${venueId}&bedId=${unitLabel}`;
+    return `${baseUrl}/spot?v=${venueId}&z=${zoneId}&u=${unitLabel}`;
   };
 
   const handlePrintAll = () => {
     window.print();
   };
 
-  const handleDownloadQR = (unitLabel, venueId) => {
+  const handleDownloadQR = (unitLabel, venueId, zoneId) => {
     const svg = document.getElementById(`qr-${unitLabel}`);
     const svgData = new XMLSerializer().serializeToString(svg);
     const canvas = document.createElement('canvas');
@@ -145,7 +145,7 @@ export default function QRCodeGenerator() {
                         <div className="bg-white p-4 rounded-lg mb-3">
                           <QRCodeSVG
                             id={`qr-${unit.unitLabel}`}
-                            value={getMenuUrl(selectedVenue.id, unit.unitLabel)}
+                            value={getSpotUrl(selectedVenue.id, zone.id, unit.unitLabel)}
                             size={150}
                             level="H"
                             includeMargin={true}
@@ -155,7 +155,7 @@ export default function QRCodeGenerator() {
                           <p className="font-bold text-lg mb-1">{unit.unitLabel}</p>
                           <p className="text-sm text-zinc-400 mb-3">{zone.name}</p>
                           <button
-                            onClick={() => handleDownloadQR(unit.unitLabel, selectedVenue.id)}
+                            onClick={() => handleDownloadQR(unit.unitLabel, selectedVenue.id, zone.id)}
                             className="text-xs px-3 py-1 bg-zinc-700 hover:bg-zinc-600 rounded transition-colors"
                           >
                             Download PNG
@@ -212,7 +212,7 @@ export default function QRCodeGenerator() {
                 >
                   <div className="mb-4">
                     <QRCodeSVG
-                      value={getMenuUrl(selectedVenue.id, unit.unitLabel)}
+                      value={getSpotUrl(selectedVenue.id, zone.id, unit.unitLabel)}
                       size={200}
                       level="H"
                       includeMargin={true}
