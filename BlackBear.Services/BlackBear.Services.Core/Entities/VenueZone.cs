@@ -25,6 +25,9 @@ namespace BlackBear.Services.Core.Entities
         [Column("base_price", TypeName = "decimal(10,2)")]
         public decimal BasePrice { get; set; } = 0;
 
+        [Column("is_active")]
+        public bool IsActive { get; set; } = true;
+
         [Column("is_deleted")]
         public bool IsDeleted { get; set; } = false;
 
