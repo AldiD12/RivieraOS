@@ -1,7 +1,9 @@
 using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.DTOs.Public;
 using BlackBear.Services.Core.Entities;
+using BlackBear.Services.Core.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlackBear.Services.Core.Controllers.Public
@@ -11,10 +13,12 @@ namespace BlackBear.Services.Core.Controllers.Public
     public class OrdersController : ControllerBase
     {
         private readonly BlackBearDbContext _context;
+        private readonly IHubContext<BeachHub> _hubContext;
 
-        public OrdersController(BlackBearDbContext context)
+        public OrdersController(BlackBearDbContext context, IHubContext<BeachHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // GET: api/public/orders/menu?venueId=1
@@ -166,6 +170,25 @@ namespace BlackBear.Services.Core.Controllers.Public
             }
 
             await _context.SaveChangesAsync();
+
+            // Broadcast new order to connected clients
+            await _hubContext.Clients.All.SendAsync("NewOrder", new
+            {
+                id = order.Id,
+                orderNumber = order.OrderNumber,
+                status = order.Status,
+                venueId = order.VenueId,
+                zoneName = zone.Name,
+                customerName = order.CustomerName,
+                items = request.Items.Select(i => new
+                {
+                    productName = products[i.ProductId].Name,
+                    quantity = i.Quantity,
+                    price = products[i.ProductId].Price
+                }),
+                totalAmount = request.Items.Sum(i => products[i.ProductId].Price * i.Quantity),
+                createdAt = order.CreatedAt
+            });
 
             // Build response
             var response = new PublicOrderConfirmationDto

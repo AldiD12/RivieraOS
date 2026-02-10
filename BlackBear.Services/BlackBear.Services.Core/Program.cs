@@ -1,5 +1,6 @@
 using System.Text;
 using BlackBear.Services.Core.Data;
+using BlackBear.Services.Core.Hubs;
 using BlackBear.Services.Core.Interfaces;
 using BlackBear.Services.Core.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -81,6 +82,21 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
+
+    // Allow SignalR clients to send JWT via query string
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // 4. Add Authorization Policies
@@ -112,7 +128,10 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 6. Add Background Services
+// 6. Add SignalR
+builder.Services.AddSignalR();
+
+// 7. Add Background Services
 builder.Services.AddHostedService<DailyUnitResetService>();
 
 // 7. Add Health Checks
@@ -132,6 +151,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<BeachHub>("/hubs/beach");
 
 // Health check endpoints
 app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

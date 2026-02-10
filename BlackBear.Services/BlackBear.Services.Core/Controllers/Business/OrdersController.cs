@@ -1,8 +1,10 @@
 using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.DTOs.Business;
+using BlackBear.Services.Core.Hubs;
 using BlackBear.Services.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlackBear.Services.Core.Controllers.Business
@@ -14,11 +16,13 @@ namespace BlackBear.Services.Core.Controllers.Business
     {
         private readonly BlackBearDbContext _context;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IHubContext<BeachHub> _hubContext;
 
-        public OrdersController(BlackBearDbContext context, ICurrentUserService currentUserService)
+        public OrdersController(BlackBearDbContext context, ICurrentUserService currentUserService, IHubContext<BeachHub> hubContext)
         {
             _context = context;
             _currentUserService = currentUserService;
+            _hubContext = hubContext;
         }
 
         // GET: api/business/orders?venueId=1&status=Pending&zoneId=1
@@ -261,6 +265,7 @@ namespace BlackBear.Services.Core.Controllers.Business
                 return BadRequest($"Cannot transition from '{order.Status}' to '{request.Status}'");
             }
 
+            var oldStatus = order.Status;
             order.Status = request.Status;
             order.UpdatedAt = DateTime.UtcNow;
 
@@ -277,6 +282,15 @@ namespace BlackBear.Services.Core.Controllers.Business
             }
 
             await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.All.SendAsync("OrderStatusChanged", new
+            {
+                orderId = order.Id,
+                orderNumber = order.OrderNumber,
+                oldStatus,
+                newStatus = order.Status,
+                updatedAt = order.UpdatedAt
+            });
 
             return Ok(new { order.Id, order.Status, order.UpdatedAt });
         }
