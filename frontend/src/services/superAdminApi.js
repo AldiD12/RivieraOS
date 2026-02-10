@@ -447,7 +447,7 @@ export const dashboardApi = {
 
 // Units Management APIs - SuperAdmin endpoints
 export const unitApi = {
-  // GET /api/superadmin/venues/{venueId}/units - Get units for a venue
+  // GET /api/superadmin/venues/{venueId}/Units - Get units for a venue
   getByVenue: async (venueId, filters = {}) => {
     const params = new URLSearchParams();
     if (filters.zoneId) params.append('zoneId', filters.zoneId);
@@ -456,64 +456,64 @@ export const unitApi = {
     
     const queryString = params.toString();
     const url = queryString 
-      ? `/superadmin/venues/${venueId}/units?${queryString}` 
-      : `/superadmin/venues/${venueId}/units`;
+      ? `/superadmin/venues/${venueId}/Units?${queryString}` 
+      : `/superadmin/venues/${venueId}/Units`;
     
     const response = await superAdminApi.get(url);
     return response.data;
   },
 
-  // GET /api/superadmin/venues/{venueId}/units/stats - Get unit statistics
+  // GET /api/superadmin/venues/{venueId}/Units/stats - Get unit statistics
   getStats: async (venueId) => {
-    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/units/stats`);
+    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/Units/stats`);
     return response.data;
   },
 
-  // GET /api/superadmin/venues/{venueId}/units/{id} - Get unit details
+  // GET /api/superadmin/venues/{venueId}/Units/{id} - Get unit details
   getById: async (venueId, unitId) => {
-    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/units/${unitId}`);
+    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/Units/${unitId}`);
     return response.data;
   },
 
-  // GET /api/superadmin/venues/{venueId}/units/by-qr/{qrCode} - Get unit by QR code
+  // GET /api/superadmin/venues/{venueId}/Units/by-qr/{qrCode} - Get unit by QR code
   getByQrCode: async (venueId, qrCode) => {
-    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/units/by-qr/${qrCode}`);
+    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/Units/by-qr/${qrCode}`);
     return response.data;
   },
 
-  // POST /api/superadmin/venues/{venueId}/units - Create unit
+  // POST /api/superadmin/venues/{venueId}/Units - Create unit
   create: async (venueId, unitData) => {
-    const response = await superAdminApi.post(`/superadmin/venues/${venueId}/units`, unitData);
+    const response = await superAdminApi.post(`/superadmin/venues/${venueId}/Units`, unitData);
     return response.data;
   },
 
-  // POST /api/superadmin/venues/{venueId}/units/bulk - Bulk create units
+  // POST /api/superadmin/venues/{venueId}/Units/bulk - Bulk create units
   bulkCreate: async (venueId, bulkData) => {
-    const response = await superAdminApi.post(`/superadmin/venues/${venueId}/units/bulk`, bulkData);
+    const response = await superAdminApi.post(`/superadmin/venues/${venueId}/Units/bulk`, bulkData);
     return response.data;
   },
 
-  // PUT /api/superadmin/venues/{venueId}/units/{id} - Update unit
+  // PUT /api/superadmin/venues/{venueId}/Units/{id} - Update unit
   update: async (venueId, unitId, unitData) => {
-    const response = await superAdminApi.put(`/superadmin/venues/${venueId}/units/${unitId}`, unitData);
+    const response = await superAdminApi.put(`/superadmin/venues/${venueId}/Units/${unitId}`, unitData);
     return response.data;
   },
 
-  // PUT /api/superadmin/venues/{venueId}/units/{id}/status - Update unit status
+  // PUT /api/superadmin/venues/{venueId}/Units/{id}/status - Update unit status
   updateStatus: async (venueId, unitId, statusData) => {
-    const response = await superAdminApi.put(`/superadmin/venues/${venueId}/units/${unitId}/status`, statusData);
+    const response = await superAdminApi.put(`/superadmin/venues/${venueId}/Units/${unitId}/status`, statusData);
     return response.data;
   },
 
-  // DELETE /api/superadmin/venues/{venueId}/units/{id} - Delete unit (soft delete)
+  // DELETE /api/superadmin/venues/{venueId}/Units/{id} - Delete unit (soft delete)
   delete: async (venueId, unitId) => {
-    const response = await superAdminApi.delete(`/superadmin/venues/${venueId}/units/${unitId}`);
+    const response = await superAdminApi.delete(`/superadmin/venues/${venueId}/Units/${unitId}`);
     return response.data;
   },
 
-  // POST /api/superadmin/venues/{venueId}/units/{id}/restore - Restore deleted unit
+  // POST /api/superadmin/venues/{venueId}/Units/{id}/restore - Restore deleted unit
   restore: async (venueId, unitId) => {
-    const response = await superAdminApi.post(`/superadmin/venues/${venueId}/units/${unitId}/restore`);
+    const response = await superAdminApi.post(`/superadmin/venues/${venueId}/Units/${unitId}/restore`);
     return response.data;
   }
 };
