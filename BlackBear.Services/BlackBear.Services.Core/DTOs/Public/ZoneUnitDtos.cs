@@ -14,6 +14,14 @@ namespace BlackBear.Services.Core.DTOs.Public
         public int? PositionY { get; set; }
     }
 
+    // Compact venue info included in zone responses
+    public class PublicVenueInfoDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Type { get; set; }
+    }
+
     // Zone with available units count
     public class PublicZoneAvailabilityDto
     {
@@ -23,6 +31,7 @@ namespace BlackBear.Services.Core.DTOs.Public
         public decimal BasePrice { get; set; }
         public int TotalUnits { get; set; }
         public int AvailableUnits { get; set; }
+        public PublicVenueInfoDto? Venue { get; set; }
         public List<PublicZoneUnitDto> Units { get; set; } = new();
     }
 
@@ -80,6 +89,18 @@ namespace BlackBear.Services.Core.DTOs.Public
         public string? GuestName { get; set; }
         public int GuestCount { get; set; }
         public string Message { get; set; } = string.Empty;
+    }
+
+    // Full venue detail for public endpoint
+    public class PublicVenueDetailDto
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string? Type { get; set; }
+        public string? Description { get; set; }
+        public string? Address { get; set; }
+        public string? ImageUrl { get; set; }
+        public bool OrderingEnabled { get; set; }
     }
 
     // Check reservation status response

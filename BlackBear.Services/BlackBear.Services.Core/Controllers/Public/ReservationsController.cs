@@ -62,6 +62,13 @@ namespace BlackBear.Services.Core.Controllers.Public
                 .Distinct()
                 .ToListAsync();
 
+            var venueInfo = new PublicVenueInfoDto
+            {
+                Id = venue.Id,
+                Name = venue.Name,
+                Type = venue.Type
+            };
+
             var zoneAvailability = zones.Select(zone =>
             {
                 var zoneUnits = units.Where(u => u.VenueZoneId == zone.Id).ToList();
@@ -74,6 +81,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                     TotalUnits = zoneUnits.Count,
                     AvailableUnits = zoneUnits.Count(u =>
                         u.Status == "Available" && !reservedUnitIds.Contains(u.Id)),
+                    Venue = venueInfo,
                     Units = zoneUnits
                         .Where(u => u.Status != "Maintenance")
                         .OrderBy(u => u.UnitCode)
@@ -147,6 +155,13 @@ namespace BlackBear.Services.Core.Controllers.Public
                 .Select(g => new { ZoneId = g.Key, Reserved = g.Count() })
                 .ToListAsync();
 
+            var venueInfo = new PublicVenueInfoDto
+            {
+                Id = venue.Id,
+                Name = venue.Name,
+                Type = venue.Type
+            };
+
             var result = zones.Select(zone =>
             {
                 var counts = unitCounts.FirstOrDefault(c => c.ZoneId == zone.Id);
@@ -159,7 +174,8 @@ namespace BlackBear.Services.Core.Controllers.Public
                     ZoneType = zone.ZoneType,
                     BasePrice = zone.BasePrice,
                     TotalUnits = counts?.Total ?? 0,
-                    AvailableUnits = Math.Max(0, (counts?.Available ?? 0) - reserved)
+                    AvailableUnits = Math.Max(0, (counts?.Available ?? 0) - reserved),
+                    Venue = venueInfo
                 };
             }).ToList();
 
