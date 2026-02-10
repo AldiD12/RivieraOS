@@ -2,647 +2,18 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { businessApi, staffApi, venueApi, zoneApi, categoryApi, productApi } from '../services/superAdminApi.js';
+import { CreateVenueModal, EditVenueModal } from '../components/dashboard/modals/VenueModals.jsx';
+import { CreateZoneModal, EditZoneModal } from '../components/dashboard/modals/ZoneModals.jsx';
+import { CreateStaffModal, EditStaffModal, ResetPasswordModal } from '../components/dashboard/modals/StaffModals.jsx';
+import { CreateBusinessModal, EditBusinessModal } from '../components/dashboard/modals/BusinessModals.jsx';
+import { CreateCategoryModal, EditCategoryModal } from '../components/dashboard/modals/CategoryModals.jsx';
+import { CreateProductModal, EditProductModal } from '../components/dashboard/modals/ProductModals.jsx';
 
 // Utility function to normalize phone numbers (match backend format)
 const normalizePhoneNumber = (phone) => {
   if (!phone) return '';
   return phone.replace(/[\s\-\(\)\+]/g, '');
 };
-
-// Staff Modal Components - Defined OUTSIDE to prevent re-creation on every render
-const CreateStaffModal = ({ 
-  isOpen, 
-  onClose, 
-  staffForm, 
-  onFormChange, 
-  onSubmit 
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Add Staff Member</h2>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={staffForm.email}
-                  onChange={(e) => onFormChange('email', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter email address"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Password *
-                </label>
-                <input
-                  type="password"
-                  required
-                  minLength="6"
-                  value={staffForm.password}
-                  onChange={(e) => onFormChange('password', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter password (min 6 characters)"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={staffForm.phoneNumber}
-                  onChange={(e) => onFormChange('phoneNumber', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter phone number"
-                />
-                <p className="text-xs text-zinc-500 mt-1">Primary identifier for staff login</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={staffForm.fullName}
-                  onChange={(e) => onFormChange('fullName', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter full name"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  PIN Code *
-                </label>
-                <input
-                  type="text"
-                  required
-                  maxLength="4"
-                  pattern="[0-9]{4}"
-                  value={staffForm.pin}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    if (value.length <= 4) {
-                      onFormChange('pin', value);
-                    }
-                  }}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none font-mono text-center text-lg tracking-widest"
-                  placeholder="0000"
-                />
-                <p className="text-xs text-zinc-500 mt-1">4-digit PIN for staff login</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Role *
-                </label>
-                <select
-                  required
-                  value={staffForm.role}
-                  onChange={(e) => onFormChange('role', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                >
-                  <option value="">Select role</option>
-                  <option value="Manager">Manager</option>
-                  <option value="Bartender">Bartender</option>
-                  <option value="Collector">Collector</option>
-                </select>
-                <p className="text-xs text-zinc-500 mt-1">
-                  ✅ Backend roles: Manager, Bartender, Collector (aligned with backend)
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="createStaffIsActive"
-                checked={staffForm.isActive}
-                onChange={(e) => onFormChange('isActive', e.target.checked)}
-                className="mr-2"
-              />
-              <label htmlFor="createStaffIsActive" className="text-sm text-zinc-300">
-                Active Staff Member
-              </label>
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
-              >
-                Add Staff Member
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-
-const EditStaffModal = ({ 
-  isOpen, 
-  onClose, 
-  staffForm, 
-  onFormChange, 
-  onSubmit 
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Edit Staff Member</h2>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={staffForm.email}
-                  onChange={(e) => onFormChange('email', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter email address"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Phone Number *
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={staffForm.phoneNumber}
-                  onChange={(e) => onFormChange('phoneNumber', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter phone number"
-                />
-                <p className="text-xs text-zinc-500 mt-1">Primary identifier for staff login</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={staffForm.fullName}
-                  onChange={(e) => onFormChange('fullName', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter full name"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  PIN Code (leave blank to keep current)
-                </label>
-                <input
-                  type="text"
-                  maxLength="4"
-                  pattern="[0-9]{4}"
-                  value={staffForm.pin}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    if (value.length <= 4) {
-                      onFormChange('pin', value);
-                    }
-                  }}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none font-mono text-center text-lg tracking-widest"
-                  placeholder="0000"
-                />
-                <p className="text-xs text-zinc-500 mt-1">Leave blank to keep existing PIN</p>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Role *
-                </label>
-                <select
-                  required
-                  value={staffForm.role}
-                  onChange={(e) => onFormChange('role', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                >
-                  <option value="">Select role</option>
-                  <option value="Manager">Manager</option>
-                  <option value="Bartender">Bartender</option>
-                  <option value="Collector">Collector</option>
-                </select>
-                <p className="text-xs text-zinc-500 mt-1">
-                  ✅ Backend roles: Manager, Bartender, Collector (aligned with backend)
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="editStaffIsActive"
-                checked={staffForm.isActive}
-                onChange={(e) => onFormChange('isActive', e.target.checked)}
-                className="mr-2"
-              />
-              <label htmlFor="editStaffIsActive" className="text-sm text-zinc-300">
-                Active Staff Member
-              </label>
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Update Staff Member
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-
-const ResetPasswordModal = ({ 
-  isOpen, 
-  onClose, 
-  staffMember,
-  newPassword,
-  onPasswordChange,
-  onSubmit 
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-md"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Reset Password</h2>
-          
-          <div className="mb-4">
-            <p className="text-zinc-300 text-sm">
-              Reset password for: <strong>{staffMember?.fullName || staffMember?.email}</strong>
-            </p>
-          </div>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                New Password *
-              </label>
-              <input
-                type="password"
-                required
-                minLength="6"
-                value={newPassword}
-                onChange={(e) => onPasswordChange(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                placeholder="Enter new password (min 6 characters)"
-              />
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-              >
-                Reset Password
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-
-// Business Modal Components
-const CreateBusinessModal = ({ 
-  isOpen, 
-  onClose, 
-  businessForm, 
-  onFormChange, 
-  onSubmit 
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Create New Business</h2>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Registered Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={businessForm.registeredName}
-                  onChange={(e) => onFormChange('registeredName', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter registered business name"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Brand Name
-                </label>
-                <input
-                  type="text"
-                  value={businessForm.brandName}
-                  onChange={(e) => onFormChange('brandName', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter brand name"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Tax ID
-                </label>
-                <input
-                  type="text"
-                  value={businessForm.taxId}
-                  onChange={(e) => onFormChange('taxId', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter tax ID"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Contact Email *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={businessForm.contactEmail}
-                  onChange={(e) => onFormChange('contactEmail', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter contact email"
-                />
-              </div>
-              
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Logo URL
-                </label>
-                <input
-                  type="url"
-                  value={businessForm.logoUrl}
-                  onChange={(e) => onFormChange('logoUrl', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter logo URL"
-                />
-              </div>
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={businessForm.isActive}
-                onChange={(e) => onFormChange('isActive', e.target.checked)}
-                className="mr-2"
-              />
-              <label htmlFor="isActive" className="text-sm text-zinc-300">
-                Active Business
-              </label>
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
-              >
-                Create Business
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-
-const EditBusinessModal = ({ 
-  isOpen, 
-  onClose, 
-  businessForm, 
-  onFormChange, 
-  onSubmit 
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Edit Business</h2>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Registered Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={businessForm.registeredName}
-                  onChange={(e) => onFormChange('registeredName', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Brand Name
-                </label>
-                <input
-                  type="text"
-                  value={businessForm.brandName}
-                  onChange={(e) => onFormChange('brandName', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Tax ID
-                </label>
-                <input
-                  type="text"
-                  value={businessForm.taxId}
-                  onChange={(e) => onFormChange('taxId', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Contact Email *
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={businessForm.contactEmail}
-                  onChange={(e) => onFormChange('contactEmail', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Logo URL
-                </label>
-                <input
-                  type="url"
-                  value={businessForm.logoUrl}
-                  onChange={(e) => onFormChange('logoUrl', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="editBusinessIsActive"
-                checked={businessForm.isActive}
-                onChange={(e) => onFormChange('isActive', e.target.checked)}
-                className="mr-2"
-              />
-              <label htmlFor="editBusinessIsActive" className="text-sm text-zinc-300">
-                Active Business
-              </label>
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Update Business
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
 
 // Business Tab Component - Extracted outside
 const BusinessTab = ({ 
@@ -2218,43 +1589,218 @@ export default function SuperAdminDashboard() {
           />
         );
       case 'venues':
+        if (!selectedBusiness) {
+          return (
+            <div className="text-center py-12">
+              <p className="text-zinc-400 text-lg mb-4">Please select a business first</p>
+              <button
+                onClick={() => setActiveTab('businesses')}
+                className="px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Go to Businesses
+              </button>
+            </div>
+          );
+        }
+        
         return (
-          <VenuesTab
-            selectedBusiness={selectedBusiness}
-            venues={venues}
-            selectedVenue={selectedVenue}
-            zones={zones}
-            onVenueSelect={handleVenueSelect}
-            onCreateVenue={() => setShowCreateVenueModal(true)}
-            onEditVenue={(venue) => {
-              setEditingVenue(venue);
-              setVenueForm({
-                name: venue.name || '',
-                type: venue.type || '',
-                location: venue.location || '',
-                description: venue.description || '',
-                capacity: venue.capacity || 0,
-                isActive: venue.isActive
-              });
-              setShowEditVenueModal(true);
-            }}
-            onDeleteVenue={handleDeleteVenue}
-            onCreateZone={() => setShowCreateZoneModal(true)}
-            onEditZone={(zone) => {
-              setEditingZone(zone);
-              setZoneForm({
-                name: zone.name || '',
-                type: zone.type || '',
-                description: zone.description || '',
-                capacity: zone.capacity || 0,
-                sortOrder: zone.sortOrder || 0,
-                isActive: zone.isActive
-              });
-              setShowEditZoneModal(true);
-            }}
-            onDeleteZone={handleDeleteZone}
-            loading={venuesLoading}
-          />
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Venues & Zones</h2>
+                <p className="text-zinc-400">
+                  Business: {selectedBusiness.brandName || selectedBusiness.registeredName}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCreateVenueModal(true)}
+                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                + Create Venue
+              </button>
+            </div>
+
+            {venuesLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Venues Column */}
+                <div>
+                  <div className="bg-zinc-800 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Venues</h3>
+                    <div className="space-y-3">
+                      {venues.map((venue) => (
+                        <div
+                          key={venue.id}
+                          className={`p-4 rounded cursor-pointer transition-colors ${
+                            selectedVenue?.id === venue.id 
+                              ? 'bg-blue-600 text-white' 
+                              : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                          }`}
+                          onClick={() => handleVenueSelect(venue)}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h4 className="font-medium">{venue.name}</h4>
+                              {venue.type && <p className="text-sm opacity-75">{venue.type}</p>}
+                            </div>
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              venue.isActive 
+                                ? 'bg-green-900 text-green-300' 
+                                : 'bg-red-900 text-red-300'
+                            }`}>
+                              {venue.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                          
+                          {venue.address && (
+                            <p className="text-sm opacity-75 mb-2">{venue.address}</p>
+                          )}
+                          
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">
+                              {venue.orderingEnabled ? '🛒 Ordering' : '🚫 No Ordering'}
+                            </span>
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/admin/venues/${venue.id}/mapper`);
+                                }}
+                                className="text-purple-400 hover:text-purple-300 text-sm"
+                                title="Visual Mapper"
+                              >
+                                🗺️
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingVenue(venue);
+                                  setVenueForm({
+                                    name: venue.name,
+                                    type: venue.type || '',
+                                    description: venue.description || '',
+                                    address: venue.address || '',
+                                    imageUrl: venue.imageUrl || '',
+                                    latitude: venue.latitude,
+                                    longitude: venue.longitude,
+                                    orderingEnabled: venue.orderingEnabled
+                                  });
+                                }}
+                                className="text-blue-400 hover:text-blue-300 text-sm"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm(`Delete "${venue.name}"?`)) {
+                                    handleDeleteVenue(venue.id);
+                                  }
+                                }}
+                                className="text-red-400 hover:text-red-300 text-sm"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {venues.length === 0 && (
+                      <p className="text-zinc-400 text-sm">No venues found. Create one to get started.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Zones Column */}
+                <div>
+                  <div className="bg-zinc-800 rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-white">
+                        Zones {selectedVenue && `- ${selectedVenue.name}`}
+                      </h3>
+                      {selectedVenue && (
+                        <button
+                          onClick={() => setShowCreateZoneModal(true)}
+                          className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+                        >
+                          + Zone
+                        </button>
+                      )}
+                    </div>
+
+                    {!selectedVenue ? (
+                      <p className="text-zinc-400 text-sm">Select a venue to view zones</p>
+                    ) : zonesLoading ? (
+                      <div className="flex justify-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {zones.map((zone) => (
+                          <div key={zone.id} className="p-4 bg-zinc-700 rounded">
+                            <div className="flex justify-between items-start mb-2">
+                              <div>
+                                <h4 className="font-medium text-white">{zone.name}</h4>
+                                <p className="text-sm text-zinc-400">{zone.zoneType}</p>
+                              </div>
+                              <div className="flex space-x-2">
+                                <button
+                                  onClick={() => navigate(`/admin/zones/${zone.id}/units`)}
+                                  className="text-green-400 hover:text-green-300 text-sm"
+                                  title="Manage Units"
+                                >
+                                  📋 Units
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingZone(zone);
+                                    setZoneForm({
+                                      name: zone.name,
+                                      zoneType: zone.zoneType || '',
+                                      capacityPerUnit: zone.capacityPerUnit || 1,
+                                      basePrice: zone.basePrice || 0,
+                                      prefix: zone.prefix || ''
+                                    });
+                                  }}
+                                  className="text-blue-400 hover:text-blue-300 text-sm"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (window.confirm(`Delete zone "${zone.name}"?`)) {
+                                      handleDeleteZone(zone.id);
+                                    }
+                                  }}
+                                  className="text-red-400 hover:text-red-300 text-sm"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                              <p>Capacity: {zone.capacityPerUnit} per unit</p>
+                              <p>Base Price: €{zone.basePrice}</p>
+                              {zone.units && <p>Units: {zone.units.length}</p>}
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {zones.length === 0 && (
+                          <p className="text-zinc-400 text-sm">No zones found. Create one to get started.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         );
       default:
         return null;
@@ -2475,1037 +2021,3 @@ export default function SuperAdminDashboard() {
   );
 }
 
-// Category Modal Components
-const CreateCategoryModal = ({ 
-  isOpen, 
-  onClose, 
-  categoryForm, 
-  onFormChange, 
-  onSubmit 
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-md"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Create Category</h2>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Category Name *
-              </label>
-              <input
-                type="text"
-                required
-                value={categoryForm.name}
-                onChange={(e) => onFormChange('name', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                placeholder="Enter category name"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Sort Order
-              </label>
-              <input
-                type="number"
-                value={categoryForm.sortOrder}
-                onChange={(e) => onFormChange('sortOrder', parseInt(e.target.value) || 0)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                placeholder="0"
-              />
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="categoryIsActive"
-                checked={categoryForm.isActive}
-                onChange={(e) => onFormChange('isActive', e.target.checked)}
-                className="mr-2"
-              />
-              <label htmlFor="categoryIsActive" className="text-sm text-zinc-300">
-                Active Category
-              </label>
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
-              >
-                Create Category
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-
-const EditCategoryModal = ({ 
-  isOpen, 
-  onClose, 
-  categoryForm, 
-  onFormChange, 
-  onSubmit 
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-md"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Edit Category</h2>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Category Name *
-              </label>
-              <input
-                type="text"
-                required
-                value={categoryForm.name}
-                onChange={(e) => onFormChange('name', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Sort Order
-              </label>
-              <input
-                type="number"
-                value={categoryForm.sortOrder}
-                onChange={(e) => onFormChange('sortOrder', parseInt(e.target.value) || 0)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-              />
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="editCategoryIsActive"
-                checked={categoryForm.isActive}
-                onChange={(e) => onFormChange('isActive', e.target.checked)}
-                className="mr-2"
-              />
-              <label htmlFor="editCategoryIsActive" className="text-sm text-zinc-300">
-                Active Category
-              </label>
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Update Category
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-
-// Product Modal Components
-const CreateProductModal = ({ 
-  isOpen, 
-  onClose, 
-  productForm, 
-  onFormChange, 
-  onSubmit 
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Create Product</h2>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Product Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={productForm.name}
-                  onChange={(e) => onFormChange('name', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter product name"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Price *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  required
-                  value={productForm.price}
-                  onChange={(e) => onFormChange('price', parseFloat(e.target.value) || 0)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="0.00"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Old Price
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={productForm.oldPrice || ''}
-                  onChange={(e) => onFormChange('oldPrice', e.target.value ? parseFloat(e.target.value) : null)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="0.00"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Image URL
-                </label>
-                <input
-                  type="url"
-                  value={productForm.imageUrl}
-                  onChange={(e) => onFormChange('imageUrl', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Description
-              </label>
-              <textarea
-                value={productForm.description}
-                onChange={(e) => onFormChange('description', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                rows="3"
-                placeholder="Enter product description"
-              />
-            </div>
-            
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="productIsAvailable"
-                  checked={productForm.isAvailable}
-                  onChange={(e) => onFormChange('isAvailable', e.target.checked)}
-                  className="mr-2"
-                />
-                <label htmlFor="productIsAvailable" className="text-sm text-zinc-300">
-                  Available
-                </label>
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="productIsAlcohol"
-                  checked={productForm.isAlcohol}
-                  onChange={(e) => onFormChange('isAlcohol', e.target.checked)}
-                  className="mr-2"
-                />
-                <label htmlFor="productIsAlcohol" className="text-sm text-zinc-300">
-                  Contains Alcohol
-                </label>
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
-              >
-                Create Product
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-
-const EditProductModal = ({ 
-  isOpen, 
-  onClose, 
-  productForm, 
-  onFormChange, 
-  onSubmit 
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Edit Product</h2>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Product Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={productForm.name}
-                  onChange={(e) => onFormChange('name', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Price *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  required
-                  value={productForm.price}
-                  onChange={(e) => onFormChange('price', parseFloat(e.target.value) || 0)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Old Price
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={productForm.oldPrice || ''}
-                  onChange={(e) => onFormChange('oldPrice', e.target.value ? parseFloat(e.target.value) : null)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Image URL
-                </label>
-                <input
-                  type="url"
-                  value={productForm.imageUrl}
-                  onChange={(e) => onFormChange('imageUrl', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Description
-              </label>
-              <textarea
-                value={productForm.description}
-                onChange={(e) => onFormChange('description', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                rows="3"
-              />
-            </div>
-            
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="editProductIsAvailable"
-                  checked={productForm.isAvailable}
-                  onChange={(e) => onFormChange('isAvailable', e.target.checked)}
-                  className="mr-2"
-                />
-                <label htmlFor="editProductIsAvailable" className="text-sm text-zinc-300">
-                  Available
-                </label>
-              </div>
-              
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="editProductIsAlcohol"
-                  checked={productForm.isAlcohol}
-                  onChange={(e) => onFormChange('isAlcohol', e.target.checked)}
-                  className="mr-2"
-                />
-                <label htmlFor="editProductIsAlcohol" className="text-sm text-zinc-300">
-                  Contains Alcohol
-                </label>
-              </div>
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Update Product
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-
-// Venue Modal Components
-const CreateVenueModal = ({ 
-  isOpen, 
-  onClose, 
-  venueForm, 
-  onFormChange, 
-  onSubmit 
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Create Venue</h2>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Venue Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={venueForm.name}
-                  onChange={(e) => onFormChange('name', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter venue name"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Venue Type *
-                </label>
-                <select
-                  required
-                  value={venueForm.type || ''}
-                  onChange={(e) => onFormChange('type', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                >
-                  <option value="">Select venue type...</option>
-                  <option value="BEACH">Beach</option>
-                  <option value="POOL">Pool</option>
-                  <option value="RESTAURANT">Restaurant</option>
-                  <option value="BAR">Bar</option>
-                  <option value="CAFE">Cafe</option>
-                  <option value="OTHER">Other</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  value={venueForm.location}
-                  onChange={(e) => onFormChange('location', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter location"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Capacity
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={venueForm.capacity}
-                  onChange={(e) => onFormChange('capacity', parseInt(e.target.value) || 0)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="0"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Description
-              </label>
-              <textarea
-                value={venueForm.description}
-                onChange={(e) => onFormChange('description', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                rows="3"
-                placeholder="Enter venue description"
-              />
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="venueIsActive"
-                checked={venueForm.isActive}
-                onChange={(e) => onFormChange('isActive', e.target.checked)}
-                className="mr-2"
-              />
-              <label htmlFor="venueIsActive" className="text-sm text-zinc-300">
-                Active Venue
-              </label>
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
-              >
-                Create Venue
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-
-const EditVenueModal = ({ 
-  isOpen, 
-  onClose, 
-  venueForm, 
-  onFormChange, 
-  onSubmit 
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Edit Venue</h2>
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Venue Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={venueForm.name}
-                  onChange={(e) => onFormChange('name', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Venue Type *
-                </label>
-                <select
-                  required
-                  value={venueForm.type || ''}
-                  onChange={(e) => onFormChange('type', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                >
-                  <option value="">Select venue type...</option>
-                  <option value="BEACH">Beach</option>
-                  <option value="POOL">Pool</option>
-                  <option value="RESTAURANT">Restaurant</option>
-                  <option value="BAR">Bar</option>
-                  <option value="CAFE">Cafe</option>
-                  <option value="OTHER">Other</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  value={venueForm.location}
-                  onChange={(e) => onFormChange('location', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Capacity
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={venueForm.capacity}
-                  onChange={(e) => onFormChange('capacity', parseInt(e.target.value) || 0)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Description
-              </label>
-              <textarea
-                value={venueForm.description}
-                onChange={(e) => onFormChange('description', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                rows="3"
-              />
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="editVenueIsActive"
-                checked={venueForm.isActive}
-                onChange={(e) => onFormChange('isActive', e.target.checked)}
-                className="mr-2"
-              />
-              <label htmlFor="editVenueIsActive" className="text-sm text-zinc-300">
-                Active Venue
-              </label>
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Update Venue
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-
-// Zone Modal Components
-const CreateZoneModal = ({ 
-  isOpen, 
-  onClose, 
-  zoneForm, 
-  onFormChange, 
-  onSubmit,
-  selectedVenue
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Create Zone</h2>
-          
-          {selectedVenue && (
-            <div className="mb-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
-              <p className="text-blue-400 text-sm">
-                🏖️ This zone will be created inside: <strong>{selectedVenue.name}</strong>
-              </p>
-              <p className="text-blue-300 text-xs mt-1">
-                Venue ID: {selectedVenue.id} • Type: {selectedVenue.type || 'Venue'}
-              </p>
-            </div>
-          )}
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Zone Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={zoneForm.name}
-                  onChange={(e) => onFormChange('name', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="Enter zone name"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Zone Type
-                </label>
-                <select
-                  value={zoneForm.type}
-                  onChange={(e) => onFormChange('type', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                >
-                  <option value="">Select type</option>
-                  <option value="Dining">Dining Area</option>
-                  <option value="Seating">Seating Area</option>
-                  <option value="Sunbed">Sunbed Area</option>
-                  <option value="Bar">Bar Area</option>
-                  <option value="VIP">VIP Section</option>
-                  <option value="Service">Service Area</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Capacity
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={zoneForm.capacity}
-                  onChange={(e) => onFormChange('capacity', parseInt(e.target.value) || 0)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="0"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Sort Order
-                </label>
-                <input
-                  type="number"
-                  value={zoneForm.sortOrder}
-                  onChange={(e) => onFormChange('sortOrder', parseInt(e.target.value) || 0)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="0"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Description
-              </label>
-              <textarea
-                value={zoneForm.description}
-                onChange={(e) => onFormChange('description', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                rows="3"
-                placeholder="Enter zone description"
-              />
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="zoneIsActive"
-                checked={zoneForm.isActive}
-                onChange={(e) => onFormChange('isActive', e.target.checked)}
-                className="mr-2"
-              />
-              <label htmlFor="zoneIsActive" className="text-sm text-zinc-300">
-                Active Zone
-              </label>
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
-              >
-                Create Zone
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
-
-const EditZoneModal = ({ 
-  isOpen, 
-  onClose, 
-  zoneForm, 
-  onFormChange, 
-  onSubmit,
-  selectedVenue
-}) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-zinc-900 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <h2 className="text-xl font-bold text-white mb-6">Edit Zone</h2>
-          
-          {selectedVenue && (
-            <div className="mb-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
-              <p className="text-blue-400 text-sm">
-                🏖️ This zone belongs to: <strong>{selectedVenue.name}</strong>
-              </p>
-              <p className="text-blue-300 text-xs mt-1">
-                Venue ID: {selectedVenue.id} • Type: {selectedVenue.type || 'Venue'}
-              </p>
-            </div>
-          )}
-          
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Zone Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={zoneForm.name}
-                  onChange={(e) => onFormChange('name', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Zone Type
-                </label>
-                <select
-                  value={zoneForm.type}
-                  onChange={(e) => onFormChange('type', e.target.value)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                >
-                  <option value="">Select type</option>
-                  <option value="Dining">Dining Area</option>
-                  <option value="Seating">Seating Area</option>
-                  <option value="Sunbed">Sunbed Area</option>
-                  <option value="Bar">Bar Area</option>
-                  <option value="VIP">VIP Section</option>
-                  <option value="Service">Service Area</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Capacity
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={zoneForm.capacity}
-                  onChange={(e) => onFormChange('capacity', parseInt(e.target.value) || 0)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Sort Order
-                </label>
-                <input
-                  type="number"
-                  value={zoneForm.sortOrder}
-                  onChange={(e) => onFormChange('sortOrder', parseInt(e.target.value) || 0)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Description
-              </label>
-              <textarea
-                value={zoneForm.description}
-                onChange={(e) => onFormChange('description', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                rows="3"
-              />
-            </div>
-            
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="editZoneIsActive"
-                checked={zoneForm.isActive}
-                onChange={(e) => onFormChange('isActive', e.target.checked)}
-                className="mr-2"
-              />
-              <label htmlFor="editZoneIsActive" className="text-sm text-zinc-300">
-                Active Zone
-              </label>
-            </div>
-            
-            <div className="flex justify-end space-x-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-              >
-                Update Zone
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);

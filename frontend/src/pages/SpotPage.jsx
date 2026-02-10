@@ -50,23 +50,24 @@ export default function SpotPage() {
       const menuData = await menuResponse.json();
       setMenu(menuData);
 
-      // Fetch venue details to get venue type
+      // Fetch venue details to get venue type (NEW: Prof Kristi implemented this!)
       let venueType = 'OTHER'; // default
       let venueName = menuData[0]?.venueName || 'Venue';
       
       try {
-        // Try to fetch venue details from public reservations endpoint
+        // NEW: Backend now returns venue: { id, name, type } on each zone
         const zonesResponse = await fetch(`${API_URL}/public/Reservations/zones?venueId=${venueId}`);
         if (zonesResponse.ok) {
           const zonesData = await zonesResponse.json();
-          // The zones endpoint might include venue info
+          // Each zone now includes venue info with type!
           if (zonesData.length > 0 && zonesData[0].venue) {
             venueType = zonesData[0].venue.type || 'OTHER';
             venueName = zonesData[0].venue.name || venueName;
+            console.log('✅ Venue type loaded from backend:', venueType);
           }
         }
       } catch (err) {
-        console.log('Could not fetch venue details:', err);
+        console.warn('Could not fetch venue details, defaulting to OTHER:', err);
       }
 
       // Set venue info
