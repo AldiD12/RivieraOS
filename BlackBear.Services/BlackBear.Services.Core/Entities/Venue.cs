@@ -30,6 +30,10 @@ namespace BlackBear.Services.Core.Entities
         [Column("image_url")]
         public string? ImageUrl { get; set; }
 
+        [MaxLength(255)]
+        [Column("google_place_id")]
+        public string? GooglePlaceId { get; set; }
+
         // Spatial data (simple doubles for now)
         [Column("latitude")]
         public double? Latitude { get; set; }

@@ -48,6 +48,9 @@ namespace BlackBear.Services.Core.Data
         public DbSet<ZoneUnit> ZoneUnits { get; set; }
         public DbSet<ZoneUnitBooking> ZoneUnitBookings { get; set; }
 
+        // Feedback schema entities
+        public DbSet<Review> Reviews { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -112,6 +115,13 @@ namespace BlackBear.Services.Core.Data
                 (_currentUserService == null ||
                  _currentUserService.BusinessId == null ||
                  zub.BusinessId == _currentUserService.BusinessId));
+
+            // Review: soft delete + multi-tenancy
+            modelBuilder.Entity<Review>().HasQueryFilter(r =>
+                !r.IsDeleted &&
+                (_currentUserService == null ||
+                 _currentUserService.BusinessId == null ||
+                 r.BusinessId == _currentUserService.BusinessId));
 
 
             // === CORE MODULE ===
@@ -298,6 +308,41 @@ namespace BlackBear.Services.Core.Data
                     .WithOne(zub => zub.ZoneUnit)
                     .HasForeignKey(zub => zub.ZoneUnitId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // === FEEDBACK MODULE ===
+
+            // Review configuration
+            modelBuilder.Entity<Review>(entity =>
+            {
+                entity.HasOne(r => r.Venue)
+                    .WithMany()
+                    .HasForeignKey(r => r.VenueId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.Business)
+                    .WithMany()
+                    .HasForeignKey(r => r.BusinessId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(r => r.User)
+                    .WithMany()
+                    .HasForeignKey(r => r.UserId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(r => r.Order)
+                    .WithMany()
+                    .HasForeignKey(r => r.OrderId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasOne(r => r.Booking)
+                    .WithMany()
+                    .HasForeignKey(r => r.BookingId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasIndex(r => r.VenueId);
+                entity.HasIndex(r => r.Rating);
+                entity.HasIndex(r => r.CreatedAt);
             });
 
             // ZoneUnitBooking configuration
