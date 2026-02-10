@@ -91,7 +91,8 @@ export default function BusinessAdminDashboard() {
     name: '',
     zoneType: '',
     capacityPerUnit: 1,
-    basePrice: 0
+    basePrice: 0,
+    prefix: ''
   });
 
   // Authentication check
@@ -604,7 +605,8 @@ export default function BusinessAdminDashboard() {
         name: '',
         zoneType: '',
         capacityPerUnit: 1,
-        basePrice: 0
+        basePrice: 0,
+        prefix: ''
       });
       setShowCreateZoneModal(false);
       
@@ -2156,10 +2158,42 @@ export default function BusinessAdminDashboard() {
                     type="text"
                     required
                     value={zoneForm.name}
-                    onChange={(e) => setZoneForm(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      // Auto-generate prefix from zone name
+                      const autoPrefix = name
+                        .split(' ')
+                        .map(word => word.charAt(0).toUpperCase())
+                        .join('')
+                        .slice(0, 3); // Max 3 characters
+                      
+                      setZoneForm(prev => ({ 
+                        ...prev, 
+                        name: name,
+                        prefix: autoPrefix 
+                      }));
+                    }}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="e.g., VIP Section, Pool Area"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                    Unit Prefix * <span className="text-zinc-500 text-xs">(auto-generated, editable)</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength="3"
+                    value={zoneForm.prefix}
+                    onChange={(e) => setZoneForm(prev => ({ ...prev, prefix: e.target.value.toUpperCase() }))}
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none font-mono"
+                    placeholder="e.g., VIP, PA, A"
+                  />
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Units will be named: {zoneForm.prefix || 'XXX'}-1, {zoneForm.prefix || 'XXX'}-2, etc.
+                  </p>
                 </div>
 
                 <div>
