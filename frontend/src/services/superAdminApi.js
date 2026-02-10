@@ -445,9 +445,10 @@ export const dashboardApi = {
   }
 };
 
-// Units Management APIs - SuperAdmin endpoints
+// Units Management APIs - TEMPORARY: Using Business endpoints until SuperAdmin endpoints are deployed
+// TODO: Switch back to /api/superadmin/venues/{venueId}/Units once Prof Kristi deploys SuperAdmin UnitsController
 export const unitApi = {
-  // GET /api/superadmin/venues/{venueId}/Units - Get units for a venue
+  // GET /api/business/venues/{venueId}/Units - Get units for a venue
   getByVenue: async (venueId, filters = {}) => {
     const params = new URLSearchParams();
     if (filters.zoneId) params.append('zoneId', filters.zoneId);
@@ -456,65 +457,65 @@ export const unitApi = {
     
     const queryString = params.toString();
     const url = queryString 
-      ? `/superadmin/venues/${venueId}/Units?${queryString}` 
-      : `/superadmin/venues/${venueId}/Units`;
+      ? `/business/venues/${venueId}/Units?${queryString}` 
+      : `/business/venues/${venueId}/Units`;
     
     const response = await superAdminApi.get(url);
     return response.data;
   },
 
-  // GET /api/superadmin/venues/{venueId}/Units/stats - Get unit statistics
+  // GET /api/business/venues/{venueId}/Units/stats - Get unit statistics
   getStats: async (venueId) => {
-    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/Units/stats`);
+    const response = await superAdminApi.get(`/business/venues/${venueId}/Units/stats`);
     return response.data;
   },
 
-  // GET /api/superadmin/venues/{venueId}/Units/{id} - Get unit details
+  // GET /api/business/venues/{venueId}/Units/{id} - Get unit details
   getById: async (venueId, unitId) => {
-    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/Units/${unitId}`);
+    const response = await superAdminApi.get(`/business/venues/${venueId}/Units/${unitId}`);
     return response.data;
   },
 
-  // GET /api/superadmin/venues/{venueId}/Units/by-qr/{qrCode} - Get unit by QR code
+  // GET /api/business/venues/{venueId}/Units/by-qr/{qrCode} - Get unit by QR code
   getByQrCode: async (venueId, qrCode) => {
-    const response = await superAdminApi.get(`/superadmin/venues/${venueId}/Units/by-qr/${qrCode}`);
+    const response = await superAdminApi.get(`/business/venues/${venueId}/Units/by-qr/${qrCode}`);
     return response.data;
   },
 
-  // POST /api/superadmin/venues/{venueId}/Units - Create unit
+  // POST /api/business/venues/{venueId}/Units - Create unit
   create: async (venueId, unitData) => {
-    const response = await superAdminApi.post(`/superadmin/venues/${venueId}/Units`, unitData);
+    const response = await superAdminApi.post(`/business/venues/${venueId}/Units`, unitData);
     return response.data;
   },
 
-  // POST /api/superadmin/venues/{venueId}/Units/bulk - Bulk create units
+  // POST /api/business/venues/{venueId}/Units/bulk - Bulk create units
   bulkCreate: async (venueId, bulkData) => {
-    const response = await superAdminApi.post(`/superadmin/venues/${venueId}/Units/bulk`, bulkData);
+    const response = await superAdminApi.post(`/business/venues/${venueId}/Units/bulk`, bulkData);
     return response.data;
   },
 
-  // PUT /api/superadmin/venues/{venueId}/Units/{id} - Update unit
+  // PUT /api/business/venues/{venueId}/Units/{id} - Update unit
   update: async (venueId, unitId, unitData) => {
-    const response = await superAdminApi.put(`/superadmin/venues/${venueId}/Units/${unitId}`, unitData);
+    const response = await superAdminApi.put(`/business/venues/${venueId}/Units/${unitId}`, unitData);
     return response.data;
   },
 
-  // PUT /api/superadmin/venues/{venueId}/Units/{id}/status - Update unit status
+  // PUT /api/business/venues/{venueId}/Units/{id}/status - Update unit status
   updateStatus: async (venueId, unitId, statusData) => {
-    const response = await superAdminApi.put(`/superadmin/venues/${venueId}/Units/${unitId}/status`, statusData);
+    const response = await superAdminApi.put(`/business/venues/${venueId}/Units/${unitId}/status`, statusData);
     return response.data;
   },
 
-  // DELETE /api/superadmin/venues/{venueId}/Units/{id} - Delete unit (soft delete)
+  // DELETE /api/business/venues/{venueId}/Units/{id} - Delete unit (soft delete)
   delete: async (venueId, unitId) => {
-    const response = await superAdminApi.delete(`/superadmin/venues/${venueId}/Units/${unitId}`);
+    const response = await superAdminApi.delete(`/business/venues/${venueId}/Units/${unitId}`);
     return response.data;
   },
 
-  // POST /api/superadmin/venues/{venueId}/Units/{id}/restore - Restore deleted unit
+  // POST /api/business/venues/{venueId}/Units/{id}/restore - Restore deleted unit (NOT AVAILABLE in business endpoints)
   restore: async (venueId, unitId) => {
-    const response = await superAdminApi.post(`/superadmin/venues/${venueId}/Units/${unitId}/restore`);
-    return response.data;
+    console.warn('⚠️ Restore endpoint not available in Business API - requires SuperAdmin endpoints');
+    throw new Error('Restore functionality requires SuperAdmin endpoints to be deployed');
   }
 };
 
