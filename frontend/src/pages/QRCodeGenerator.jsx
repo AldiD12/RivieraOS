@@ -30,7 +30,9 @@ export default function QRCodeGenerator() {
 
   const fetchZones = async (venueId) => {
     try {
+      console.log('Fetching zones for venue:', venueId);
       const zonesData = await businessApi.zones.list(venueId);
+      console.log('Zones data:', zonesData);
       setZones(Array.isArray(zonesData) ? zonesData : []);
     } catch (err) {
       console.error('Error fetching zones:', err);
@@ -163,34 +165,43 @@ export default function QRCodeGenerator() {
                   <h3 className="text-lg font-bold mb-4 text-zinc-300">
                     {zone.name} - {zone.zoneType}
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                    {zone.units?.map((unit) => (
-                      <div
-                        key={unit.id}
-                        className="bg-zinc-900 rounded-lg p-4 border border-zinc-700"
-                      >
-                        <div className="bg-white p-4 rounded-lg mb-3">
-                          <QRCodeSVG
-                            id={`qr-${unit.unitLabel}`}
-                            value={getSpotUrl(selectedVenue.id, zone.id, unit.unitLabel)}
-                            size={150}
-                            level="H"
-                            includeMargin={true}
-                          />
+                  {!zone.units || zone.units.length === 0 ? (
+                    <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-8 text-center">
+                      <p className="text-zinc-400 mb-2">No units in this zone yet.</p>
+                      <p className="text-sm text-zinc-500">
+                        Go to Business Dashboard → Venues → {selectedVenue.name} → {zone.name} → Create Units
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                      {zone.units.map((unit) => (
+                        <div
+                          key={unit.id}
+                          className="bg-zinc-900 rounded-lg p-4 border border-zinc-700"
+                        >
+                          <div className="bg-white p-4 rounded-lg mb-3">
+                            <QRCodeSVG
+                              id={`qr-${unit.unitLabel}`}
+                              value={getSpotUrl(selectedVenue.id, zone.id, unit.unitLabel)}
+                              size={150}
+                              level="H"
+                              includeMargin={true}
+                            />
+                          </div>
+                          <div className="text-center">
+                            <p className="font-bold text-lg mb-1">{unit.unitLabel}</p>
+                            <p className="text-sm text-zinc-400 mb-3">{zone.name}</p>
+                            <button
+                              onClick={() => handleDownloadQR(unit.unitLabel, selectedVenue.id, zone.id)}
+                              className="text-xs px-3 py-1 bg-zinc-700 hover:bg-zinc-600 rounded transition-colors"
+                            >
+                              Download PNG
+                            </button>
+                          </div>
                         </div>
-                        <div className="text-center">
-                          <p className="font-bold text-lg mb-1">{unit.unitLabel}</p>
-                          <p className="text-sm text-zinc-400 mb-3">{zone.name}</p>
-                          <button
-                            onClick={() => handleDownloadQR(unit.unitLabel, selectedVenue.id, zone.id)}
-                            className="text-xs px-3 py-1 bg-zinc-700 hover:bg-zinc-600 rounded transition-colors"
-                          >
-                            Download PNG
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
