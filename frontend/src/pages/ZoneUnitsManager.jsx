@@ -15,7 +15,7 @@ export default function ZoneUnitsManager() {
   
   // Bulk create form
   const [bulkForm, setBulkForm] = useState({
-    prefix: '',
+    prefix: 'A',
     startNumber: 1,
     count: 10,
     unitType: 'Sunbed',
@@ -82,7 +82,7 @@ export default function ZoneUnitsManager() {
           body: JSON.stringify({
             venueZoneId: parseInt(zoneId),
             unitType: bulkForm.unitType,
-            prefix: bulkForm.prefix,
+            prefix: bulkForm.prefix || 'U', // Default to 'U' if empty
             startNumber: bulkForm.startNumber,
             count: bulkForm.count,
             basePrice: bulkForm.basePrice
@@ -100,7 +100,7 @@ export default function ZoneUnitsManager() {
       
       setShowBulkCreate(false);
       setBulkForm({
-        prefix: '',
+        prefix: 'A',
         startNumber: 1,
         count: 10,
         unitType: 'Sunbed',
@@ -271,16 +271,18 @@ export default function ZoneUnitsManager() {
                 </div>
 
                 <div>
-                  <label className="block text-sm text-zinc-400 mb-2">Prefix (optional)</label>
+                  <label className="block text-sm text-zinc-400 mb-2">Prefix *</label>
                   <input
                     type="text"
                     value={bulkForm.prefix}
                     onChange={(e) => setBulkForm({ ...bulkForm, prefix: e.target.value })}
                     placeholder="e.g., A, VIP, POOL"
+                    required
+                    maxLength={10}
                     className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-zinc-600"
                   />
                   <p className="text-xs text-zinc-500 mt-1">
-                    Example: Prefix "A" + Start 1 = A1, A2, A3...
+                    Required. Example: Prefix "A" + Start 1 = A1, A2, A3...
                   </p>
                 </div>
 
