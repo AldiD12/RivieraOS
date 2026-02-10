@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { businessApi, staffApi, venueApi, zoneApi, categoryApi, productApi, adminUsersApi, authApi, dashboardApi } from '../services/superAdminApi.js';
+import { businessApi, staffApi, venueApi, zoneApi, categoryApi, productApi } from '../services/superAdminApi.js';
 
 // Utility function to normalize phone numbers (match backend format)
 const normalizePhoneNumber = (phone) => {
@@ -1213,8 +1214,10 @@ const VenuesTab = ({
 
 // Main SuperAdminDashboard Component
 export default function SuperAdminDashboard() {
+  const navigate = useNavigate();
+  
   // Core state
-  const [activeTab, setActiveTab] = useState('businesses');
+  const [activeTab, setActiveTab] = useState('overview');
   const [businesses, setBusinesses] = useState([]);
   const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -1991,6 +1994,140 @@ export default function SuperAdminDashboard() {
   // Memoized tab content to prevent unnecessary re-renders
   const tabContent = useMemo(() => {
     switch (activeTab) {
+      case 'overview':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold text-white">Platform Overview</h2>
+            
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
+                <h3 className="text-lg font-medium mb-2 text-zinc-300">Total Businesses</h3>
+                <p className="text-3xl font-bold text-blue-400">
+                  {businesses.length}
+                </p>
+              </div>
+              <div className="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
+                <h3 className="text-lg font-medium mb-2 text-zinc-300">Active Businesses</h3>
+                <p className="text-3xl font-bold text-green-400">
+                  {businesses.filter(b => b.isActive).length}
+                </p>
+              </div>
+              <div className="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
+                <h3 className="text-lg font-medium mb-2 text-zinc-300">Total Staff</h3>
+                <p className="text-3xl font-bold text-purple-400">
+                  {staffMembers.length}
+                </p>
+              </div>
+              <div className="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
+                <h3 className="text-lg font-medium mb-2 text-zinc-300">Total Venues</h3>
+                <p className="text-3xl font-bold text-amber-400">
+                  {venues.length}
+                </p>
+              </div>
+            </div>
+
+            {/* Quick Access Section */}
+            <div className="mt-8">
+              <h3 className="text-lg font-semibold mb-4 text-white">Quick Access</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button
+                  onClick={() => navigate('/bar')}
+                  className="bg-zinc-900 hover:bg-zinc-800 border-2 border-zinc-800 hover:border-zinc-700 rounded-lg p-6 text-left transition-all"
+                >
+                  <div className="text-2xl mb-2">🍹</div>
+                  <h4 className="text-lg font-semibold mb-1 text-white">Bar Display</h4>
+                  <p className="text-sm text-zinc-400">Kitchen/Bar order queue screen</p>
+                </button>
+                
+                <button
+                  onClick={() => navigate('/collector')}
+                  className="bg-zinc-900 hover:bg-zinc-800 border-2 border-zinc-800 hover:border-zinc-700 rounded-lg p-6 text-left transition-all"
+                >
+                  <div className="text-2xl mb-2">🏖️</div>
+                  <h4 className="text-lg font-semibold mb-1 text-white">Collector Dashboard</h4>
+                  <p className="text-sm text-zinc-400">Manage bookings and reservations</p>
+                </button>
+                
+                <button
+                  onClick={() => setActiveTab('qr-generator')}
+                  className="bg-zinc-900 hover:bg-zinc-800 border-2 border-zinc-800 hover:border-zinc-700 rounded-lg p-6 text-left transition-all"
+                >
+                  <div className="text-2xl mb-2">📱</div>
+                  <h4 className="text-lg font-semibold mb-1 text-white">QR Code Generator</h4>
+                  <p className="text-sm text-zinc-400">Generate QR codes for zones</p>
+                </button>
+              </div>
+            </div>
+
+            {/* Business Selector Hint */}
+            {!selectedBusiness && (
+              <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 mt-6">
+                <p className="text-blue-300">
+                  💡 Select a business from the Businesses tab to manage its staff, menu, and venues.
+                </p>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'qr-generator':
+        if (!selectedBusiness) {
+          return (
+            <div className="text-center py-12">
+              <p className="text-zinc-400 text-lg mb-4">Please select a business first</p>
+              <button
+                onClick={() => setActiveTab('businesses')}
+                className="px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+              >
+                Go to Businesses
+              </button>
+            </div>
+          );
+        }
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-white">QR Code Generator</h2>
+                <p className="text-zinc-400 mt-1">
+                  Business: {selectedBusiness.brandName || selectedBusiness.registeredName}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-zinc-900 rounded-lg p-6 border border-zinc-800">
+              <p className="text-zinc-300 mb-4">
+                Generate QR codes for zones and units. Customers can scan these to access menus and make orders/bookings.
+              </p>
+              
+              {venues.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-zinc-400 mb-4">No venues found for this business</p>
+                  <button
+                    onClick={() => setActiveTab('venues')}
+                    className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                  >
+                    Create Venue First
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-zinc-500">
+                    Navigate to Venues & Zones tab to generate QR codes for specific zones and units.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab('venues')}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Go to Venues & Zones
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
       case 'businesses':
         return (
           <BusinessTab
@@ -2165,10 +2302,12 @@ export default function SuperAdminDashboard() {
         <div className="px-6">
           <nav className="flex space-x-8">
             {[
+              { id: 'overview', label: 'Overview' },
               { id: 'businesses', label: 'Businesses' },
               { id: 'staff', label: 'Staff Management' },
               { id: 'menu', label: 'Menu Management' },
-              { id: 'venues', label: 'Venues & Zones' }
+              { id: 'venues', label: 'Venues & Zones' },
+              { id: 'qr-generator', label: 'QR Codes' }
             ].map((tab) => (
               <button
                 key={tab.id}
