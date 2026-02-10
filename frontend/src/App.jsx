@@ -16,6 +16,7 @@ import QRCodeGenerator from './pages/QRCodeGenerator';
 import TestCronBookings from './pages/TestCronBookings';
 import SpotPage from './pages/SpotPage';
 import ZoneUnitsManager from './pages/ZoneUnitsManager';
+import SunbedMapper from './pages/SunbedMapper';
 import ProtectedRoute from './components/ProtectedRoute';
 import ApiStatus from './components/ApiStatus';
 
@@ -122,6 +123,16 @@ function App() {
           element={
             <ProtectedRoute role="Manager">
               <ZoneUnitsManager />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Sunbed Mapper - Manager Only */}
+        <Route 
+          path="/admin/venues/:venueId/mapper" 
+          element={
+            <ProtectedRoute role="Manager">
+              <SunbedMapper />
             </ProtectedRoute>
           } 
         />

@@ -1105,6 +1105,16 @@ export default function BusinessAdminDashboard() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  navigate(`/admin/venues/${venue.id}/mapper`);
+                                }}
+                                className="text-purple-400 hover:text-purple-300 text-sm"
+                                title="Visual Sunbed Mapper"
+                              >
+                                🗺️ Mapper
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   setEditingVenue(venue);
                                   setVenueForm({
                                     name: venue.name,
