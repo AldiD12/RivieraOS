@@ -33,7 +33,24 @@ export default function QRCodeGenerator() {
       console.log('Fetching zones for venue:', venueId);
       const zonesData = await businessApi.zones.list(venueId);
       console.log('Zones data:', zonesData);
-      setZones(Array.isArray(zonesData) ? zonesData : []);
+      
+      // Fetch units for each zone
+      const zonesWithUnits = await Promise.all(
+        zonesData.map(async (zone) => {
+          try {
+            const units = await businessApi.units.list(venueId);
+            // Filter units for this specific zone
+            const zoneUnits = units.filter(u => u.venueZoneId === zone.id);
+            return { ...zone, units: zoneUnits };
+          } catch (err) {
+            console.error(`Error fetching units for zone ${zone.id}:`, err);
+            return { ...zone, units: [] };
+          }
+        })
+      );
+      
+      console.log('Zones with units:', zonesWithUnits);
+      setZones(zonesWithUnits);
     } catch (err) {
       console.error('Error fetching zones:', err);
       setError('Failed to load zones');
