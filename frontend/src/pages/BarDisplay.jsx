@@ -1,23 +1,85 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle, AlertCircle, Wifi, WifiOff } from 'lucide-react';
 import { businessApi } from '../services/api';
+import { createConnection, startConnection } from '../services/signalr';
 
 export default function BarDisplay() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [connection, setConnection] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
 
+  // Initial fetch
   useEffect(() => {
     fetchOrders();
-    
-    // Auto-refresh every 10 seconds
-    const interval = setInterval(() => {
-      fetchOrders();
-    }, 10000);
-
-    return () => clearInterval(interval);
   }, []);
+
+  // Setup SignalR connection
+  useEffect(() => {
+    const newConnection = createConnection();
+    setConnection(newConnection);
+
+    return () => {
+      if (newConnection) {
+        newConnection.stop();
+      }
+    };
+  }, []);
+
+  // Start SignalR and listen for real-time updates
+  useEffect(() => {
+    if (connection) {
+      startConnection(connection)
+        .then((success) => {
+          if (success) {
+            setIsConnected(true);
+            console.log('🔴 Bar Display - SignalR Connected');
+
+            // Listen for new orders
+            connection.on('NewOrder', (order) => {
+              console.log('🆕 New order received:', order);
+              fetchOrders(); // Refresh list when new order arrives
+            });
+
+            // Listen for order status changes
+            connection.on('OrderStatusChanged', (data) => {
+              console.log('📝 Order status changed:', data);
+              fetchOrders(); // Refresh list when status changes
+            });
+          }
+        })
+        .catch((err) => {
+          console.error('SignalR connection failed:', err);
+          setIsConnected(false);
+        });
+
+      // Handle reconnection
+      connection.onreconnecting(() => {
+        console.log('🔄 SignalR reconnecting...');
+        setIsConnected(false);
+      });
+
+      connection.onreconnected(() => {
+        console.log('✅ SignalR reconnected');
+        setIsConnected(true);
+        fetchOrders(); // Refresh data after reconnection
+      });
+
+      connection.onclose(() => {
+        console.log('❌ SignalR disconnected');
+        setIsConnected(false);
+      });
+    }
+
+    return () => {
+      if (connection) {
+        connection.off('NewOrder');
+        connection.off('OrderStatusChanged');
+      }
+    };
+  }, [connection]);
 
   const fetchOrders = async () => {
     try {
@@ -137,6 +199,19 @@ export default function BarDisplay() {
           </p>
         </div>
         <div className="text-right">
+          <div className="flex items-center gap-3 mb-2">
+            {isConnected ? (
+              <>
+                <Wifi className="w-6 h-6 text-green-500" />
+                <span className="text-green-500 text-sm font-medium">LIVE</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-6 h-6 text-red-500" />
+                <span className="text-red-500 text-sm font-medium">OFFLINE</span>
+              </>
+            )}
+          </div>
           <div className="text-zinc-400 text-sm mb-1">Last Updated</div>
           <div className="text-white text-2xl font-mono">
             {lastUpdate.toLocaleTimeString()}
