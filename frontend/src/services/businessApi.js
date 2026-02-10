@@ -490,6 +490,122 @@ export const businessUnitApi = {
 };
 
 // =============================================================================
+// BUSINESS BOOKINGS API
+// =============================================================================
+
+export const businessBookingApi = {
+  // Get all bookings with optional filters
+  list: async (filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.venueId) params.append('venueId', filters.venueId);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.date) params.append('date', filters.date);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/business/Bookings?${queryString}` : '/business/Bookings';
+    
+    console.log('📤 Getting business bookings:', url);
+    const response = await api.get(url);
+    return response.data;
+  },
+
+  // Get booking details
+  get: async (bookingId) => {
+    console.log('📤 Getting business booking:', bookingId);
+    const response = await api.get(`/business/Bookings/${bookingId}`);
+    return response.data;
+  },
+
+  // Create new booking
+  create: async (bookingData) => {
+    console.log('📤 Creating business booking:', bookingData);
+    const response = await api.post('/business/Bookings', bookingData);
+    return response.data;
+  },
+
+  // Update booking
+  update: async (bookingId, bookingData) => {
+    console.log('📤 Updating business booking:', bookingId, bookingData);
+    const response = await api.put(`/business/Bookings/${bookingId}`, bookingData);
+    return response.data;
+  },
+
+  // Delete booking
+  delete: async (bookingId) => {
+    console.log('📤 Deleting business booking:', bookingId);
+    const response = await api.delete(`/business/Bookings/${bookingId}`);
+    return response.data;
+  },
+
+  // Update booking status
+  updateStatus: async (bookingId, status) => {
+    console.log('📤 Updating business booking status:', bookingId, status);
+    const response = await api.put(`/business/Bookings/${bookingId}/status`, { status });
+    return response.data;
+  },
+
+  // Check-in guest
+  checkIn: async (bookingId) => {
+    console.log('📤 Checking in business booking:', bookingId);
+    const response = await api.put(`/business/Bookings/${bookingId}/checkin`);
+    return response.data;
+  },
+
+  // Check-out guest
+  checkOut: async (bookingId) => {
+    console.log('📤 Checking out business booking:', bookingId);
+    const response = await api.put(`/business/Bookings/${bookingId}/checkout`);
+    return response.data;
+  }
+};
+
+// =============================================================================
+// BUSINESS ORDERS API
+// =============================================================================
+
+export const businessOrderApi = {
+  // Get all orders with optional filters
+  list: async (filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.venueId) params.append('venueId', filters.venueId);
+    if (filters.status) params.append('status', filters.status);
+    if (filters.zoneId) params.append('zoneId', filters.zoneId);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/business/Orders?${queryString}` : '/business/Orders';
+    
+    console.log('📤 Getting business orders:', url);
+    const response = await api.get(url);
+    return response.data;
+  },
+
+  // Get active orders
+  getActive: async (venueId = null) => {
+    const url = venueId 
+      ? `/business/Orders/active?venueId=${venueId}` 
+      : '/business/Orders/active';
+    
+    console.log('📤 Getting active business orders:', url);
+    const response = await api.get(url);
+    return response.data;
+  },
+
+  // Get order details
+  get: async (orderId) => {
+    console.log('📤 Getting business order:', orderId);
+    const response = await api.get(`/business/Orders/${orderId}`);
+    return response.data;
+  },
+
+  // Update order status
+  updateStatus: async (orderId, statusData) => {
+    console.log('📤 Updating business order status:', orderId, statusData);
+    const response = await api.put(`/business/Orders/${orderId}/status`, statusData);
+    return response.data;
+  }
+};
+
+// =============================================================================
 // BUSINESS DASHBOARD API
 // =============================================================================
 
@@ -511,5 +627,7 @@ export default {
   venues: businessVenueApi,
   zones: businessZoneApi,
   units: businessUnitApi,
+  bookings: businessBookingApi,
+  orders: businessOrderApi,
   dashboard: businessDashboardApi
 };
