@@ -618,6 +618,12 @@ export default function SuperAdminDashboard() {
   const [editingVenue, setEditingVenue] = useState(null);
   const [editingZone, setEditingZone] = useState(null);
   
+  // Units state
+  const [selectedZone, setSelectedZone] = useState(null);
+  const [units, setUnits] = useState([]);
+  const [unitsLoading, setUnitsLoading] = useState(false);
+  const [showBulkCreateModal, setShowBulkCreateModal] = useState(false);
+  
   // Business state
   const [editingBusiness, setEditingBusiness] = useState(null);
   
@@ -688,6 +694,14 @@ export default function SuperAdminDashboard() {
     capacity: 0,
     sortOrder: 0,
     isActive: true
+  });
+
+  const [bulkUnitForm, setBulkUnitForm] = useState({
+    prefix: '',
+    startNumber: 1,
+    count: 10,
+    unitType: 'Sunbed',
+    basePrice: 0
   });
 
   // Memoized form handlers to prevent re-renders
@@ -1362,6 +1376,69 @@ export default function SuperAdminDashboard() {
     }
   }, [selectedVenue]);
 
+  // Units Management Functions
+  const fetchUnitsForZone = useCallback(async (venueId, zoneId) => {
+    if (!venueId || !zoneId) return;
+    
+    setUnitsLoading(true);
+    try {
+      const unitData = await unitApi.getByVenue(venueId, { zoneId });
+      setUnits(Array.isArray(unitData) ? unitData : []);
+      setError('');
+    } catch (err) {
+      console.error('Error fetching units:', err);
+      setUnits([]);
+    } finally {
+      setUnitsLoading(false);
+    }
+  }, []);
+
+  const handleZoneSelect = useCallback((zone) => {
+    setSelectedZone(zone);
+    if (selectedVenue) {
+      fetchUnitsForZone(selectedVenue.id, zone.id);
+    }
+  }, [selectedVenue, fetchUnitsForZone]);
+
+  const handleBulkCreateUnits = useCallback(async (e) => {
+    e.preventDefault();
+    if (!selectedVenue || !selectedZone) return;
+    
+    try {
+      await unitApi.bulkCreate(selectedVenue.id, {
+        venueZoneId: selectedZone.id,
+        ...bulkUnitForm
+      });
+      setShowBulkCreateModal(false);
+      setBulkUnitForm({
+        prefix: '',
+        startNumber: 1,
+        count: 10,
+        unitType: 'Sunbed',
+        basePrice: 0
+      });
+      await fetchUnitsForZone(selectedVenue.id, selectedZone.id);
+      setError('');
+    } catch (err) {
+      console.error('Error bulk creating units:', err);
+      setError('Failed to create units: ' + (err.response?.data?.message || err.message));
+    }
+  }, [selectedVenue, selectedZone, bulkUnitForm, fetchUnitsForZone]);
+
+  const handleDeleteUnit = useCallback(async (unitId) => {
+    if (!selectedVenue || !selectedZone) return;
+    if (!confirm('Are you sure you want to delete this unit?')) return;
+    
+    try {
+      await unitApi.delete(selectedVenue.id, unitId);
+      await fetchUnitsForZone(selectedVenue.id, selectedZone.id);
+      setError('');
+    } catch (err) {
+      console.error('Error deleting unit:', err);
+      setError('Failed to delete unit: ' + (err.response?.data?.message || err.message));
+    }
+  }, [selectedVenue, selectedZone, fetchUnitsForZone]);
+
   // Memoized tab content to prevent unnecessary re-renders
   const tabContent = useMemo(() => {
     switch (activeTab) {
@@ -1625,7 +1702,7 @@ export default function SuperAdminDashboard() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Venues Column */}
                 <div>
                   <div className="bg-zinc-800 rounded-lg p-4">
@@ -1743,7 +1820,15 @@ export default function SuperAdminDashboard() {
                     ) : (
                       <div className="space-y-3">
                         {zones.map((zone) => (
-                          <div key={zone.id} className="p-4 bg-zinc-700 rounded">
+                          <div 
+                            key={zone.id} 
+                            className={`p-4 rounded cursor-pointer transition-colors ${
+                              selectedZone?.id === zone.id
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-zinc-700 hover:bg-zinc-600'
+                            }`}
+                            onClick={() => handleZoneSelect(zone)}
+                          >
                             <div className="flex justify-between items-start mb-2">
                               <div>
                                 <h4 className="font-medium text-white">{zone.name}</h4>
@@ -1751,14 +1836,8 @@ export default function SuperAdminDashboard() {
                               </div>
                               <div className="flex space-x-2">
                                 <button
-                                  onClick={() => navigate(`/admin/zones/${zone.id}/units`)}
-                                  className="text-green-400 hover:text-green-300 text-sm"
-                                  title="Manage Units"
-                                >
-                                  📋 Units
-                                </button>
-                                <button
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     setEditingZone(zone);
                                     setZoneForm({
                                       name: zone.name,
@@ -1774,7 +1853,8 @@ export default function SuperAdminDashboard() {
                                   Edit
                                 </button>
                                 <button
-                                  onClick={() => {
+                                  onClick={(e) => {
+                                    e.stopPropagation();
                                     if (window.confirm(`Delete zone "${zone.name}"?`)) {
                                       handleDeleteZone(zone.id);
                                     }
@@ -1800,6 +1880,78 @@ export default function SuperAdminDashboard() {
                     )}
                   </div>
                 </div>
+
+                {/* Units Column */}
+                <div>
+                  <div className="bg-zinc-800 rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-lg font-semibold text-white">
+                        Units {selectedZone && `- ${selectedZone.name}`}
+                      </h3>
+                      {selectedZone && (
+                        <button
+                          onClick={() => setShowBulkCreateModal(true)}
+                          className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
+                        >
+                          + Bulk Create
+                        </button>
+                      )}
+                    </div>
+
+                    {!selectedZone ? (
+                      <p className="text-zinc-400 text-sm">Select a zone to view units</p>
+                    ) : unitsLoading ? (
+                      <div className="flex justify-center py-4">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                        {units.map((unit) => (
+                          <div key={unit.id} className="p-3 bg-zinc-700 rounded text-sm">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-medium text-white">{unit.unitCode}</h4>
+                                <p className="text-xs text-zinc-400">{unit.unitType}</p>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className={`px-2 py-0.5 rounded text-xs ${
+                                  unit.status === 'Available' ? 'bg-green-900 text-green-300' :
+                                  unit.status === 'Occupied' ? 'bg-red-900 text-red-300' :
+                                  unit.status === 'Reserved' ? 'bg-yellow-900 text-yellow-300' :
+                                  'bg-gray-900 text-gray-300'
+                                }`}>
+                                  {unit.status}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    if (window.confirm(`Delete unit "${unit.unitCode}"?`)) {
+                                      handleDeleteUnit(unit.id);
+                                    }
+                                  }}
+                                  className="text-red-400 hover:text-red-300 text-xs"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            </div>
+                            <div className="mt-1 text-xs text-zinc-400">
+                              <p>Price: €{unit.basePrice}</p>
+                              {unit.currentBooking && (
+                                <p className="text-yellow-400">
+                                  Guest: {unit.currentBooking.guestName}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                        
+                        {units.length === 0 && (
+                          <p className="text-zinc-400 text-sm">No units found. Create some to get started.</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -1807,7 +1959,7 @@ export default function SuperAdminDashboard() {
       default:
         return null;
     }
-  }, [activeTab, businesses, selectedBusiness, staffMembers, categories, selectedCategory, products, venues, selectedVenue, zones, loading, staffLoading, isMenuLoading, productsLoading, venuesLoading, handleBusinessSelect, handleDeleteBusiness, handleDeleteStaff, handleToggleStaffActivation, handleCategorySelect, handleDeleteCategory, handleDeleteProduct, handleVenueSelect, handleDeleteVenue, handleDeleteZone]);
+  }, [activeTab, businesses, selectedBusiness, staffMembers, categories, selectedCategory, products, venues, selectedVenue, zones, selectedZone, units, loading, staffLoading, isMenuLoading, productsLoading, venuesLoading, unitsLoading, handleBusinessSelect, handleDeleteBusiness, handleDeleteStaff, handleToggleStaffActivation, handleCategorySelect, handleDeleteCategory, handleDeleteProduct, handleVenueSelect, handleDeleteVenue, handleDeleteZone, handleZoneSelect, handleDeleteUnit]);
 
   if (!userInfo) {
     return (
@@ -2019,6 +2171,113 @@ export default function SuperAdminDashboard() {
         onSubmit={handleUpdateZone}
         selectedVenue={selectedVenue}
       />
+
+      {/* Bulk Create Units Modal */}
+      {showBulkCreateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-zinc-900 rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-2xl font-bold text-white mb-4">Bulk Create Units</h2>
+            <form onSubmit={handleBulkCreateUnits} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Prefix
+                </label>
+                <input
+                  type="text"
+                  value={bulkUnitForm.prefix}
+                  onChange={(e) => setBulkUnitForm(prev => ({ ...prev, prefix: e.target.value }))}
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-white"
+                  placeholder="e.g., SB"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    Start Number
+                  </label>
+                  <input
+                    type="number"
+                    value={bulkUnitForm.startNumber}
+                    onChange={(e) => setBulkUnitForm(prev => ({ ...prev, startNumber: parseInt(e.target.value) }))}
+                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-white"
+                    min="1"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-300 mb-1">
+                    Count
+                  </label>
+                  <input
+                    type="number"
+                    value={bulkUnitForm.count}
+                    onChange={(e) => setBulkUnitForm(prev => ({ ...prev, count: parseInt(e.target.value) }))}
+                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-white"
+                    min="1"
+                    max="100"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Unit Type
+                </label>
+                <select
+                  value={bulkUnitForm.unitType}
+                  onChange={(e) => setBulkUnitForm(prev => ({ ...prev, unitType: e.target.value }))}
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-white"
+                  required
+                >
+                  <option value="Sunbed">Sunbed</option>
+                  <option value="Cabana">Cabana</option>
+                  <option value="Umbrella">Umbrella</option>
+                  <option value="Table">Table</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Base Price (€)
+                </label>
+                <input
+                  type="number"
+                  value={bulkUnitForm.basePrice}
+                  onChange={(e) => setBulkUnitForm(prev => ({ ...prev, basePrice: parseFloat(e.target.value) }))}
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-white"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+
+              <div className="text-sm text-zinc-400 bg-zinc-800 p-3 rounded">
+                <p>Will create: {bulkUnitForm.prefix}{bulkUnitForm.startNumber} to {bulkUnitForm.prefix}{bulkUnitForm.startNumber + bulkUnitForm.count - 1}</p>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowBulkCreateModal(false)}
+                  className="flex-1 px-4 py-2 bg-zinc-700 text-white rounded hover:bg-zinc-600 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                >
+                  Create Units
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
