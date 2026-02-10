@@ -16,12 +16,14 @@ export default function QRCodeGenerator() {
 
   const fetchVenues = async () => {
     try {
+      console.log('Fetching venues...');
       const venuesData = await businessApi.venues.list();
+      console.log('Venues data:', venuesData);
       setVenues(Array.isArray(venuesData) ? venuesData : []);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching venues:', err);
-      setError('Failed to load venues');
+      setError(`Failed to load venues: ${err.message}`);
       setLoading(false);
     }
   };
@@ -75,7 +77,25 @@ export default function QRCodeGenerator() {
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="text-white text-xl">Loading venues...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="bg-red-900/20 border border-red-500 text-red-300 px-6 py-4 rounded-lg mb-4">
+            {error}
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -100,22 +120,29 @@ export default function QRCodeGenerator() {
           {/* Venue Selection */}
           <div className="mb-8">
             <h2 className="text-xl font-bold mb-4">Select Venue</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {venues.map((venue) => (
-                <button
-                  key={venue.id}
-                  onClick={() => handleVenueSelect(venue)}
-                  className={`p-6 rounded-lg border-2 transition-all text-left ${
-                    selectedVenue?.id === venue.id
-                      ? 'border-white bg-zinc-800'
-                      : 'border-zinc-700 hover:border-zinc-500'
-                  }`}
-                >
-                  <h3 className="text-lg font-bold mb-2">{venue.name}</h3>
-                  <p className="text-sm text-zinc-400">{venue.type}</p>
-                </button>
-              ))}
-            </div>
+            {venues.length === 0 ? (
+              <div className="text-center py-12 text-zinc-400">
+                <p className="mb-4">No venues found.</p>
+                <p className="text-sm">Create a venue in the Business Dashboard first.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {venues.map((venue) => (
+                  <button
+                    key={venue.id}
+                    onClick={() => handleVenueSelect(venue)}
+                    className={`p-6 rounded-lg border-2 transition-all text-left ${
+                      selectedVenue?.id === venue.id
+                        ? 'border-white bg-zinc-800'
+                        : 'border-zinc-700 hover:border-zinc-500'
+                    }`}
+                  >
+                    <h3 className="text-lg font-bold mb-2">{venue.name}</h3>
+                    <p className="text-sm text-zinc-400">{venue.type}</p>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Zones and QR Codes */}
