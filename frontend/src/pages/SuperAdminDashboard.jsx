@@ -1905,50 +1905,85 @@ export default function SuperAdminDashboard() {
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                       </div>
                     ) : (
-                      <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                        {units.map((unit) => (
-                          <div key={unit.id} className="p-3 bg-zinc-700 rounded text-sm">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h4 className="font-medium text-white">{unit.unitCode}</h4>
-                                <p className="text-xs text-zinc-400">{unit.unitType}</p>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <span className={`px-2 py-0.5 rounded text-xs ${
-                                  unit.status === 'Available' ? 'bg-green-900 text-green-300' :
-                                  unit.status === 'Occupied' ? 'bg-red-900 text-red-300' :
-                                  unit.status === 'Reserved' ? 'bg-yellow-900 text-yellow-300' :
-                                  'bg-gray-900 text-gray-300'
-                                }`}>
-                                  {unit.status}
-                                </span>
-                                <button
-                                  onClick={() => {
-                                    if (window.confirm(`Delete unit "${unit.unitCode}"?`)) {
-                                      handleDeleteUnit(unit.id);
-                                    }
-                                  }}
-                                  className="text-red-400 hover:text-red-300 text-xs"
-                                >
-                                  ×
-                                </button>
-                              </div>
-                            </div>
-                            <div className="mt-1 text-xs text-zinc-400">
-                              <p>Price: €{unit.basePrice}</p>
-                              {unit.currentBooking && (
-                                <p className="text-yellow-400">
-                                  Guest: {unit.currentBooking.guestName}
-                                </p>
-                              )}
-                            </div>
+                      <>
+                        {/* Stats */}
+                        <div className="grid grid-cols-3 gap-2 mb-4">
+                          <div className="bg-zinc-900 rounded p-3">
+                            <p className="text-xs text-zinc-400">Total</p>
+                            <p className="text-2xl font-bold">{units.length}</p>
                           </div>
-                        ))}
-                        
-                        {units.length === 0 && (
-                          <p className="text-zinc-400 text-sm">No units found. Create some to get started.</p>
-                        )}
-                      </div>
+                          <div className="bg-zinc-900 rounded p-3">
+                            <p className="text-xs text-zinc-400">Available</p>
+                            <p className="text-2xl font-bold text-green-400">
+                              {units.filter(u => u.status === 'Available').length}
+                            </p>
+                          </div>
+                          <div className="bg-zinc-900 rounded p-3">
+                            <p className="text-xs text-zinc-400">Occupied</p>
+                            <p className="text-2xl font-bold text-blue-400">
+                              {units.filter(u => u.status === 'Occupied' || u.status === 'Reserved').length}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Units Grid */}
+                        <div className="max-h-[500px] overflow-y-auto">
+                          {units.length === 0 ? (
+                            <div className="text-center py-8">
+                              <p className="text-zinc-400 text-sm mb-3">No units created yet.</p>
+                              <button
+                                onClick={() => setShowBulkCreateModal(true)}
+                                className="px-4 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                              >
+                                Create First Units
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-2">
+                              {units.map((unit) => (
+                                <div
+                                  key={unit.id}
+                                  className="bg-zinc-700 rounded p-3 hover:bg-zinc-600 transition-colors"
+                                >
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                      <p className="font-bold text-white">{unit.unitCode}</p>
+                                      <p className="text-xs text-zinc-400">{unit.unitType}</p>
+                                    </div>
+                                    <button
+                                      onClick={() => {
+                                        if (window.confirm(`Delete unit "${unit.unitCode}"?`)) {
+                                          handleDeleteUnit(unit.id);
+                                        }
+                                      }}
+                                      className="text-red-400 hover:text-red-300 text-xs"
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                  
+                                  <div className="space-y-1">
+                                    <span className={`text-xs px-2 py-0.5 rounded inline-block ${
+                                      unit.status === 'Available' ? 'bg-green-900 text-green-300' :
+                                      unit.status === 'Occupied' ? 'bg-red-900 text-red-300' :
+                                      unit.status === 'Reserved' ? 'bg-yellow-900 text-yellow-300' :
+                                      'bg-gray-900 text-gray-300'
+                                    }`}>
+                                      {unit.status}
+                                    </span>
+                                    <p className="text-xs text-zinc-400">€{unit.basePrice}</p>
+                                    {unit.currentBooking && (
+                                      <p className="text-xs text-yellow-400 truncate">
+                                        {unit.currentBooking.guestName}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
@@ -2175,21 +2210,43 @@ export default function SuperAdminDashboard() {
       {/* Bulk Create Units Modal */}
       {showBulkCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-zinc-900 rounded-lg p-6 w-full max-w-md">
+          <div className="bg-zinc-900 rounded-lg p-6 w-full max-w-md border border-zinc-800">
             <h2 className="text-2xl font-bold text-white mb-4">Bulk Create Units</h2>
             <form onSubmit={handleBulkCreateUnits} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-1">
-                  Prefix
+                  Unit Type
+                </label>
+                <select
+                  value={bulkUnitForm.unitType}
+                  onChange={(e) => setBulkUnitForm(prev => ({ ...prev, unitType: e.target.value }))}
+                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-white"
+                  required
+                >
+                  <option value="Sunbed">Sunbed</option>
+                  <option value="Cabana">Cabana</option>
+                  <option value="Umbrella">Umbrella</option>
+                  <option value="Table">Table</option>
+                  <option value="Lounge">Lounge</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1">
+                  Prefix *
                 </label>
                 <input
                   type="text"
                   value={bulkUnitForm.prefix}
                   onChange={(e) => setBulkUnitForm(prev => ({ ...prev, prefix: e.target.value }))}
                   className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-white"
-                  placeholder="e.g., SB"
+                  placeholder="e.g., A, VIP, POOL"
                   required
+                  maxLength={10}
                 />
+                <p className="text-xs text-zinc-500 mt-1">
+                  Required. Example: Prefix "A" + Start 1 = A1, A2, A3...
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -2225,23 +2282,6 @@ export default function SuperAdminDashboard() {
 
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-1">
-                  Unit Type
-                </label>
-                <select
-                  value={bulkUnitForm.unitType}
-                  onChange={(e) => setBulkUnitForm(prev => ({ ...prev, unitType: e.target.value }))}
-                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-white"
-                  required
-                >
-                  <option value="Sunbed">Sunbed</option>
-                  <option value="Cabana">Cabana</option>
-                  <option value="Umbrella">Umbrella</option>
-                  <option value="Table">Table</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
                   Base Price (€)
                 </label>
                 <input
@@ -2255,11 +2295,17 @@ export default function SuperAdminDashboard() {
                 />
               </div>
 
-              <div className="text-sm text-zinc-400 bg-zinc-800 p-3 rounded">
-                <p>Will create: {bulkUnitForm.prefix}{bulkUnitForm.startNumber} to {bulkUnitForm.prefix}{bulkUnitForm.startNumber + bulkUnitForm.count - 1}</p>
+              <div className="bg-zinc-800 border border-zinc-700 rounded p-3">
+                <p className="text-sm text-zinc-400 mb-2">Preview:</p>
+                <p className="text-white font-mono text-sm">
+                  {bulkUnitForm.prefix}{bulkUnitForm.startNumber}, {bulkUnitForm.prefix}{bulkUnitForm.startNumber + 1}, {bulkUnitForm.prefix}{bulkUnitForm.startNumber + 2}...
+                </p>
+                <p className="text-xs text-zinc-500 mt-2">
+                  Will create {bulkUnitForm.count} units
+                </p>
               </div>
 
-              <div className="flex space-x-3">
+              <div className="flex space-x-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowBulkCreateModal(false)}
