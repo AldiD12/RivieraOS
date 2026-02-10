@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ShoppingCart, MapPin, Users, Clock, Check } from 'lucide-react';
+import { ShoppingCart, MapPin, Check } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
@@ -14,16 +14,13 @@ export default function SpotPage() {
   const unitId = searchParams.get('u');
 
   // State
-  const [activeTab, setActiveTab] = useState('order'); // 'order' or 'book'
   const [venue, setVenue] = useState(null);
   const [menu, setMenu] = useState([]);
-  const [unit, setUnit] = useState(null);
   const [cart, setCart] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [orderSuccess, setOrderSuccess] = useState(null);
-  const [bookingSuccess, setBookingSuccess] = useState(null);
-  const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [showReserveModal, setShowReserveModal] = useState(false);
 
   // Booking form state
   const [bookingForm, setBookingForm] = useState({
@@ -81,11 +78,6 @@ export default function SpotPage() {
         unitId: unitId
       });
 
-      // Show choice modal for beach/pool zones (not restaurants)
-      if (venueType === 'BEACH' || venueType === 'POOL') {
-        setShowChoiceModal(true);
-      }
-
       setLoading(false);
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -105,10 +97,6 @@ export default function SpotPage() {
     } else {
       setCart([...cart, { ...product, quantity: 1 }]);
     }
-  };
-
-  const removeFromCart = (productId) => {
-    setCart(cart.filter(item => item.id !== productId));
   };
 
   const updateQuantity = (productId, delta) => {
@@ -157,7 +145,7 @@ export default function SpotPage() {
     }
   };
 
-  const handleBooking = async (e) => {
+  const handleReservation = async (e) => {
     e.preventDefault();
     
     try {
@@ -178,15 +166,28 @@ export default function SpotPage() {
         body: JSON.stringify(bookingData)
       });
 
-      if (!response.ok) throw new Error('Failed to create booking');
+      if (!response.ok) throw new Error('Failed to create reservation');
       
       const result = await response.json();
-      setBookingSuccess(result);
+      alert(`Table reserved! Booking code: ${result.bookingCode}`);
+      setShowReserveModal(false);
+      setBookingForm({
+        guestName: '',
+        guestPhone: '',
+        guestEmail: '',
+        guestCount: 2,
+        notes: ''
+      });
     } catch (err) {
-      console.error('Error creating booking:', err);
-      setError('Failed to create booking. Please try again.');
+      console.error('Error creating reservation:', err);
+      setError('Failed to create reservation. Please try again.');
     }
   };
+
+  // Check if venue allows ordering (Beach/Pool only)
+  const canOrder = venue?.type === 'BEACH' || venue?.type === 'POOL';
+  // Check if venue allows table reservation (Beach/Pool only)
+  const canReserve = venue?.type === 'BEACH' || venue?.type === 'POOL';
 
   if (loading) {
     return (
@@ -212,134 +213,9 @@ export default function SpotPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-[#FAFAF9]">
-      {/* Choice Modal for Beach/Pool */}
-      {showChoiceModal && (venue?.type === 'BEACH' || venue?.type === 'POOL') && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-          <div className="bg-gradient-to-br from-white to-stone-50/50 rounded-[2rem] p-12 max-w-md w-full shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)] border border-stone-200/40">
-            <h2 className="font-['Cormorant_Garamond'] text-5xl font-light text-[#1C1917] mb-4 text-center">
-              Welcome
-            </h2>
-            <p className="text-lg text-[#57534E] text-center mb-8 leading-relaxed">
-              What would you like to do?
-            </p>
-            
-            <div className="space-y-4">
-              <button
-                onClick={() => {
-                  setActiveTab('order');
-                  setShowChoiceModal(false);
-                }}
-                className="w-full px-8 py-5 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
-              >
-                Order Food & Drinks
-              </button>
-              
-              <button
-                onClick={() => {
-                  setActiveTab('book');
-                  setShowChoiceModal(false);
-                }}
-                className="w-full px-8 py-5 border-2 border-stone-300 text-stone-700 rounded-full text-sm tracking-widest uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
-              >
-                Book Sunbed
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="bg-gradient-to-br from-white to-stone-50/50 border-b border-stone-200/40">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-3 mb-4">
-            <MapPin className="w-5 h-5 text-[#92400E]" />
-            <p className="text-sm tracking-widest uppercase text-[#78716C]">
-              {unitId ? `Unit ${unitId}` : 'Welcome'}
-            </p>
-          </div>
-          <h1 className="font-['Cormorant_Garamond'] text-6xl md:text-7xl font-light tracking-tighter leading-none text-[#1C1917]">
-            {venue?.name || 'Riviera'}
-          </h1>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="bg-white border-b border-stone-200/40 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex gap-8">
-            <button
-              onClick={() => setActiveTab('order')}
-              className={`py-6 text-sm tracking-widest uppercase transition-all duration-300 ${
-                activeTab === 'order'
-                  ? 'text-[#1C1917] border-b-2 border-stone-900'
-                  : 'text-[#78716C] hover:text-[#57534E]'
-              }`}
-            >
-              Order
-            </button>
-            
-            {/* Only show Book tab for Beach/Pool zones, not restaurants */}
-            {(venue?.type === 'BEACH' || venue?.type === 'POOL') && (
-              <button
-                onClick={() => setActiveTab('book')}
-                className={`py-6 text-sm tracking-widest uppercase transition-all duration-300 ${
-                  activeTab === 'book'
-                    ? 'text-[#1C1917] border-b-2 border-stone-900'
-                    : 'text-[#78716C] hover:text-[#57534E]'
-                }`}
-              >
-                Book Sunbed
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {activeTab === 'order' ? (
-          <OrderTab
-            menu={menu}
-            cart={cart}
-            addToCart={addToCart}
-            removeFromCart={removeFromCart}
-            updateQuantity={updateQuantity}
-            getTotalPrice={getTotalPrice}
-            handlePlaceOrder={handlePlaceOrder}
-            orderSuccess={orderSuccess}
-            bookingForm={bookingForm}
-            setBookingForm={setBookingForm}
-          />
-        ) : (
-          <BookTab
-            venue={venue}
-            unitId={unitId}
-            bookingForm={bookingForm}
-            setBookingForm={setBookingForm}
-            handleBooking={handleBooking}
-            bookingSuccess={bookingSuccess}
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Order Tab Component
-function OrderTab({ menu, cart, addToCart, removeFromCart, updateQuantity, getTotalPrice, handlePlaceOrder, orderSuccess, bookingForm, setBookingForm }) {
-  const [selectedCategory, setSelectedCategory] = useState(null);
-
-  useEffect(() => {
-    if (menu.length > 0 && !selectedCategory) {
-      setSelectedCategory(menu[0].id);
-    }
-  }, [menu]);
-
   if (orderSuccess) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center p-6">
         <div className="text-center max-w-md">
           <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
             <Check className="w-10 h-10 text-emerald-600" />
@@ -358,12 +234,140 @@ function OrderTab({ menu, cart, addToCart, removeFromCart, updateQuantity, getTo
     );
   }
 
+  return (
+    <div className="min-h-screen bg-[#FAFAF9]">
+      {/* Reservation Modal */}
+      {showReserveModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" onClick={() => setShowReserveModal(false)}>
+          <div className="bg-gradient-to-br from-white to-stone-50/50 rounded-[2rem] p-12 max-w-md w-full shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)] border border-stone-200/40" onClick={(e) => e.stopPropagation()}>
+            <h2 className="font-['Cormorant_Garamond'] text-4xl font-light text-[#1C1917] mb-6">
+              Reserve Table
+            </h2>
+            
+            <form onSubmit={handleReservation} className="space-y-4">
+              <input
+                type="text"
+                required
+                placeholder="Your Name *"
+                value={bookingForm.guestName}
+                onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })}
+                className="w-full px-6 py-4 rounded-full border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] focus:outline-none focus:border-stone-400"
+              />
+              
+              <input
+                type="tel"
+                required
+                placeholder="Phone Number *"
+                value={bookingForm.guestPhone}
+                onChange={(e) => setBookingForm({ ...bookingForm, guestPhone: e.target.value })}
+                className="w-full px-6 py-4 rounded-full border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] focus:outline-none focus:border-stone-400"
+              />
+              
+              <input
+                type="email"
+                placeholder="Email (optional)"
+                value={bookingForm.guestEmail}
+                onChange={(e) => setBookingForm({ ...bookingForm, guestEmail: e.target.value })}
+                className="w-full px-6 py-4 rounded-full border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] focus:outline-none focus:border-stone-400"
+              />
+              
+              <select
+                value={bookingForm.guestCount}
+                onChange={(e) => setBookingForm({ ...bookingForm, guestCount: parseInt(e.target.value) })}
+                className="w-full px-6 py-4 rounded-full border border-stone-300 text-[#1C1917] focus:outline-none focus:border-stone-400"
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
+                  <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
+                ))}
+              </select>
+              
+              <textarea
+                placeholder="Special requests (optional)"
+                value={bookingForm.notes}
+                onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                rows={2}
+                className="w-full px-6 py-4 rounded-2xl border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] focus:outline-none focus:border-stone-400 resize-none"
+              />
+              
+              <div className="flex gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowReserveModal(false)}
+                  className="flex-1 px-6 py-4 border-2 border-stone-300 text-stone-700 rounded-full text-sm tracking-widest uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-4 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
+                >
+                  Confirm
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="bg-gradient-to-br from-white to-stone-50/50 border-b border-stone-200/40">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="flex items-center gap-3 mb-4">
+            <MapPin className="w-5 h-5 text-[#92400E]" />
+            <p className="text-sm tracking-widest uppercase text-[#78716C]">
+              {unitId ? `Unit ${unitId}` : 'Welcome'}
+            </p>
+          </div>
+          <h1 className="font-['Cormorant_Garamond'] text-6xl md:text-7xl font-light tracking-tighter leading-none text-[#1C1917]">
+            {venue?.name || 'Riviera'}
+          </h1>
+          
+          {/* Reserve Table Button (Beach/Pool only) */}
+          {canReserve && (
+            <button
+              onClick={() => setShowReserveModal(true)}
+              className="mt-6 px-8 py-4 border-2 border-stone-900 text-stone-900 rounded-full text-sm tracking-widest uppercase hover:bg-stone-900 hover:text-stone-50 transition-all duration-300"
+            >
+              Reserve Table
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Menu Content */}
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <MenuDisplay 
+          menu={menu} 
+          cart={cart}
+          addToCart={addToCart}
+          updateQuantity={updateQuantity}
+          getTotalPrice={getTotalPrice}
+          handlePlaceOrder={handlePlaceOrder}
+          bookingForm={bookingForm}
+          setBookingForm={setBookingForm}
+          canOrder={canOrder}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Menu Display Component
+function MenuDisplay({ menu, cart, addToCart, updateQuantity, getTotalPrice, handlePlaceOrder, bookingForm, setBookingForm, canOrder }) {
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  useEffect(() => {
+    if (menu.length > 0 && !selectedCategory) {
+      setSelectedCategory(menu[0].id);
+    }
+  }, [menu]);
+
   const currentCategory = menu.find(cat => cat.id === selectedCategory);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
       {/* Menu */}
-      <div className="lg:col-span-2">
+      <div className={canOrder ? "lg:col-span-2" : "lg:col-span-3"}>
         {/* Category Tabs */}
         <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
           {menu.map(category => (
@@ -382,7 +386,7 @@ function OrderTab({ menu, cart, addToCart, removeFromCart, updateQuantity, getTo
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className={`grid gap-8 ${canOrder ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
           {currentCategory?.products?.map(product => (
             <div
               key={product.id}
@@ -409,236 +413,95 @@ function OrderTab({ menu, cart, addToCart, removeFromCart, updateQuantity, getTo
                 <span className="font-['Cormorant_Garamond'] text-3xl text-[#92400E]">
                   €{product.price.toFixed(2)}
                 </span>
-                <button
-                  onClick={() => addToCart(product)}
-                  className="px-6 py-3 border border-stone-300 text-stone-700 rounded-full text-sm tracking-wider uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
-                >
-                  Add
-                </button>
+                {canOrder && (
+                  <button
+                    onClick={() => addToCart(product)}
+                    className="px-6 py-3 border border-stone-300 text-stone-700 rounded-full text-sm tracking-wider uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
+                  >
+                    Add
+                  </button>
+                )}
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Cart Sidebar */}
-      <div className="lg:col-span-1">
-        <div className="bg-gradient-to-br from-white to-stone-50/50 rounded-[2rem] p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] border border-stone-200/40 sticky top-32">
-          <div className="flex items-center gap-3 mb-6">
-            <ShoppingCart className="w-5 h-5 text-[#92400E]" />
-            <h3 className="text-sm tracking-widest uppercase text-[#78716C]">Your Order</h3>
-          </div>
+      {/* Cart Sidebar (Beach/Pool only) */}
+      {canOrder && (
+        <div className="lg:col-span-1">
+          <div className="bg-gradient-to-br from-white to-stone-50/50 rounded-[2rem] p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] border border-stone-200/40 sticky top-32">
+            <div className="flex items-center gap-3 mb-6">
+              <ShoppingCart className="w-5 h-5 text-[#92400E]" />
+              <h3 className="text-sm tracking-widest uppercase text-[#78716C]">Your Order</h3>
+            </div>
 
-          {cart.length === 0 ? (
-            <p className="text-[#78716C] text-center py-8">Cart is empty</p>
-          ) : (
-            <>
-              <div className="space-y-4 mb-6">
-                {cart.map(item => (
-                  <div key={item.id} className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="text-[#1C1917] font-medium">{item.name}</p>
-                      <p className="text-sm text-[#78716C]">€{item.price.toFixed(2)}</p>
+            {cart.length === 0 ? (
+              <p className="text-[#78716C] text-center py-8">Cart is empty</p>
+            ) : (
+              <>
+                <div className="space-y-4 mb-6">
+                  {cart.map(item => (
+                    <div key={item.id} className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-[#1C1917] font-medium">{item.name}</p>
+                        <p className="text-sm text-[#78716C]">€{item.price.toFixed(2)}</p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => updateQuantity(item.id, -1)}
+                          className="w-8 h-8 rounded-full border border-stone-300 text-stone-700 hover:bg-stone-50 transition-colors"
+                        >
+                          −
+                        </button>
+                        <span className="w-8 text-center text-[#1C1917]">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.id, 1)}
+                          className="w-8 h-8 rounded-full border border-stone-300 text-stone-700 hover:bg-stone-50 transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => updateQuantity(item.id, -1)}
-                        className="w-8 h-8 rounded-full border border-stone-300 text-stone-700 hover:bg-stone-50 transition-colors"
-                      >
-                        −
-                      </button>
-                      <span className="w-8 text-center text-[#1C1917]">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.id, 1)}
-                        className="w-8 h-8 rounded-full border border-stone-300 text-stone-700 hover:bg-stone-50 transition-colors"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-stone-200/40 pt-6 mb-6">
-                <div className="flex justify-between items-center mb-6">
-                  <span className="text-sm tracking-widest uppercase text-[#78716C]">Total</span>
-                  <span className="font-['Cormorant_Garamond'] text-4xl text-[#92400E]">
-                    €{getTotalPrice().toFixed(2)}
-                  </span>
+                  ))}
                 </div>
 
-                <input
-                  type="text"
-                  placeholder="Your name (optional)"
-                  value={bookingForm.guestName}
-                  onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })}
-                  className="w-full px-4 py-3 rounded-full border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] mb-3 focus:outline-none focus:border-stone-400 transition-colors"
-                />
+                <div className="border-t border-stone-200/40 pt-6 mb-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <span className="text-sm tracking-widest uppercase text-[#78716C]">Total</span>
+                    <span className="font-['Cormorant_Garamond'] text-4xl text-[#92400E]">
+                      €{getTotalPrice().toFixed(2)}
+                    </span>
+                  </div>
 
-                <textarea
-                  placeholder="Special requests (optional)"
-                  value={bookingForm.notes}
-                  onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
-                  rows={2}
-                  className="w-full px-4 py-3 rounded-2xl border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] mb-4 focus:outline-none focus:border-stone-400 transition-colors resize-none"
-                />
-              </div>
+                  <input
+                    type="text"
+                    placeholder="Your name (optional)"
+                    value={bookingForm.guestName}
+                    onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })}
+                    className="w-full px-4 py-3 rounded-full border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] mb-3 focus:outline-none focus:border-stone-400 transition-colors"
+                  />
 
-              <button
-                onClick={handlePlaceOrder}
-                className="w-full px-8 py-4 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
-              >
-                Place Order
-              </button>
-            </>
-          )}
+                  <textarea
+                    placeholder="Special requests (optional)"
+                    value={bookingForm.notes}
+                    onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                    rows={2}
+                    className="w-full px-4 py-3 rounded-2xl border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] mb-4 focus:outline-none focus:border-stone-400 transition-colors resize-none"
+                  />
+                </div>
+
+                <button
+                  onClick={handlePlaceOrder}
+                  className="w-full px-8 py-4 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
+                >
+                  Place Order
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-// Book Tab Component
-function BookTab({ venue, unitId, bookingForm, setBookingForm, handleBooking, bookingSuccess }) {
-  // Context-aware text based on venue type
-  const getReservationText = () => {
-    if (venue?.type === 'RESTAURANT') {
-      return {
-        title: 'Reserve Your Table',
-        unit: `Table ${unitId}`,
-        success: 'Table Reserved',
-        successMessage: 'Your table has been reserved. We look forward to serving you!'
-      };
-    } else if (venue?.type === 'BEACH' || venue?.type === 'POOL') {
-      return {
-        title: 'Book Your Sunbed',
-        unit: `Sunbed ${unitId}`,
-        success: 'Sunbed Booked',
-        successMessage: 'Your sunbed has been reserved. Enjoy your day!'
-      };
-    } else {
-      return {
-        title: 'Reserve This Spot',
-        unit: `Unit ${unitId}`,
-        success: 'Booking Confirmed',
-        successMessage: 'Your reservation has been confirmed. See you soon!'
-      };
-    }
-  };
-
-  const text = getReservationText();
-
-  if (bookingSuccess) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="w-10 h-10 text-emerald-600" />
-          </div>
-          <h2 className="font-['Cormorant_Garamond'] text-4xl font-light text-[#1C1917] mb-4">
-            {text.success}
-          </h2>
-          <p className="text-lg text-[#57534E] mb-2">
-            Booking Code: {bookingSuccess.bookingCode}
-          </p>
-          <p className="text-[#78716C] leading-relaxed">
-            {text.successMessage}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-gradient-to-br from-white to-stone-50/50 rounded-[2rem] p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] border border-stone-200/40">
-        <div className="mb-8">
-          <p className="text-sm tracking-widest uppercase text-[#78716C] mb-2">{text.title}</p>
-          <h2 className="font-['Cormorant_Garamond'] text-5xl font-light text-[#1C1917] mb-4">
-            {venue?.name}
-          </h2>
-          <p className="text-lg text-[#57534E]">{text.unit}</p>
-        </div>
-
-        <form onSubmit={handleBooking} className="space-y-6">
-          <div>
-            <label className="block text-sm tracking-wider uppercase text-[#78716C] mb-2">
-              Your Name *
-            </label>
-            <input
-              type="text"
-              required
-              value={bookingForm.guestName}
-              onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })}
-              className="w-full px-6 py-4 rounded-full border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] focus:outline-none focus:border-stone-400 transition-colors"
-              placeholder="John Doe"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm tracking-wider uppercase text-[#78716C] mb-2">
-              Phone Number *
-            </label>
-            <input
-              type="tel"
-              required
-              value={bookingForm.guestPhone}
-              onChange={(e) => setBookingForm({ ...bookingForm, guestPhone: e.target.value })}
-              className="w-full px-6 py-4 rounded-full border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] focus:outline-none focus:border-stone-400 transition-colors"
-              placeholder="+355 69 123 4567"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm tracking-wider uppercase text-[#78716C] mb-2">
-              Email (Optional)
-            </label>
-            <input
-              type="email"
-              value={bookingForm.guestEmail}
-              onChange={(e) => setBookingForm({ ...bookingForm, guestEmail: e.target.value })}
-              className="w-full px-6 py-4 rounded-full border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] focus:outline-none focus:border-stone-400 transition-colors"
-              placeholder="john@example.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm tracking-wider uppercase text-[#78716C] mb-2">
-              <Users className="inline w-4 h-4 mr-2" />
-              Number of Guests
-            </label>
-            <select
-              value={bookingForm.guestCount}
-              onChange={(e) => setBookingForm({ ...bookingForm, guestCount: parseInt(e.target.value) })}
-              className="w-full px-6 py-4 rounded-full border border-stone-300 text-[#1C1917] focus:outline-none focus:border-stone-400 transition-colors"
-            >
-              {[1, 2, 3, 4, 5, 6].map(num => (
-                <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm tracking-wider uppercase text-[#78716C] mb-2">
-              Special Requests (Optional)
-            </label>
-            <textarea
-              value={bookingForm.notes}
-              onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
-              rows={3}
-              className="w-full px-6 py-4 rounded-2xl border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] focus:outline-none focus:border-stone-400 transition-colors resize-none"
-              placeholder="Any special requirements..."
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full px-8 py-4 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
-          >
-            Confirm Booking
-          </button>
-        </form>
-      </div>
+      )}
     </div>
   );
 }
