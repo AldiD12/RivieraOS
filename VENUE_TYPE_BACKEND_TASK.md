@@ -1,26 +1,30 @@
 # Venue Type Backend Task for Prof Kristi
 
-## Overview
-We need the venue `type` field to be returned in the public API so customers can see the correct booking interface.
+## Problem
+The frontend cannot determine if a venue is a restaurant or beach/pool, so it cannot show the correct interface when customers scan QR codes.
 
-## Current Status
-- ✅ Venue entity already has `type` field (confirmed in swagger)
-- ✅ Frontend now has dropdown for venue type (BEACH, POOL, RESTAURANT, BAR, CAFE, OTHER)
-- ❌ Public API doesn't return venue type yet
+## Current Situation
+- ✅ Venue entity has `type` field in database
+- ✅ Frontend has dropdown to set venue type (BEACH, POOL, RESTAURANT, BAR, CAFE, OTHER)
+- ❌ Public API doesn't return venue type
+- ❌ All QR codes show restaurant behavior (menu only, no ordering)
 
 ## What Needs to Be Done
 
-### 1. Update Public Reservations Zones Endpoint
+### Option 1: Add Venue Info to Zones Endpoint (RECOMMENDED)
+
 **Endpoint:** `GET /api/public/Reservations/zones?venueId={venueId}`
 
 **Current Response:**
 ```json
 [
   {
-    "id": 1,
-    "name": "Zone A",
-    "zoneType": "SUNBED",
-    "capacity": 20
+    "id": 12,
+    "name": "vipsecti",
+    "zoneType": "cabana",
+    "basePrice": 20,
+    "capacityPerUnit": 4,
+    "units": [...]
   }
 ]
 ```
@@ -29,28 +33,34 @@ We need the venue `type` field to be returned in the public API so customers can
 ```json
 [
   {
-    "id": 1,
-    "name": "Zone A",
-    "zoneType": "SUNBED",
-    "capacity": 20,
+    "id": 12,
+    "name": "vipsecti",
+    "zoneType": "cabana",
+    "basePrice": 20,
+    "capacityPerUnit": 4,
+    "units": [...],
     "venue": {
-      "id": 14,
+      "id": 16,
       "name": "Hotel Coral Beach",
-      "type": "BEACH"
+      "type": "BEACH"    ← ADD THIS
     }
   }
 ]
 ```
 
-### 2. Alternative: Create New Public Venue Endpoint
-If modifying zones endpoint is complex, create:
+**Implementation:**
+1. In the zones query, include the parent Venue entity
+2. Add venue.type to the response DTO
+3. Test with Postman: `GET /api/public/Reservations/zones?venueId=16`
+
+### Option 2: Create New Public Venue Endpoint
 
 **Endpoint:** `GET /api/public/Venues/{venueId}`
 
 **Response:**
 ```json
 {
-  "id": 14,
+  "id": 16,
   "name": "Hotel Coral Beach",
   "type": "BEACH",
   "description": "Beautiful beach resort",
@@ -60,28 +70,57 @@ If modifying zones endpoint is complex, create:
 }
 ```
 
-## Why This Matters
+**Implementation:**
+1. Create new controller: `PublicVenuesController`
+2. Add GET endpoint that returns venue details
+3. No authentication required (public endpoint)
 
-**Restaurant venues:**
-- Should ONLY show menu/ordering
-- NO booking tab
-- NO popup
+## Frontend Logic (Already Implemented)
 
-**Beach/Pool venues:**
-- Show popup asking "Order or Book?"
-- Both tabs available
+```javascript
+// SpotPage.jsx checks venue type:
+const canOrder = venue?.type === 'BEACH' || venue?.type === 'POOL';
+const canReserve = venue?.type === 'BEACH' || venue?.type === 'POOL';
 
-**Current Problem:**
-Frontend can't determine venue type, so it defaults to showing booking for all venues.
+// If venue.type === 'RESTAURANT':
+//   - Show menu only
+//   - No "Add" buttons
+//   - No cart
+//   - No reserve button
+
+// If venue.type === 'BEACH' or 'POOL':
+//   - Show menu with "Add" buttons
+//   - Show shopping cart
+//   - Show "Reserve Table" button
+//   - Allow ordering and reservations
+```
+
+## Testing After Implementation
+
+1. **Create test venues:**
+   - Venue A: type = "RESTAURANT"
+   - Venue B: type = "BEACH"
+
+2. **Generate QR codes for both**
+
+3. **Scan Restaurant QR:**
+   - Should show menu only
+   - No "Add" buttons
+   - No cart sidebar
+   - No "Reserve Table" button
+
+4. **Scan Beach QR:**
+   - Should show menu with "Add" buttons
+   - Should show cart sidebar
+   - Should show "Reserve Table" button in header
+   - Can place orders and make reservations
 
 ## Priority
-**HIGH** - This affects customer experience directly
+**HIGH** - Blocking customer QR code functionality
 
-## Testing
-After implementation:
-1. Create a venue with type "RESTAURANT"
-2. Generate QR code for that venue
-3. Scan QR → Should only show Order tab
-4. Create a venue with type "BEACH"
-5. Generate QR code
-6. Scan QR → Should show popup with Order/Book choice
+## Current Workaround
+None - all venues show restaurant behavior until backend returns venue type.
+
+## Files to Check
+- Frontend: `frontend/src/pages/SpotPage.jsx` (lines 188-190)
+- Backend: Need to modify zones endpoint or create new venue endpoint
