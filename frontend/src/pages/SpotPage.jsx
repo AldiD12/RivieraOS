@@ -53,41 +53,31 @@ export default function SpotPage() {
       const menuData = await menuResponse.json();
       setMenu(menuData);
 
-      // Try to get zone info to determine venue type
-      let venueType = 'GENERAL'; // default
-      let zoneName = '';
+      // Fetch venue details to get venue type
+      let venueType = 'OTHER'; // default
+      let venueName = menuData[0]?.venueName || 'Venue';
       
-      if (zoneId) {
-        try {
-          // Fetch zone info from reservations endpoint
-          const zonesResponse = await fetch(`${API_URL}/public/Reservations/zones?venueId=${venueId}`);
-          if (zonesResponse.ok) {
-            const zonesData = await zonesResponse.json();
-            const currentZone = zonesData.find(z => z.id === parseInt(zoneId));
-            if (currentZone) {
-              zoneName = currentZone.name;
-              // Infer venue type from zone type
-              if (currentZone.zoneType?.includes('SUNBED') || currentZone.zoneType?.includes('BEACH')) {
-                venueType = 'BEACH';
-              } else if (currentZone.zoneType?.includes('TABLE') || currentZone.zoneType?.includes('RESTAURANT')) {
-                venueType = 'RESTAURANT';
-              } else if (currentZone.zoneType?.includes('POOL')) {
-                venueType = 'POOL';
-              }
-            }
+      try {
+        // Try to fetch venue details from public reservations endpoint
+        const zonesResponse = await fetch(`${API_URL}/public/Reservations/zones?venueId=${venueId}`);
+        if (zonesResponse.ok) {
+          const zonesData = await zonesResponse.json();
+          // The zones endpoint might include venue info
+          if (zonesData.length > 0 && zonesData[0].venue) {
+            venueType = zonesData[0].venue.type || 'OTHER';
+            venueName = zonesData[0].venue.name || venueName;
           }
-        } catch (err) {
-          console.log('Could not fetch zone info:', err);
         }
+      } catch (err) {
+        console.log('Could not fetch venue details:', err);
       }
 
-      // Fetch venue info
+      // Set venue info
       setVenue({
         id: venueId,
-        name: menuData[0]?.venueName || 'Venue',
+        name: venueName,
         type: venueType,
         zoneId: zoneId,
-        zoneName: zoneName,
         unitId: unitId
       });
 

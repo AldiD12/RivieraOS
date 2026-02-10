@@ -1861,15 +1861,22 @@ export default function BusinessAdminDashboard() {
 
                 <div>
                   <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Type
+                    Venue Type *
                   </label>
-                  <input
-                    type="text"
-                    value={venueForm.type}
+                  <select
+                    required
+                    value={venueForm.type || ''}
                     onChange={(e) => handleVenueFormChange('type', e.target.value)}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                    placeholder="e.g., Beach, Pool, Restaurant"
-                  />
+                  >
+                    <option value="">Select venue type...</option>
+                    <option value="BEACH">Beach</option>
+                    <option value="POOL">Pool</option>
+                    <option value="RESTAURANT">Restaurant</option>
+                    <option value="BAR">Bar</option>
+                    <option value="CAFE">Cafe</option>
+                    <option value="OTHER">Other</option>
+                  </select>
                 </div>
 
                 <div>

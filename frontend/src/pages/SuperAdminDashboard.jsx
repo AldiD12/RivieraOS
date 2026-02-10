@@ -2849,21 +2849,21 @@ const CreateVenueModal = ({
               
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Venue Type
+                  Venue Type *
                 </label>
                 <select
-                  value={venueForm.type}
+                  required
+                  value={venueForm.type || ''}
                   onChange={(e) => onFormChange('type', e.target.value)}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                 >
-                  <option value="">Select type</option>
-                  <option value="Restaurant">Restaurant</option>
-                  <option value="Bar">Bar</option>
-                  <option value="Beach">Beach</option>
-                  <option value="Pool">Pool</option>
-                  <option value="Spa">Spa</option>
-                  <option value="Event">Event Space</option>
-                  <option value="Other">Other</option>
+                  <option value="">Select venue type...</option>
+                  <option value="BEACH">Beach</option>
+                  <option value="POOL">Pool</option>
+                  <option value="RESTAURANT">Restaurant</option>
+                  <option value="BAR">Bar</option>
+                  <option value="CAFE">Cafe</option>
+                  <option value="OTHER">Other</option>
                 </select>
               </div>
               
@@ -2985,21 +2985,21 @@ const EditVenueModal = ({
               
               <div>
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Venue Type
+                  Venue Type *
                 </label>
                 <select
-                  value={venueForm.type}
+                  required
+                  value={venueForm.type || ''}
                   onChange={(e) => onFormChange('type', e.target.value)}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                 >
-                  <option value="">Select type</option>
-                  <option value="Restaurant">Restaurant</option>
-                  <option value="Bar">Bar</option>
-                  <option value="Beach">Beach</option>
-                  <option value="Pool">Pool</option>
-                  <option value="Spa">Spa</option>
-                  <option value="Event">Event Space</option>
-                  <option value="Other">Other</option>
+                  <option value="">Select venue type...</option>
+                  <option value="BEACH">Beach</option>
+                  <option value="POOL">Pool</option>
+                  <option value="RESTAURANT">Restaurant</option>
+                  <option value="BAR">Bar</option>
+                  <option value="CAFE">Cafe</option>
+                  <option value="OTHER">Other</option>
                 </select>
               </div>
               
