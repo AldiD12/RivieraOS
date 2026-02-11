@@ -1,30 +1,21 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 
-// For MVP - hardcoded venue data
-const VENUES = {
-  1: {
-    name: 'Hotel Coral Beach',
-    location: 'Pampelonne Beach, Saint-Tropez',
-    latitude: 43.2384,
-    longitude: 6.6847
-  },
-  2: {
-    name: 'La Reserve',
-    location: 'Pampelonne, Ramatuelle',
-    latitude: 43.2385,
-    longitude: 6.6848
-  }
-};
+const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
 export default function ReviewPage() {
   const { venueId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [venue, setVenue] = useState(null);
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Get venue ID from URL params or query string
+  const actualVenueId = venueId || searchParams.get('v');
 
   useEffect(() => {
     // Add Google Fonts
@@ -38,18 +29,68 @@ export default function ReviewPage() {
     link2.rel = 'stylesheet';
     document.head.appendChild(link2);
 
-    // Load venue data
-    const venueData = VENUES[parseInt(venueId)];
-    if (venueData) {
-      setVenue(venueData);
+    // Fetch real venue data from backend
+    if (actualVenueId) {
+      fetchVenueData();
+    } else {
+      setError('No venue ID provided');
+      setLoading(false);
     }
-    setLoading(false);
 
     return () => {
       document.head.removeChild(link1);
       document.head.removeChild(link2);
     };
-  }, [venueId]);
+  }, [actualVenueId]);
+
+  const fetchVenueData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch venue details from zones endpoint (includes venue info)
+      const zonesResponse = await fetch(`${API_URL}/public/Reservations/zones?venueId=${actualVenueId}`);
+      
+      if (!zonesResponse.ok) {
+        throw new Error('Failed to load venue');
+      }
+      
+      const zonesData = await zonesResponse.json();
+      
+      if (zonesData.length > 0 && zonesData[0].venue) {
+        const venueData = zonesData[0].venue;
+        setVenue({
+          id: venueData.id,
+          name: venueData.name,
+          location: venueData.address || 'Riviera',
+          latitude: venueData.latitude || null,
+          longitude: venueData.longitude || null
+        });
+      } else {
+        // Fallback: try to get venue name from menu
+        const menuResponse = await fetch(`${API_URL}/public/Orders/menu?venueId=${actualVenueId}`);
+        if (menuResponse.ok) {
+          const menuData = await menuResponse.json();
+          if (menuData.length > 0) {
+            setVenue({
+              id: actualVenueId,
+              name: menuData[0].venueName || 'Venue',
+              location: 'Riviera',
+              latitude: null,
+              longitude: null
+            });
+          }
+        } else {
+          throw new Error('Venue not found');
+        }
+      }
+      
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching venue:', err);
+      setError('Failed to load venue information');
+      setLoading(false);
+    }
+  };
 
   const handleRatingClick = async (selectedRating) => {
     setRating(selectedRating);
@@ -106,11 +147,13 @@ export default function ReviewPage() {
     );
   }
 
-  if (!venue) {
+  if (error || !venue) {
     return (
       <div className="min-h-screen bg-stone-100 dark:bg-stone-950 flex items-center justify-center p-8">
         <div className="text-center">
-          <h1 className="text-4xl font-light text-stone-900 dark:text-stone-100 mb-4">Venue not found</h1>
+          <h1 className="text-4xl font-light text-stone-900 dark:text-stone-100 mb-4">
+            {error || 'Venue not found'}
+          </h1>
           <button 
             onClick={() => navigate('/')}
             className="text-stone-600 dark:text-stone-400 hover:text-amber-600 underline"
@@ -177,8 +220,7 @@ export default function ReviewPage() {
             className="text-5xl md:text-6xl font-normal text-stone-900 dark:text-stone-100 leading-[0.9] mb-4 tracking-tight"
             style={{ fontFamily: 'Cormorant Garamond, serif' }}
           >
-            {venue.name.split(' ').slice(0, 2).join(' ')}<br/>
-            <span className="italic font-light">{venue.name.split(' ').slice(2).join(' ')}</span>
+            {venue.name}
           </h1>
           <div className="flex items-center justify-center gap-2 opacity-80 mt-2">
             <span className="material-icons-round text-xs text-stone-600 dark:text-stone-400">place</span>
