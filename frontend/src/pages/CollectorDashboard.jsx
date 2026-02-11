@@ -1,313 +1,422 @@
 import { useState, useEffect } from 'react';
-import { HubConnectionBuilder } from '@microsoft/signalr';
+import { businessApi } from '../services/businessApi';
 
-const API_URL = 'http://localhost:5171/api';
-const HUB_URL = 'http://localhost:5171/hubs/beach';
-const VENUE_ID = 1; // Hotel Coral Beach
-
-// Material Icons Component
-const MaterialIcon = ({ name, className = "", filled = true }) => (
-  <span className={`material-symbols-outlined ${className}`} style={{
-    fontVariationSettings: `'FILL' ${filled ? 1 : 0}, 'wght' 400, 'GRAD' 0, 'opsz' 24`
-  }}>
-    {name}
-  </span>
-);
+const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
 export default function CollectorDashboard() {
-  const [zones, setZones] = useState([
-    { id: 1, name: 'VIP ZONE', status: 'green', flag: 'GREEN FLAG' },
-    { id: 2, name: 'FAMILY ZONE', status: 'yellow', flag: 'YELLOW FLAG' },
-    { id: 3, name: 'PUBLIC AREA', status: 'red', flag: 'RED FLAG' }
-  ]);
-  const [connection, setConnection] = useState(null);
-  const [currentUser, setCurrentUser] = useState('Manager Alex');
-  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [venues, setVenues] = useState([]);
+  const [selectedVenue, setSelectedVenue] = useState(null);
+  const [zones, setZones] = useState([]);
+  const [selectedZone, setSelectedZone] = useState(null);
+  const [units, setUnits] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedUnit, setSelectedUnit] = useState(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
 
-  // Add fonts on component mount
+  // Fetch venues on mount
   useEffect(() => {
-    // Add Material Symbols font if not already present
-    if (!document.querySelector('link[href*="Material+Symbols"]')) {
-      const link = document.createElement('link');
-      link.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap';
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }
-    
-    // Add Noto fonts
-    if (!document.querySelector('link[href*="Noto"]')) {
-      const link = document.createElement('link');
-      link.href = 'https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Noto+Sans:wght@400;500;700&display=swap';
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-    }
+    fetchVenues();
   }, []);
 
-  // Setup SignalR connection
+  // Fetch zones when venue selected
   useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-      .withUrl(HUB_URL)
-      .withAutomaticReconnect()
-      .build();
-
-    setConnection(newConnection);
-  }, []);
-
-  // Start SignalR connection and listen for updates
-  useEffect(() => {
-    if (connection) {
-      connection
-        .start()
-        .then(() => {
-          console.log('Beach Commander - SignalR Connected');
-
-          connection.on('ZoneStatusUpdate', (data) => {
-            updateZoneStatus(data.zoneId, data.status);
-          });
-        })
-        .catch((err) => console.error('SignalR Connection Error:', err));
+    if (selectedVenue) {
+      fetchZones();
     }
+  }, [selectedVenue]);
 
-    return () => {
-      if (connection) {
-        connection.stop();
-      }
-    };
-  }, [connection]);
+  // Fetch units and bookings when zone selected
+  useEffect(() => {
+    if (selectedZone) {
+      fetchUnits();
+      fetchBookings();
+    }
+  }, [selectedZone]);
 
-  const updateZoneStatus = (zoneId, newStatus) => {
-    setZones(prevZones =>
-      prevZones.map(zone =>
-        zone.id === zoneId
-          ? { 
-              ...zone, 
-              status: newStatus, 
-              flag: `${newStatus.toUpperCase()} FLAG` 
-            }
-          : zone
-      )
-    );
-    setLastUpdated(new Date());
-  };
-
-  const handleZoneStatusChange = async (zoneId, newStatus) => {
+  const fetchVenues = async () => {
     try {
-      // Update local state immediately for better UX
-      updateZoneStatus(zoneId, newStatus);
-
-      // Send to backend (mock for now due to CORS)
-      try {
-        // In production, this would call the API
-        console.log(`Updating zone ${zoneId} to ${newStatus}`);
-        // Simulate API success
-      } catch (error) {
-        console.error('Failed to update zone status:', error);
+      setLoading(true);
+      const data = await businessApi.venues.list();
+      setVenues(data);
+      if (data.length > 0) {
+        setSelectedVenue(data[0]);
       }
     } catch (error) {
-      console.error('Error updating zone status:', error);
+      console.error('Error fetching venues:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleEmergencyOverride = async () => {
+  const fetchZones = async () => {
+    if (!selectedVenue) return;
     try {
-      // Set all zones to red
-      const updatedZones = zones.map(zone => ({
-        ...zone,
-        status: 'red',
-        flag: 'RED FLAG'
-      }));
-      setZones(updatedZones);
-      setLastUpdated(new Date());
-
-      // Send emergency override to backend (mock for now due to CORS)
-      try {
-        console.log('Emergency override: setting all zones to red');
-        // In production, this would call the API
-      } catch (error) {
-        console.error('Error setting emergency override:', error);
+      setLoading(true);
+      const data = await businessApi.zones.list(selectedVenue.id);
+      setZones(data);
+      if (data.length > 0) {
+        setSelectedZone(data[0]);
       }
     } catch (error) {
-      console.error('Error setting emergency override:', error);
+      console.error('Error fetching zones:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getStatusBadge = (status) => {
+  const fetchUnits = async () => {
+    if (!selectedVenue || !selectedZone) return;
+    try {
+      setLoading(true);
+      const data = await businessApi.units.list(selectedVenue.id, { zoneId: selectedZone.id });
+      setUnits(data);
+    } catch (error) {
+      console.error('Error fetching units:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchBookings = async () => {
+    if (!selectedVenue) return;
+    try {
+      const response = await fetch(
+        `${API_URL}/business/venues/${selectedVenue.id}/bookings/active`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setBookings(data);
+      }
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+    }
+  };
+
+  const handleCheckIn = async (bookingId) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/business/venues/${selectedVenue.id}/bookings/${bookingId}/check-in`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      if (response.ok) {
+        await fetchUnits();
+        await fetchBookings();
+        setShowBookingModal(false);
+      }
+    } catch (error) {
+      console.error('Error checking in:', error);
+    }
+  };
+
+  const handleCheckOut = async (bookingId) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/business/venues/${selectedVenue.id}/bookings/${bookingId}/check-out`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      if (response.ok) {
+        await fetchUnits();
+        await fetchBookings();
+        setShowBookingModal(false);
+      }
+    } catch (error) {
+      console.error('Error checking out:', error);
+    }
+  };
+
+  const handleCancelBooking = async (bookingId) => {
+    if (!window.confirm('Cancel this booking?')) return;
+    try {
+      const response = await fetch(
+        `${API_URL}/business/venues/${selectedVenue.id}/bookings/${bookingId}/cancel`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      if (response.ok) {
+        await fetchUnits();
+        await fetchBookings();
+        setShowBookingModal(false);
+      }
+    } catch (error) {
+      console.error('Error canceling booking:', error);
+    }
+  };
+
+  const handleUnitClick = (unit) => {
+    setSelectedUnit(unit);
+    setShowBookingModal(true);
+  };
+
+  const getUnitBooking = (unitId) => {
+    return bookings.find(b => b.zoneUnitId === unitId);
+  };
+
+  const getStatusColor = (status) => {
     switch (status) {
-      case 'green':
-        return {
-          bg: 'bg-green-500/10 dark:bg-green-500/20',
-          text: 'text-green-600',
-          icon: 'check_circle',
-          label: 'OPEN'
-        };
-      case 'yellow':
-        return {
-          bg: 'bg-yellow-500/10 dark:bg-yellow-500/20',
-          text: 'text-yellow-600',
-          icon: 'warning',
-          label: 'CAUTION'
-        };
-      case 'red':
-        return {
-          bg: 'bg-red-500/10 dark:bg-red-500/20',
-          text: 'text-red-600',
-          icon: 'block',
-          label: 'CLOSED'
-        };
+      case 'Available':
+        return 'bg-green-900 text-green-300';
+      case 'Reserved':
+        return 'bg-yellow-900 text-yellow-300';
+      case 'Occupied':
+        return 'bg-red-900 text-red-300';
+      case 'Maintenance':
+        return 'bg-gray-900 text-gray-300';
       default:
-        return {
-          bg: 'bg-gray-500/10',
-          text: 'text-gray-600',
-          icon: 'help',
-          label: 'UNKNOWN'
-        };
+        return 'bg-zinc-900 text-zinc-300';
     }
-  };
-
-  const getFlagButton = (currentStatus, targetStatus, zoneId) => {
-    const isActive = currentStatus === targetStatus;
-    const colors = {
-      green: {
-        active: 'bg-green-500 text-white shadow-[0_0_15px_rgba(46,204,113,0.6)] ring-2 ring-green-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800',
-        inactive: 'bg-gray-100 dark:bg-white/5 border border-transparent hover:border-green-500/50 hover:bg-green-500/10 text-gray-300 hover:text-green-500'
-      },
-      yellow: {
-        active: 'bg-yellow-500 text-white shadow-[0_0_15px_rgba(241,196,15,0.6)] ring-2 ring-yellow-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800',
-        inactive: 'bg-gray-100 dark:bg-white/5 border border-transparent hover:border-yellow-500/50 hover:bg-yellow-500/10 text-gray-300 hover:text-yellow-500'
-      },
-      red: {
-        active: 'bg-red-500 text-white shadow-[0_0_15px_rgba(242,13,13,0.6)] ring-2 ring-red-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800',
-        inactive: 'bg-gray-100 dark:bg-white/5 border border-transparent hover:border-red-500/50 hover:bg-red-500/10 text-gray-300 hover:text-red-500'
-      }
-    };
-
-    return (
-      <button
-        onClick={() => handleZoneStatusChange(zoneId, targetStatus)}
-        className={`w-full h-full rounded-xl flex items-center justify-center transition-all ${
-          isActive ? colors[targetStatus].active : colors[targetStatus].inactive
-        }`}
-      >
-        <MaterialIcon name="flag" className="text-3xl drop-shadow-md" />
-        <span className="sr-only">Set {targetStatus}</span>
-      </button>
-    );
   };
 
   return (
-    <div 
-      className="bg-[#f8f5f5] dark:bg-[#221010] min-h-screen flex flex-col antialiased text-[#181111] dark:text-gray-100 transition-colors duration-200"
-      style={{ fontFamily: '"Noto Serif", serif' }}
-    >
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-50 bg-white/90 dark:bg-[#1a0f0f]/90 backdrop-blur-md border-b border-gray-200 dark:border-white/10 shadow-sm">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex flex-col items-center w-full">
-            <h1 className="text-xl font-bold tracking-tight uppercase text-center">Grand Blue Resort</h1>
-            <div className="flex items-center gap-1.5 mt-1">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-              </span>
-              <span 
-                className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase"
-                style={{ fontFamily: '"Noto Sans", sans-serif' }}
-              >
-                Live Status
-              </span>
-            </div>
-          </div>
+    <div className="min-h-screen bg-black text-white">
+      {/* Header */}
+      <header className="bg-zinc-900 border-b border-zinc-800 p-4">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-2xl font-bold">Collector Dashboard</h1>
+          <p className="text-sm text-zinc-400">Manage sunbed bookings and check-ins</p>
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col p-4 max-w-md mx-auto w-full gap-6 pb-12">
-        {/* Emergency Override */}
-        <section aria-label="Emergency Controls">
-          <button 
-            onClick={handleEmergencyOverride}
-            className="relative w-full overflow-hidden group rounded-2xl bg-red-500 text-white shadow-xl shadow-red-500/30 active:scale-[0.98] transition-transform duration-150"
-          >
-            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
-            {/* Striped background pattern for warning effect */}
-            <div 
-              className="absolute inset-0 opacity-10" 
-              style={{
-                backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, #000 10px, #000 20px)'
+      <main className="max-w-7xl mx-auto p-4">
+        {/* Venue & Zone Selectors */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <label className="block text-sm text-zinc-400 mb-2">Venue</label>
+            <select
+              value={selectedVenue?.id || ''}
+              onChange={(e) => {
+                const venue = venues.find(v => v.id === parseInt(e.target.value));
+                setSelectedVenue(venue);
+                setSelectedZone(null);
+                setUnits([]);
               }}
-            ></div>
-            <div className="relative flex flex-col items-center justify-center py-6 px-4">
-              <MaterialIcon name="warning" className="text-4xl mb-2 animate-pulse" />
-              <span className="text-lg font-bold tracking-wider leading-tight text-center">SET ENTIRE BEACH TO RED</span>
-              <span 
-                className="text-[10px] opacity-80 mt-1"
-                style={{ fontFamily: '"Noto Sans", sans-serif' }}
-              >
-                EMERGENCY OVERRIDE
-              </span>
-            </div>
-          </button>
-        </section>
+              className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-white"
+            >
+              {venues.map(venue => (
+                <option key={venue.id} value={venue.id}>{venue.name}</option>
+              ))}
+            </select>
+          </div>
 
-        {/* Zones List */}
-        <div className="flex flex-col gap-5">
-          {zones.map((zone) => {
-            const badge = getStatusBadge(zone.status);
-            
-            return (
-              <article 
-                key={zone.id}
-                className="bg-white dark:bg-[#2a1515] rounded-2xl p-5 shadow-md border border-gray-100 dark:border-white/5 relative overflow-hidden"
-              >
-                {/* Status Badge */}
-                <div className={`absolute top-0 right-0 ${badge.bg} px-4 py-1.5 rounded-bl-2xl`}>
-                  <p 
-                    className={`text-xs font-bold ${badge.text} tracking-wide flex items-center gap-1`}
-                    style={{ fontFamily: '"Noto Sans", sans-serif' }}
-                  >
-                    <MaterialIcon name={badge.icon} className="text-[14px]" />
-                    {badge.label}
-                  </p>
-                </div>
-
-                <div className="mb-5">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-wide">
-                    {zone.name}
-                  </h2>
-                  <p 
-                    className="text-sm text-gray-500 dark:text-gray-400 mt-1"
-                    style={{ fontFamily: '"Noto Sans", sans-serif' }}
-                  >
-                    Currently: <span className={`font-bold ${badge.text}`}>{zone.flag}</span>
-                  </p>
-                </div>
-
-                {/* Controls */}
-                <div className="grid grid-cols-3 gap-3 h-20">
-                  {getFlagButton(zone.status, 'green', zone.id)}
-                  {getFlagButton(zone.status, 'yellow', zone.id)}
-                  {getFlagButton(zone.status, 'red', zone.id)}
-                </div>
-              </article>
-            );
-          })}
+          <div>
+            <label className="block text-sm text-zinc-400 mb-2">Zone</label>
+            <select
+              value={selectedZone?.id || ''}
+              onChange={(e) => {
+                const zone = zones.find(z => z.id === parseInt(e.target.value));
+                setSelectedZone(zone);
+              }}
+              className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-white"
+              disabled={!selectedVenue}
+            >
+              {zones.map(zone => (
+                <option key={zone.id} value={zone.id}>{zone.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        {/* Footer Info */}
-        <footer className="mt-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <div className="h-px w-10 bg-gray-300 dark:bg-gray-700"></div>
-            <MaterialIcon name="waves" className="text-gray-400 text-sm" />
-            <div className="h-px w-10 bg-gray-300 dark:bg-gray-700"></div>
+        {/* Stats */}
+        {selectedZone && (
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800">
+              <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">Total</p>
+              <p className="text-3xl font-bold">{units.length}</p>
+            </div>
+            <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800">
+              <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">Available</p>
+              <p className="text-3xl font-bold text-green-400">
+                {units.filter(u => u.status === 'Available').length}
+              </p>
+            </div>
+            <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800">
+              <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">Reserved</p>
+              <p className="text-3xl font-bold text-yellow-400">
+                {units.filter(u => u.status === 'Reserved').length}
+              </p>
+            </div>
+            <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800">
+              <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">Occupied</p>
+              <p className="text-3xl font-bold text-red-400">
+                {units.filter(u => u.status === 'Occupied').length}
+              </p>
+            </div>
           </div>
-          <p 
-            className="text-xs text-gray-400"
-            style={{ fontFamily: '"Noto Sans", sans-serif' }}
-          >
-            Last updated: {lastUpdated.toLocaleTimeString()}<br/>
-            Logged in as: <span className="font-bold text-gray-600 dark:text-gray-300">{currentUser}</span>
-          </p>
-        </footer>
+        )}
+
+        {/* Units Grid */}
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          </div>
+        ) : !selectedZone ? (
+          <div className="text-center py-12 text-zinc-400">
+            Select a venue and zone to view units
+          </div>
+        ) : units.length === 0 ? (
+          <div className="text-center py-12 text-zinc-400">
+            No units found in this zone
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
+            {units.map((unit) => {
+              const booking = getUnitBooking(unit.id);
+              return (
+                <button
+                  key={unit.id}
+                  onClick={() => handleUnitClick(unit)}
+                  className="bg-zinc-900 border-2 border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-all aspect-square flex flex-col items-center justify-center"
+                >
+                  <p className="text-xl font-bold mb-2">{unit.unitCode}</p>
+                  <span className={`text-xs px-2 py-1 rounded ${getStatusColor(unit.status)}`}>
+                    {unit.status}
+                  </span>
+                  {booking && (
+                    <p className="text-xs text-zinc-400 mt-2 truncate w-full text-center">
+                      {booking.guestName}
+                    </p>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </main>
+
+      {/* Booking Modal */}
+      {showBookingModal && selectedUnit && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+          <div className="bg-zinc-900 rounded-lg max-w-md w-full border border-zinc-800">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold">{selectedUnit.unitCode}</h2>
+                  <p className="text-sm text-zinc-400">{selectedUnit.unitType}</p>
+                </div>
+                <button
+                  onClick={() => setShowBookingModal(false)}
+                  className="text-zinc-400 hover:text-white text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">Status</p>
+                  <span className={`text-sm px-3 py-1 rounded ${getStatusColor(selectedUnit.status)}`}>
+                    {selectedUnit.status}
+                  </span>
+                </div>
+
+                {(() => {
+                  const booking = getUnitBooking(selectedUnit.id);
+                  if (!booking) {
+                    return (
+                      <div className="text-center py-8 text-zinc-400">
+                        No active booking
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      <div>
+                        <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">Guest</p>
+                        <p className="text-lg font-medium">{booking.guestName}</p>
+                      </div>
+
+                      {booking.guestPhone && (
+                        <div>
+                          <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">Phone</p>
+                          <p className="text-lg font-mono">{booking.guestPhone}</p>
+                        </div>
+                      )}
+
+                      <div>
+                        <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">Booking Time</p>
+                        <p className="text-sm">
+                          {new Date(booking.startTime).toLocaleString('en-GB', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+
+                      {booking.checkedInAt && (
+                        <div>
+                          <p className="text-xs text-zinc-400 uppercase tracking-wider mb-1">Checked In</p>
+                          <p className="text-sm text-green-400">
+                            {new Date(booking.checkedInAt).toLocaleString('en-GB', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="flex gap-2 pt-4">
+                        {booking.status === 'Reserved' && !booking.checkedInAt && (
+                          <button
+                            onClick={() => handleCheckIn(booking.id)}
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded font-medium transition-colors"
+                          >
+                            Check In
+                          </button>
+                        )}
+
+                        {booking.checkedInAt && !booking.checkedOutAt && (
+                          <button
+                            onClick={() => handleCheckOut(booking.id)}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded font-medium transition-colors"
+                          >
+                            Check Out
+                          </button>
+                        )}
+
+                        {!booking.checkedOutAt && (
+                          <button
+                            onClick={() => handleCancelBooking(booking.id)}
+                            className="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded font-medium transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
