@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import LandingPage from './pages/LandingPage';
 import BusinessSetupPage from './pages/BusinessSetupPage';
 import ReviewPage from './pages/ReviewPage';
+import ReviewQRGenerator from './pages/ReviewQRGenerator';
 import ManagerLeaderboardPage from './pages/ManagerLeaderboardPage';
 import OurAdmin from './pages/OurAdmin';
 import SuperAdminLogin from './pages/SuperAdminLogin';
@@ -37,6 +38,7 @@ function App() {
         <Route path="/menu" element={<MenuPage />} />
         <Route path="/spot" element={<SpotPage />} />
         <Route path="/review/:venueId" element={<ReviewPage />} />
+        <Route path="/review" element={<ReviewPage />} />
         
         {/* Staff Dashboards - Protected */}
         <Route 
@@ -113,6 +115,16 @@ function App() {
           element={
             <ProtectedRoute role="Manager">
               <QRCodeGenerator />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Review QR Code Generator - Manager Only */}
+        <Route 
+          path="/review-qr-generator" 
+          element={
+            <ProtectedRoute role="Manager">
+              <ReviewQRGenerator />
             </ProtectedRoute>
           } 
         />

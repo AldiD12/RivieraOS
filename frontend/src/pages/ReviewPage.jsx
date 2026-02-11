@@ -57,18 +57,28 @@ export default function ReviewPage() {
     // Show success animation
     setShowSuccess(true);
 
-    // Simulate API call
+    // Submit review to backend
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      console.log('Review submitted:', {
-        venueId: parseInt(venueId),
+      const reviewData = {
         rating: selectedRating,
-        venue: venue?.name
+        comment: '', // Optional - can add text input later
+        guestName: 'Anonymous' // Optional
+      };
+
+      const response = await fetch(`${API_URL}/public/venues/${actualVenueId}/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reviewData)
       });
 
+      if (!response.ok) {
+        console.error('Failed to submit review');
+      } else {
+        console.log('✅ Review submitted successfully');
+      }
+
       // If high rating (4-5), redirect to Google Maps after delay
-      if (selectedRating >= 4) {
+      if (selectedRating >= 4 && venue.latitude && venue.longitude) {
         setTimeout(() => {
           const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`;
           window.open(googleMapsUrl, '_blank');
@@ -80,6 +90,8 @@ export default function ReviewPage() {
       }
     } catch (error) {
       console.error('Error submitting review:', error);
+      // Still show success to user even if API fails
+      setTimeout(() => navigate('/'), 3000);
     }
   };
 

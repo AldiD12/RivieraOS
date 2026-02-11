@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ShoppingCart, MapPin, Check } from 'lucide-react';
+import { ShoppingCart, MapPin, Check, Star } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
@@ -237,6 +237,19 @@ export default function SpotPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF9]">
+      {/* Floating Review Button */}
+      <button
+        onClick={() => navigate(`/review?v=${venueId}`)}
+        className="fixed bottom-8 right-8 z-40 w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full shadow-[0_8px_30px_rgba(146,64,14,0.4)] hover:shadow-[0_12px_40px_rgba(146,64,14,0.6)] hover:scale-110 transition-all duration-300 flex items-center justify-center group"
+        aria-label="Leave a review"
+      >
+        <Star className="w-7 h-7 text-white fill-white group-hover:scale-110 transition-transform duration-300" />
+        <div className="absolute -top-12 right-0 bg-stone-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
+          Leave a Review
+          <div className="absolute bottom-0 right-6 transform translate-y-1/2 rotate-45 w-2 h-2 bg-stone-900"></div>
+        </div>
+      </button>
+
       {/* Reservation Modal */}
       {showReserveModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" onClick={() => setShowReserveModal(false)}>
