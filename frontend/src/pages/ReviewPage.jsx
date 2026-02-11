@@ -47,41 +47,47 @@ export default function ReviewPage() {
     try {
       setLoading(true);
       
-      // Fetch venue details from zones endpoint (includes venue info)
-      const zonesResponse = await fetch(`${API_URL}/public/Reservations/zones?venueId=${actualVenueId}`);
+      // Fetch menu to get business name (not venue name)
+      const menuResponse = await fetch(`${API_URL}/public/Orders/menu?venueId=${actualVenueId}`);
       
-      if (!zonesResponse.ok) {
+      if (!menuResponse.ok) {
         throw new Error('Failed to load venue');
       }
       
-      const zonesData = await zonesResponse.json();
+      const menuData = await menuResponse.json();
       
-      if (zonesData.length > 0 && zonesData[0].venue) {
-        const venueData = zonesData[0].venue;
+      if (menuData.length > 0) {
+        // Use businessName (e.g., "Hotel Coral Beach") not venueName (e.g., "Main Beach")
+        const businessName = menuData[0].businessName || menuData[0].venueName || 'Venue';
+        
+        // Try to get location and coordinates from zones endpoint
+        let location = 'Riviera';
+        let latitude = null;
+        let longitude = null;
+        
+        try {
+          const zonesResponse = await fetch(`${API_URL}/public/Reservations/zones?venueId=${actualVenueId}`);
+          if (zonesResponse.ok) {
+            const zonesData = await zonesResponse.json();
+            if (zonesData.length > 0 && zonesData[0].venue) {
+              location = zonesData[0].venue.address || location;
+              latitude = zonesData[0].venue.latitude;
+              longitude = zonesData[0].venue.longitude;
+            }
+          }
+        } catch (err) {
+          console.warn('Could not fetch location data:', err);
+        }
+        
         setVenue({
-          id: venueData.id,
-          name: venueData.name,
-          location: venueData.address || 'Riviera',
-          latitude: venueData.latitude || null,
-          longitude: venueData.longitude || null
+          id: actualVenueId,
+          name: businessName, // Business/Brand name, not venue name
+          location: location,
+          latitude: latitude,
+          longitude: longitude
         });
       } else {
-        // Fallback: try to get venue name from menu
-        const menuResponse = await fetch(`${API_URL}/public/Orders/menu?venueId=${actualVenueId}`);
-        if (menuResponse.ok) {
-          const menuData = await menuResponse.json();
-          if (menuData.length > 0) {
-            setVenue({
-              id: actualVenueId,
-              name: menuData[0].venueName || 'Venue',
-              location: 'Riviera',
-              latitude: null,
-              longitude: null
-            });
-          }
-        } else {
-          throw new Error('Venue not found');
-        }
+        throw new Error('Venue not found');
       }
       
       setLoading(false);
