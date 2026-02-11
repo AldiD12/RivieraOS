@@ -681,10 +681,12 @@ export default function SuperAdminDashboard() {
   const [venueForm, setVenueForm] = useState({
     name: '',
     type: '',
-    location: '',
     description: '',
-    capacity: 0,
-    isActive: true
+    address: '',
+    imageUrl: '',
+    latitude: null,
+    longitude: null,
+    orderingEnabled: true
   });
 
   const [zoneForm, setZoneForm] = useState({
@@ -1237,10 +1239,12 @@ export default function SuperAdminDashboard() {
       setVenueForm({
         name: '',
         type: '',
-        location: '',
         description: '',
-        capacity: 0,
-        isActive: true
+        address: '',
+        imageUrl: '',
+        latitude: null,
+        longitude: null,
+        orderingEnabled: true
       });
       await fetchVenuesForBusiness(selectedBusiness.id);
       setError('');
@@ -1261,10 +1265,12 @@ export default function SuperAdminDashboard() {
       setVenueForm({
         name: '',
         type: '',
-        location: '',
         description: '',
-        capacity: 0,
-        isActive: true
+        address: '',
+        imageUrl: '',
+        latitude: null,
+        longitude: null,
+        orderingEnabled: true
       });
       await fetchVenuesForBusiness(selectedBusiness.id);
       setError('');
