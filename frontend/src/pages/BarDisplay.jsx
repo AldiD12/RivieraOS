@@ -339,6 +339,11 @@ function OrderCard({ order, onUpdateStatus, formatTime, getTimeSince, getStatusC
             #{order.orderNumber}
           </div>
           <div className="text-sm text-zinc-400">
+            {order.unitCode && (
+              <span className="inline-block bg-amber-600 text-white px-3 py-1 rounded-full font-bold mr-2">
+                {order.unitCode}
+              </span>
+            )}
             {order.zoneName || 'Zone'} • {order.customerName || 'Guest'}
           </div>
         </div>
