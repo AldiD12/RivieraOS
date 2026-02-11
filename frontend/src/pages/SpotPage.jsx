@@ -215,22 +215,94 @@ export default function SpotPage() {
   }
 
   if (orderSuccess) {
+    // Auto-redirect after 5 seconds
+    setTimeout(() => {
+      setOrderSuccess(null);
+      setBookingForm({ guestName: '', guestPhone: '', guestEmail: '', guestCount: 2, notes: '' });
+    }, 5000);
+
     return (
       <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center p-6">
-        <div className="text-center max-w-md">
-          <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="w-10 h-10 text-emerald-600" />
+        <div className="text-center max-w-md animate-fadeIn">
+          {/* Success Icon with Animation */}
+          <div className="relative mb-8">
+            <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-[0_20px_60px_-15px_rgba(16,185,129,0.5)] animate-scaleIn">
+              <Check className="w-12 h-12 text-white animate-checkmark" strokeWidth={3} />
+            </div>
+            {/* Ripple effect */}
+            <div className="absolute inset-0 w-24 h-24 mx-auto rounded-full border-4 border-emerald-400 animate-ping opacity-20"></div>
           </div>
-          <h2 className="font-['Cormorant_Garamond'] text-4xl font-light text-[#1C1917] mb-4">
-            Order Placed
+
+          {/* Success Message */}
+          <h2 className="font-['Cormorant_Garamond'] text-5xl font-light text-[#1C1917] mb-4 tracking-tight">
+            Order Placed!
           </h2>
-          <p className="text-lg text-[#57534E] mb-2">
-            Order #{orderSuccess.orderNumber}
+          
+          {/* Order Number */}
+          <div className="inline-block bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-xl rounded-2xl px-6 py-3 mb-6 border border-stone-200/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+            <p className="text-sm tracking-widest uppercase text-[#78716C] mb-1">Order Number</p>
+            <p className="font-['Cormorant_Garamond'] text-3xl text-[#92400E] font-medium">
+              #{orderSuccess.orderNumber || orderSuccess.id}
+            </p>
+          </div>
+
+          {/* Description */}
+          <p className="text-lg text-[#57534E] leading-relaxed mb-8 max-w-sm mx-auto">
+            Your order has been sent to the kitchen. We'll bring it to your spot shortly.
           </p>
-          <p className="text-[#78716C] leading-relaxed">
-            Your order has been sent to the kitchen. We'll bring it to you shortly.
+
+          {/* Action Buttons */}
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => {
+                setOrderSuccess(null);
+                setBookingForm({ guestName: '', guestPhone: '', guestEmail: '', guestCount: 2, notes: '' });
+              }}
+              className="px-8 py-4 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
+            >
+              Place Another Order
+            </button>
+            <button
+              onClick={() => navigate(`/review?v=${venueId}`)}
+              className="px-8 py-4 border border-stone-300 text-stone-700 rounded-full text-sm tracking-widest uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
+            >
+              Leave a Review
+            </button>
+          </div>
+
+          {/* Auto-redirect notice */}
+          <p className="text-xs text-[#78716C] mt-6 opacity-60">
+            Returning to menu in 5 seconds...
           </p>
         </div>
+
+        {/* Custom animations */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes fadeIn {
+              from { opacity: 0; transform: translateY(20px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes scaleIn {
+              from { transform: scale(0); }
+              to { transform: scale(1); }
+            }
+            @keyframes checkmark {
+              0% { transform: scale(0) rotate(-45deg); }
+              50% { transform: scale(1.2) rotate(-45deg); }
+              100% { transform: scale(1) rotate(0deg); }
+            }
+            .animate-fadeIn {
+              animation: fadeIn 0.6s ease-out;
+            }
+            .animate-scaleIn {
+              animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .animate-checkmark {
+              animation: checkmark 0.6s ease-out 0.3s both;
+            }
+          `
+        }} />
       </div>
     );
   }
