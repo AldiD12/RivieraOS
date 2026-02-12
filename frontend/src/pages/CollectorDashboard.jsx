@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { businessApi } from '../services/businessApi';
+import businessApi from '../services/businessApi';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
