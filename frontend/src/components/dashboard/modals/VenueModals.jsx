@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { ImageUpload } from '../../ImageUpload';
 
 export const CreateVenueModal = ({ 
   isOpen, 
@@ -88,18 +89,11 @@ export const CreateVenueModal = ({
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Image URL
-              </label>
-              <input
-                type="url"
-                value={venueForm.imageUrl}
-                onChange={(e) => onFormChange('imageUrl', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
+            <ImageUpload
+              value={venueForm.imageUrl}
+              onChange={(url) => onFormChange('imageUrl', url)}
+              label="Venue Image"
+            />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -254,18 +248,11 @@ export const EditVenueModal = ({
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Image URL
-              </label>
-              <input
-                type="url"
-                value={venueForm.imageUrl}
-                onChange={(e) => onFormChange('imageUrl', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
+            <ImageUpload
+              value={venueForm.imageUrl}
+              onChange={(url) => onFormChange('imageUrl', url)}
+              label="Venue Image"
+            />
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

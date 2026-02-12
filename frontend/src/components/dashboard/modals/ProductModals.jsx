@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import { ImageUpload } from '../../ImageUpload';
 
 export const CreateProductModal = ({ 
   isOpen, 
@@ -100,18 +101,11 @@ export const CreateProductModal = ({
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Image URL
-              </label>
-              <input
-                type="url"
-                value={productForm.imageUrl}
-                onChange={(e) => onFormChange('imageUrl', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                placeholder="https://example.com/image.jpg"
-              />
-            </div>
+            <ImageUpload
+              value={productForm.imageUrl}
+              onChange={(url) => onFormChange('imageUrl', url)}
+              label="Product Image"
+            />
             
             <div className="flex items-center">
               <input
@@ -246,17 +240,11 @@ export const EditProductModal = ({
               />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Image URL
-              </label>
-              <input
-                type="url"
-                value={productForm.imageUrl}
-                onChange={(e) => onFormChange('imageUrl', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-              />
-            </div>
+            <ImageUpload
+              value={productForm.imageUrl}
+              onChange={(url) => onFormChange('imageUrl', url)}
+              label="Product Image"
+            />
             
             <div className="flex items-center">
               <input
