@@ -5,7 +5,8 @@ export const CreateStaffModal = ({
   onClose, 
   staffForm, 
   onFormChange, 
-  onSubmit 
+  onSubmit,
+  isSuperAdmin = false  // SuperAdmin can assign "Owner" role
 }) => (
   <AnimatePresence>
     {isOpen && (
@@ -117,12 +118,15 @@ export const CreateStaffModal = ({
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                 >
                   <option value="">Select role</option>
+                  {isSuperAdmin && <option value="Owner">Owner (SuperAdmin only)</option>}
                   <option value="Manager">Manager</option>
                   <option value="Bartender">Bartender</option>
                   <option value="Collector">Collector</option>
                 </select>
                 <p className="text-xs text-zinc-500 mt-1">
-                  ✅ Backend roles: Manager, Bartender, Collector (aligned with backend)
+                  {isSuperAdmin 
+                    ? "✅ SuperAdmin: Can assign Owner, Manager, Bartender, Collector" 
+                    : "✅ Business roles: Manager, Bartender, Collector"}
                 </p>
               </div>
             </div>
@@ -167,7 +171,8 @@ export const EditStaffModal = ({
   onClose, 
   staffForm, 
   onFormChange, 
-  onSubmit 
+  onSubmit,
+  isSuperAdmin = false  // SuperAdmin can assign "Owner" role
 }) => (
   <AnimatePresence>
     {isOpen && (
@@ -263,12 +268,15 @@ export const EditStaffModal = ({
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                 >
                   <option value="">Select role</option>
+                  {isSuperAdmin && <option value="Owner">Owner (SuperAdmin only)</option>}
                   <option value="Manager">Manager</option>
                   <option value="Bartender">Bartender</option>
                   <option value="Collector">Collector</option>
                 </select>
                 <p className="text-xs text-zinc-500 mt-1">
-                  ✅ Backend roles: Manager, Bartender, Collector (aligned with backend)
+                  {isSuperAdmin 
+                    ? "✅ SuperAdmin: Can assign Owner, Manager, Bartender, Collector" 
+                    : "✅ Business roles: Manager, Bartender, Collector"}
                 </p>
               </div>
             </div>

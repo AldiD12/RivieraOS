@@ -2078,6 +2078,7 @@ export default function SuperAdminDashboard() {
         staffForm={staffForm}
         onFormChange={handleStaffFormChange}
         onSubmit={handleCreateStaff}
+        isSuperAdmin={true}
       />
 
       {/* Edit Staff Modal */}
@@ -2090,6 +2091,7 @@ export default function SuperAdminDashboard() {
         staffForm={staffForm}
         onFormChange={handleStaffFormChange}
         onSubmit={handleUpdateStaff}
+        isSuperAdmin={true}
       />
 
       {/* Reset Password Modal */}
@@ -2155,6 +2157,7 @@ export default function SuperAdminDashboard() {
         productForm={productForm}
         onFormChange={handleProductFormChange}
         onSubmit={handleCreateProduct}
+        categories={categories}
       />
 
       {/* Edit Product Modal */}
