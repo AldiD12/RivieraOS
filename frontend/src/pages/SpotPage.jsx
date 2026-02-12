@@ -48,6 +48,13 @@ export default function SpotPage() {
       const menuResponse = await fetch(`${API_URL}/public/Orders/menu?venueId=${venueId}`);
       if (!menuResponse.ok) throw new Error('Failed to load menu');
       const menuData = await menuResponse.json();
+      
+      // DEBUG: Log menu data to check if imageUrl is present
+      console.log('📋 Menu data received:', menuData);
+      if (menuData.length > 0 && menuData[0].products?.length > 0) {
+        console.log('🖼️ First product imageUrl:', menuData[0].products[0].imageUrl);
+      }
+      
       setMenu(menuData);
 
       // Fetch venue details to get venue type (NEW: Prof Kristi implemented this!)
@@ -484,7 +491,16 @@ function MenuDisplay({ menu, cart, addToCart, updateQuantity, getTotalPrice, han
                     src={product.imageUrl}
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      console.error('❌ Failed to load image:', product.imageUrl);
+                      e.target.style.display = 'none';
+                    }}
                   />
+                </div>
+              )}
+              {!product.imageUrl && (
+                <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-stone-100 flex items-center justify-center border border-stone-200/40">
+                  <p className="text-stone-400 text-sm">No image</p>
                 </div>
               )}
               <h3 className="font-['Cormorant_Garamond'] text-2xl font-light text-[#1C1917] mb-2">

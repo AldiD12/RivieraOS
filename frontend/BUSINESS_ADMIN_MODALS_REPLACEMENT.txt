@@ -1,0 +1,84 @@
+      {/* Modals - Using Shared Components */}
+      <CreateStaffModal
+        isOpen={showCreateStaffModal}
+        onClose={() => setShowCreateStaffModal(false)}
+        staffForm={staffForm}
+        onFormChange={handleStaffFormChange}
+        onSubmit={handleCreateStaff}
+      />
+
+      <EditStaffModal
+        isOpen={!!editingStaff}
+        onClose={() => setEditingStaff(null)}
+        staffForm={staffForm}
+        onFormChange={handleStaffFormChange}
+        onSubmit={handleUpdateStaff}
+      />
+
+      <CreateCategoryModal
+        isOpen={showCreateCategoryModal}
+        onClose={() => setShowCreateCategoryModal(false)}
+        categoryForm={categoryForm}
+        onFormChange={handleCategoryFormChange}
+        onSubmit={handleCreateCategory}
+      />
+
+      <EditCategoryModal
+        isOpen={!!editingCategory}
+        onClose={() => setEditingCategory(null)}
+        categoryForm={categoryForm}
+        onFormChange={handleCategoryFormChange}
+        onSubmit={handleUpdateCategory}
+      />
+
+      <CreateProductModal
+        isOpen={showCreateProductModal}
+        onClose={() => setShowCreateProductModal(false)}
+        productForm={productForm}
+        onFormChange={handleProductFormChange}
+        onSubmit={handleCreateProduct}
+        categories={categories}
+      />
+
+      <EditProductModal
+        isOpen={!!editingProduct}
+        onClose={() => setEditingProduct(null)}
+        productForm={productForm}
+        onFormChange={handleProductFormChange}
+        onSubmit={handleUpdateProduct}
+        categories={categories}
+      />
+
+      <CreateVenueModal
+        isOpen={showCreateVenueModal}
+        onClose={() => setShowCreateVenueModal(false)}
+        venueForm={venueForm}
+        onFormChange={handleVenueFormChange}
+        onSubmit={handleCreateVenue}
+      />
+
+      <EditVenueModal
+        isOpen={!!editingVenue}
+        onClose={() => setEditingVenue(null)}
+        venueForm={venueForm}
+        onFormChange={handleVenueFormChange}
+        onSubmit={handleUpdateVenue}
+      />
+
+      <CreateZoneModal
+        isOpen={showCreateZoneModal && selectedVenue}
+        onClose={() => setShowCreateZoneModal(false)}
+        zoneForm={zoneForm}
+        onFormChange={handleZoneFormChange}
+        onSubmit={handleCreateZone}
+        venueName={selectedVenue?.name}
+      />
+
+      <EditZoneModal
+        isOpen={!!editingZone}
+        onClose={() => setEditingZone(null)}
+        zoneForm={zoneForm}
+        onFormChange={handleZoneFormChange}
+        onSubmit={handleUpdateZone}
+        venueName={selectedVenue?.name}
+      />
