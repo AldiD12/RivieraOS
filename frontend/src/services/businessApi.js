@@ -291,6 +291,7 @@ export const businessProductApi = {
   // Create new product
   create: async (categoryId, productData) => {
     console.log('📤 Creating business product:', categoryId, productData);
+    console.log('🖼️ Product imageUrl being sent:', productData.imageUrl);
     const response = await api.post(`/business/categories/${categoryId}/Products`, productData);
     return response.data;
   },
@@ -305,6 +306,7 @@ export const businessProductApi = {
   // Update product
   update: async (categoryId, productId, productData) => {
     console.log('📤 Updating business product:', categoryId, productId, productData);
+    console.log('🖼️ Product imageUrl being sent:', productData.imageUrl);
     const response = await api.put(`/business/categories/${categoryId}/Products/${productId}`, productData);
     return response.data;
   },

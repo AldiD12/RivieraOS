@@ -34,11 +34,14 @@ export const ImageUpload = ({ value, onChange, label = "Image" }) => {
       setUploading(true);
       setError('');
       const imageUrl = await uploadToImgur(imageFile);
+      console.log('✅ Image uploaded successfully:', imageUrl);
       onChange(imageUrl);
+      console.log('📤 Calling onChange with imageUrl:', imageUrl);
       setPreview(imageUrl);
       setImageFile(null);
     } catch (err) {
       setError(err.message);
+      console.error('❌ Image upload failed:', err);
     } finally {
       setUploading(false);
     }
