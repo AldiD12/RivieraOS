@@ -432,6 +432,44 @@ export default function BusinessAdminDashboard() {
     }
   };
 
+  const handleEditCategory = async (e) => {
+    e.preventDefault();
+    if (!editingCategory) return;
+
+    try {
+      await businessApi.categories.update(editingCategory.id, categoryForm);
+      
+      setCategoryForm({
+        name: '',
+        sortOrder: 0,
+        isActive: true
+      });
+      setEditingCategory(null);
+      
+      await fetchCategories();
+      
+    } catch (err) {
+      console.error('Error updating category:', err);
+      setError(`Failed to update category: ${err.data || err.message}`);
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId) => {
+    if (!confirm('Are you sure you want to delete this category? All products in this category will also be deleted.')) return;
+
+    try {
+      await businessApi.categories.delete(categoryId);
+      if (selectedCategory?.id === categoryId) {
+        setSelectedCategory(null);
+        setProducts([]);
+      }
+      await fetchCategories();
+    } catch (err) {
+      console.error('Error deleting category:', err);
+      setError(`Failed to delete category: ${err.data || err.message}`);
+    }
+  };
+
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     if (!selectedCategory) return;
@@ -465,6 +503,41 @@ export default function BusinessAdminDashboard() {
     } catch (err) {
       console.error('Error toggling product availability:', err);
       setError(`Failed to toggle product availability: ${err.data || err.message}`);
+    }
+  };
+
+  const handleEditProduct = async (e) => {
+    e.preventDefault();
+    if (!selectedCategory || !editingProduct) return;
+
+    try {
+      await businessApi.products.update(selectedCategory.id, editingProduct.id, productForm);
+      await fetchProducts(selectedCategory.id);
+      setEditingProduct(null);
+      setProductForm({
+        name: '',
+        description: '',
+        imageUrl: '',
+        price: 0,
+        oldPrice: null,
+        isAvailable: true,
+        isAlcohol: false
+      });
+    } catch (err) {
+      console.error('Error updating product:', err);
+      setError(`Failed to update product: ${err.data || err.message}`);
+    }
+  };
+
+  const handleDeleteProduct = async (categoryId, productId) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+
+    try {
+      await businessApi.products.delete(categoryId, productId);
+      await fetchProducts(categoryId);
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      setError(`Failed to delete product: ${err.data || err.message}`);
     }
   };
 
@@ -1013,22 +1086,51 @@ export default function BusinessAdminDashboard() {
                     {categories.map((category) => (
                       <div
                         key={category.id}
-                        onClick={() => setSelectedCategory(category)}
-                        className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                        className={`p-3 rounded-lg transition-colors ${
                           selectedCategory?.id === category.id
                             ? 'bg-blue-600 text-white'
                             : 'bg-zinc-800 hover:bg-zinc-700'
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-medium">{category.name}</span>
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            category.isActive
-                              ? 'bg-green-900/20 text-green-400'
-                              : 'bg-red-900/20 text-red-400'
-                          }`}>
-                            {category.isActive ? 'Active' : 'Inactive'}
+                          <span 
+                            className="font-medium cursor-pointer flex-1"
+                            onClick={() => setSelectedCategory(category)}
+                          >
+                            {category.name}
                           </span>
+                          <div className="flex items-center space-x-2">
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              category.isActive
+                                ? 'bg-green-900/20 text-green-400'
+                                : 'bg-red-900/20 text-red-400'
+                            }`}>
+                              {category.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingCategory(category);
+                                setCategoryForm({
+                                  name: category.name,
+                                  sortOrder: category.sortOrder || 0,
+                                  isActive: category.isActive
+                                });
+                              }}
+                              className="text-blue-400 hover:text-blue-300 text-sm"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCategory(category.id);
+                              }}
+                              className="text-red-400 hover:text-red-300 text-sm"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -1050,9 +1152,12 @@ export default function BusinessAdminDashboard() {
                     {products.map((product) => (
                       <div key={product.id} className="p-3 bg-zinc-800 rounded-lg">
                         <div className="flex items-center justify-between">
-                          <div>
+                          <div className="flex-1">
                             <div className="font-medium">{product.name}</div>
                             <div className="text-sm text-zinc-400">€{product.price}</div>
+                            {product.description && (
+                              <div className="text-xs text-zinc-500 mt-1">{product.description}</div>
+                            )}
                           </div>
                           <div className="flex items-center space-x-2">
                             <button
@@ -1064,6 +1169,29 @@ export default function BusinessAdminDashboard() {
                               }`}
                             >
                               {product.isAvailable ? 'Available' : 'Unavailable'}
+                            </button>
+                            <button
+                              onClick={() => {
+                                setEditingProduct(product);
+                                setProductForm({
+                                  name: product.name,
+                                  description: product.description || '',
+                                  imageUrl: product.imageUrl || '',
+                                  price: product.price,
+                                  oldPrice: product.oldPrice || null,
+                                  isAvailable: product.isAvailable,
+                                  isAlcohol: product.isAlcohol || false
+                                });
+                              }}
+                              className="text-blue-400 hover:text-blue-300 text-sm"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteProduct(selectedCategory.id, product.id)}
+                              className="text-red-400 hover:text-red-300 text-sm"
+                            >
+                              Delete
                             </button>
                           </div>
                         </div>
@@ -1378,6 +1506,22 @@ export default function BusinessAdminDashboard() {
         onSubmit={handleCreateCategory}
       />
 
+      {/* Edit Category Modal */}
+      <EditCategoryModal
+        isOpen={!!editingCategory}
+        onClose={() => {
+          setEditingCategory(null);
+          setCategoryForm({
+            name: '',
+            sortOrder: 0,
+            isActive: true
+          });
+        }}
+        categoryForm={categoryForm}
+        onFormChange={handleCategoryFormChange}
+        onSubmit={handleEditCategory}
+      />
+
       {/* Create Product Modal */}
       <CreateProductModal
         isOpen={showCreateProductModal}
@@ -1385,6 +1529,27 @@ export default function BusinessAdminDashboard() {
         productForm={productForm}
         onFormChange={handleProductFormChange}
         onSubmit={handleCreateProduct}
+        categories={categories}
+      />
+
+      {/* Edit Product Modal */}
+      <EditProductModal
+        isOpen={!!editingProduct}
+        onClose={() => {
+          setEditingProduct(null);
+          setProductForm({
+            name: '',
+            description: '',
+            imageUrl: '',
+            price: 0,
+            oldPrice: null,
+            isAvailable: true,
+            isAlcohol: false
+          });
+        }}
+        productForm={productForm}
+        onFormChange={handleProductFormChange}
+        onSubmit={handleEditProduct}
         categories={categories}
       />
 
