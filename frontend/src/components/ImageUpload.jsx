@@ -6,6 +6,7 @@ export const ImageUpload = ({ value, onChange, label = "Image" }) => {
   const [imageFile, setImageFile] = useState(null);
   const [preview, setPreview] = useState(value || '');
   const [error, setError] = useState('');
+  const [pendingUpload, setPendingUpload] = useState(false);
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -25,6 +26,7 @@ export const ImageUpload = ({ value, onChange, label = "Image" }) => {
     setError('');
     setImageFile(file);
     setPreview(URL.createObjectURL(file));
+    setPendingUpload(true); // Mark that upload is needed
   };
 
   const handleUpload = async () => {
@@ -39,6 +41,7 @@ export const ImageUpload = ({ value, onChange, label = "Image" }) => {
       console.log('📤 Calling onChange with imageUrl:', imageUrl);
       setPreview(imageUrl);
       setImageFile(null);
+      setPendingUpload(false); // Upload complete
     } catch (err) {
       setError(err.message);
       console.error('❌ Image upload failed:', err);
@@ -51,6 +54,7 @@ export const ImageUpload = ({ value, onChange, label = "Image" }) => {
     onChange(url);
     setPreview(url);
     setImageFile(null);
+    setPendingUpload(false);
   };
 
   return (
@@ -94,6 +98,15 @@ export const ImageUpload = ({ value, onChange, label = "Image" }) => {
           </button>
         )}
       </div>
+
+      {/* Warning if file selected but not uploaded */}
+      {pendingUpload && !uploading && (
+        <div className="mt-2 p-3 bg-yellow-900/20 border border-yellow-600/30 rounded-lg">
+          <p className="text-yellow-400 text-sm font-medium">
+            ⚠️ Click "Upload" button to save this image before submitting the form!
+          </p>
+        </div>
+      )}
 
       {/* Error Message */}
       {error && (
