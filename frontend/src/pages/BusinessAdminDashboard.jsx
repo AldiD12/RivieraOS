@@ -923,13 +923,14 @@ export default function BusinessAdminDashboard() {
         )}
 
         {/* Staff Management Tab */}
+        {/* Staff Management Tab - Mobile Responsive */}
         {activeTab === 'staff' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Staff Management</h2>
+          <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <h2 className="text-lg md:text-xl font-semibold">Staff Management</h2>
               <button
                 onClick={() => setShowCreateStaffModal(true)}
-                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                className="w-full sm:w-auto px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm md:text-base"
               >
                 Add Staff Member
               </button>
@@ -938,56 +939,155 @@ export default function BusinessAdminDashboard() {
             {staffLoading ? (
               <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-                <p className="text-zinc-400">Loading staff members...</p>
+                <p className="text-zinc-400 text-sm md:text-base">Loading staff members...</p>
               </div>
             ) : (
-              <div className="bg-zinc-900 rounded-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-zinc-800">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                          Staff Member
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                          Role
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                          Phone
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                          PIN
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-800">
-                      {staffMembers.map((staff) => (
-                        <tr key={staff.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <div className="text-sm font-medium text-white">
-                                {staff.fullName || 'Unnamed Staff'}
+              <>
+                {/* Desktop Table View */}
+                <div className="hidden md:block bg-zinc-900 rounded-lg overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-zinc-800">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
+                            Staff Member
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
+                            Role
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
+                            Phone
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
+                            PIN
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-800">
+                        {staffMembers.map((staff) => (
+                          <tr key={staff.id}>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div>
+                                <div className="text-sm font-medium text-white">
+                                  {staff.fullName || 'Unnamed Staff'}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                  ID: {staff.id}
+                                </div>
                               </div>
-                              <div className="text-sm text-zinc-400">
-                                ID: {staff.id}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="px-2 py-1 text-xs font-medium bg-blue-900/20 text-blue-400 rounded-full">
+                                {staff.role}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">
+                              {staff.phoneNumber || staff.email || 'No contact'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                staff.hasPinSet 
+                                  ? 'bg-emerald-900/20 text-emerald-400' 
+                                  : 'bg-amber-900/20 text-amber-400'
+                              }`}>
+                                {staff.hasPinSet ? '✓ Set' : '✗ Not Set'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                staff.isActive 
+                                  ? 'bg-green-900/20 text-green-400' 
+                                  : 'bg-red-900/20 text-red-400'
+                              }`}>
+                                {staff.isActive ? 'Active' : 'Inactive'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                              <button
+                                onClick={() => {
+                                  setEditingStaff(staff);
+                                  setStaffForm({
+                                    email: staff.email || '',
+                                    password: '',
+                                    phoneNumber: staff.phoneNumber || '',
+                                    fullName: staff.fullName || '',
+                                    role: staff.role || '',
+                                    pin: '',
+                                    isActive: staff.isActive
+                                  });
+                                }}
+                                className="text-blue-400 hover:text-blue-300"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleActivateStaff(staff.id)}
+                                className="text-yellow-400 hover:text-yellow-300"
+                              >
+                                {staff.isActive ? 'Deactivate' : 'Activate'}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteStaff(staff.id)}
+                                className="text-red-400 hover:text-red-300"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    
+                    {staffMembers.length === 0 && (
+                      <div className="text-center py-8">
+                        <p className="text-zinc-400">No staff members found.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden space-y-3">
+                  {staffMembers.length === 0 ? (
+                    <div className="bg-zinc-900 rounded-lg p-6 text-center">
+                      <p className="text-zinc-400 text-sm">No staff members found.</p>
+                    </div>
+                  ) : (
+                    staffMembers.map((staff) => (
+                      <div key={staff.id} className="bg-zinc-900 rounded-lg p-4 space-y-3">
+                        {/* Header */}
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="text-base font-semibold text-white">
+                              {staff.fullName || 'Unnamed Staff'}
+                            </h3>
+                            <p className="text-xs text-zinc-400 mt-1">ID: {staff.id}</p>
+                          </div>
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            staff.isActive 
+                              ? 'bg-green-900/20 text-green-400' 
+                              : 'bg-red-900/20 text-red-400'
+                          }`}>
+                            {staff.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </div>
+
+                        {/* Info Grid */}
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <p className="text-zinc-500 text-xs mb-1">Role</p>
                             <span className="px-2 py-1 text-xs font-medium bg-blue-900/20 text-blue-400 rounded-full">
                               {staff.role}
                             </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">
-                            {staff.phoneNumber || staff.email || 'No contact'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          </div>
+                          <div>
+                            <p className="text-zinc-500 text-xs mb-1">PIN Status</p>
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                               staff.hasPinSet 
                                 ? 'bg-emerald-900/20 text-emerald-400' 
@@ -995,59 +1095,56 @@ export default function BusinessAdminDashboard() {
                             }`}>
                               {staff.hasPinSet ? '✓ Set' : '✗ Not Set'}
                             </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              staff.isActive 
-                                ? 'bg-green-900/20 text-green-400' 
-                                : 'bg-red-900/20 text-red-400'
-                            }`}>
-                              {staff.isActive ? 'Active' : 'Inactive'}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                            <button
-                              onClick={() => {
-                                setEditingStaff(staff);
-                                setStaffForm({
-                                  email: staff.email || '',
-                                  password: '', // Don't pre-fill password for security
-                                  phoneNumber: staff.phoneNumber || '',
-                                  fullName: staff.fullName || '',
-                                  role: staff.role || '',
-                                  pin: '',
-                                  isActive: staff.isActive
-                                });
-                              }}
-                              className="text-blue-400 hover:text-blue-300"
-                            >
-                              Edit
-                            </button>
+                          </div>
+                        </div>
+
+                        {/* Contact */}
+                        <div>
+                          <p className="text-zinc-500 text-xs mb-1">Contact</p>
+                          <p className="text-sm text-zinc-300">
+                            {staff.phoneNumber || staff.email || 'No contact'}
+                          </p>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex flex-col gap-2 pt-2 border-t border-zinc-800">
+                          <button
+                            onClick={() => {
+                              setEditingStaff(staff);
+                              setStaffForm({
+                                email: staff.email || '',
+                                password: '',
+                                phoneNumber: staff.phoneNumber || '',
+                                fullName: staff.fullName || '',
+                                role: staff.role || '',
+                                pin: '',
+                                isActive: staff.isActive
+                              });
+                            }}
+                            className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <div className="grid grid-cols-2 gap-2">
                             <button
                               onClick={() => handleActivateStaff(staff.id)}
-                              className="text-yellow-400 hover:text-yellow-300"
+                              className="px-3 py-2 bg-zinc-800 text-yellow-400 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
                             >
                               {staff.isActive ? 'Deactivate' : 'Activate'}
                             </button>
                             <button
                               onClick={() => handleDeleteStaff(staff.id)}
-                              className="text-red-400 hover:text-red-300"
+                              className="px-3 py-2 bg-zinc-800 text-red-400 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
                             >
                               Delete
                             </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  
-                  {staffMembers.length === 0 && (
-                    <div className="text-center py-8">
-                      <p className="text-zinc-400">No staff members found.</p>
-                    </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
                   )}
                 </div>
-              </div>
+              </>
             )}
           </div>
         )}
