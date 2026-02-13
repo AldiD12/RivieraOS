@@ -2205,6 +2205,7 @@ export default function SuperAdminDashboard() {
         productForm={productForm}
         onFormChange={handleProductFormChange}
         onSubmit={handleUpdateProduct}
+        categories={categories}
       />
 
       {/* Create Venue Modal */}
