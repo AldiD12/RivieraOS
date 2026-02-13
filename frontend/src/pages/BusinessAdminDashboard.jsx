@@ -794,53 +794,53 @@ export default function BusinessAdminDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <div className="bg-zinc-900 border-b border-zinc-800 px-6 py-4">
-        <div className="flex items-center justify-between">
+      {/* Header - Mobile Responsive */}
+      <div className="bg-zinc-900 border-b border-zinc-800 px-4 md:px-6 py-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Business Admin</h1>
-            <p className="text-zinc-400 text-sm">
+            <h1 className="text-xl md:text-2xl font-bold">Business Admin</h1>
+            <p className="text-zinc-400 text-xs md:text-sm">
               {businessProfile?.name || 'Business Management Dashboard'}
             </p>
           </div>
           <button
             onClick={handleLogout}
-            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors"
+            className="w-full sm:w-auto px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors text-sm md:text-base"
           >
             Logout
           </button>
         </div>
       </div>
 
-      {/* Error Display */}
+      {/* Error Display - Mobile Responsive */}
       {error && (
-        <div className="mx-6 mt-4 p-4 bg-red-900/20 border border-red-800 rounded-lg">
-          <p className="text-red-400">{error}</p>
+        <div className="mx-4 md:mx-6 mt-4 p-3 md:p-4 bg-red-900/20 border border-red-800 rounded-lg">
+          <p className="text-red-400 text-sm md:text-base">{error}</p>
           <button
             onClick={() => setError('')}
-            className="text-red-300 hover:text-red-200 text-sm mt-2"
+            className="text-red-300 hover:text-red-200 text-xs md:text-sm mt-2"
           >
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Navigation Tabs */}
-      <div className="border-b border-zinc-800">
-        <div className="px-6">
-          <nav className="flex space-x-8">
+      {/* Navigation Tabs - Mobile Responsive */}
+      <div className="border-b border-zinc-800 overflow-x-auto">
+        <div className="px-4 md:px-6">
+          <nav className="flex space-x-4 md:space-x-8 min-w-max">
             {[
               { id: 'overview', label: 'Overview' },
-              { id: 'staff', label: 'Staff Management' },
-              { id: 'menu', label: 'Menu Management' },
+              { id: 'staff', label: 'Staff' },
+              { id: 'menu', label: 'Menu' },
               { id: 'venues', label: 'Venues' },
               { id: 'qr-generator', label: 'QR Codes' },
-              { id: 'debug', label: 'JWT Debug' }
+              { id: 'debug', label: 'Debug' }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                className={`py-3 md:py-4 px-2 md:px-3 border-b-2 font-medium text-xs md:text-sm transition-colors whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-white text-white'
                     : 'border-transparent text-zinc-400 hover:text-zinc-300'
@@ -853,44 +853,44 @@ export default function BusinessAdminDashboard() {
         </div>
       </div>
 
-      {/* Tab Content */}
-      <div className="p-6">
-        {/* Overview Tab */}
+      {/* Tab Content - Mobile Responsive */}
+      <div className="p-4 md:p-6">
+        {/* Overview Tab - Mobile Responsive */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            <h2 className="text-xl font-semibold">Business Overview</h2>
+            <h2 className="text-lg md:text-xl font-semibold">Business Overview</h2>
             
             {dashboardData ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-zinc-900 rounded-lg p-6">
-                  <h3 className="text-lg font-medium mb-2">Total Revenue</h3>
-                  <p className="text-3xl font-bold text-green-400">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <div className="bg-zinc-900 rounded-lg p-4 md:p-6">
+                  <h3 className="text-base md:text-lg font-medium mb-2">Total Revenue</h3>
+                  <p className="text-2xl md:text-3xl font-bold text-green-400">
                     €{dashboardData.totalRevenue?.toLocaleString() || '0'}
                   </p>
                 </div>
-                <div className="bg-zinc-900 rounded-lg p-6">
-                  <h3 className="text-lg font-medium mb-2">Active Staff</h3>
-                  <p className="text-3xl font-bold text-blue-400">
+                <div className="bg-zinc-900 rounded-lg p-4 md:p-6">
+                  <h3 className="text-base md:text-lg font-medium mb-2">Active Staff</h3>
+                  <p className="text-2xl md:text-3xl font-bold text-blue-400">
                     {staffMembers.filter(s => s.isActive).length}
                   </p>
                 </div>
-                <div className="bg-zinc-900 rounded-lg p-6">
-                  <h3 className="text-lg font-medium mb-2">Menu Items</h3>
-                  <p className="text-3xl font-bold text-purple-400">
+                <div className="bg-zinc-900 rounded-lg p-4 md:p-6 sm:col-span-2 lg:col-span-1">
+                  <h3 className="text-base md:text-lg font-medium mb-2">Menu Items</h3>
+                  <p className="text-2xl md:text-3xl font-bold text-purple-400">
                     {products.length}
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="bg-zinc-900 rounded-lg p-6">
-                <p className="text-zinc-400">Dashboard data will appear here once loaded.</p>
+              <div className="bg-zinc-900 rounded-lg p-4 md:p-6">
+                <p className="text-zinc-400 text-sm md:text-base">Dashboard data will appear here once loaded.</p>
               </div>
             )}
 
-            {/* Quick Access Section */}
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold mb-4">Quick Access</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Quick Access Section - Mobile Responsive */}
+            <div className="mt-6 md:mt-8">
+              <h3 className="text-base md:text-lg font-semibold mb-4">Quick Access</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                 <button
                   onClick={() => navigate('/bar')}
                   className="bg-zinc-900 hover:bg-zinc-800 border-2 border-zinc-800 hover:border-zinc-700 rounded-lg p-6 text-left transition-all"
