@@ -321,8 +321,8 @@ export const categoryApi = {
     },
 
     // POST /api/superadmin/businesses/{id}/Categories/{id}/exclusions - Add venue exclusion
-    addExclusion: async (businessId, categoryId, exclusionData) => {
-      const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Categories/${categoryId}/exclusions`, exclusionData);
+    setExclusions: async (businessId, categoryId, venueIds) => {
+      const response = await superAdminApi.post(`/superadmin/businesses/${businessId}/Categories/${categoryId}/exclusions`, venueIds);
       return response.data;
     }
   },
@@ -400,8 +400,8 @@ export const productApi = {
   },
 
   // POST /api/superadmin/categories/{categoryId}/products/{id}/exclusions - Add venue exclusion for product
-  addExclusion: async (categoryId, productId, exclusionData) => {
-    const response = await superAdminApi.post(`/superadmin/categories/${categoryId}/products/${productId}/exclusions`, exclusionData);
+  setExclusions: async (categoryId, productId, venueIds) => {
+    const response = await superAdminApi.post(`/superadmin/categories/${categoryId}/products/${productId}/exclusions`, venueIds);
     return response.data;
   }
 };
