@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageUpload } from '../../ImageUpload';
+import VenueExclusionSelector from '../VenueExclusionSelector';
 
 export const CreateProductModal = ({ 
   isOpen, 
@@ -7,7 +8,11 @@ export const CreateProductModal = ({
   productForm, 
   onFormChange, 
   onSubmit,
-  categories 
+  categories,
+  venues = [],
+  excludedVenueIds = [],
+  onExclusionsChange,
+  loadingVenues = false
 }) => (
   <AnimatePresence>
     {isOpen && (
@@ -120,6 +125,16 @@ export const CreateProductModal = ({
               </label>
             </div>
             
+            {/* Venue Exclusions */}
+            {venues.length > 0 && onExclusionsChange && (
+              <VenueExclusionSelector
+                venues={venues}
+                excludedVenueIds={excludedVenueIds}
+                onChange={onExclusionsChange}
+                loading={loadingVenues}
+              />
+            )}
+            
             <div className="flex justify-end space-x-4 pt-4">
               <button
                 type="button"
@@ -148,7 +163,11 @@ export const EditProductModal = ({
   productForm, 
   onFormChange, 
   onSubmit,
-  categories 
+  categories,
+  venues = [],
+  excludedVenueIds = [],
+  onExclusionsChange,
+  loadingVenues = false
 }) => (
   <AnimatePresence>
     {isOpen && (
@@ -258,6 +277,16 @@ export const EditProductModal = ({
                 Active Product
               </label>
             </div>
+            
+            {/* Venue Exclusions */}
+            {venues.length > 0 && onExclusionsChange && (
+              <VenueExclusionSelector
+                venues={venues}
+                excludedVenueIds={excludedVenueIds}
+                onChange={onExclusionsChange}
+                loading={loadingVenues}
+              />
+            )}
             
             <div className="flex justify-end space-x-4 pt-4">
               <button

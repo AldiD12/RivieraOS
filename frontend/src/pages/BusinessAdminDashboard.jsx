@@ -41,6 +41,11 @@ export default function BusinessAdminDashboard() {
   const [zones, setZones] = useState([]);
   const [venuesLoading, setVenuesLoading] = useState(false);
   const [zonesLoading, setZonesLoading] = useState(false);
+  
+  // Venue exclusion data
+  const [categoryExcludedVenues, setCategoryExcludedVenues] = useState([]);
+  const [productExcludedVenues, setProductExcludedVenues] = useState([]);
+  const [loadingExclusions, setLoadingExclusions] = useState(false);
 
   // Modal states
   const [showCreateStaffModal, setShowCreateStaffModal] = useState(false);
@@ -416,13 +421,19 @@ export default function BusinessAdminDashboard() {
   const handleCreateCategory = async (e) => {
     e.preventDefault();
     try {
-      await businessApi.categories.create(categoryForm);
+      const newCategory = await businessApi.categories.create(categoryForm);
+      
+      // Set exclusions for new category
+      if (categoryExcludedVenues.length > 0) {
+        await businessApi.categories.setExclusions(newCategory.id, categoryExcludedVenues);
+      }
       
       setCategoryForm({
         name: '',
         sortOrder: 0,
         isActive: true
       });
+      setCategoryExcludedVenues([]);
       setShowCreateCategoryModal(false);
       
       await fetchCategories();
@@ -438,13 +449,18 @@ export default function BusinessAdminDashboard() {
     if (!editingCategory) return;
 
     try {
+      // Update category data
       await businessApi.categories.update(editingCategory.id, categoryForm);
+      
+      // Update exclusions
+      await businessApi.categories.setExclusions(editingCategory.id, categoryExcludedVenues);
       
       setCategoryForm({
         name: '',
         sortOrder: 0,
         isActive: true
       });
+      setCategoryExcludedVenues([]);
       setEditingCategory(null);
       
       await fetchCategories();
@@ -476,7 +492,12 @@ export default function BusinessAdminDashboard() {
     if (!selectedCategory) return;
 
     try {
-      await businessApi.products.create(selectedCategory.id, productForm);
+      const newProduct = await businessApi.products.create(selectedCategory.id, productForm);
+      
+      // Set exclusions for new product
+      if (productExcludedVenues.length > 0) {
+        await businessApi.products.setExclusions(selectedCategory.id, newProduct.id, productExcludedVenues);
+      }
       
       setProductForm({
         name: '',
@@ -487,6 +508,7 @@ export default function BusinessAdminDashboard() {
         isAvailable: true,
         isAlcohol: false
       });
+      setProductExcludedVenues([]);
       setShowCreateProductModal(false);
       
       await fetchProducts(selectedCategory.id);
@@ -512,7 +534,12 @@ export default function BusinessAdminDashboard() {
     if (!selectedCategory || !editingProduct) return;
 
     try {
+      // Update product data
       await businessApi.products.update(selectedCategory.id, editingProduct.id, productForm);
+      
+      // Update exclusions
+      await businessApi.products.setExclusions(selectedCategory.id, editingProduct.id, productExcludedVenues);
+      
       await fetchProducts(selectedCategory.id);
       setEditingProduct(null);
       setProductForm({
@@ -524,6 +551,7 @@ export default function BusinessAdminDashboard() {
         isAvailable: true,
         isAlcohol: false
       });
+      setProductExcludedVenues([]);
     } catch (err) {
       console.error('Error updating product:', err);
       setError(`Failed to update product: ${err.data || err.message}`);
@@ -539,6 +567,33 @@ export default function BusinessAdminDashboard() {
     } catch (err) {
       console.error('Error deleting product:', err);
       setError(`Failed to delete product: ${err.data || err.message}`);
+    }
+  };
+
+  // Exclusion management functions
+  const fetchCategoryExclusions = async (categoryId) => {
+    try {
+      setLoadingExclusions(true);
+      const exclusions = await businessApi.categories.getExclusions(categoryId);
+      setCategoryExcludedVenues(exclusions.map(e => e.venueId));
+    } catch (err) {
+      console.error('Error fetching category exclusions:', err);
+      setCategoryExcludedVenues([]);
+    } finally {
+      setLoadingExclusions(false);
+    }
+  };
+
+  const fetchProductExclusions = async (categoryId, productId) => {
+    try {
+      setLoadingExclusions(true);
+      const exclusions = await businessApi.products.getExclusions(categoryId, productId);
+      setProductExcludedVenues(exclusions.map(e => e.venueId));
+    } catch (err) {
+      console.error('Error fetching product exclusions:', err);
+      setProductExcludedVenues([]);
+    } finally {
+      setLoadingExclusions(false);
     }
   };
 
@@ -755,8 +810,13 @@ export default function BusinessAdminDashboard() {
   useEffect(() => {
     if (activeTab === 'staff' && staffMembers.length === 0) {
       fetchStaffMembers();
-    } else if (activeTab === 'menu' && categories.length === 0) {
-      fetchCategories();
+    } else if (activeTab === 'menu') {
+      if (categories.length === 0) {
+        fetchCategories();
+      }
+      if (venues.length === 0) {
+        fetchVenues(); // Fetch venues for exclusion management
+      }
     } else if (activeTab === 'venues' && venues.length === 0) {
       fetchVenues();
     }
@@ -1209,7 +1269,7 @@ export default function BusinessAdminDashboard() {
                               {category.isActive ? 'Active' : 'Inactive'}
                             </span>
                             <button
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.stopPropagation();
                                 setEditingCategory(category);
                                 setCategoryForm({
@@ -1217,6 +1277,7 @@ export default function BusinessAdminDashboard() {
                                   sortOrder: category.sortOrder || 0,
                                   isActive: category.isActive
                                 });
+                                await fetchCategoryExclusions(category.id);
                               }}
                               className="text-blue-400 hover:text-blue-300 text-sm"
                             >
@@ -1272,7 +1333,7 @@ export default function BusinessAdminDashboard() {
                               {product.isAvailable ? 'Available' : 'Unavailable'}
                             </button>
                             <button
-                              onClick={() => {
+                              onClick={async () => {
                                 setEditingProduct(product);
                                 setProductForm({
                                   name: product.name,
@@ -1283,6 +1344,7 @@ export default function BusinessAdminDashboard() {
                                   isAvailable: product.isAvailable,
                                   isAlcohol: product.isAlcohol || false
                                 });
+                                await fetchProductExclusions(selectedCategory.id, product.id);
                               }}
                               className="text-blue-400 hover:text-blue-300 text-sm"
                             >
@@ -1603,10 +1665,17 @@ export default function BusinessAdminDashboard() {
       {/* Create Category Modal */}
       <CreateCategoryModal
         isOpen={showCreateCategoryModal}
-        onClose={() => setShowCreateCategoryModal(false)}
+        onClose={() => {
+          setShowCreateCategoryModal(false);
+          setCategoryExcludedVenues([]);
+        }}
         categoryForm={categoryForm}
         onFormChange={handleCategoryFormChange}
         onSubmit={handleCreateCategory}
+        venues={venues}
+        excludedVenueIds={categoryExcludedVenues}
+        onExclusionsChange={setCategoryExcludedVenues}
+        loadingVenues={venuesLoading}
       />
 
       {/* Edit Category Modal */}
@@ -1619,20 +1688,32 @@ export default function BusinessAdminDashboard() {
             sortOrder: 0,
             isActive: true
           });
+          setCategoryExcludedVenues([]);
         }}
         categoryForm={categoryForm}
         onFormChange={handleCategoryFormChange}
         onSubmit={handleEditCategory}
+        venues={venues}
+        excludedVenueIds={categoryExcludedVenues}
+        onExclusionsChange={setCategoryExcludedVenues}
+        loadingVenues={loadingExclusions}
       />
 
       {/* Create Product Modal */}
       <CreateProductModal
         isOpen={showCreateProductModal}
-        onClose={() => setShowCreateProductModal(false)}
+        onClose={() => {
+          setShowCreateProductModal(false);
+          setProductExcludedVenues([]);
+        }}
         productForm={productForm}
         onFormChange={handleProductFormChange}
         onSubmit={handleCreateProduct}
         categories={categories}
+        venues={venues}
+        excludedVenueIds={productExcludedVenues}
+        onExclusionsChange={setProductExcludedVenues}
+        loadingVenues={venuesLoading}
       />
 
       {/* Edit Product Modal */}
@@ -1648,6 +1729,18 @@ export default function BusinessAdminDashboard() {
             oldPrice: null,
             isAvailable: true,
             isAlcohol: false
+          });
+          setProductExcludedVenues([]);
+        }}
+        productForm={productForm}
+        onFormChange={handleProductFormChange}
+        onSubmit={handleEditProduct}
+        categories={categories}
+        venues={venues}
+        excludedVenueIds={productExcludedVenues}
+        onExclusionsChange={setProductExcludedVenues}
+        loadingVenues={loadingExclusions}
+      />
           });
         }}
         productForm={productForm}

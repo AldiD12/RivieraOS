@@ -618,6 +618,11 @@ export default function SuperAdminDashboard() {
   const [editingVenue, setEditingVenue] = useState(null);
   const [editingZone, setEditingZone] = useState(null);
   
+  // Venue exclusion state
+  const [categoryExcludedVenues, setCategoryExcludedVenues] = useState([]);
+  const [productExcludedVenues, setProductExcludedVenues] = useState([]);
+  const [loadingExclusions, setLoadingExclusions] = useState(false);
+  
   // Units state
   const [selectedZone, setSelectedZone] = useState(null);
   const [units, setUnits] = useState([]);
@@ -1072,27 +1077,39 @@ export default function SuperAdminDashboard() {
     if (!selectedBusiness?.id) return;
     
     try {
-      await categoryApi.business.create(selectedBusiness.id, categoryForm);
+      const newCategory = await categoryApi.business.create(selectedBusiness.id, categoryForm);
+      
+      // Set exclusions for new category
+      if (categoryExcludedVenues.length > 0) {
+        await categoryApi.business.setExclusions(selectedBusiness.id, newCategory.id, categoryExcludedVenues);
+      }
+      
       setShowCreateCategoryModal(false);
       setCategoryForm({
         name: '',
         sortOrder: 0,
         isActive: true
       });
+      setCategoryExcludedVenues([]);
       await fetchMenuForBusiness(selectedBusiness.id);
       setError('');
     } catch (err) {
       console.error('Error creating category:', err);
       setError('Failed to create category: ' + (err.response?.data?.message || err.message));
     }
-  }, [selectedBusiness, categoryForm, fetchMenuForBusiness]);
+  }, [selectedBusiness, categoryForm, categoryExcludedVenues, fetchMenuForBusiness]);
 
   const handleUpdateCategory = useCallback(async (e) => {
     e.preventDefault();
     if (!selectedBusiness?.id || !editingCategory) return;
     
     try {
+      // Update category data
       await categoryApi.business.update(selectedBusiness.id, editingCategory.id, categoryForm);
+      
+      // Update exclusions
+      await categoryApi.business.setExclusions(selectedBusiness.id, editingCategory.id, categoryExcludedVenues);
+      
       setShowEditCategoryModal(false);
       setEditingCategory(null);
       setCategoryForm({
@@ -1100,13 +1117,14 @@ export default function SuperAdminDashboard() {
         sortOrder: 0,
         isActive: true
       });
+      setCategoryExcludedVenues([]);
       await fetchMenuForBusiness(selectedBusiness.id);
       setError('');
     } catch (err) {
       console.error('Error updating category:', err);
       setError('Failed to update category: ' + (err.response?.data?.message || err.message));
     }
-  }, [selectedBusiness, editingCategory, categoryForm, fetchMenuForBusiness]);
+  }, [selectedBusiness, editingCategory, categoryForm, categoryExcludedVenues, fetchMenuForBusiness]);
 
   const handleDeleteCategory = useCallback(async (categoryId) => {
     if (!selectedBusiness?.id) return;
@@ -1138,7 +1156,13 @@ export default function SuperAdminDashboard() {
     }
     
     try {
-      await productApi.create(categoryId, productForm);
+      const newProduct = await productApi.create(categoryId, productForm);
+      
+      // Set exclusions for new product
+      if (productExcludedVenues.length > 0) {
+        await productApi.setExclusions(categoryId, newProduct.id, productExcludedVenues);
+      }
+      
       setShowCreateProductModal(false);
       setProductForm({
         name: '',
@@ -1150,6 +1174,7 @@ export default function SuperAdminDashboard() {
         isAlcohol: false,
         categoryId: ''
       });
+      setProductExcludedVenues([]);
       
       // Refresh products for current category
       const productData = await productApi.getByCategory(categoryId);
@@ -1159,7 +1184,7 @@ export default function SuperAdminDashboard() {
       console.error('Error creating product:', err);
       setError('Failed to create product: ' + (err.response?.data?.message || err.message));
     }
-  }, [productForm, selectedCategory]);
+  }, [productForm, selectedCategory, productExcludedVenues]);
 
   const handleUpdateProduct = useCallback(async (e) => {
     e.preventDefault();
@@ -1173,7 +1198,12 @@ export default function SuperAdminDashboard() {
     }
     
     try {
+      // Update product data
       await productApi.update(categoryId, editingProduct.id, productForm);
+      
+      // Update exclusions
+      await productApi.setExclusions(categoryId, editingProduct.id, productExcludedVenues);
+      
       setShowEditProductModal(false);
       setEditingProduct(null);
       setProductForm({
@@ -1186,6 +1216,7 @@ export default function SuperAdminDashboard() {
         isAlcohol: false,
         categoryId: ''
       });
+      setProductExcludedVenues([]);
       
       // Refresh products for current category
       const productData = await productApi.getByCategory(categoryId);
@@ -1213,6 +1244,33 @@ export default function SuperAdminDashboard() {
       setError('Failed to delete product: ' + (err.response?.data?.message || err.message));
     }
   }, [selectedCategory]);
+
+  // Exclusion management functions
+  const fetchCategoryExclusions = useCallback(async (businessId, categoryId) => {
+    try {
+      setLoadingExclusions(true);
+      const exclusions = await categoryApi.business.getExclusions(businessId, categoryId);
+      setCategoryExcludedVenues(exclusions.map(e => e.venueId));
+    } catch (err) {
+      console.error('Error fetching category exclusions:', err);
+      setCategoryExcludedVenues([]);
+    } finally {
+      setLoadingExclusions(false);
+    }
+  }, []);
+
+  const fetchProductExclusions = useCallback(async (categoryId, productId) => {
+    try {
+      setLoadingExclusions(true);
+      const exclusions = await productApi.getExclusions(categoryId, productId);
+      setProductExcludedVenues(exclusions.map(e => e.venueId));
+    } catch (err) {
+      console.error('Error fetching product exclusions:', err);
+      setProductExcludedVenues([]);
+    } finally {
+      setLoadingExclusions(false);
+    }
+  }, []);
 
   // Venues Management Functions
   const fetchVenuesForBusiness = useCallback(async (businessId) => {
@@ -1662,7 +1720,7 @@ export default function SuperAdminDashboard() {
             products={products}
             onCategorySelect={handleCategorySelect}
             onCreateCategory={() => setShowCreateCategoryModal(true)}
-            onEditCategory={(category) => {
+            onEditCategory={async (category) => {
               setEditingCategory(category);
               setCategoryForm({
                 name: category.name || '',
@@ -1670,6 +1728,9 @@ export default function SuperAdminDashboard() {
                 isActive: category.isActive
               });
               setShowEditCategoryModal(true);
+              if (selectedBusiness?.id) {
+                await fetchCategoryExclusions(selectedBusiness.id, category.id);
+              }
             }}
             onDeleteCategory={handleDeleteCategory}
             onCreateProduct={() => {
@@ -1686,7 +1747,7 @@ export default function SuperAdminDashboard() {
               });
               setShowCreateProductModal(true);
             }}
-            onEditProduct={(product) => {
+            onEditProduct={async (product) => {
               setEditingProduct(product);
               setProductForm({
                 name: product.name || '',
@@ -1699,6 +1760,10 @@ export default function SuperAdminDashboard() {
                 categoryId: product.categoryId || selectedCategory?.id || ''
               });
               setShowEditProductModal(true);
+              const categoryId = product.categoryId || selectedCategory?.id;
+              if (categoryId) {
+                await fetchProductExclusions(categoryId, product.id);
+              }
             }}
             onDeleteProduct={handleDeleteProduct}
             isMenuLoading={isMenuLoading}
@@ -2167,10 +2232,17 @@ export default function SuperAdminDashboard() {
       {/* Create Category Modal */}
       <CreateCategoryModal
         isOpen={showCreateCategoryModal}
-        onClose={() => setShowCreateCategoryModal(false)}
+        onClose={() => {
+          setShowCreateCategoryModal(false);
+          setCategoryExcludedVenues([]);
+        }}
         categoryForm={categoryForm}
         onFormChange={handleCategoryFormChange}
         onSubmit={handleCreateCategory}
+        venues={venues}
+        excludedVenueIds={categoryExcludedVenues}
+        onExclusionsChange={setCategoryExcludedVenues}
+        loadingVenues={venuesLoading}
       />
 
       {/* Edit Category Modal */}
@@ -2179,20 +2251,32 @@ export default function SuperAdminDashboard() {
         onClose={() => {
           setShowEditCategoryModal(false);
           setEditingCategory(null);
+          setCategoryExcludedVenues([]);
         }}
         categoryForm={categoryForm}
         onFormChange={handleCategoryFormChange}
         onSubmit={handleUpdateCategory}
+        venues={venues}
+        excludedVenueIds={categoryExcludedVenues}
+        onExclusionsChange={setCategoryExcludedVenues}
+        loadingVenues={loadingExclusions}
       />
 
       {/* Create Product Modal */}
       <CreateProductModal
         isOpen={showCreateProductModal}
-        onClose={() => setShowCreateProductModal(false)}
+        onClose={() => {
+          setShowCreateProductModal(false);
+          setProductExcludedVenues([]);
+        }}
         productForm={productForm}
         onFormChange={handleProductFormChange}
         onSubmit={handleCreateProduct}
         categories={categories}
+        venues={venues}
+        excludedVenueIds={productExcludedVenues}
+        onExclusionsChange={setProductExcludedVenues}
+        loadingVenues={venuesLoading}
       />
 
       {/* Edit Product Modal */}
@@ -2201,11 +2285,16 @@ export default function SuperAdminDashboard() {
         onClose={() => {
           setShowEditProductModal(false);
           setEditingProduct(null);
+          setProductExcludedVenues([]);
         }}
         productForm={productForm}
         onFormChange={handleProductFormChange}
         onSubmit={handleUpdateProduct}
         categories={categories}
+        venues={venues}
+        excludedVenueIds={productExcludedVenues}
+        onExclusionsChange={setProductExcludedVenues}
+        loadingVenues={loadingExclusions}
       />
 
       {/* Create Venue Modal */}

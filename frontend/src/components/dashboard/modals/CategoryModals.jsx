@@ -1,11 +1,16 @@
 import { motion, AnimatePresence } from 'framer-motion';
+import VenueExclusionSelector from '../VenueExclusionSelector';
 
 export const CreateCategoryModal = ({ 
   isOpen, 
   onClose, 
   categoryForm, 
   onFormChange, 
-  onSubmit 
+  onSubmit,
+  venues = [],
+  excludedVenueIds = [],
+  onExclusionsChange,
+  loadingVenues = false
 }) => (
   <AnimatePresence>
     {isOpen && (
@@ -66,6 +71,16 @@ export const CreateCategoryModal = ({
               </label>
             </div>
             
+            {/* Venue Exclusions */}
+            {venues.length > 0 && onExclusionsChange && (
+              <VenueExclusionSelector
+                venues={venues}
+                excludedVenueIds={excludedVenueIds}
+                onChange={onExclusionsChange}
+                loading={loadingVenues}
+              />
+            )}
+            
             <div className="flex justify-end space-x-4 pt-4">
               <button
                 type="button"
@@ -93,7 +108,11 @@ export const EditCategoryModal = ({
   onClose, 
   categoryForm, 
   onFormChange, 
-  onSubmit 
+  onSubmit,
+  venues = [],
+  excludedVenueIds = [],
+  onExclusionsChange,
+  loadingVenues = false
 }) => (
   <AnimatePresence>
     {isOpen && (
@@ -151,6 +170,16 @@ export const EditCategoryModal = ({
                 Active Category
               </label>
             </div>
+            
+            {/* Venue Exclusions */}
+            {venues.length > 0 && onExclusionsChange && (
+              <VenueExclusionSelector
+                venues={venues}
+                excludedVenueIds={excludedVenueIds}
+                onChange={onExclusionsChange}
+                loading={loadingVenues}
+              />
+            )}
             
             <div className="flex justify-end space-x-4 pt-4">
               <button
