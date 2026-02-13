@@ -1,4 +1,5 @@
 using System.Text;
+using Azure.Storage.Blobs;
 using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.Hubs;
 using BlackBear.Services.Core.Interfaces;
@@ -33,6 +34,8 @@ Console.WriteLine($"[Startup] Connection string found: {!string.IsNullOrEmpty(co
 builder.Services.AddControllers();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddSingleton(_ => new BlobServiceClient(builder.Configuration.GetConnectionString("AzureBlobStorage")));
+builder.Services.AddScoped<IBlobService, BlobService>();
 
 // 2. Add Swagger/OpenAPI with JWT support
 builder.Services.AddEndpointsApiExplorer();
