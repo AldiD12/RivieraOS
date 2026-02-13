@@ -675,7 +675,8 @@ export default function SuperAdminDashboard() {
     price: 0,
     oldPrice: null,
     isAvailable: true,
-    isAlcohol: false
+    isAlcohol: false,
+    categoryId: '' // Add categoryId for dropdown
   });
 
   const [venueForm, setVenueForm] = useState({
@@ -1127,10 +1128,17 @@ export default function SuperAdminDashboard() {
 
   const handleCreateProduct = useCallback(async (e) => {
     e.preventDefault();
-    if (!selectedCategory) return;
+    
+    // Use categoryId from form (allows changing category in modal)
+    const categoryId = productForm.categoryId || selectedCategory?.id;
+    
+    if (!categoryId) {
+      setError('Please select a category');
+      return;
+    }
     
     try {
-      await productApi.create(selectedCategory.id, productForm);
+      await productApi.create(categoryId, productForm);
       setShowCreateProductModal(false);
       setProductForm({
         name: '',
@@ -1139,25 +1147,33 @@ export default function SuperAdminDashboard() {
         price: 0,
         oldPrice: null,
         isAvailable: true,
-        isAlcohol: false
+        isAlcohol: false,
+        categoryId: ''
       });
       
       // Refresh products for current category
-      const productData = await productApi.getByCategory(selectedCategory.id);
+      const productData = await productApi.getByCategory(categoryId);
       setProducts(Array.isArray(productData) ? productData : []);
       setError('');
     } catch (err) {
       console.error('Error creating product:', err);
       setError('Failed to create product: ' + (err.response?.data?.message || err.message));
     }
-  }, [selectedCategory, productForm]);
+  }, [productForm, selectedCategory]);
 
   const handleUpdateProduct = useCallback(async (e) => {
     e.preventDefault();
-    if (!selectedCategory || !editingProduct) return;
+    
+    // Use categoryId from form (allows changing category in modal)
+    const categoryId = productForm.categoryId || selectedCategory?.id;
+    
+    if (!categoryId || !editingProduct) {
+      setError('Please select a category');
+      return;
+    }
     
     try {
-      await productApi.update(selectedCategory.id, editingProduct.id, productForm);
+      await productApi.update(categoryId, editingProduct.id, productForm);
       setShowEditProductModal(false);
       setEditingProduct(null);
       setProductForm({
@@ -1167,18 +1183,19 @@ export default function SuperAdminDashboard() {
         price: 0,
         oldPrice: null,
         isAvailable: true,
-        isAlcohol: false
+        isAlcohol: false,
+        categoryId: ''
       });
       
       // Refresh products for current category
-      const productData = await productApi.getByCategory(selectedCategory.id);
+      const productData = await productApi.getByCategory(categoryId);
       setProducts(Array.isArray(productData) ? productData : []);
       setError('');
     } catch (err) {
       console.error('Error updating product:', err);
       setError('Failed to update product: ' + (err.response?.data?.message || err.message));
     }
-  }, [selectedCategory, editingProduct, productForm]);
+  }, [productForm, selectedCategory, editingProduct]);
 
   const handleDeleteProduct = useCallback(async (productId) => {
     if (!selectedCategory) return;
@@ -1655,7 +1672,20 @@ export default function SuperAdminDashboard() {
               setShowEditCategoryModal(true);
             }}
             onDeleteCategory={handleDeleteCategory}
-            onCreateProduct={() => setShowCreateProductModal(true)}
+            onCreateProduct={() => {
+              // Pre-fill categoryId with selected category
+              setProductForm({
+                name: '',
+                description: '',
+                imageUrl: '',
+                price: 0,
+                oldPrice: null,
+                isAvailable: true,
+                isAlcohol: false,
+                categoryId: selectedCategory?.id || ''
+              });
+              setShowCreateProductModal(true);
+            }}
             onEditProduct={(product) => {
               setEditingProduct(product);
               setProductForm({
@@ -1665,7 +1695,8 @@ export default function SuperAdminDashboard() {
                 price: product.price || 0,
                 oldPrice: product.oldPrice || null,
                 isAvailable: product.isAvailable,
-                isAlcohol: product.isAlcohol
+                isAlcohol: product.isAlcohol,
+                categoryId: product.categoryId || selectedCategory?.id || ''
               });
               setShowEditProductModal(true);
             }}
