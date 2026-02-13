@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageUpload } from '../../ImageUpload';
-import VenueExclusionSelector from '../VenueExclusionSelector';
+import VenueExclusionSelector from '../../VenueExclusionSelector';
 
 export const CreateProductModal = ({ 
   isOpen, 

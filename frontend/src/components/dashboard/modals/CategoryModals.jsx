@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import VenueExclusionSelector from '../VenueExclusionSelector';
+import VenueExclusionSelector from '../../VenueExclusionSelector';
 
 export const CreateCategoryModal = ({ 
   isOpen, 

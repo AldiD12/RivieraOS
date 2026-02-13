@@ -1741,13 +1741,6 @@ export default function BusinessAdminDashboard() {
         onExclusionsChange={setProductExcludedVenues}
         loadingVenues={loadingExclusions}
       />
-          });
-        }}
-        productForm={productForm}
-        onFormChange={handleProductFormChange}
-        onSubmit={handleEditProduct}
-        categories={categories}
-      />
 
       {/* Create Venue Modal */}
       <CreateVenueModal
