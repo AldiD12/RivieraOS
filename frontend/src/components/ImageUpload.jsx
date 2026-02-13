@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { uploadToCloudinary } from '../utils/cloudinaryUpload';
+import { uploadToAzureBlob } from '../utils/azureBlobUpload';
 
 export const ImageUpload = ({ value, onChange, label = "Image" }) => {
   const [uploading, setUploading] = useState(false);
@@ -35,8 +35,8 @@ export const ImageUpload = ({ value, onChange, label = "Image" }) => {
     try {
       setUploading(true);
       setError('');
-      const imageUrl = await uploadToCloudinary(imageFile);
-      console.log('✅ Image uploaded successfully to Cloudinary:', imageUrl);
+      const imageUrl = await uploadToAzureBlob(imageFile);
+      console.log('✅ Image uploaded successfully to Azure Blob:', imageUrl);
       onChange(imageUrl);
       console.log('📤 Calling onChange with imageUrl:', imageUrl);
       setPreview(imageUrl);
@@ -44,7 +44,7 @@ export const ImageUpload = ({ value, onChange, label = "Image" }) => {
       setPendingUpload(false); // Upload complete
     } catch (err) {
       setError(err.message);
-      console.error('❌ Cloudinary upload failed:', err);
+      console.error('❌ Azure Blob upload failed:', err);
     } finally {
       setUploading(false);
     }
@@ -132,7 +132,7 @@ export const ImageUpload = ({ value, onChange, label = "Image" }) => {
 
       {/* Help Text */}
       <p className="text-xs text-zinc-500 mt-2">
-        Paste a URL or upload an image (max 10MB). Free hosting via Cloudinary.
+        Paste a URL or upload an image (max 10MB). Hosted on Azure Blob Storage.
       </p>
     </div>
   );
