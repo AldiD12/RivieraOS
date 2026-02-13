@@ -1150,21 +1150,22 @@ export default function BusinessAdminDashboard() {
         )}
 
         {/* Menu Management Tab */}
+        {/* Menu Management Tab - Mobile Responsive */}
         {activeTab === 'menu' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold">Menu Management</h2>
-              <div className="space-x-2">
+          <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <h2 className="text-lg md:text-xl font-semibold">Menu Management</h2>
+              <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={() => setShowCreateCategoryModal(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm md:text-base"
                 >
                   Add Category
                 </button>
                 {selectedCategory && (
                   <button
                     onClick={() => setShowCreateProductModal(true)}
-                    className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm md:text-base"
                   >
                     Add Product
                   </button>
@@ -1172,10 +1173,10 @@ export default function BusinessAdminDashboard() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Categories */}
-              <div className="bg-zinc-900 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">Categories</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+              {/* Categories - Mobile Responsive */}
+              <div className="bg-zinc-900 rounded-lg p-4 md:p-6">
+                <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Categories</h3>
                 {menuLoading ? (
                   <div className="text-center py-4">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto mb-2"></div>
@@ -1242,9 +1243,9 @@ export default function BusinessAdminDashboard() {
                 )}
               </div>
 
-              {/* Products */}
-              <div className="bg-zinc-900 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4">
+              {/* Products - Mobile Responsive */}
+              <div className="bg-zinc-900 rounded-lg p-4 md:p-6">
+                <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">
                   Products {selectedCategory && `- ${selectedCategory.name}`}
                 </h3>
                 {selectedCategory ? (
@@ -1311,16 +1312,17 @@ export default function BusinessAdminDashboard() {
         )}
 
         {/* Venues Tab */}
+        {/* Venues Tab - Mobile Responsive */}
         {activeTab === 'venues' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
+          <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
               <div>
-                <h2 className="text-2xl font-bold text-white">Venues & Zones</h2>
-                <p className="text-zinc-400">Manage your business venues and zones</p>
+                <h2 className="text-xl md:text-2xl font-bold text-white">Venues & Zones</h2>
+                <p className="text-zinc-400 text-sm md:text-base">Manage your business venues and zones</p>
               </div>
               <button
                 onClick={() => setShowCreateVenueModal(true)}
-                className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                className="w-full sm:w-auto px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm md:text-base"
               >
                 + Create Venue
               </button>
@@ -1331,11 +1333,11 @@ export default function BusinessAdminDashboard() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Venues Column */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                {/* Venues Column - Mobile Responsive */}
                 <div>
-                  <div className="bg-zinc-800 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold text-white mb-4">Venues</h3>
+                  <div className="bg-zinc-800 rounded-lg p-3 md:p-4">
+                    <h3 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Venues</h3>
                     <div className="space-y-3">
                       {venues.map((venue) => (
                         <div
