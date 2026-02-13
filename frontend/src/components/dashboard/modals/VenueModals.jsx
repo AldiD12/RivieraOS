@@ -89,6 +89,30 @@ export const CreateVenueModal = ({
               />
             </div>
             
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Google Place ID
+              </label>
+              <input
+                type="text"
+                value={venueForm.googlePlaceId || ''}
+                onChange={(e) => onFormChange('googlePlaceId', e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                placeholder="ChIJN1t_tDeuEmsRUsoyG83frY4"
+              />
+              <p className="text-xs text-zinc-500 mt-1">
+                For 4-5 star reviews to redirect to Google Maps. Find it at{' '}
+                <a 
+                  href="https://developers.google.com/maps/documentation/places/web-service/place-id" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:underline"
+                >
+                  Google Place ID Finder
+                </a>
+              </p>
+            </div>
+            
             <ImageUpload
               value={venueForm.imageUrl}
               onChange={(url) => onFormChange('imageUrl', url)}
@@ -246,6 +270,30 @@ export const EditVenueModal = ({
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                 placeholder="Enter address"
               />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Google Place ID
+              </label>
+              <input
+                type="text"
+                value={venueForm.googlePlaceId || ''}
+                onChange={(e) => onFormChange('googlePlaceId', e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                placeholder="ChIJN1t_tDeuEmsRUsoyG83frY4"
+              />
+              <p className="text-xs text-zinc-500 mt-1">
+                For 4-5 star reviews to redirect to Google Maps. Find it at{' '}
+                <a 
+                  href="https://developers.google.com/maps/documentation/places/web-service/place-id" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-400 hover:underline"
+                >
+                  Google Place ID Finder
+                </a>
+              </p>
             </div>
             
             <ImageUpload
