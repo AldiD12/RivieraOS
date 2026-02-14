@@ -150,23 +150,18 @@ export default function MenuPage() {
   const [venueData, setVenueData] = useState(null);
   const [isDigitalOrderingEnabled, setIsDigitalOrderingEnabled] = useState(true);
   
-  // Reservation state
-  const [restaurantVenues, setRestaurantVenues] = useState([]);
-  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedZone, setSelectedZone] = useState(null);
-  const [selectedUnit, setSelectedUnit] = useState(null);
-  const [availability, setAvailability] = useState(null);
-  const [zones, setZones] = useState([]);
-  const [loadingReservation, setLoadingReservation] = useState(false);
+  // Reservation modal state
+  const [showReservationModal, setShowReservationModal] = useState(false);
   const [reservationForm, setReservationForm] = useState({
     guestName: '',
     guestPhone: '',
-    guestEmail: '',
     guestCount: 2,
+    date: new Date().toISOString().split('T')[0],
+    time: '19:00',
     notes: ''
   });
-  const [reservationConfirmation, setReservationConfirmation] = useState(null);
+  const [reservationSubmitting, setReservationSubmitting] = useState(false);
+  const [reservationSuccess, setReservationSuccess] = useState(false);
 
   useEffect(() => {
     fetchVenueData();
@@ -359,78 +354,32 @@ export default function MenuPage() {
     setSpecialInstructions('');
   };
 
-  const fetchRestaurantVenues = async () => {
-    try {
-      setLoadingReservation(true);
-      const venues = await reservationApi.getRestaurantVenues();
-      setRestaurantVenues(venues);
-    } catch (error) {
-      console.error('Error fetching restaurant venues:', error);
-    } finally {
-      setLoadingReservation(false);
-    }
-  };
-
-  const fetchAvailability = async (venueId, date) => {
-    try {
-      setLoadingReservation(true);
-      const [availabilityData, zonesData] = await Promise.all([
-        reservationApi.getAvailability(venueId, date),
-        reservationApi.getZones(venueId)
-      ]);
-      setAvailability(availabilityData);
-      setZones(zonesData);
-    } catch (error) {
-      console.error('Error fetching availability:', error);
-    } finally {
-      setLoadingReservation(false);
-    }
-  };
-
   const handleReservationSubmit = async () => {
-    if (!selectedUnit || !reservationForm.guestName || !reservationForm.guestPhone) {
+    if (!reservationForm.guestName || !reservationForm.guestPhone) {
       return;
     }
 
-    try {
-      setLoadingReservation(true);
-      const confirmation = await reservationApi.createReservation({
-        zoneUnitId: selectedUnit.id,
-        venueId: selectedRestaurant.id,
-        guestName: reservationForm.guestName,
-        guestPhone: reservationForm.guestPhone,
-        guestEmail: reservationForm.guestEmail || null,
-        guestCount: reservationForm.guestCount,
-        startTime: selectedDate.toISOString(),
-        endTime: null,
-        notes: reservationForm.notes || null
-      });
-      setReservationConfirmation(confirmation);
-      setCurrentScreen('reservationConfirmed');
-    } catch (error) {
-      console.error('Error creating reservation:', error);
-      alert('Failed to create reservation. Please try again.');
-    } finally {
-      setLoadingReservation(false);
-    }
-  };
-
-  const resetReservation = () => {
-    setSelectedRestaurant(null);
-    setSelectedDate(new Date());
-    setSelectedZone(null);
-    setSelectedUnit(null);
-    setAvailability(null);
-    setZones([]);
-    setReservationForm({
-      guestName: '',
-      guestPhone: '',
-      guestEmail: '',
-      guestCount: 2,
-      notes: ''
-    });
-    setReservationConfirmation(null);
-    setCurrentScreen('menu');
+    setReservationSubmitting(true);
+    
+    // Simulate API call - replace with actual API when ready
+    setTimeout(() => {
+      setReservationSubmitting(false);
+      setReservationSuccess(true);
+      
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setShowReservationModal(false);
+        setReservationSuccess(false);
+        setReservationForm({
+          guestName: '',
+          guestPhone: '',
+          guestCount: 2,
+          date: new Date().toISOString().split('T')[0],
+          time: '19:00',
+          notes: ''
+        });
+      }, 3000);
+    }, 1000);
   };
 
   if (loading) {
@@ -539,26 +488,162 @@ export default function MenuPage() {
           </motion.div>
         )}
 
-        {/* Reserve Table Button - Always visible */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className={`fixed ${cart.length > 0 && isDigitalOrderingEnabled ? 'bottom-28' : 'bottom-8'} left-0 w-full z-40 px-6`}
-        >
-          <div className="max-w-md mx-auto">
-            <button
-              onClick={() => {
-                setCurrentScreen('reservation');
-                fetchRestaurantVenues();
-              }}
-              className="w-full border border-stone-300 text-stone-700 bg-white/80 backdrop-blur-sm font-serif text-sm py-3 px-6 rounded-full hover:border-stone-400 hover:bg-stone-50 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.08)] flex items-center justify-center gap-2"
+        {/* Bottom Navigation Tabs */}
+        <div className={`fixed ${cart.length > 0 && isDigitalOrderingEnabled ? 'bottom-28' : 'bottom-0'} left-0 w-full z-40 bg-white/80 backdrop-blur-sm border-t border-stone-200/40`}>
+          <div className="max-w-md mx-auto flex items-center justify-around py-3">
+            <button className="flex flex-col items-center gap-1 text-black">
+              <MaterialIcon name="restaurant_menu" className="text-2xl" filled />
+              <span className="text-xs uppercase tracking-wider">Menu</span>
+            </button>
+            <button 
+              onClick={() => setShowReservationModal(true)}
+              className="flex flex-col items-center gap-1 text-stone-600 hover:text-black transition-colors"
             >
-              <MaterialIcon name="restaurant" className="text-lg" />
-              <span className="uppercase tracking-widest">Reserve a Table</span>
+              <MaterialIcon name="event" className="text-2xl" />
+              <span className="text-xs uppercase tracking-wider">Book Table</span>
+            </button>
+            <button 
+              onClick={() => setCurrentScreen('feedback')}
+              className="flex flex-col items-center gap-1 text-stone-600 hover:text-black transition-colors"
+            >
+              <MaterialIcon name="star" className="text-2xl" />
+              <span className="text-xs uppercase tracking-wider">Review</span>
             </button>
           </div>
-        </motion.div>
+        </div>
+
+        {/* Reservation Modal */}
+        {showReservationModal && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center">
+            <div 
+              className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
+              onClick={() => !reservationSubmitting && setShowReservationModal(false)}
+            ></div>
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              className="relative w-full max-w-[480px] bg-[#FAFAF9] rounded-t-[32px] shadow-[0_-10px_60px_rgba(0,0,0,0.15)] overflow-hidden"
+            >
+              {/* Handle */}
+              <div className="w-full flex justify-center pt-4 pb-2">
+                <div className="w-12 h-1 bg-stone-300 rounded-full"></div>
+              </div>
+
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 pt-2 pb-6 border-b border-stone-200/40">
+                <h2 className="font-serif text-2xl text-stone-900 tracking-tight">Reserve a Table</h2>
+                <button 
+                  onClick={() => !reservationSubmitting && setShowReservationModal(false)}
+                  className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors"
+                  disabled={reservationSubmitting}
+                >
+                  <MaterialIcon name="close" className="text-2xl" />
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="px-6 py-6 max-h-[70vh] overflow-y-auto">
+                {reservationSuccess ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-12"
+                  >
+                    <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-emerald-50 flex items-center justify-center">
+                      <MaterialIcon name="check_circle" className="text-5xl text-emerald-600" filled />
+                    </div>
+                    <h3 className="font-serif text-2xl text-stone-900 mb-2">Reservation Sent!</h3>
+                    <p className="text-stone-600">Our team will contact you shortly to confirm</p>
+                  </motion.div>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Name *</label>
+                      <input
+                        type="text"
+                        value={reservationForm.guestName}
+                        onChange={(e) => setReservationForm({ ...reservationForm, guestName: e.target.value })}
+                        className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                        placeholder="Your name"
+                        disabled={reservationSubmitting}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Phone *</label>
+                      <input
+                        type="tel"
+                        value={reservationForm.guestPhone}
+                        onChange={(e) => setReservationForm({ ...reservationForm, guestPhone: e.target.value })}
+                        className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                        placeholder="+1234567890"
+                        disabled={reservationSubmitting}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Date</label>
+                        <input
+                          type="date"
+                          value={reservationForm.date}
+                          min={new Date().toISOString().split('T')[0]}
+                          onChange={(e) => setReservationForm({ ...reservationForm, date: e.target.value })}
+                          className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                          disabled={reservationSubmitting}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Time</label>
+                        <input
+                          type="time"
+                          value={reservationForm.time}
+                          onChange={(e) => setReservationForm({ ...reservationForm, time: e.target.value })}
+                          className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                          disabled={reservationSubmitting}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Guests</label>
+                      <select
+                        value={reservationForm.guestCount}
+                        onChange={(e) => setReservationForm({ ...reservationForm, guestCount: parseInt(e.target.value) })}
+                        className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                        disabled={reservationSubmitting}
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                          <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Special Requests</label>
+                      <textarea
+                        value={reservationForm.notes}
+                        onChange={(e) => setReservationForm({ ...reservationForm, notes: e.target.value })}
+                        className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors resize-none h-24"
+                        placeholder="Allergies, preferences, or special occasions..."
+                        disabled={reservationSubmitting}
+                      />
+                    </div>
+
+                    <button
+                      onClick={handleReservationSubmit}
+                      disabled={!reservationForm.guestName || !reservationForm.guestPhone || reservationSubmitting}
+                      className="w-full bg-stone-900 text-stone-50 px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)] disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+                    >
+                      {reservationSubmitting ? 'Sending...' : 'Request Reservation'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
 
         {/* Custom CSS for hiding scrollbar */}
         <style dangerouslySetInnerHTML={{
