@@ -316,87 +316,101 @@ export default function SpotPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAF9]">
-      {/* Floating Review Button */}
-      <button
-        onClick={() => navigate(`/review?v=${venueId}`)}
-        className="fixed bottom-8 right-8 z-40 w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-full shadow-[0_8px_30px_rgba(146,64,14,0.4)] hover:shadow-[0_12px_40px_rgba(146,64,14,0.6)] hover:scale-110 transition-all duration-300 flex items-center justify-center group"
-        aria-label="Leave a review"
-      >
-        <Star className="w-7 h-7 text-white fill-white group-hover:scale-110 transition-transform duration-300" />
-        <div className="absolute -top-12 right-0 bg-stone-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap pointer-events-none">
-          Leave a Review
-          <div className="absolute bottom-0 right-6 transform translate-y-1/2 rotate-45 w-2 h-2 bg-stone-900"></div>
-        </div>
-      </button>
-
       {/* Reservation Modal */}
       {showReserveModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-6" onClick={() => setShowReserveModal(false)}>
-          <div className="bg-gradient-to-br from-white to-stone-50/50 rounded-[2rem] p-12 max-w-md w-full shadow-[0_30px_70px_-15px_rgba(0,0,0,0.3)] border border-stone-200/40" onClick={(e) => e.stopPropagation()}>
-            <h2 className="font-['Cormorant_Garamond'] text-4xl font-light text-[#1C1917] mb-6">
-              Reserve Table
-            </h2>
-            
-            <form onSubmit={handleReservation} className="space-y-4">
-              <input
-                type="text"
-                required
-                placeholder="Your Name *"
-                value={bookingForm.guestName}
-                onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })}
-                className="w-full px-6 py-4 rounded-full border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] focus:outline-none focus:border-stone-400"
-              />
-              
-              <input
-                type="tel"
-                required
-                placeholder="Phone Number *"
-                value={bookingForm.guestPhone}
-                onChange={(e) => setBookingForm({ ...bookingForm, guestPhone: e.target.value })}
-                className="w-full px-6 py-4 rounded-full border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] focus:outline-none focus:border-stone-400"
-              />
-              
-              <input
-                type="email"
-                placeholder="Email (optional)"
-                value={bookingForm.guestEmail}
-                onChange={(e) => setBookingForm({ ...bookingForm, guestEmail: e.target.value })}
-                className="w-full px-6 py-4 rounded-full border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] focus:outline-none focus:border-stone-400"
-              />
-              
-              <select
-                value={bookingForm.guestCount}
-                onChange={(e) => setBookingForm({ ...bookingForm, guestCount: parseInt(e.target.value) })}
-                className="w-full px-6 py-4 rounded-full border border-stone-300 text-[#1C1917] focus:outline-none focus:border-stone-400"
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div 
+            className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
+            onClick={() => setShowReserveModal(false)}
+          ></div>
+          <div 
+            className="relative w-full max-w-[480px] bg-[#FAFAF9] rounded-t-[32px] shadow-[0_-10px_60px_rgba(0,0,0,0.15)] overflow-hidden animate-slideUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Handle */}
+            <div className="w-full flex justify-center pt-4 pb-2">
+              <div className="w-12 h-1 bg-stone-300 rounded-full"></div>
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 pt-2 pb-6 border-b border-stone-200/40">
+              <h2 className="font-['Cormorant_Garamond'] text-2xl text-stone-900 tracking-tight">Reserve a Table</h2>
+              <button 
+                onClick={() => setShowReserveModal(false)}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors"
               >
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                  <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
-                ))}
-              </select>
-              
-              <textarea
-                placeholder="Special requests (optional)"
-                value={bookingForm.notes}
-                onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
-                rows={2}
-                className="w-full px-6 py-4 rounded-2xl border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] focus:outline-none focus:border-stone-400 resize-none"
-              />
-              
-              <div className="flex gap-4 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowReserveModal(false)}
-                  className="flex-1 px-6 py-4 border-2 border-stone-300 text-stone-700 rounded-full text-sm tracking-widest uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-6 py-4 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
-                >
-                  Confirm
-                </button>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Content */}
+            <form onSubmit={handleReservation} className="px-6 py-6 max-h-[70vh] overflow-y-auto space-y-4">
+              <div>
+                <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={bookingForm.guestName}
+                  onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })}
+                  className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                  placeholder="Your name"
+                />
               </div>
+
+              <div>
+                <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Phone *</label>
+                <input
+                  type="tel"
+                  required
+                  value={bookingForm.guestPhone}
+                  onChange={(e) => setBookingForm({ ...bookingForm, guestPhone: e.target.value })}
+                  className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                  placeholder="+1234567890"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={bookingForm.guestEmail}
+                  onChange={(e) => setBookingForm({ ...bookingForm, guestEmail: e.target.value })}
+                  className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                  placeholder="your@email.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Guests</label>
+                <select
+                  value={bookingForm.guestCount}
+                  onChange={(e) => setBookingForm({ ...bookingForm, guestCount: parseInt(e.target.value) })}
+                  className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                    <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Special Requests</label>
+                <textarea
+                  value={bookingForm.notes}
+                  onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                  className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors resize-none h-24"
+                  placeholder="Allergies, preferences, or special occasions..."
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-stone-900 text-stone-50 px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)] mt-6"
+              >
+                Request Reservation
+              </button>
             </form>
           </div>
         </div>
@@ -428,7 +442,7 @@ export default function SpotPage() {
       </div>
 
       {/* Menu Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-12 pb-32">
         <MenuDisplay 
           menu={menu} 
           cart={cart}
@@ -440,6 +454,35 @@ export default function SpotPage() {
           setBookingForm={setBookingForm}
           canOrder={canOrder}
         />
+      </div>
+
+      {/* Bottom Navigation Tabs */}
+      <div className="fixed bottom-0 left-0 w-full z-40 bg-white/80 backdrop-blur-sm border-t border-stone-200/40">
+        <div className="max-w-md mx-auto flex items-center justify-around py-3">
+          <button className="flex flex-col items-center gap-1 text-stone-900">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
+              <path d="M8 12h8v2H8z"/>
+            </svg>
+            <span className="text-xs uppercase tracking-wider font-medium">Menu</span>
+          </button>
+          <button 
+            onClick={() => setShowReserveModal(true)}
+            className="flex flex-col items-center gap-1 text-stone-600 hover:text-stone-900 transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span className="text-xs uppercase tracking-wider font-medium">Book Table</span>
+          </button>
+          <button 
+            onClick={() => navigate(`/review?v=${venueId}`)}
+            className="flex flex-col items-center gap-1 text-stone-600 hover:text-stone-900 transition-colors"
+          >
+            <Star className="w-6 h-6" />
+            <span className="text-xs uppercase tracking-wider font-medium">Review</span>
+          </button>
+        </div>
       </div>
     </div>
   );
