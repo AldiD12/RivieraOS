@@ -273,6 +273,13 @@ export const businessCategoryApi = {
     console.log('📤 Getting business category exclusions:', categoryId);
     const response = await api.get(`/business/Categories/${categoryId}/exclusions`);
     return response.data;
+  },
+
+  // Set category exclusions (replaces all exclusions)
+  setExclusions: async (categoryId, venueIds) => {
+    console.log('📤 Setting business category exclusions:', categoryId, venueIds);
+    const response = await api.post(`/business/Categories/${categoryId}/exclusions`, venueIds);
+    return response.data;
   }
 };
 
@@ -336,6 +343,13 @@ export const businessProductApi = {
   getExclusions: async (categoryId, productId) => {
     console.log('📤 Getting business product exclusions:', categoryId, productId);
     const response = await api.get(`/business/categories/${categoryId}/Products/${productId}/exclusions`);
+    return response.data;
+  },
+
+  // Set product exclusions (replaces all exclusions)
+  setExclusions: async (categoryId, productId, venueIds) => {
+    console.log('📤 Setting business product exclusions:', categoryId, productId, venueIds);
+    const response = await api.post(`/business/categories/${categoryId}/Products/${productId}/exclusions`, venueIds);
     return response.data;
   }
 };

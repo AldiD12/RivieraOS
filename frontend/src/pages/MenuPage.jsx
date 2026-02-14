@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { reservationApi } from '../services/reservationApi';
 
 const API_URL = 'http://localhost:5171/api';
 const VENUE_ID = 1;
@@ -148,6 +149,24 @@ export default function MenuPage() {
   const [feedbackNote, setFeedbackNote] = useState('');
   const [venueData, setVenueData] = useState(null);
   const [isDigitalOrderingEnabled, setIsDigitalOrderingEnabled] = useState(true);
+  
+  // Reservation state
+  const [restaurantVenues, setRestaurantVenues] = useState([]);
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedZone, setSelectedZone] = useState(null);
+  const [selectedUnit, setSelectedUnit] = useState(null);
+  const [availability, setAvailability] = useState(null);
+  const [zones, setZones] = useState([]);
+  const [loadingReservation, setLoadingReservation] = useState(false);
+  const [reservationForm, setReservationForm] = useState({
+    guestName: '',
+    guestPhone: '',
+    guestEmail: '',
+    guestCount: 2,
+    notes: ''
+  });
+  const [reservationConfirmation, setReservationConfirmation] = useState(null);
 
   useEffect(() => {
     fetchVenueData();
@@ -340,6 +359,80 @@ export default function MenuPage() {
     setSpecialInstructions('');
   };
 
+  const fetchRestaurantVenues = async () => {
+    try {
+      setLoadingReservation(true);
+      const venues = await reservationApi.getRestaurantVenues();
+      setRestaurantVenues(venues);
+    } catch (error) {
+      console.error('Error fetching restaurant venues:', error);
+    } finally {
+      setLoadingReservation(false);
+    }
+  };
+
+  const fetchAvailability = async (venueId, date) => {
+    try {
+      setLoadingReservation(true);
+      const [availabilityData, zonesData] = await Promise.all([
+        reservationApi.getAvailability(venueId, date),
+        reservationApi.getZones(venueId)
+      ]);
+      setAvailability(availabilityData);
+      setZones(zonesData);
+    } catch (error) {
+      console.error('Error fetching availability:', error);
+    } finally {
+      setLoadingReservation(false);
+    }
+  };
+
+  const handleReservationSubmit = async () => {
+    if (!selectedUnit || !reservationForm.guestName || !reservationForm.guestPhone) {
+      return;
+    }
+
+    try {
+      setLoadingReservation(true);
+      const confirmation = await reservationApi.createReservation({
+        zoneUnitId: selectedUnit.id,
+        venueId: selectedRestaurant.id,
+        guestName: reservationForm.guestName,
+        guestPhone: reservationForm.guestPhone,
+        guestEmail: reservationForm.guestEmail || null,
+        guestCount: reservationForm.guestCount,
+        startTime: selectedDate.toISOString(),
+        endTime: null,
+        notes: reservationForm.notes || null
+      });
+      setReservationConfirmation(confirmation);
+      setCurrentScreen('reservationConfirmed');
+    } catch (error) {
+      console.error('Error creating reservation:', error);
+      alert('Failed to create reservation. Please try again.');
+    } finally {
+      setLoadingReservation(false);
+    }
+  };
+
+  const resetReservation = () => {
+    setSelectedRestaurant(null);
+    setSelectedDate(new Date());
+    setSelectedZone(null);
+    setSelectedUnit(null);
+    setAvailability(null);
+    setZones([]);
+    setReservationForm({
+      guestName: '',
+      guestPhone: '',
+      guestEmail: '',
+      guestCount: 2,
+      notes: ''
+    });
+    setReservationConfirmation(null);
+    setCurrentScreen('menu');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FDFBF7]">
@@ -445,6 +538,27 @@ export default function MenuPage() {
             </div>
           </motion.div>
         )}
+
+        {/* Reserve Table Button - Always visible */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className={`fixed ${cart.length > 0 && isDigitalOrderingEnabled ? 'bottom-28' : 'bottom-8'} left-0 w-full z-40 px-6`}
+        >
+          <div className="max-w-md mx-auto">
+            <button
+              onClick={() => {
+                setCurrentScreen('reservation');
+                fetchRestaurantVenues();
+              }}
+              className="w-full border border-stone-300 text-stone-700 bg-white/80 backdrop-blur-sm font-serif text-sm py-3 px-6 rounded-full hover:border-stone-400 hover:bg-stone-50 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.08)] flex items-center justify-center gap-2"
+            >
+              <MaterialIcon name="restaurant" className="text-lg" />
+              <span className="uppercase tracking-widest">Reserve a Table</span>
+            </button>
+          </div>
+        </motion.div>
 
         {/* Custom CSS for hiding scrollbar */}
         <style dangerouslySetInnerHTML={{
@@ -765,6 +879,341 @@ export default function MenuPage() {
           <a className="flex items-center justify-center gap-2 text-black/40 hover:text-black transition-colors duration-300 group" href="#">
             <MaterialIcon name="call" className="text-lg font-light group-hover:scale-110 transition-transform" />
             <span className="font-sans text-xs uppercase tracking-widest border-b border-transparent group-hover:border-black transition-all">Call Attendant</span>
+          </a>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // RESERVATION SCREEN
+  if (currentScreen === 'reservation') {
+    return (
+      <div className="bg-[#FAFAF9] text-stone-900 min-h-screen font-sans antialiased">
+        {/* Header */}
+        <header className="pt-12 pb-8 px-6 border-b border-stone-200/40">
+          <div className="max-w-2xl mx-auto flex items-center justify-between">
+            <button
+              onClick={() => setCurrentScreen('menu')}
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors"
+            >
+              <MaterialIcon name="arrow_back" className="text-2xl" />
+            </button>
+            <h1 className="font-serif text-3xl text-stone-900 tracking-tight">Reserve a Table</h1>
+            <div className="w-10"></div>
+          </div>
+        </header>
+
+        <div className="max-w-2xl mx-auto px-6 py-8 space-y-8">
+          {/* Step 1: Select Restaurant */}
+          {!selectedRestaurant && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <div>
+                <p className="text-sm uppercase tracking-widest text-stone-500 mb-2">Step 1 of 3</p>
+                <h2 className="font-serif text-2xl text-stone-900">Select Restaurant</h2>
+              </div>
+
+              {loadingReservation ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-8 h-8 border-2 border-stone-300 border-t-stone-900 rounded-full animate-spin"></div>
+                </div>
+              ) : restaurantVenues.length === 0 ? (
+                <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] p-8 border border-stone-200/40 text-center">
+                  <p className="text-stone-600">No restaurants available for reservations</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {restaurantVenues.map((venue) => (
+                    <button
+                      key={venue.id}
+                      onClick={() => {
+                        setSelectedRestaurant(venue);
+                        fetchAvailability(venue.id, selectedDate);
+                      }}
+                      className="w-full bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/40 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out hover:-translate-y-1 text-left group"
+                    >
+                      <div className="flex items-start gap-4">
+                        {venue.imageUrl && (
+                          <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0">
+                            <img
+                              src={venue.imageUrl}
+                              alt={venue.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <h3 className="font-serif text-xl text-stone-900 mb-1">{venue.name}</h3>
+                          {venue.description && (
+                            <p className="text-sm text-stone-600 leading-relaxed">{venue.description}</p>
+                          )}
+                          {venue.address && (
+                            <p className="text-xs text-stone-500 mt-2 flex items-center gap-1">
+                              <MaterialIcon name="location_on" className="text-sm" />
+                              {venue.address}
+                            </p>
+                          )}
+                        </div>
+                        <MaterialIcon name="arrow_forward" className="text-2xl text-stone-400 group-hover:text-stone-900 transition-colors" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Step 2: Select Date & Table */}
+          {selectedRestaurant && !selectedUnit && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <div>
+                <p className="text-sm uppercase tracking-widest text-stone-500 mb-2">Step 2 of 3</p>
+                <h2 className="font-serif text-2xl text-stone-900">{selectedRestaurant.name}</h2>
+                <button
+                  onClick={() => {
+                    setSelectedRestaurant(null);
+                    setZones([]);
+                    setAvailability(null);
+                  }}
+                  className="text-sm text-stone-500 hover:text-stone-900 mt-2 flex items-center gap-1"
+                >
+                  <MaterialIcon name="arrow_back" className="text-sm" />
+                  Change restaurant
+                </button>
+              </div>
+
+              {/* Date Selection */}
+              <div className="bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/40">
+                <label className="block text-sm uppercase tracking-widest text-stone-500 mb-3">Select Date</label>
+                <input
+                  type="date"
+                  value={selectedDate.toISOString().split('T')[0]}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => {
+                    const newDate = new Date(e.target.value);
+                    setSelectedDate(newDate);
+                    fetchAvailability(selectedRestaurant.id, newDate);
+                  }}
+                  className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                />
+              </div>
+
+              {/* Available Tables */}
+              {loadingReservation ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-8 h-8 border-2 border-stone-300 border-t-stone-900 rounded-full animate-spin"></div>
+                </div>
+              ) : zones.length === 0 ? (
+                <div className="bg-white/60 backdrop-blur-xl rounded-[2rem] p-8 border border-stone-200/40 text-center">
+                  <p className="text-stone-600">No tables available for this date</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h3 className="text-sm uppercase tracking-widest text-stone-500">Available Tables</h3>
+                  {zones.map((zone) => (
+                    <div key={zone.zoneId} className="bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/40">
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h4 className="font-serif text-lg text-stone-900">{zone.zoneName}</h4>
+                          <p className="text-sm text-stone-600">{zone.availableUnits} of {zone.totalUnits} available</p>
+                        </div>
+                        <span className="font-serif text-xl text-amber-900">€{zone.basePrice.toFixed(2)}</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {zone.units?.filter(u => u.isAvailable).map((unit) => (
+                          <button
+                            key={unit.id}
+                            onClick={() => setSelectedUnit(unit)}
+                            className="bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-sm text-stone-700 hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
+                          >
+                            {unit.unitLabel || `Table ${unit.id}`}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Step 3: Guest Details */}
+          {selectedUnit && !reservationConfirmation && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <div>
+                <p className="text-sm uppercase tracking-widest text-stone-500 mb-2">Step 3 of 3</p>
+                <h2 className="font-serif text-2xl text-stone-900">Guest Details</h2>
+                <button
+                  onClick={() => setSelectedUnit(null)}
+                  className="text-sm text-stone-500 hover:text-stone-900 mt-2 flex items-center gap-1"
+                >
+                  <MaterialIcon name="arrow_back" className="text-sm" />
+                  Change table
+                </button>
+              </div>
+
+              <div className="bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/40 space-y-4">
+                <div>
+                  <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Name *</label>
+                  <input
+                    type="text"
+                    value={reservationForm.guestName}
+                    onChange={(e) => setReservationForm({ ...reservationForm, guestName: e.target.value })}
+                    className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                    placeholder="Your name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Phone *</label>
+                  <input
+                    type="tel"
+                    value={reservationForm.guestPhone}
+                    onChange={(e) => setReservationForm({ ...reservationForm, guestPhone: e.target.value })}
+                    className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                    placeholder="+1234567890"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Email</label>
+                  <input
+                    type="email"
+                    value={reservationForm.guestEmail}
+                    onChange={(e) => setReservationForm({ ...reservationForm, guestEmail: e.target.value })}
+                    className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                    placeholder="your@email.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Number of Guests</label>
+                  <select
+                    value={reservationForm.guestCount}
+                    onChange={(e) => setReservationForm({ ...reservationForm, guestCount: parseInt(e.target.value) })}
+                    className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
+                      <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Special Requests</label>
+                  <textarea
+                    value={reservationForm.notes}
+                    onChange={(e) => setReservationForm({ ...reservationForm, notes: e.target.value })}
+                    className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors resize-none h-24"
+                    placeholder="Allergies, preferences, or special occasions..."
+                  />
+                </div>
+              </div>
+
+              <button
+                onClick={handleReservationSubmit}
+                disabled={!reservationForm.guestName || !reservationForm.guestPhone || loadingReservation}
+                className="w-full bg-stone-900 text-stone-50 px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)] disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loadingReservation ? 'Confirming...' : 'Confirm Reservation'}
+              </button>
+            </motion.div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // RESERVATION CONFIRMED SCREEN
+  if (currentScreen === 'reservationConfirmed') {
+    return (
+      <div className="bg-[#FAFAF9] text-stone-900 flex flex-col items-center justify-between p-8 font-sans antialiased relative overflow-hidden min-h-screen">
+        <div className="flex-1"></div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-sm flex flex-col items-center text-center space-y-8"
+        >
+          <div className="relative group">
+            <div className="absolute inset-0 bg-emerald-400/5 rounded-full scale-110 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+            <div className="w-24 h-24 rounded-full border border-stone-200/40 flex items-center justify-center bg-white shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] z-10 relative">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring" }}
+              >
+                <MaterialIcon name="check_circle" className="text-5xl text-emerald-600" filled />
+              </motion.div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h1 className="font-serif text-4xl md:text-5xl text-stone-900 leading-tight tracking-tight">
+              Reservation<br/>Confirmed
+            </h1>
+            {reservationConfirmation && (
+              <div className="space-y-3">
+                <p className="text-stone-600 leading-relaxed">
+                  Your table at <span className="font-serif italic text-stone-900">{reservationConfirmation.venueName}</span> is reserved
+                </p>
+                <div className="bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-2xl rounded-[2rem] p-6 border border-stone-200/40 space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-stone-500 uppercase tracking-widest">Booking Code</span>
+                    <span className="font-mono text-lg text-stone-900">{reservationConfirmation.bookingCode}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-stone-500 uppercase tracking-widest">Table</span>
+                    <span className="text-stone-900">{reservationConfirmation.unitCode}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-stone-500 uppercase tracking-widest">Guests</span>
+                    <span className="text-stone-900">{reservationConfirmation.guestCount}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-stone-500 uppercase tracking-widest">Date</span>
+                    <span className="text-stone-900">
+                      {new Date(reservationConfirmation.startTime).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                </div>
+                {reservationConfirmation.message && (
+                  <p className="text-sm text-stone-600 italic">{reservationConfirmation.message}</p>
+                )}
+              </div>
+            )}
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="flex-1 flex flex-col justify-end w-full max-w-sm pb-8 space-y-4"
+        >
+          <button
+            onClick={resetReservation}
+            className="w-full bg-stone-900 text-stone-50 px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
+          >
+            Back to Menu
+          </button>
+          <a className="flex items-center justify-center gap-2 text-stone-500 hover:text-stone-900 transition-colors duration-300 group" href="#">
+            <MaterialIcon name="call" className="text-lg group-hover:scale-110 transition-transform" />
+            <span className="font-sans text-xs uppercase tracking-widest border-b border-transparent group-hover:border-stone-900 transition-all">Call Restaurant</span>
           </a>
         </motion.div>
       </div>
