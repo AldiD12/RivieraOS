@@ -43,6 +43,10 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                     CreatedAt = v.CreatedAt,
                     IsActive = v.IsActive,
                     OrderingEnabled = v.OrderingEnabled,
+                    IsDigitalOrderingEnabled = v.IsDigitalOrderingEnabled,
+                    AllowsDigitalOrdering = v.IsDigitalOrderingEnabled.HasValue
+                        ? v.IsDigitalOrderingEnabled.Value
+                        : (v.Type != null && v.Type.ToLower() == "restaurant" ? false : true),
                     ZoneCount = v.VenueZones.Count,
                     HasConfig = v.VenueConfig != null
                 })
@@ -79,6 +83,8 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 CreatedAt = venue.CreatedAt,
                 IsActive = venue.IsActive,
                 OrderingEnabled = venue.OrderingEnabled,
+                IsDigitalOrderingEnabled = venue.IsDigitalOrderingEnabled,
+                AllowsDigitalOrdering = venue.AllowsDigitalOrdering,
                 BusinessId = venue.BusinessId,
                 BusinessName = venue.Business?.BrandName ?? venue.Business?.RegisteredName,
                 Config = venue.VenueConfig != null ? new VenueConfigDto
@@ -158,6 +164,8 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 CreatedAt = venue.CreatedAt,
                 IsActive = venue.IsActive,
                 OrderingEnabled = venue.OrderingEnabled,
+                IsDigitalOrderingEnabled = venue.IsDigitalOrderingEnabled,
+                AllowsDigitalOrdering = venue.AllowsDigitalOrdering,
                 BusinessId = venue.BusinessId,
                 BusinessName = business.BrandName ?? business.RegisteredName,
                 Config = new VenueConfigDto

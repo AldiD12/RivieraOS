@@ -101,6 +101,7 @@ namespace BlackBear.Services.Core.DTOs.Public
         public string? Address { get; set; }
         public string? ImageUrl { get; set; }
         public bool OrderingEnabled { get; set; }
+        public bool AllowsDigitalOrdering { get; set; }
     }
 
     // Check reservation status response

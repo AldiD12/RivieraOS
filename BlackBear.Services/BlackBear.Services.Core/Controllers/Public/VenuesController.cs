@@ -37,7 +37,8 @@ namespace BlackBear.Services.Core.Controllers.Public
                 Description = venue.Description,
                 Address = venue.Address,
                 ImageUrl = venue.ImageUrl,
-                OrderingEnabled = venue.OrderingEnabled
+                OrderingEnabled = venue.OrderingEnabled,
+                AllowsDigitalOrdering = venue.AllowsDigitalOrdering
             });
         }
     }

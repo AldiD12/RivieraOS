@@ -50,6 +50,31 @@ namespace BlackBear.Services.Core.Entities
         [Column("ordering_enabled")]
         public bool OrderingEnabled { get; set; } = false;
 
+        [Column("is_digital_ordering_enabled")]
+        public bool? IsDigitalOrderingEnabled { get; set; }
+
+        [NotMapped]
+        public bool AllowsDigitalOrdering
+        {
+            get
+            {
+                // If manually set (not null), respect that setting
+                if (IsDigitalOrderingEnabled.HasValue)
+                    return IsDigitalOrderingEnabled.Value;
+
+                // Otherwise, auto-determine based on venue type
+                // Restaurants and Spas default to view-only (no ordering)
+                if (!string.IsNullOrEmpty(Type) &&
+                    Type.Equals("Restaurant", StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                // All other venue types allow ordering by default
+                return true;
+            }
+        }
+
         [Column("is_deleted")]
         public bool IsDeleted { get; set; } = false;
 

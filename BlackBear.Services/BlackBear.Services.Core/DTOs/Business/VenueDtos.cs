@@ -11,6 +11,8 @@ namespace BlackBear.Services.Core.DTOs.Business
         public string? ImageUrl { get; set; }
         public bool IsActive { get; set; }
         public bool OrderingEnabled { get; set; }
+        public bool? IsDigitalOrderingEnabled { get; set; }
+        public bool AllowsDigitalOrdering { get; set; }
         public int ZoneCount { get; set; }
         public bool HasConfig { get; set; }
     }
@@ -27,6 +29,8 @@ namespace BlackBear.Services.Core.DTOs.Business
         public double? Longitude { get; set; }
         public bool IsActive { get; set; }
         public bool OrderingEnabled { get; set; }
+        public bool? IsDigitalOrderingEnabled { get; set; }
+        public bool AllowsDigitalOrdering { get; set; }
         public DateTime CreatedAt { get; set; }
         public BizVenueConfigDto? Config { get; set; }
         public List<BizZoneSummaryDto> Zones { get; set; } = new();
