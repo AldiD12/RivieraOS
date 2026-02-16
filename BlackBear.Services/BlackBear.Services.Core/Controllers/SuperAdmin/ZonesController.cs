@@ -39,7 +39,8 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                     Name = z.Name,
                     ZoneType = z.ZoneType,
                     CapacityPerUnit = z.CapacityPerUnit,
-                    BasePrice = z.BasePrice
+                    BasePrice = z.BasePrice,
+                    IsActive = z.IsActive
                 })
                 .ToListAsync();
 
@@ -67,7 +68,8 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 CapacityPerUnit = zone.CapacityPerUnit,
                 BasePrice = zone.BasePrice,
                 VenueId = zone.VenueId,
-                VenueName = zone.Venue?.Name
+                VenueName = zone.Venue?.Name,
+                IsActive = zone.IsActive
             });
         }
 
@@ -87,6 +89,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 ZoneType = request.ZoneType,
                 CapacityPerUnit = request.CapacityPerUnit,
                 BasePrice = request.BasePrice,
+                IsActive = request.IsActive,
                 VenueId = venueId
             };
 
@@ -101,7 +104,8 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 CapacityPerUnit = zone.CapacityPerUnit,
                 BasePrice = zone.BasePrice,
                 VenueId = zone.VenueId,
-                VenueName = venue.Name
+                VenueName = venue.Name,
+                IsActive = zone.IsActive
             });
         }
 
@@ -121,10 +125,29 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
             zone.ZoneType = request.ZoneType;
             zone.CapacityPerUnit = request.CapacityPerUnit;
             zone.BasePrice = request.BasePrice;
+            zone.IsActive = request.IsActive;
 
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // POST: api/superadmin/venues/10/zones/5/toggle-active
+        [HttpPost("{id}/toggle-active")]
+        public async Task<IActionResult> ToggleZoneActive(int venueId, int id)
+        {
+            var zone = await _context.VenueZones
+                .FirstOrDefaultAsync(z => z.Id == id && z.VenueId == venueId);
+
+            if (zone == null)
+            {
+                return NotFound();
+            }
+
+            zone.IsActive = !zone.IsActive;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { isActive = zone.IsActive });
         }
 
         // DELETE: api/superadmin/venues/10/zones/5 (soft delete)

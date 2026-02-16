@@ -48,7 +48,8 @@ namespace BlackBear.Services.Core.Controllers.Business
                     Name = z.Name,
                     ZoneType = z.ZoneType,
                     CapacityPerUnit = z.CapacityPerUnit,
-                    BasePrice = z.BasePrice
+                    BasePrice = z.BasePrice,
+                    IsActive = z.IsActive
                 })
                 .ToListAsync();
 
@@ -88,7 +89,8 @@ namespace BlackBear.Services.Core.Controllers.Business
                 CapacityPerUnit = zone.CapacityPerUnit,
                 BasePrice = zone.BasePrice,
                 VenueId = zone.VenueId,
-                VenueName = zone.Venue?.Name
+                VenueName = zone.Venue?.Name,
+                IsActive = zone.IsActive
             });
         }
 
@@ -114,6 +116,7 @@ namespace BlackBear.Services.Core.Controllers.Business
                 ZoneType = request.ZoneType,
                 CapacityPerUnit = request.CapacityPerUnit,
                 BasePrice = request.BasePrice,
+                IsActive = request.IsActive,
                 VenueId = venueId
             };
 
@@ -128,7 +131,8 @@ namespace BlackBear.Services.Core.Controllers.Business
                 CapacityPerUnit = zone.CapacityPerUnit,
                 BasePrice = zone.BasePrice,
                 VenueId = zone.VenueId,
-                VenueName = venue.Name
+                VenueName = venue.Name,
+                IsActive = zone.IsActive
             });
         }
 
@@ -161,10 +165,41 @@ namespace BlackBear.Services.Core.Controllers.Business
             zone.ZoneType = request.ZoneType;
             zone.CapacityPerUnit = request.CapacityPerUnit;
             zone.BasePrice = request.BasePrice;
+            zone.IsActive = request.IsActive;
 
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // POST: api/business/venues/5/zones/10/toggle-active
+        [HttpPost("{id}/toggle-active")]
+        public async Task<IActionResult> ToggleZoneActive(int venueId, int id)
+        {
+            var businessId = _currentUserService.BusinessId;
+            if (!businessId.HasValue)
+            {
+                return StatusCode(403, new { error = "User is not associated with a business" });
+            }
+
+            var zone = await _context.VenueZones
+                .Include(z => z.Venue)
+                .FirstOrDefaultAsync(z => z.Id == id && z.VenueId == venueId);
+
+            if (zone == null)
+            {
+                return NotFound();
+            }
+
+            if (zone.Venue?.BusinessId != businessId.Value)
+            {
+                return NotFound();
+            }
+
+            zone.IsActive = !zone.IsActive;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { isActive = zone.IsActive });
         }
 
         // DELETE: api/business/venues/5/zones/10 (soft delete)

@@ -9,6 +9,7 @@ namespace BlackBear.Services.Core.DTOs.Business
         public string? ZoneType { get; set; }
         public int CapacityPerUnit { get; set; }
         public decimal BasePrice { get; set; }
+        public bool IsActive { get; set; }
     }
 
     public class BizZoneDetailDto
@@ -20,6 +21,7 @@ namespace BlackBear.Services.Core.DTOs.Business
         public decimal BasePrice { get; set; }
         public int VenueId { get; set; }
         public string? VenueName { get; set; }
+        public bool IsActive { get; set; }
     }
 
     public class BizCreateZoneRequest
@@ -34,6 +36,8 @@ namespace BlackBear.Services.Core.DTOs.Business
         public int CapacityPerUnit { get; set; } = 1;
 
         public decimal BasePrice { get; set; } = 0;
+
+        public bool IsActive { get; set; } = true;
     }
 
     public class BizUpdateZoneRequest
@@ -48,5 +52,7 @@ namespace BlackBear.Services.Core.DTOs.Business
         public int CapacityPerUnit { get; set; } = 1;
 
         public decimal BasePrice { get; set; } = 0;
+
+        public bool IsActive { get; set; } = true;
     }
 }
