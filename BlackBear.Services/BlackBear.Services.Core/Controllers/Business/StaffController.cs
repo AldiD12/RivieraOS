@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Security.Cryptography;
 using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.DTOs.Business;
@@ -23,6 +24,45 @@ namespace BlackBear.Services.Core.Controllers.Business
             _currentUserService = currentUserService;
         }
 
+        // GET: api/business/staff/me
+        [HttpGet("me")]
+        [Authorize(Roles = "BusinessOwner,Manager,Bartender,Collector")]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId) || !int.TryParse(userId, out var parsedUserId))
+            {
+                return Unauthorized();
+            }
+
+            var user = await _context.Users
+                .IgnoreQueryFilters()
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.Venue)
+                .Include(u => u.Business)
+                .FirstOrDefaultAsync(u => u.Id == parsedUserId);
+
+            if (user == null)
+            {
+                return NotFound("Staff member not found");
+            }
+
+            return Ok(new
+            {
+                id = user.Id,
+                fullName = user.FullName,
+                email = user.Email,
+                phoneNumber = user.PhoneNumber,
+                role = user.UserRoles.FirstOrDefault()?.Role?.RoleName,
+                businessId = user.BusinessId,
+                businessName = user.Business?.BrandName ?? user.Business?.RegisteredName,
+                venueId = user.VenueId,
+                venueName = user.Venue?.Name,
+                isActive = user.IsActive
+            });
+        }
+
         // GET: api/business/staff
         [HttpGet]
         public async Task<ActionResult<List<BizStaffListItemDto>>> GetStaff()
@@ -37,6 +77,7 @@ namespace BlackBear.Services.Core.Controllers.Business
                 .Where(u => u.BusinessId == businessId.Value)
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
+                .Include(u => u.Venue)
                 .OrderByDescending(u => u.CreatedAt)
                 .Select(u => new BizStaffListItemDto
                 {
@@ -47,6 +88,8 @@ namespace BlackBear.Services.Core.Controllers.Business
                     Role = u.UserRoles.FirstOrDefault() != null ? u.UserRoles.FirstOrDefault()!.Role!.RoleName : null,
                     IsActive = u.IsActive,
                     HasPinSet = u.PinHash != null,
+                    VenueId = u.VenueId,
+                    VenueName = u.Venue != null ? u.Venue.Name : null,
                     CreatedAt = u.CreatedAt
                 })
                 .ToListAsync();
@@ -68,6 +111,7 @@ namespace BlackBear.Services.Core.Controllers.Business
                 .Where(u => u.Id == id && u.BusinessId == businessId.Value)
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
+                .Include(u => u.Venue)
                 .FirstOrDefaultAsync();
 
             if (user == null)
@@ -84,6 +128,8 @@ namespace BlackBear.Services.Core.Controllers.Business
                 Role = user.UserRoles.FirstOrDefault()?.Role?.RoleName,
                 IsActive = user.IsActive,
                 HasPinSet = !string.IsNullOrEmpty(user.PinHash),
+                VenueId = user.VenueId,
+                VenueName = user.Venue?.Name,
                 CreatedAt = user.CreatedAt
             });
         }
@@ -121,6 +167,19 @@ namespace BlackBear.Services.Core.Controllers.Business
                 return BadRequest($"Role '{request.Role}' not found");
             }
 
+            // Validate VenueId belongs to this business if provided
+            string? venueName = null;
+            if (request.VenueId.HasValue)
+            {
+                var venue = await _context.Venues
+                    .FirstOrDefaultAsync(v => v.Id == request.VenueId.Value && v.BusinessId == businessId.Value);
+                if (venue == null)
+                {
+                    return BadRequest("Venue not found or does not belong to this business");
+                }
+                venueName = venue.Name;
+            }
+
             var user = new User
             {
                 Email = request.Email,
@@ -129,6 +188,7 @@ namespace BlackBear.Services.Core.Controllers.Business
                 PhoneNumber = request.PhoneNumber,
                 PinHash = !string.IsNullOrEmpty(request.Pin) ? HashPin(request.Pin) : null,
                 BusinessId = businessId.Value,
+                VenueId = request.VenueId,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -153,6 +213,8 @@ namespace BlackBear.Services.Core.Controllers.Business
                 Role = role.RoleName,
                 IsActive = user.IsActive,
                 HasPinSet = !string.IsNullOrEmpty(user.PinHash),
+                VenueId = user.VenueId,
+                VenueName = venueName,
                 CreatedAt = user.CreatedAt
             });
         }
@@ -199,10 +261,22 @@ namespace BlackBear.Services.Core.Controllers.Business
                 return BadRequest($"Role '{request.Role}' not found");
             }
 
+            // Validate VenueId belongs to this business if provided
+            if (request.VenueId.HasValue)
+            {
+                var venueExists = await _context.Venues
+                    .AnyAsync(v => v.Id == request.VenueId.Value && v.BusinessId == businessId.Value);
+                if (!venueExists)
+                {
+                    return BadRequest("Venue not found or does not belong to this business");
+                }
+            }
+
             user.Email = request.Email;
             user.FullName = request.FullName;
             user.PhoneNumber = request.PhoneNumber;
             user.IsActive = request.IsActive;
+            user.VenueId = request.VenueId;
 
             if (!string.IsNullOrEmpty(request.Pin))
             {

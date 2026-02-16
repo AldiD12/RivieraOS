@@ -155,6 +155,11 @@ namespace BlackBear.Services.Core.Data
             {
                 entity.HasIndex(u => u.Email).IsUnique();
 
+                entity.HasOne(u => u.Venue)
+                    .WithMany()
+                    .HasForeignKey(u => u.VenueId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
                 entity.HasMany(u => u.UserRoles)
                     .WithOne(ur => ur.User)
                     .HasForeignKey(ur => ur.UserId)

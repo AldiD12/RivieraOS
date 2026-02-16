@@ -8,5 +8,7 @@ namespace BlackBear.Services.Core.DTOs
         public string? FullName { get; set; }
         public string? Role { get; set; }
         public int? BusinessId { get; set; }
+        public int? VenueId { get; set; }
+        public string? VenueName { get; set; }
     }
 }

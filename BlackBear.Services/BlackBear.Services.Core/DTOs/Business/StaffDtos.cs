@@ -11,6 +11,8 @@ namespace BlackBear.Services.Core.DTOs.Business
         public string? Role { get; set; }
         public bool IsActive { get; set; }
         public bool HasPinSet { get; set; }
+        public int? VenueId { get; set; }
+        public string? VenueName { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
@@ -23,6 +25,8 @@ namespace BlackBear.Services.Core.DTOs.Business
         public string? Role { get; set; }
         public bool IsActive { get; set; }
         public bool HasPinSet { get; set; }
+        public int? VenueId { get; set; }
+        public string? VenueName { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 
@@ -49,6 +53,8 @@ namespace BlackBear.Services.Core.DTOs.Business
 
         [Required]
         public string Role { get; set; } = "Staff";
+
+        public int? VenueId { get; set; }
     }
 
     public class BizUpdateStaffRequest
@@ -72,6 +78,8 @@ namespace BlackBear.Services.Core.DTOs.Business
         public string Role { get; set; } = "Staff";
 
         public bool IsActive { get; set; } = true;
+
+        public int? VenueId { get; set; }
     }
 
     public class BizResetStaffPasswordRequest

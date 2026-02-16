@@ -88,6 +88,7 @@ namespace BlackBear.Services.Core.Controllers
                 .IgnoreQueryFilters()
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
+                .Include(u => u.Venue)
                 .FirstOrDefaultAsync(u => u.Email == request.Email);
 
             if (user == null)
@@ -120,7 +121,9 @@ namespace BlackBear.Services.Core.Controllers
                 Email = user.Email,
                 FullName = user.FullName,
                 Role = roleName,
-                BusinessId = user.BusinessId
+                BusinessId = user.BusinessId,
+                VenueId = user.VenueId,
+                VenueName = user.Venue?.Name
             });
         }
 
@@ -136,6 +139,7 @@ namespace BlackBear.Services.Core.Controllers
                 .IgnoreQueryFilters()
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
+                .Include(u => u.Venue)
                 .FirstOrDefaultAsync(u => u.PhoneNumber != null &&
                     u.PhoneNumber.Replace(" ", "").Replace("-", "").Replace("(", "").Replace(")", "") == normalizedPhone);
 
@@ -185,7 +189,9 @@ namespace BlackBear.Services.Core.Controllers
                 Email = user.Email,
                 FullName = user.FullName,
                 Role = roleName,
-                BusinessId = user.BusinessId
+                BusinessId = user.BusinessId,
+                VenueId = user.VenueId,
+                VenueName = user.Venue?.Name
             });
         }
 

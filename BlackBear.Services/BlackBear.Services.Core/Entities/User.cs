@@ -41,13 +41,19 @@ namespace BlackBear.Services.Core.Entities
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // Foreign key (nullable)
+        // Foreign keys (nullable)
         [Column("business_id")]
         public int? BusinessId { get; set; }
+
+        [Column("venue_id")]
+        public int? VenueId { get; set; }
 
         // Navigation properties
         [ForeignKey("BusinessId")]
         public Business? Business { get; set; }
+
+        [ForeignKey("VenueId")]
+        public Venue? Venue { get; set; }
 
         public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
         public ICollection<EventBooking> EventBookings { get; set; } = new List<EventBooking>();
