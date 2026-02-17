@@ -277,6 +277,12 @@ export const zoneApi = {
   delete: async (venueId, zoneId) => {
     const response = await superAdminApi.delete(`/superadmin/venues/${venueId}/Zones/${zoneId}`);
     return response.data;
+  },
+
+  // POST /api/superadmin/venues/{venueId}/Zones/{id}/toggle-active - Toggle zone active status
+  toggleActive: async (venueId, zoneId) => {
+    const response = await superAdminApi.post(`/superadmin/venues/${venueId}/Zones/${zoneId}/toggle-active`);
+    return response.data;
   }
 };
 

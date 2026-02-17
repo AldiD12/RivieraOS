@@ -454,6 +454,13 @@ export const businessZoneApi = {
     console.log('📤 Deleting business zone:', venueId, zoneId);
     const response = await api.delete(`/business/venues/${venueId}/Zones/${zoneId}`);
     return response.data;
+  },
+
+  // Toggle zone active status
+  toggleActive: async (venueId, zoneId) => {
+    console.log('📤 Toggling zone active status:', venueId, zoneId);
+    const response = await api.post(`/business/venues/${venueId}/Zones/${zoneId}/toggle-active`);
+    return response.data;
   }
 };
 

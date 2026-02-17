@@ -1460,6 +1460,22 @@ export default function SuperAdminDashboard() {
     }
   }, [selectedVenue]);
 
+  const handleToggleZoneActive = useCallback(async (zoneId) => {
+    if (!selectedVenue) return;
+    
+    try {
+      await zoneApi.toggleActive(selectedVenue.id, zoneId);
+      
+      // Refresh zones for current venue
+      const zoneData = await zoneApi.getByVenue(selectedVenue.id);
+      setZones(Array.isArray(zoneData) ? zoneData : []);
+      setError('');
+    } catch (err) {
+      console.error('Error toggling zone active status:', err);
+      setError('Failed to toggle zone: ' + (err.response?.data?.message || err.message));
+    }
+  }, [selectedVenue]);
+
   // Units Management Functions
   const fetchUnitsForZone = useCallback(async (venueId, zoneId) => {
     if (!venueId || !zoneId) return;
@@ -1941,6 +1957,19 @@ export default function SuperAdminDashboard() {
                                 <p className="text-sm text-zinc-400">{zone.zoneType}</p>
                               </div>
                               <div className="flex space-x-2">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleZoneActive(zone.id);
+                                  }}
+                                  className={`text-sm ${
+                                    zone.isActive 
+                                      ? 'text-yellow-400 hover:text-yellow-300' 
+                                      : 'text-green-400 hover:text-green-300'
+                                  }`}
+                                >
+                                  {zone.isActive ? 'Deactivate' : 'Activate'}
+                                </button>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();

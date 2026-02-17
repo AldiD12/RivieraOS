@@ -789,6 +789,18 @@ export default function BusinessAdminDashboard() {
     }
   };
 
+  const handleToggleZoneActive = async (zoneId) => {
+    if (!selectedVenue) return;
+
+    try {
+      await businessApi.zones.toggleActive(selectedVenue.id, zoneId);
+      await fetchZones(selectedVenue.id);
+    } catch (err) {
+      console.error('Error toggling zone active status:', err);
+      setError(`Failed to toggle zone: ${err.data || err.message}`);
+    }
+  };
+
   // Form handlers
   const handleStaffFormChange = useCallback((field, value) => {
     setStaffForm(prev => ({ ...prev, [field]: value }));
@@ -1533,6 +1545,16 @@ export default function BusinessAdminDashboard() {
                                 Capacity: {zone.capacityPerUnit || 'N/A'} | Price: €{zone.basePrice || 0}
                               </span>
                               <div className="flex space-x-2">
+                                <button
+                                  onClick={() => handleToggleZoneActive(zone.id)}
+                                  className={`text-sm ${
+                                    zone.isActive 
+                                      ? 'text-yellow-400 hover:text-yellow-300' 
+                                      : 'text-green-400 hover:text-green-300'
+                                  }`}
+                                >
+                                  {zone.isActive ? 'Deactivate' : 'Activate'}
+                                </button>
                                 <button
                                   onClick={() => {
                                     // Navigate to unit creation for this zone
