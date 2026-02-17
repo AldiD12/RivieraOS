@@ -27,9 +27,9 @@ export default function CollectorDashboard() {
     guestCount: 1
   });
 
-  // Fetch venues on mount
+  // Load assigned venue on mount
   useEffect(() => {
-    fetchVenues();
+    loadAssignedVenue();
   }, []);
 
   // Fetch zones when venue selected
@@ -116,20 +116,39 @@ export default function CollectorDashboard() {
     };
   }, [connection, selectedVenue]);
 
-  const fetchVenues = async () => {
-    try {
-      setLoading(true);
-      const data = await businessApi.venues.list();
-      setVenues(data);
-      if (data.length > 0) {
-        setSelectedVenue(data[0]);
+  const loadAssignedVenue = async () => {
+      try {
+        setLoading(true);
+
+        // Get assigned venue from localStorage
+        const venueId = localStorage.getItem('venueId');
+        const venueName = localStorage.getItem('venueName');
+
+        if (!venueId) {
+          console.error('❌ No venue assigned to this collector');
+          alert('No venue assigned. Please contact your manager.');
+          return;
+        }
+
+        console.log('🏖️ Collector assigned to venue:', venueId, venueName);
+
+        // Set the assigned venue
+        setSelectedVenue({
+          id: parseInt(venueId),
+          name: venueName || 'Assigned Venue'
+        });
+
+      } catch (error) {
+        console.error('Error loading assigned venue:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching venues:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    const fetchVenues = async () => {
+      // No longer needed - collectors use assigned venue only
+      // Keeping function for backward compatibility
+    };
 
   const fetchZones = async () => {
     if (!selectedVenue) return;

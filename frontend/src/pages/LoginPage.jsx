@@ -162,11 +162,23 @@ export default function LoginPage() {
         console.log('💼 Business ID stored:', businessId);
       }
       
+      // Store venue assignment if available (for Collectors)
+      if (data.venueId) {
+        localStorage.setItem('venueId', data.venueId.toString());
+        console.log('🏖️ Venue ID stored:', data.venueId);
+      }
+      if (data.venueName) {
+        localStorage.setItem('venueName', data.venueName);
+        console.log('🏖️ Venue Name stored:', data.venueName);
+      }
+      
       console.log('✅ Staff login successful with real API:', {
         userId,
         fullName,
         role,
-        businessId
+        businessId,
+        venueId: data.venueId,
+        venueName: data.venueName
       });
       
       // Route based on role - Business roles: Manager, Bartender, Collector
