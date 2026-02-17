@@ -67,7 +67,9 @@ export default function BusinessAdminDashboard() {
     phoneNumber: '',
     role: '',
     pin: '',
-    isActive: true
+    isActive: true,
+    venueId: null,
+    venues: []
   });
 
   const [categoryForm, setCategoryForm] = useState({
@@ -312,7 +314,9 @@ export default function BusinessAdminDashboard() {
         fullName: '',
         role: '',
         pin: '',
-        isActive: true
+        isActive: true,
+        venueId: null,
+        venues: []
       });
       setShowCreateStaffModal(false);
       setError(null);
@@ -357,7 +361,9 @@ export default function BusinessAdminDashboard() {
         phoneNumber: '',
         role: '',
         pin: '',
-        isActive: true
+        isActive: true,
+        venueId: null,
+        venues: []
       });
       setEditingStaff(null);
       
@@ -1001,7 +1007,18 @@ export default function BusinessAdminDashboard() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <h2 className="text-lg md:text-xl font-semibold">Staff Management</h2>
               <button
-                onClick={() => setShowCreateStaffModal(true)}
+                onClick={async () => {
+                  // Fetch venues if not already loaded
+                  if (venues.length === 0) {
+                    await fetchVenues();
+                  }
+                  // Add venues to staffForm
+                  setStaffForm(prev => ({
+                    ...prev,
+                    venues: venues
+                  }));
+                  setShowCreateStaffModal(true);
+                }}
                 className="w-full sm:w-auto px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm md:text-base"
               >
                 Add Staff Member
@@ -1026,6 +1043,9 @@ export default function BusinessAdminDashboard() {
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
                             Role
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
+                            Venue
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
                             Phone
@@ -1060,6 +1080,15 @@ export default function BusinessAdminDashboard() {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">
+                              {staff.venueName ? (
+                                <span className="px-2 py-1 text-xs font-medium bg-purple-900/20 text-purple-400 rounded-full">
+                                  {staff.venueName}
+                                </span>
+                              ) : (
+                                <span className="text-zinc-500 text-xs">Not Assigned</span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">
                               {staff.phoneNumber || staff.email || 'No contact'}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
@@ -1082,7 +1111,11 @@ export default function BusinessAdminDashboard() {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                               <button
-                                onClick={() => {
+                                onClick={async () => {
+                                  // Fetch venues if not already loaded
+                                  if (venues.length === 0) {
+                                    await fetchVenues();
+                                  }
                                   setEditingStaff(staff);
                                   setStaffForm({
                                     email: staff.email || '',
@@ -1091,7 +1124,9 @@ export default function BusinessAdminDashboard() {
                                     fullName: staff.fullName || '',
                                     role: staff.role || '',
                                     pin: '',
-                                    isActive: staff.isActive
+                                    isActive: staff.isActive,
+                                    venueId: staff.venueId || null,
+                                    venues: venues
                                   });
                                 }}
                                 className="text-blue-400 hover:text-blue-300"
@@ -1159,6 +1194,16 @@ export default function BusinessAdminDashboard() {
                             </span>
                           </div>
                           <div>
+                            <p className="text-zinc-500 text-xs mb-1">Venue</p>
+                            {staff.venueName ? (
+                              <span className="px-2 py-1 text-xs font-medium bg-purple-900/20 text-purple-400 rounded-full">
+                                {staff.venueName}
+                              </span>
+                            ) : (
+                              <span className="text-zinc-500 text-xs">Not Assigned</span>
+                            )}
+                          </div>
+                          <div>
                             <p className="text-zinc-500 text-xs mb-1">PIN Status</p>
                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                               staff.hasPinSet 
@@ -1181,7 +1226,11 @@ export default function BusinessAdminDashboard() {
                         {/* Actions */}
                         <div className="flex flex-col gap-2 pt-2 border-t border-zinc-800">
                           <button
-                            onClick={() => {
+                            onClick={async () => {
+                              // Fetch venues if not already loaded
+                              if (venues.length === 0) {
+                                await fetchVenues();
+                              }
                               setEditingStaff(staff);
                               setStaffForm({
                                 email: staff.email || '',
@@ -1190,7 +1239,9 @@ export default function BusinessAdminDashboard() {
                                 fullName: staff.fullName || '',
                                 role: staff.role || '',
                                 pin: '',
-                                isActive: staff.isActive
+                                isActive: staff.isActive,
+                                venueId: staff.venueId || null,
+                                venues: venues
                               });
                             }}
                             className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"

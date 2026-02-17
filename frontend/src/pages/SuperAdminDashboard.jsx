@@ -146,6 +146,9 @@ const StaffTab = ({
                   Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
+                  Venue
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
                   PIN
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
@@ -173,6 +176,15 @@ const StaffTab = ({
                     <span className="px-2 py-1 text-xs font-medium bg-blue-900 text-blue-300 rounded">
                       {staff.role}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">
+                    {staff.venueName ? (
+                      <span className="px-2 py-1 text-xs font-medium bg-purple-900/20 text-purple-400 rounded-full">
+                        {staff.venueName}
+                      </span>
+                    ) : (
+                      <span className="text-zinc-500 text-xs">Not Assigned</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -655,7 +667,9 @@ export default function SuperAdminDashboard() {
     fullName: '',
     role: '',
     pin: '',
-    isActive: true
+    isActive: true,
+    venueId: null,
+    venues: []
   });
 
   const [businessForm, setBusinessForm] = useState({
@@ -912,7 +926,9 @@ export default function SuperAdminDashboard() {
         fullName: '',
         role: '',
         pin: '',
-        isActive: true
+        isActive: true,
+        venueId: null,
+        venues: []
       });
       
       // Refresh staff list
@@ -952,7 +968,9 @@ export default function SuperAdminDashboard() {
         fullName: '',
         role: '',
         pin: '',
-        isActive: true
+        isActive: true,
+        venueId: null,
+        venues: []
       });
       
       // Refresh staff list
@@ -1704,8 +1722,23 @@ export default function SuperAdminDashboard() {
           <StaffTab
             staffMembers={staffMembers}
             selectedBusiness={selectedBusiness}
-            onCreateStaff={() => setShowCreateStaffModal(true)}
-            onEditStaff={(staff) => {
+            onCreateStaff={async () => {
+              // Fetch venues if not already loaded
+              if (venues.length === 0 && selectedBusiness) {
+                await fetchVenuesForBusiness(selectedBusiness.id);
+              }
+              // Add venues to staffForm
+              setStaffForm(prev => ({
+                ...prev,
+                venues: venues
+              }));
+              setShowCreateStaffModal(true);
+            }}
+            onEditStaff={async (staff) => {
+              // Fetch venues if not already loaded
+              if (venues.length === 0 && selectedBusiness) {
+                await fetchVenuesForBusiness(selectedBusiness.id);
+              }
               setEditingStaff(staff);
               setStaffForm({
                 email: staff.email || '',
@@ -1713,7 +1746,9 @@ export default function SuperAdminDashboard() {
                 fullName: staff.fullName || '',
                 role: staff.role || '',
                 pin: '', // Don't pre-fill PIN for security
-                isActive: staff.isActive
+                isActive: staff.isActive,
+                venueId: staff.venueId || null,
+                venues: venues
               });
               setShowEditStaffModal(true);
             }}
