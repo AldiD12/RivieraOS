@@ -406,7 +406,7 @@ export default function MenuPage() {
   // MENU SCREEN
   if (currentScreen === 'menu') {
     return (
-      <div className="bg-[#FDFBF7] text-black min-h-screen font-sans antialiased selection:bg-black selection:text-white pb-32"
+      <div className="bg-[#FDFBF7] text-black min-h-screen font-sans antialiased selection:bg-black selection:text-white pb-32">
         {/* Header */}
         <header className="pt-20 pb-12 px-6 text-center">
           <h1 className="font-serif text-4xl md:text-5xl text-black tracking-tight leading-none">

@@ -1517,6 +1517,7 @@ export default function BusinessAdminDashboard() {
                           </div>
                           
                           <div className="flex justify-between items-center">
+                            <div className="flex space-x-2">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();

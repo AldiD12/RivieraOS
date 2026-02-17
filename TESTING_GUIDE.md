@@ -1,225 +1,333 @@
-# Testing Guide - Real Azure API Integration
+# Testing Guide - Backend Integration Features
 
-## Overview
-The frontend now uses real Azure APIs instead of mock data. Here's how to test all the functionality.
+**Date:** February 17, 2026  
+**Features:** Zone Toggle, Staff Venue Assignment, Digital Ordering Toggle
 
-## 🚀 Quick Start Testing
+---
 
-### 1. Start the Frontend
-```bash
-cd frontend
-npm run dev
-```
-The app will be available at `http://localhost:5173`
+## Prerequisites
 
-### 2. Check API Configuration
-- Open browser console (F12)
-- Look for API configuration logs
-- Should see: `API Environment: AZURE`
-- Base URL: `https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api`
+1. **Start the frontend dev server:**
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+   Frontend will run on: http://localhost:5173
 
-## 🧪 Test Scenarios
+2. **Ensure backend is running:**
+   - Backend should be running on the production URL
+   - Check that you can access the API
 
-### A. SuperAdmin Dashboard (Real Azure API)
-**URL:** `http://localhost:5173/superadmin/login`
+3. **Login credentials:**
+   - You'll need a Manager/Owner account for BusinessAdmin
+   - You'll need a SuperAdmin account for SuperAdmin testing
 
-**Test Login:**
-- Email: `superadmin@rivieraos.com`
-- Password: `RivieraOS2024!`
+---
 
-**What to Test:**
-1. **Login** → Should authenticate with real Azure API
-2. **Business Management** → Create/edit businesses with setup codes
-3. **Staff Management** → Create staff with PINs (stored as hashed passwords)
-4. **QR Code Generation** → Generate setup QR codes for businesses
-5. **Venue Management** → Manage venues and zones
+## Feature 1: Zone IsActive Toggle
 
-**Expected Behavior:**
-- ✅ Real API calls to Azure endpoints
-- ✅ JWT tokens stored and used for authentication
-- ✅ All CRUD operations work with real database
-- ✅ Setup codes saved to real business records
+### Test in BusinessAdminDashboard
 
-### B. Business Setup Flow (Real API Validation)
-**URL:** `http://localhost:5173/setup`
+1. **Navigate to dashboard:**
+   - Go to http://localhost:5173/business-admin
+   - Login with Manager/Owner credentials
 
-**Test Setup Codes:**
-1. Enter `CORAL1` → Should validate against real Azure businesses
-2. Enter `MARINA` → Should validate if exists in Azure
-3. Enter `INVALID` → Should show error from real API
+2. **Go to Venues tab:**
+   - Click on "Venues" in the navigation
+   - Select a venue from the list
 
-**Expected Behavior:**
-- ✅ Calls real Azure API to validate business codes
-- ✅ If Azure validation fails, falls back to demo data
-- ✅ Stores real business data in localStorage
-- ✅ Redirects to login with business context
+3. **View zones:**
+   - You should see a list of zones for the selected venue
+   - Each zone should have an Active/Inactive badge
 
-### C. Staff PIN Login (Real API Authentication)
-**URL:** `http://localhost:5173/login` (after business setup)
+4. **Test toggle:**
+   - Click the "Toggle Active" button on any zone
+   - The badge should change from Active to Inactive (or vice versa)
+   - Refresh the page - the status should persist
 
-**Test PINs:**
-- Business 1 (Hotel Coral Beach): `1111`, `2222`, `3333`
-- Business 2 (Marina Resort): `1111`, `2222`, `5555`
-- Business 3 (Mountain Lodge): `1111`, `6666`
+5. **Expected behavior:**
+   - ✅ Toggle button works
+   - ✅ Badge updates immediately
+   - ✅ Status persists after refresh
+   - ✅ No errors in console
 
-**Expected Behavior:**
-- ✅ Attempts real Azure API PIN authentication first
-- ✅ Falls back to demo data if Azure API doesn't support PIN yet
-- ✅ Different PINs work for different businesses
-- ✅ JWT tokens stored and used for subsequent requests
+### Test in SuperAdminDashboard
 
-### D. Menu System (Real API Data)
-**URL:** `http://localhost:5173/menu` (after staff login)
+1. **Navigate to dashboard:**
+   - Go to http://localhost:5173/super-admin
+   - Login with SuperAdmin credentials
 
-**Expected Behavior:**
-- ✅ Tries to load menu from real Azure API
-- ✅ Falls back to enhanced demo menu if no products in Azure
-- ✅ Shows 6 premium menu items with real images
-- ✅ Prices and descriptions are realistic
+2. **Select a business:**
+   - Choose a business from the dropdown
 
-### E. Staff Dashboards (Real API Integration)
-**URLs:** 
-- Collector: `http://localhost:5173/collector`
-- Bar Staff: `http://localhost:5173/bar`
-- Manager: `http://localhost:5173/manager`
+3. **Go to Venues tab:**
+   - Click on "Venues" tab
+   - Select a venue
+   - Select a zone
 
-**Expected Behavior:**
-- ✅ Uses real authentication tokens
-- ✅ Shows business-specific data
-- ✅ API calls include proper Authorization headers
+4. **Test toggle:**
+   - Same as BusinessAdmin testing above
 
-## 🔍 Debugging & Monitoring
+---
 
-### Browser Console Logs
-Open F12 → Console tab to see:
+## Feature 2: Staff Venue Assignment
 
-```
-✅ API Environment: AZURE
-✅ Base URL: https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api
-🔐 Attempting Azure API login for: superadmin@rivieraos.com
-✅ Added Authorization header to API call: /superadmin/Businesses
-🏢 Validating business code: CORAL1
-🔐 Attempting PIN login for business: 1 PIN: 1111
-⚠️ Azure PIN login failed, using fallback data
-```
+### Test Creating Staff with Venue Assignment
 
-### Network Tab Monitoring
-F12 → Network tab to see:
+1. **Navigate to Staff Management:**
+   - Go to BusinessAdmin or SuperAdmin dashboard
+   - Click on "Staff" tab
 
-**Real API Calls:**
-- `POST /Auth/login` → Azure authentication
-- `GET /superadmin/Businesses` → Real business data
-- `POST /superadmin/businesses/1/Users` → Real staff creation
-- `GET /Businesses` → Business validation
+2. **Click "Add Staff Member":**
+   - Fill in required fields:
+     - Email: test@example.com
+     - Password: test123
+     - Phone: +1234567890
+     - Full Name: Test Staff
+     - Role: Collector (or any role)
+     - PIN: 1234
 
-**Headers to Check:**
-- `Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
-- `Content-Type: application/json`
+3. **Assign a venue:**
+   - Look for "Assigned Venue" dropdown
+   - Select a venue from the list
+   - Or leave as "Not Assigned"
 
-## 🎯 Testing Checklist
+4. **Submit the form:**
+   - Click "Add Staff Member"
+   - Check the staff list
 
-### ✅ Real API Integration Tests
-- [ ] SuperAdmin login uses real Azure authentication
-- [ ] Business creation/editing saves to real database
-- [ ] Setup codes are validated against real businesses
-- [ ] Staff creation with PINs works (stored as hashed passwords)
-- [ ] QR code generation includes real business data
-- [ ] PIN login attempts real API first, falls back gracefully
-- [ ] Menu system tries real API, shows enhanced fallback
-- [ ] All API calls include proper JWT tokens
+5. **Expected behavior:**
+   - ✅ Venue dropdown appears in the form
+   - ✅ Dropdown shows all venues
+   - ✅ "Not Assigned" is the default option
+   - ✅ After creation, staff list shows venue name or "Not Assigned"
+   - ✅ Venue appears in a purple badge
 
-### ✅ Fallback System Tests
-- [ ] When Azure API is down, fallback data works
-- [ ] When endpoints don't exist, graceful degradation
-- [ ] Error messages are user-friendly
-- [ ] No broken functionality when API fails
+### Test Editing Staff Venue Assignment
 
-### ✅ Multi-Business Tests
-- [ ] Same PIN works for different staff at different businesses
-- [ ] Business context is maintained throughout session
-- [ ] Setup codes are unique per business
-- [ ] QR codes generate correct business-specific URLs
+1. **Click "Edit" on any staff member:**
+   - The edit modal should open
+   - Venue dropdown should show current assignment
 
-## 🚨 Common Issues & Solutions
+2. **Change venue assignment:**
+   - Select a different venue
+   - Or select "Not Assigned" to remove assignment
 
-### Issue: "Network Error" on API calls
-**Solution:** Check if Azure API is online
-```bash
-curl https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/Businesses
-```
+3. **Save changes:**
+   - Click "Update Staff Member"
+   - Check the staff list
 
-### Issue: "Authentication failed" 
-**Solution:** Check SuperAdmin credentials
-- Email: `superadmin@rivieraos.com`
-- Password: `RivieraOS2024!`
+4. **Expected behavior:**
+   - ✅ Current venue is pre-selected in dropdown
+   - ✅ Can change to different venue
+   - ✅ Can remove assignment (set to "Not Assigned")
+   - ✅ Changes persist after save
+   - ✅ Staff list updates immediately
 
-### Issue: "Invalid business code"
+### Test on Mobile View
+
+1. **Resize browser to mobile width (< 768px):**
+   - Staff list should switch to card view
+
+2. **Check venue display:**
+   - Each staff card should show venue info
+   - Should see "Venue: [Venue Name]" or "Venue: Not Assigned"
+
+3. **Test edit on mobile:**
+   - Click "Edit" button
+   - Venue dropdown should work on mobile
+
+---
+
+## Feature 3: Digital Ordering Toggle
+
+### Test Creating Venue with Digital Ordering
+
+1. **Navigate to Venues:**
+   - Go to BusinessAdmin or SuperAdmin dashboard
+   - Click on "Venues" tab
+
+2. **Click "Add Venue" or "Create Venue":**
+   - Fill in required fields:
+     - Name: Test Restaurant
+     - Type: RESTAURANT
+     - Description: Test description
+
+3. **Find "Digital Ordering Override" dropdown:**
+   - Should be near the bottom of the form
+   - Three options should be available:
+     - Auto (Restaurant=No, Beach/Pool/Bar=Yes)
+     - Force Enable
+     - Force Disable
+
+4. **Test Auto setting:**
+   - Select "Auto"
+   - Create the venue
+   - Check venue list - should show "🤖 Auto Menu" badge
+
+5. **Expected behavior:**
+   - ✅ Dropdown appears in create form
+   - ✅ All three options are available
+   - ✅ Explanation text is visible
+   - ✅ Venue is created successfully
+   - ✅ Badge appears in venue list
+
+### Test Editing Venue Digital Ordering
+
+1. **Click "Edit" on any venue:**
+   - Edit modal should open
+   - Digital Ordering dropdown should show current setting
+
+2. **Change setting:**
+   - Try changing from Auto to Force Enable
+   - Save changes
+
+3. **Check venue list:**
+   - Badge should update to "✓ Menu Enabled"
+
+4. **Try all combinations:**
+   - Auto → Force Enable → Force Disable → Auto
+   - Each should show correct badge
+
+5. **Expected behavior:**
+   - ✅ Current setting is pre-selected
+   - ✅ Can change to any option
+   - ✅ Changes persist after save
+   - ✅ Badge updates immediately
+
+### Test Digital Ordering on SpotPage (Customer View)
+
+This is the most important test - it affects what customers see!
+
+1. **Create test venues:**
+   - Restaurant with Auto setting
+   - Beach with Auto setting
+   - Restaurant with Force Enable
+   - Beach with Force Disable
+
+2. **Test Restaurant with Auto:**
+   - Navigate to the restaurant's SpotPage
+   - URL: http://localhost:5173/spot/[venueId]
+   - **Expected:** Menu is visible but NO "Add to Cart" buttons
+   - **Expected:** No cart sidebar
+
+3. **Test Beach with Auto:**
+   - Navigate to the beach's SpotPage
+   - **Expected:** Menu is visible WITH "Add to Cart" buttons
+   - **Expected:** Cart sidebar is visible
+   - **Expected:** Can add items to cart
+
+4. **Test Restaurant with Force Enable:**
+   - Navigate to the restaurant's SpotPage
+   - **Expected:** Menu WITH "Add to Cart" buttons (override works!)
+   - **Expected:** Cart sidebar is visible
+
+5. **Test Beach with Force Disable:**
+   - Navigate to the beach's SpotPage
+   - **Expected:** Menu is visible but NO "Add to Cart" buttons (override works!)
+   - **Expected:** No cart sidebar
+
+6. **Expected behavior:**
+   - ✅ Auto setting respects venue type
+   - ✅ Force Enable always shows ordering
+   - ✅ Force Disable always hides ordering
+   - ✅ No errors in console
+   - ✅ Menu displays correctly in all cases
+
+### Test Venue List Badges
+
+1. **Check venue list in dashboard:**
+   - Each venue should show TWO badges:
+     - Ordering badge: 🛒 Ordering / 🚫 No Ordering
+     - Digital ordering badge: 🤖 Auto Menu / ✓ Menu Enabled / ✗ Menu Disabled
+
+2. **Verify badge colors:**
+   - Auto Menu: Blue background
+   - Menu Enabled: Blue background
+   - Menu Disabled: Amber/yellow background
+
+3. **Expected behavior:**
+   - ✅ Both badges are visible
+   - ✅ Colors are correct
+   - ✅ Text is readable
+   - ✅ Badges wrap properly on small screens
+
+---
+
+## Common Issues and Solutions
+
+### Issue: Venue dropdown is empty in staff form
 **Solution:** 
-1. Check if business exists in Azure with setup code
-2. Use fallback codes: `CORAL1`, `MARINA`, `MOUNT1`
+- Check that venues exist for the business
+- Check browser console for API errors
+- Verify venues are being fetched when modal opens
 
-### Issue: "Invalid PIN"
+### Issue: Digital ordering badge not showing
 **Solution:**
-1. Check if staff exists in Azure for that business
-2. Use fallback PINs: `1111`, `2222`, `3333`
+- Refresh the page to get latest venue data
+- Check that backend is returning `allowsDigitalOrdering` field
+- Check browser console for errors
 
-## 📊 API Status Monitoring
+### Issue: SpotPage still checking venue type
+**Solution:**
+- Clear browser cache
+- Hard refresh (Cmd+Shift+R on Mac, Ctrl+Shift+R on Windows)
+- Check that latest code is deployed
 
-### Check API Health
-Visit: `http://localhost:5173` and look for API status indicator
+### Issue: Changes not persisting
+**Solution:**
+- Check browser console for API errors
+- Verify backend is running
+- Check network tab to see if API calls are succeeding
 
-**Healthy API:**
-- Green indicator
-- "API responding (auth required)"
+---
 
-**Unhealthy API:**
-- Red indicator
-- Falls back to demo data
+## Quick Test Checklist
 
-## 🔄 Testing Different Scenarios
+Use this for rapid testing:
 
-### Scenario 1: Full Azure Integration
-1. Azure API is online
-2. Businesses exist with setup codes
-3. Staff exist with PINs
-4. All real data flows through
+### Zone Toggle
+- [ ] Toggle works in BusinessAdmin
+- [ ] Toggle works in SuperAdmin
+- [ ] Status persists after refresh
 
-### Scenario 2: Partial Azure Integration
-1. Azure API is online
-2. Some endpoints missing (PIN login, products)
-3. Real authentication + fallback data
-4. Graceful degradation
+### Staff Venue Assignment
+- [ ] Create staff with venue
+- [ ] Create staff without venue
+- [ ] Edit staff to add venue
+- [ ] Edit staff to remove venue
+- [ ] Venue displays in staff list
+- [ ] Works on mobile view
 
-### Scenario 3: Azure API Offline
-1. Azure API is down
-2. All fallback systems activate
-3. Demo data used throughout
-4. Full functionality maintained
+### Digital Ordering
+- [ ] Create venue with Auto
+- [ ] Create venue with Force Enable
+- [ ] Create venue with Force Disable
+- [ ] Edit venue to change setting
+- [ ] Badges display correctly
+- [ ] Restaurant with Auto = view-only menu
+- [ ] Beach with Auto = ordering enabled
+- [ ] Force Enable overrides type
+- [ ] Force Disable overrides type
 
-## 🎉 Success Indicators
+---
 
-**You'll know it's working when:**
-- ✅ Console shows real API calls to Azure
-- ✅ Network tab shows 200 responses from Azure endpoints
-- ✅ JWT tokens are generated and stored
-- ✅ Business setup validates against real database
-- ✅ SuperAdmin can create/edit real businesses
-- ✅ Staff login works with business context
-- ✅ All functionality works even if some endpoints are missing
+## Reporting Issues
 
-## 🔧 Development Testing
+If you find any issues, please note:
+1. What you were doing (steps to reproduce)
+2. What you expected to happen
+3. What actually happened
+4. Any error messages in browser console
+5. Screenshots if applicable
 
-### Test with Different API States
-1. **Azure Online:** Full real API integration
-2. **Azure Partial:** Some endpoints work, others fallback
-3. **Azure Offline:** Full fallback mode
+---
 
-### Switch API Environments
-Edit `frontend/src/services/apiConfig.js`:
-```javascript
-const CURRENT_ENV = 'AZURE';  // Real Azure API
-const CURRENT_ENV = 'LOCAL';  // Local development
-const CURRENT_ENV = 'MOCK';   // Pure demo mode
-```
+## Next Steps After Testing
 
-The system is now production-ready with real Azure API integration and robust fallback systems!
+1. If all tests pass → Deploy to production
+2. If issues found → Document and fix
+3. Test again after fixes
+4. Deploy to production
+5. Test in production environment
+6. Monitor for any issues
