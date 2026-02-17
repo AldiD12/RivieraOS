@@ -97,7 +97,8 @@ export default function BusinessAdminDashboard() {
     latitude: null,
     longitude: null,
     orderingEnabled: true,
-    googlePlaceId: ''
+    googlePlaceId: '',
+    isDigitalOrderingEnabled: null
   });
 
   const [zoneForm, setZoneForm] = useState({
@@ -651,7 +652,8 @@ export default function BusinessAdminDashboard() {
         latitude: null,
         longitude: null,
         orderingEnabled: true,
-        googlePlaceId: ''
+        googlePlaceId: '',
+        isDigitalOrderingEnabled: null
       });
       setShowCreateVenueModal(false);
       
@@ -679,7 +681,8 @@ export default function BusinessAdminDashboard() {
         latitude: null,
         longitude: null,
         orderingEnabled: true,
-        googlePlaceId: ''
+        googlePlaceId: '',
+        isDigitalOrderingEnabled: null
       });
       setEditingVenue(null);
       
@@ -1520,7 +1523,8 @@ export default function BusinessAdminDashboard() {
                                     latitude: venue.latitude,
                                     longitude: venue.longitude,
                                     orderingEnabled: venue.orderingEnabled,
-                                    googlePlaceId: venue.googlePlaceId || ''
+                                    googlePlaceId: venue.googlePlaceId || '',
+                                    isDigitalOrderingEnabled: venue.isDigitalOrderingEnabled ?? null
                                   });
                                 }}
                                 className="text-blue-400 hover:text-blue-300 text-sm"

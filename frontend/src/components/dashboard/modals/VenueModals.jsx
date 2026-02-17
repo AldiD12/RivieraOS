@@ -162,6 +162,27 @@ export const CreateVenueModal = ({
               </label>
             </div>
             
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-zinc-300">
+                Digital Ordering Override
+              </label>
+              <select
+                value={venueForm.isDigitalOrderingEnabled === null ? 'auto' : venueForm.isDigitalOrderingEnabled.toString()}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  onFormChange('isDigitalOrderingEnabled', value === 'auto' ? null : value === 'true');
+                }}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+              >
+                <option value="auto">Auto (Restaurant=No, Beach/Pool/Bar=Yes)</option>
+                <option value="true">Force Enable</option>
+                <option value="false">Force Disable</option>
+              </select>
+              <p className="text-xs text-zinc-500">
+                Controls whether customers can order from menu. Auto-detection: Restaurant venues default to view-only menu, Beach/Pool/Bar venues allow ordering.
+              </p>
+            </div>
+            
             <div className="flex justify-end space-x-4 pt-4">
               <button
                 type="button"
@@ -343,6 +364,27 @@ export const EditVenueModal = ({
               <label htmlFor="editOrderingEnabled" className="text-sm text-zinc-300">
                 Enable Online Ordering
               </label>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-zinc-300">
+                Digital Ordering Override
+              </label>
+              <select
+                value={venueForm.isDigitalOrderingEnabled === null ? 'auto' : venueForm.isDigitalOrderingEnabled.toString()}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  onFormChange('isDigitalOrderingEnabled', value === 'auto' ? null : value === 'true');
+                }}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+              >
+                <option value="auto">Auto (Restaurant=No, Beach/Pool/Bar=Yes)</option>
+                <option value="true">Force Enable</option>
+                <option value="false">Force Disable</option>
+              </select>
+              <p className="text-xs text-zinc-500">
+                Controls whether customers can order from menu. Auto-detection: Restaurant venues default to view-only menu, Beach/Pool/Bar venues allow ordering.
+              </p>
             </div>
             
             <div className="flex justify-end space-x-4 pt-4">

@@ -707,7 +707,8 @@ export default function SuperAdminDashboard() {
     latitude: null,
     longitude: null,
     orderingEnabled: true,
-    googlePlaceId: ''
+    googlePlaceId: '',
+    isDigitalOrderingEnabled: null
   });
 
   const [zoneForm, setZoneForm] = useState({
@@ -1339,7 +1340,8 @@ export default function SuperAdminDashboard() {
         latitude: null,
         longitude: null,
         orderingEnabled: true,
-        googlePlaceId: ''
+        googlePlaceId: '',
+        isDigitalOrderingEnabled: null
       });
       await fetchVenuesForBusiness(selectedBusiness.id);
       setError('');
@@ -1366,7 +1368,8 @@ export default function SuperAdminDashboard() {
         latitude: null,
         longitude: null,
         orderingEnabled: true,
-        googlePlaceId: ''
+        googlePlaceId: '',
+        isDigitalOrderingEnabled: null
       });
       await fetchVenuesForBusiness(selectedBusiness.id);
       setError('');
@@ -1920,7 +1923,8 @@ export default function SuperAdminDashboard() {
                                     latitude: venue.latitude,
                                     longitude: venue.longitude,
                                     orderingEnabled: venue.orderingEnabled,
-                                    googlePlaceId: venue.googlePlaceId || ''
+                                    googlePlaceId: venue.googlePlaceId || '',
+                                    isDigitalOrderingEnabled: venue.isDigitalOrderingEnabled ?? null
                                   });
                                   setShowEditVenueModal(true);
                                 }}

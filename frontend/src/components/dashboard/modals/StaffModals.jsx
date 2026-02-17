@@ -129,6 +129,27 @@ export const CreateStaffModal = ({
                     : "✅ Business roles: Manager, Bartender, Collector"}
                 </p>
               </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Assigned Venue
+                </label>
+                <select
+                  value={staffForm.venueId || ''}
+                  onChange={(e) => onFormChange('venueId', e.target.value ? parseInt(e.target.value) : null)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                >
+                  <option value="">Not Assigned</option>
+                  {staffForm.venues?.map(venue => (
+                    <option key={venue.id} value={venue.id}>
+                      {venue.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Optional: Assign staff to specific venue
+                </p>
+              </div>
             </div>
             
             <div className="flex items-center">
@@ -277,6 +298,27 @@ export const EditStaffModal = ({
                   {isSuperAdmin 
                     ? "✅ SuperAdmin: Can assign Owner, Manager, Bartender, Collector" 
                     : "✅ Business roles: Manager, Bartender, Collector"}
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Assigned Venue
+                </label>
+                <select
+                  value={staffForm.venueId || ''}
+                  onChange={(e) => onFormChange('venueId', e.target.value ? parseInt(e.target.value) : null)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                >
+                  <option value="">Not Assigned</option>
+                  {staffForm.venues?.map(venue => (
+                    <option key={venue.id} value={venue.id}>
+                      {venue.name}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Optional: Assign staff to specific venue
                 </p>
               </div>
             </div>
