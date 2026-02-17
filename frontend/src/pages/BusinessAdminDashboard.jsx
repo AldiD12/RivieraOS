@@ -1495,11 +1495,28 @@ export default function BusinessAdminDashboard() {
                             <p className="text-sm opacity-75 mb-2">{venue.address}</p>
                           )}
                           
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm">
-                              {venue.orderingEnabled ? '🛒 Ordering Enabled' : '🚫 Ordering Disabled'}
+                          <div className="flex flex-wrap gap-2 mb-2">
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              venue.orderingEnabled 
+                                ? 'bg-green-900/20 text-green-400' 
+                                : 'bg-red-900/20 text-red-400'
+                            }`}>
+                              {venue.orderingEnabled ? '🛒 Ordering' : '🚫 No Ordering'}
                             </span>
-                            <div className="flex space-x-2">
+                            <span className={`px-2 py-1 rounded text-xs ${
+                              venue.allowsDigitalOrdering 
+                                ? 'bg-blue-900/20 text-blue-400' 
+                                : 'bg-amber-900/20 text-amber-400'
+                            }`}>
+                              {venue.isDigitalOrderingEnabled === null 
+                                ? '🤖 Auto Menu' 
+                                : venue.allowsDigitalOrdering 
+                                  ? '✓ Menu Enabled' 
+                                  : '✗ Menu Disabled'}
+                            </span>
+                          </div>
+                          
+                          <div className="flex justify-between items-center">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
