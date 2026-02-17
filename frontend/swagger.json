@@ -3860,6 +3860,18 @@
         }
       }
     },
+    "/api/business/Staff/me": {
+      "get": {
+        "tags": [
+          "Staff"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/business/Staff": {
       "get": {
         "tags": [
@@ -7206,6 +7218,38 @@
         }
       }
     },
+    "/api/superadmin/venues/{venueId}/Zones/{id}/toggle-active": {
+      "post": {
+        "tags": [
+          "Zones"
+        ],
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/business/venues/{venueId}/Zones": {
       "get": {
         "tags": [
@@ -7410,6 +7454,38 @@
         }
       },
       "delete": {
+        "tags": [
+          "Zones"
+        ],
+        "parameters": [
+          {
+            "name": "venueId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/business/venues/{venueId}/Zones/{id}/toggle-active": {
+      "post": {
         "tags": [
           "Zones"
         ],
@@ -7987,6 +8063,11 @@
           "role": {
             "minLength": 1,
             "type": "string"
+          },
+          "venueId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -8060,6 +8141,9 @@
           "basePrice": {
             "type": "number",
             "format": "double"
+          },
+          "isActive": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -8748,6 +8832,15 @@
           "hasPinSet": {
             "type": "boolean"
           },
+          "venueId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "venueName": {
+            "type": "string",
+            "nullable": true
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -8783,6 +8876,15 @@
           },
           "hasPinSet": {
             "type": "boolean"
+          },
+          "venueId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "venueName": {
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -8958,6 +9060,11 @@
           },
           "isActive": {
             "type": "boolean"
+          },
+          "venueId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -9073,6 +9180,9 @@
           "basePrice": {
             "type": "number",
             "format": "double"
+          },
+          "isActive": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -9183,6 +9293,13 @@
           "orderingEnabled": {
             "type": "boolean"
           },
+          "isDigitalOrderingEnabled": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "allowsDigitalOrdering": {
+            "type": "boolean"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -9229,6 +9346,13 @@
           "orderingEnabled": {
             "type": "boolean"
           },
+          "isDigitalOrderingEnabled": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "allowsDigitalOrdering": {
+            "type": "boolean"
+          },
           "zoneCount": {
             "type": "integer",
             "format": "int32"
@@ -9269,6 +9393,9 @@
           "venueName": {
             "type": "string",
             "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -9295,6 +9422,9 @@
           "basePrice": {
             "type": "number",
             "format": "double"
+          },
+          "isActive": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -10386,6 +10516,9 @@
           "basePrice": {
             "type": "number",
             "format": "double"
+          },
+          "isActive": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -11923,6 +12056,9 @@
           },
           "orderingEnabled": {
             "type": "boolean"
+          },
+          "allowsDigitalOrdering": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -12531,6 +12667,9 @@
           "basePrice": {
             "type": "number",
             "format": "double"
+          },
+          "isActive": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -12623,8 +12762,16 @@
             "format": "int32",
             "nullable": true
           },
+          "venueId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "business": {
             "$ref": "#/components/schemas/Business"
+          },
+          "venue": {
+            "$ref": "#/components/schemas/Venue"
           },
           "userRoles": {
             "type": "array",
@@ -12841,6 +12988,14 @@
           "orderingEnabled": {
             "type": "boolean"
           },
+          "isDigitalOrderingEnabled": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "allowsDigitalOrdering": {
+            "type": "boolean",
+            "readOnly": true
+          },
           "isDeleted": {
             "type": "boolean"
           },
@@ -12998,6 +13153,13 @@
           "orderingEnabled": {
             "type": "boolean"
           },
+          "isDigitalOrderingEnabled": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "allowsDigitalOrdering": {
+            "type": "boolean"
+          },
           "businessId": {
             "type": "integer",
             "format": "int32"
@@ -13050,6 +13212,13 @@
             "type": "boolean"
           },
           "orderingEnabled": {
+            "type": "boolean"
+          },
+          "isDigitalOrderingEnabled": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "allowsDigitalOrdering": {
             "type": "boolean"
           },
           "zoneCount": {
@@ -13167,6 +13336,9 @@
           "venueName": {
             "type": "string",
             "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -13193,6 +13365,9 @@
           "basePrice": {
             "type": "number",
             "format": "double"
+          },
+          "isActive": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
