@@ -192,8 +192,9 @@ export default function SpotPage() {
     }
   };
 
-  // Check if venue allows ordering (Beach/Pool only)
-  const canOrder = venue?.type === 'BEACH' || venue?.type === 'POOL';
+  // Check if venue allows ordering - uses backend's allowsDigitalOrdering field
+  // Backend logic: null = auto (Restaurant=false, Beach/Pool/Bar=true), true/false = manual override
+  const canOrder = venue?.allowsDigitalOrdering ?? false;
   // Check if venue allows table reservation (Beach/Pool only)
   const canReserve = venue?.type === 'BEACH' || venue?.type === 'POOL';
 
