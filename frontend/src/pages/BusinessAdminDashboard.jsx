@@ -542,11 +542,25 @@ export default function BusinessAdminDashboard() {
     if (!selectedCategory || !editingProduct) return;
 
     try {
+      console.log('🔄 Updating product:', {
+        categoryId: selectedCategory.id,
+        productId: editingProduct.id,
+        productData: productForm,
+        excludedVenues: productExcludedVenues
+      });
+
       // Update product data
       await businessApi.products.update(selectedCategory.id, editingProduct.id, productForm);
+      console.log('✅ Product data updated successfully');
       
       // Update exclusions
+      console.log('🔄 Setting product exclusions:', productExcludedVenues);
       await businessApi.products.setExclusions(selectedCategory.id, editingProduct.id, productExcludedVenues);
+      console.log('✅ Product exclusions updated successfully');
+      
+      // Verify exclusions were saved
+      const savedExclusions = await businessApi.products.getExclusions(selectedCategory.id, editingProduct.id);
+      console.log('🔍 Verified saved exclusions:', savedExclusions);
       
       await fetchProducts(selectedCategory.id);
       setEditingProduct(null);
@@ -561,8 +575,10 @@ export default function BusinessAdminDashboard() {
         categoryId: null
       });
       setProductExcludedVenues([]);
+      
+      console.log('✅ Product update complete');
     } catch (err) {
-      console.error('Error updating product:', err);
+      console.error('❌ Error updating product:', err);
       setError(`Failed to update product: ${err.data || err.message}`);
     }
   };
