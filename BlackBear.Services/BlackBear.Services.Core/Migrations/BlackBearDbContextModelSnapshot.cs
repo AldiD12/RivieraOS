@@ -1255,7 +1255,7 @@ namespace BlackBear.Services.Core.Migrations
                     b.HasOne("BlackBear.Services.Core.Entities.Venue", "Venue")
                         .WithMany()
                         .HasForeignKey("VenueId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Business");
 

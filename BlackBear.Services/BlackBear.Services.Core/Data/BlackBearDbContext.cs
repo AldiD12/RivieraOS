@@ -158,7 +158,7 @@ namespace BlackBear.Services.Core.Data
                 entity.HasOne(u => u.Venue)
                     .WithMany()
                     .HasForeignKey(u => u.VenueId)
-                    .OnDelete(DeleteBehavior.SetNull);
+                    .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasMany(u => u.UserRoles)
                     .WithOne(ur => ur.User)

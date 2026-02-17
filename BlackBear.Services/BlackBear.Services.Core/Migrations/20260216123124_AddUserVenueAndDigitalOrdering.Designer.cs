@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlackBear.Services.Core.Migrations
 {
     [DbContext(typeof(BlackBearDbContext))]
-    [Migration("20260216122123_AddUserVenueAssignment")]
-    partial class AddUserVenueAssignment
+    [Migration("20260216123124_AddUserVenueAndDigitalOrdering")]
+    partial class AddUserVenueAndDigitalOrdering
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -738,6 +738,10 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("bit")
                         .HasColumnName("is_deleted");
 
+                    b.Property<bool?>("IsDigitalOrderingEnabled")
+                        .HasColumnType("bit")
+                        .HasColumnName("is_digital_ordering_enabled");
+
                     b.Property<double?>("Latitude")
                         .HasColumnType("float")
                         .HasColumnName("latitude");
@@ -1254,7 +1258,7 @@ namespace BlackBear.Services.Core.Migrations
                     b.HasOne("BlackBear.Services.Core.Entities.Venue", "Venue")
                         .WithMany()
                         .HasForeignKey("VenueId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Business");
 
