@@ -57,42 +57,49 @@ export default function SpotPage() {
       
       setMenu(menuData);
 
-      // Fetch venue details to get venue type and digital ordering status
-      let venueType = 'OTHER'; // default
-      let venueName = menuData[0]?.venueName || 'Venue';
-      let allowsDigitalOrdering = false; // default - will be calculated
+      // Fetch venue details with digital ordering status
+      let venueData = null;
       
       try {
-        // Get venue info from zones endpoint (includes type)
-        const zonesResponse = await fetch(`${API_URL}/public/Reservations/zones?venueId=${venueId}`);
-        if (zonesResponse.ok) {
-          const zonesData = await zonesResponse.json();
-          if (zonesData.length > 0 && zonesData[0].venue) {
-            venueType = zonesData[0].venue.type || 'OTHER';
-            venueName = zonesData[0].venue.name || venueName;
-            console.log('✅ Venue type loaded from zones:', venueType);
-          }
+        // Fetch full venue details from public endpoint (includes allowsDigitalOrdering)
+        const venueResponse = await fetch(`${API_URL}/public/Venues/${venueId}`);
+        if (venueResponse.ok) {
+          venueData = await venueResponse.json();
+          console.log('✅ Venue details loaded:', {
+            name: venueData.name,
+            type: venueData.type,
+            allowsDigitalOrdering: venueData.allowsDigitalOrdering
+          });
+        } else {
+          console.warn('⚠️ Could not fetch venue details, using fallback');
+          // Fallback: use menu data
+          venueData = {
+            id: venueId,
+            name: menuData[0]?.venueName || 'Venue',
+            type: 'OTHER',
+            allowsDigitalOrdering: false
+          };
         }
-        
-        // Calculate allowsDigitalOrdering based on venue type
-        // This matches the backend logic: Restaurant=view-only, Beach/Pool/Bar=ordering
-        allowsDigitalOrdering = ['BEACH', 'POOL', 'BAR'].includes(venueType);
-        console.log('✅ Digital ordering calculated:', { venueType, allowsDigitalOrdering });
-        
       } catch (err) {
-        console.warn('Could not fetch venue details:', err);
-        // Fallback: assume ordering is disabled
-        allowsDigitalOrdering = false;
+        console.error('❌ Error fetching venue details:', err);
+        // Fallback: use menu data
+        venueData = {
+          id: venueId,
+          name: menuData[0]?.venueName || 'Venue',
+          type: 'OTHER',
+          allowsDigitalOrdering: false
+        };
       }
 
-      // Set venue info with digital ordering status
+      // Set venue info with digital ordering status from backend
       setVenue({
         id: venueId,
-        name: venueName,
-        type: venueType,
+        name: venueData.name,
+        type: venueData.type,
         zoneId: zoneId,
         unitId: unitId,
-        allowsDigitalOrdering: allowsDigitalOrdering
+        allowsDigitalOrdering: venueData.allowsDigitalOrdering,
+        orderingEnabled: venueData.orderingEnabled
       });
 
       setLoading(false);
