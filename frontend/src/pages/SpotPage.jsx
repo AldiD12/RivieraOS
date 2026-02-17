@@ -57,33 +57,42 @@ export default function SpotPage() {
       
       setMenu(menuData);
 
-      // Fetch venue details to get venue type (NEW: Prof Kristi implemented this!)
+      // Fetch venue details to get venue type and digital ordering status
       let venueType = 'OTHER'; // default
       let venueName = menuData[0]?.venueName || 'Venue';
+      let allowsDigitalOrdering = false; // default - will be calculated
       
       try {
-        // NEW: Backend now returns venue: { id, name, type } on each zone
+        // Get venue info from zones endpoint (includes type)
         const zonesResponse = await fetch(`${API_URL}/public/Reservations/zones?venueId=${venueId}`);
         if (zonesResponse.ok) {
           const zonesData = await zonesResponse.json();
-          // Each zone now includes venue info with type!
           if (zonesData.length > 0 && zonesData[0].venue) {
             venueType = zonesData[0].venue.type || 'OTHER';
             venueName = zonesData[0].venue.name || venueName;
-            console.log('✅ Venue type loaded from backend:', venueType);
+            console.log('✅ Venue type loaded from zones:', venueType);
           }
         }
+        
+        // Calculate allowsDigitalOrdering based on venue type
+        // This matches the backend logic: Restaurant=view-only, Beach/Pool/Bar=ordering
+        allowsDigitalOrdering = ['BEACH', 'POOL', 'BAR'].includes(venueType);
+        console.log('✅ Digital ordering calculated:', { venueType, allowsDigitalOrdering });
+        
       } catch (err) {
-        console.warn('Could not fetch venue details, defaulting to OTHER:', err);
+        console.warn('Could not fetch venue details:', err);
+        // Fallback: assume ordering is disabled
+        allowsDigitalOrdering = false;
       }
 
-      // Set venue info
+      // Set venue info with digital ordering status
       setVenue({
         id: venueId,
         name: venueName,
         type: venueType,
         zoneId: zoneId,
-        unitId: unitId
+        unitId: unitId,
+        allowsDigitalOrdering: allowsDigitalOrdering
       });
 
       setLoading(false);
