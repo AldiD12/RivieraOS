@@ -85,7 +85,8 @@ export default function BusinessAdminDashboard() {
     price: 0,
     oldPrice: null,
     isAvailable: true,
-    isAlcohol: false
+    isAlcohol: false,
+    categoryId: null
   });
 
   const [venueForm, setVenueForm] = useState({
@@ -556,7 +557,8 @@ export default function BusinessAdminDashboard() {
         price: 0,
         oldPrice: null,
         isAvailable: true,
-        isAlcohol: false
+        isAlcohol: false,
+        categoryId: null
       });
       setProductExcludedVenues([]);
     } catch (err) {
@@ -1408,7 +1410,8 @@ export default function BusinessAdminDashboard() {
                                   price: product.price,
                                   oldPrice: product.oldPrice || null,
                                   isAvailable: product.isAvailable,
-                                  isAlcohol: product.isAlcohol || false
+                                  isAlcohol: product.isAlcohol || false,
+                                  categoryId: selectedCategory.id
                                 });
                                 await fetchProductExclusions(selectedCategory.id, product.id);
                               }}
