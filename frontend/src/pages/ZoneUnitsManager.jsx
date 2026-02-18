@@ -17,8 +17,6 @@ export default function ZoneUnitsManager() {
   const [bulkForm, setBulkForm] = useState({
     prefix: 'A',
     startNumber: 1,
-  const [bulkForm, setBulkForm] = useState({
-    startNumber: 1,
     count: 10,
     unitType: 'Sunbed',
     basePrice: 50
