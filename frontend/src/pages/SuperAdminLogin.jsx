@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff } from 'lucide-react';
 
@@ -10,16 +10,7 @@ export default function SuperAdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [shouldRedirect, setShouldRedirect] = useState(false);
   const navigate = useNavigate();
-
-  // Handle redirect in useEffect to avoid minified code initialization issues
-  useEffect(() => {
-    if (shouldRedirect) {
-      // Use window.location.replace for hard navigation to avoid framer-motion initialization issues
-      window.location.replace('/superadmin');
-    }
-  }, [shouldRedirect]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,9 +39,7 @@ export default function SuperAdminLogin() {
         localStorage.setItem('userEmail', TEMP_BYPASS_EMAIL);
         
         console.log('✅ Temporary bypass successful - redirecting to dashboard');
-        
-        // Trigger redirect via state change to avoid minified code error
-        setShouldRedirect(true);
+        navigate('/superadmin');
         return;
       }
       
@@ -116,8 +105,7 @@ export default function SuperAdminLogin() {
         localStorage.setItem('userName', result.user.fullName || 'Super Administrator');
         localStorage.setItem('userEmail', userEmail);
         
-        // Trigger redirect via state change to avoid minified code error
-        setShouldRedirect(true);
+        navigate('/superadmin');
       } else {
         console.log('❌ Access denied - insufficient privileges');
         console.log('❌ Verification failed:', {
