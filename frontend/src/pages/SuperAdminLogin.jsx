@@ -39,7 +39,7 @@ export default function SuperAdminLogin() {
         localStorage.setItem('userEmail', TEMP_BYPASS_EMAIL);
         
         console.log('✅ Temporary bypass successful - redirecting to dashboard');
-        navigate('/superadmin');
+        window.location.href = '/superadmin';
         return;
       }
       
@@ -105,7 +105,7 @@ export default function SuperAdminLogin() {
         localStorage.setItem('userName', result.user.fullName || 'Super Administrator');
         localStorage.setItem('userEmail', userEmail);
         
-        navigate('/superadmin');
+        window.location.href = '/superadmin';
       } else {
         console.log('❌ Access denied - insufficient privileges');
         console.log('❌ Verification failed:', {
