@@ -721,7 +721,6 @@ export default function SuperAdminDashboard() {
   });
 
   const [bulkUnitForm, setBulkUnitForm] = useState({
-    prefix: '',
     startNumber: 1,
     count: 10,
     unitType: 'Sunbed',
@@ -1532,7 +1531,6 @@ export default function SuperAdminDashboard() {
       });
       setShowBulkCreateModal(false);
       setBulkUnitForm({
-        prefix: '',
         startNumber: 1,
         count: 10,
         unitType: 'Sunbed',
@@ -2451,24 +2449,6 @@ export default function SuperAdminDashboard() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1">
-                  Prefix *
-                </label>
-                <input
-                  type="text"
-                  value={bulkUnitForm.prefix}
-                  onChange={(e) => setBulkUnitForm(prev => ({ ...prev, prefix: e.target.value }))}
-                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-white"
-                  placeholder="e.g., A, VIP, POOL"
-                  required
-                  maxLength={10}
-                />
-                <p className="text-xs text-zinc-500 mt-1">
-                  Required. Example: Prefix "A" + Start 1 = A1, A2, A3...
-                </p>
-              </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-zinc-300 mb-1">
@@ -2482,6 +2462,9 @@ export default function SuperAdminDashboard() {
                     min="1"
                     required
                   />
+                  <p className="text-xs text-zinc-500 mt-1">
+                    First unit number
+                  </p>
                 </div>
 
                 <div>
@@ -2497,6 +2480,9 @@ export default function SuperAdminDashboard() {
                     max="100"
                     required
                   />
+                  <p className="text-xs text-zinc-500 mt-1">
+                    How many units
+                  </p>
                 </div>
               </div>
 
@@ -2518,10 +2504,10 @@ export default function SuperAdminDashboard() {
               <div className="bg-zinc-800 border border-zinc-700 rounded p-3">
                 <p className="text-sm text-zinc-400 mb-2">Preview:</p>
                 <p className="text-white font-mono text-sm">
-                  {bulkUnitForm.prefix}{bulkUnitForm.startNumber}, {bulkUnitForm.prefix}{bulkUnitForm.startNumber + 1}, {bulkUnitForm.prefix}{bulkUnitForm.startNumber + 2}...
+                  {bulkUnitForm.startNumber}, {bulkUnitForm.startNumber + 1}, {bulkUnitForm.startNumber + 2}...
                 </p>
                 <p className="text-xs text-zinc-500 mt-2">
-                  Will create {bulkUnitForm.count} units
+                  Will create {bulkUnitForm.count} units ({bulkUnitForm.startNumber} to {bulkUnitForm.startNumber + bulkUnitForm.count - 1})
                 </p>
               </div>
 

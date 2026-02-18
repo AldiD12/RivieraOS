@@ -17,6 +17,8 @@ export default function ZoneUnitsManager() {
   const [bulkForm, setBulkForm] = useState({
     prefix: 'A',
     startNumber: 1,
+  const [bulkForm, setBulkForm] = useState({
+    startNumber: 1,
     count: 10,
     unitType: 'Sunbed',
     basePrice: 50
@@ -82,7 +84,6 @@ export default function ZoneUnitsManager() {
           body: JSON.stringify({
             venueZoneId: parseInt(zoneId),
             unitType: bulkForm.unitType,
-            prefix: bulkForm.prefix || 'U', // Default to 'U' if empty
             startNumber: bulkForm.startNumber,
             count: bulkForm.count,
             basePrice: bulkForm.basePrice
@@ -270,22 +271,6 @@ export default function ZoneUnitsManager() {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm text-zinc-400 mb-2">Prefix *</label>
-                  <input
-                    type="text"
-                    value={bulkForm.prefix}
-                    onChange={(e) => setBulkForm({ ...bulkForm, prefix: e.target.value })}
-                    placeholder="e.g., A, VIP, POOL"
-                    required
-                    maxLength={10}
-                    className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-zinc-600"
-                  />
-                  <p className="text-xs text-zinc-500 mt-1">
-                    Required. Example: Prefix "A" + Start 1 = A1, A2, A3...
-                  </p>
-                </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm text-zinc-400 mb-2">Start Number</label>
@@ -296,6 +281,7 @@ export default function ZoneUnitsManager() {
                       min="1"
                       className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-zinc-600"
                     />
+                    <p className="text-xs text-zinc-500 mt-1">First unit number</p>
                   </div>
 
                   <div>
@@ -308,6 +294,7 @@ export default function ZoneUnitsManager() {
                       max="100"
                       className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-zinc-600"
                     />
+                    <p className="text-xs text-zinc-500 mt-1">How many units</p>
                   </div>
                 </div>
 
@@ -326,10 +313,10 @@ export default function ZoneUnitsManager() {
                 <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-4">
                   <p className="text-sm text-zinc-400 mb-2">Preview:</p>
                   <p className="text-white font-mono">
-                    {bulkForm.prefix}{bulkForm.startNumber}, {bulkForm.prefix}{bulkForm.startNumber + 1}, {bulkForm.prefix}{bulkForm.startNumber + 2}...
+                    {bulkForm.startNumber}, {bulkForm.startNumber + 1}, {bulkForm.startNumber + 2}...
                   </p>
                   <p className="text-xs text-zinc-500 mt-2">
-                    Will create {bulkForm.count} units
+                    Will create {bulkForm.count} units ({bulkForm.startNumber} to {bulkForm.startNumber + bulkForm.count - 1})
                   </p>
                 </div>
 
