@@ -28,9 +28,17 @@ superAdminApi.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.log('❌ SuperAdmin token expired');
-      localStorage.clear();
-      window.location.href = '/superadmin/login';
+      console.log('❌ SuperAdmin API returned 401');
+      
+      // Don't redirect if we're already on the dashboard - let the component handle it
+      const currentPath = window.location.pathname;
+      if (currentPath !== '/superadmin' && currentPath !== '/superadmin/') {
+        console.log('🔄 Redirecting to SuperAdmin login...');
+        localStorage.clear();
+        window.location.href = '/superadmin/login';
+      } else {
+        console.log('⚠️ Already on dashboard - component will handle 401 with mock data');
+      }
     }
     return Promise.reject(error);
   }
