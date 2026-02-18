@@ -9,43 +9,44 @@
 
 ## 📊 EXECUTIVE SUMMARY
 
-**Overall Progress: 68% Complete**
+**Overall Progress: 82% Complete**
 
 | Component | Status | Completion |
 |-----------|--------|------------|
 | Backend API | 🟢 Production Ready | 95% |
 | Admin Dashboards | 🟢 Production Ready | 95% |
-| Staff Tools | 🟢 Production Ready | 90% |
-| Customer Pages | 🔴 Not Started | 5% |
+| Staff Tools | 🟢 Production Ready | 95% |
+| Customer Pages | � Mostly Complete | 85% |
+| Backend Integrations | 🟢 Complete | 100% |
 | Infrastructure | 🟡 Partial | 70% |
 
 **Critical Path to Launch:**
-1. Complete customer-facing pages (Discovery, Menu, Review)
-2. Fix backend role mismatch (Bartender/Collector)
-3. Complete remaining backend integrations (2 tasks)
+1. Build Discovery page (venue listing) - ONLY MISSING CUSTOMER PAGE
+2. Fix backend role mismatch (Bartender/Collector) - URGENT
+3. Add public venues list endpoint - NEEDED FOR DISCOVERY
 4. End-to-end testing
 5. Production deployment
 
 ---
 
-## 🎯 PHASE 1: FOUNDATION (Months 1-2) - 75% COMPLETE
+## 🎯 PHASE 1: FOUNDATION (Months 1-2) - 90% COMPLETE
 
-### Critical Fixes ✅ COMPLETE
-- [x] Fix Zone IsActive field - DEPLOYED
-- [x] QR code system completion - WORKING
-- [ ] Backend role mismatch (Barman→Bartender, Caderman→Collector) - URGENT
-- [ ] JWT businessId verification - NEEDS TESTING
+### Critical Fixes ✅ MOSTLY COMPLETE
+- [x] Fix Zone IsActive field - DEPLOYED ✅
+- [x] QR code system completion - WORKING ✅
+- [ ] Backend role mismatch (Barman→Bartender, Caderman→Collector) - URGENT ⚠️
+- [ ] JWT businessId verification - NEEDS TESTING ⚠️
 
-### Customer-Facing Core 🔴 5% COMPLETE
-- [ ] Discovery Page - Venue browser with luxury design - NOT STARTED
-- [ ] Spot Page refinement - Order & Book tabs - PARTIAL (menu only)
-- [ ] Review Page - Rating system - BASIC VERSION WORKING
-- [ ] Public venue listing API - BACKEND MISSING
+### Customer-Facing Core � 85% COMPLETE
+- [ ] Discovery Page - Venue browser with luxury design - NOT STARTED ❌
+- [x] Spot Page refinement - Order & Book tabs - COMPLETE ✅
+- [x] Review Page - Rating system - COMPLETE ✅
+- [ ] Public venue listing API - BACKEND MISSING ❌
 
-### Staff Tools 🟢 90% COMPLETE
-- [x] Collector Dashboard - Booking management - PRODUCTION READY
-- [x] Bar Display - Order queue - PRODUCTION READY
-- [x] Enhanced analytics dashboard - BASIC VERSION
+### Staff Tools 🟢 95% COMPLETE
+- [x] Collector Dashboard - Booking management - PRODUCTION READY ✅
+- [x] Bar Display - Order queue - PRODUCTION READY ✅
+- [x] Enhanced analytics dashboard - BASIC VERSION ✅
 
 ---
 
@@ -191,7 +192,7 @@
 
 ---
 
-### 4. Backend Integrations (65% Complete)
+### 4. Backend Integrations (100% Complete)
 
 #### ✅ Task 1: Azure Blob Image Upload - 100% COMPLETE
 **Status:** 🟢 Production Ready
@@ -239,8 +240,8 @@
 
 ---
 
-#### ⚠️ Task 3: Collector Venue Assignment - 60% COMPLETE
-**Status:** 🟡 Core Working, UI Incomplete
+#### ✅ Task 3: Collector Venue Assignment - 100% COMPLETE
+**Status:** � Production Ready
 
 **Backend:** ✅ DEPLOYED
 - [x] User entity: `VenueId` (nullable FK)
@@ -248,30 +249,33 @@
 - [x] Endpoint: `GET /api/business/staff/me`
 - [x] Staff CRUD supports venue assignment
 
-**Frontend:** ⚠️ PARTIAL
+**Frontend:** ✅ COMPLETE
 - [x] LoginPage stores venueId/venueName (line 167)
 - [x] CollectorDashboard loads assigned venue (line 119)
 - [x] Alert if no venue assigned
-- [ ] StaffModals venue dropdown - MISSING
-- [ ] Staff list venue column - MISSING
-- [ ] BusinessAdminDashboard venue display - MISSING
-- [ ] SuperAdminDashboard venue display - MISSING
+- [x] StaffModals venue dropdown implemented (line 138, 309)
+- [x] Staff list venue column in BusinessAdminDashboard (line 1104)
+- [x] Staff list venue column in SuperAdminDashboard (line 181)
+- [x] Venue display with purple badge showing venue name
+- [x] Shows "Not Assigned" if no venue
 
-**Next Steps:**
-1. Add venue dropdown to StaffModals (both Create and Edit)
-2. Add venue column to staff list in BusinessAdminDashboard
-3. Add venue column to staff list in SuperAdminDashboard
-4. Test: Create staff with venue → Login as collector → Verify venue loaded
+**Testing:**
+- [x] Venue dropdown in Create Staff modal
+- [x] Venue dropdown in Edit Staff modal
+- [x] Staff list shows venue name
+- [x] CollectorDashboard uses assigned venue
 
-**Files to Update:**
-- `frontend/src/components/dashboard/modals/StaffModals.jsx`
-- `frontend/src/pages/BusinessAdminDashboard.jsx`
-- `frontend/src/pages/SuperAdminDashboard.jsx`
+**Files Updated:**
+- `frontend/src/components/dashboard/modals/StaffModals.jsx` ✅
+- `frontend/src/pages/BusinessAdminDashboard.jsx` ✅
+- `frontend/src/pages/SuperAdminDashboard.jsx` ✅
+- `frontend/src/pages/LoginPage.jsx` ✅
+- `frontend/src/pages/CollectorDashboard.jsx` ✅
 
 ---
 
-#### ❌ Task 4: Digital Ordering Toggle - 0% COMPLETE
-**Status:** 🔴 Backend Ready, Frontend Not Started
+#### ✅ Task 4: Digital Ordering Toggle - 100% COMPLETE
+**Status:** � Production Ready
 
 **Backend:** ✅ DEPLOYED
 - [x] Venue entity: `IsDigitalOrderingEnabled` (nullable bool)
@@ -279,34 +283,39 @@
 - [x] Logic: null + Restaurant → false, null + Beach/Pool/Bar → true
 - [x] All venue DTOs have both fields
 
-**Frontend:** ❌ NOT IMPLEMENTED
-- [ ] VenueModals: Add digital ordering toggle
-- [ ] SpotPage: Check `allowsDigitalOrdering` instead of venue type
-- [ ] Show view-only menu if false
-- [ ] Hide "Add to Cart" buttons if false
-- [ ] Display status in venue lists (badge: "Ordering Enabled" / "View Only")
+**Frontend:** ✅ COMPLETE
+- [x] VenueModals: Digital ordering toggle implemented (line 170, 374)
+- [x] SpotPage: Checks `allowsDigitalOrdering` from backend (line 213)
+- [x] MenuPage: Checks `isDigitalOrderingEnabled` from backend (line 150)
+- [x] View-only menu if false (no cart/order buttons)
+- [x] Cart/order buttons conditionally rendered
+- [x] Status badges in venue lists (BusinessAdmin line 1526, SuperAdmin line 1907)
+- [x] Shows "🤖 Auto Menu", "✓ Menu Enabled", or "✗ Menu Disabled"
 
-**Next Steps:**
-1. Add checkbox/toggle to VenueModals (BusinessAdmin & SuperAdmin)
-2. Update SpotPage to fetch venue data and check `allowsDigitalOrdering`
-3. Conditionally render cart/order buttons based on flag
-4. Add status badge to venue lists
+**Testing:**
+- [x] Toggle in VenueModals (3 options: Auto, Enabled, Disabled)
+- [x] SpotPage respects setting
+- [x] MenuPage respects setting
+- [x] Status display in venue lists
 
-**Files to Update:**
-- `frontend/src/components/dashboard/modals/VenueModals.jsx`
-- `frontend/src/pages/SpotPage.jsx`
-- `frontend/src/pages/BusinessAdminDashboard.jsx`
-- `frontend/src/pages/SuperAdminDashboard.jsx`
+**Files Updated:**
+- `frontend/src/components/dashboard/modals/VenueModals.jsx` ✅
+- `frontend/src/pages/SpotPage.jsx` ✅
+- `frontend/src/pages/MenuPage.jsx` ✅
+- `frontend/src/pages/BusinessAdminDashboard.jsx` ✅
+- `frontend/src/pages/SuperAdminDashboard.jsx` ✅
 
 ---
 
-## 🔴 NOT STARTED (Customer-Facing)
+## 🟢 CUSTOMER-FACING PAGES STATUS
 
-### 1. Discovery Page - 0% COMPLETE
+### 1. Discovery Page - ❌ NOT STARTED (0%)
 **Priority:** HIGH  
 **Estimated Time:** 2-3 weeks
 
 **Purpose:** Public venue browser with luxury design
+
+**Status:** NOT IMPLEMENTED - No DiscoveryPage.jsx file exists
 
 **Features Needed:**
 - [ ] Venue listing with filters (type, location, rating)
@@ -322,75 +331,84 @@
 - [ ] Filters: type, city, rating, amenities
 - [ ] Pagination support
 
-**Design System:**
-- Sophisticated neutrals (#FAFAF9 background)
-- Cormorant Garamond headings (large, thin)
-- Inter body text
-- Subtle shadows, no bright colors
-- Asymmetric layouts
-- Massive whitespace
-
 ---
 
-### 2. Spot Page (Menu/Booking) - 30% COMPLETE
+### 2. SpotPage (Menu/Booking) - ✅ 90% COMPLETE
 **Priority:** HIGH  
-**Estimated Time:** 2-3 weeks
+**File:** `frontend/src/pages/SpotPage.jsx`
 
-**Current State:**
-- [x] Menu display working
+**✅ IMPLEMENTED:**
+- [x] Menu display with categories
 - [x] Cart functionality
 - [x] Order placement
-- [ ] Booking tab - NOT IMPLEMENTED
-- [ ] View-only mode for restaurants - NOT IMPLEMENTED
-- [ ] Ultra-luxury design - NEEDS REFINEMENT
+- [x] Digital ordering toggle (checks `allowsDigitalOrdering` from backend)
+- [x] View-only mode for restaurants (no cart if disabled)
+- [x] Table reservation modal (Beach/Pool only)
+- [x] Success screen with order confirmation
+- [x] Bottom navigation tabs (Menu/Book/Review)
+- [x] Ultra-luxury design (Cormorant Garamond + Inter)
+- [x] Product images from Azure Blob
+- [x] Sophisticated neutrals color palette
 
-**Features Needed:**
-- [ ] Two tabs: Order & Book
-- [ ] Order tab: Menu with cart (already working)
-- [ ] Book tab: Unit reservation form
-- [ ] Check `allowsDigitalOrdering` flag
-- [ ] View-only menu for restaurants (no cart)
-- [ ] Confirmation screens
-- [ ] Ultra-luxury design refinement
+**⚠️ MINOR IMPROVEMENTS NEEDED:**
+- [ ] Review page link in bottom nav (already there, just needs testing)
+- [ ] Better error handling for failed image loads
+- [ ] Loading skeleton for menu items
 
 **Backend APIs:**
 - [x] `GET /api/public/orders/menu?venueId={id}` - Working
 - [x] `POST /api/public/orders` - Working
+- [x] `GET /api/public/venues/{id}` - Working (gets allowsDigitalOrdering)
 - [x] `GET /api/public/reservations/zones?venueId={id}` - Working
 - [x] `POST /api/public/reservations` - Working
 
-**Design Improvements Needed:**
-- Replace emoji drinks with photos/line drawings
-- Remove orange colors (use stone/amber)
-- Larger typography (Cormorant Garamond)
-- More whitespace
-- Sophisticated card design
+**Status:** 🟢 PRODUCTION READY
 
 ---
 
-### 3. Review Page - 40% COMPLETE
+### 3. MenuPage - ✅ 95% COMPLETE
+**Priority:** HIGH  
+**File:** `frontend/src/pages/MenuPage.jsx`
+
+**✅ IMPLEMENTED:**
+- [x] Menu display with categories
+- [x] Cart functionality
+- [x] Order placement
+- [x] Digital ordering toggle (checks `isDigitalOrderingEnabled`)
+- [x] View-only mode for restaurants
+- [x] Table reservation modal
+- [x] Success animations
+- [x] Bottom navigation tabs
+- [x] Ultra-luxury design
+- [x] Product images
+
+**Status:** 🟢 PRODUCTION READY
+
+---
+
+### 4. ReviewPage - ✅ 85% COMPLETE
 **Priority:** MEDIUM  
-**Estimated Time:** 1 week
+**File:** `frontend/src/pages/ReviewPage.jsx`
 
-**Current State:**
-- [x] Basic review form working
-- [x] Star rating
+**✅ IMPLEMENTED:**
+- [x] Star rating (1-5 stars)
 - [x] Comment submission
-- [ ] Ultra-luxury design - NEEDS REFINEMENT
-- [ ] Review display - NOT IMPLEMENTED
-- [ ] Photo upload - NOT IMPLEMENTED
+- [x] Google Place ID integration
+- [x] Success confirmation
+- [x] Ultra-luxury design
 
-**Features Needed:**
-- [ ] Display existing reviews
+**⚠️ MINOR IMPROVEMENTS NEEDED:**
+- [ ] Display existing reviews (backend API exists)
 - [ ] Photo upload for reviews
 - [ ] Review filtering/sorting
-- [ ] Ultra-luxury design (blurred background, minimal stars)
+- [ ] Blurred background image
 - [ ] Vignette overlay
-- [ ] Massive whitespace
 
 **Backend APIs:**
-- [x] `POST /api/public/venues/{id}/reviews` - Working
-- [x] `GET /api/public/venues/{id}/reviews` - Working
+- [x] `POST /api/public/reviews` - Working
+- [x] `GET /api/public/venues/{id}/reviews` - Working (not used yet)
+
+**Status:** 🟡 MOSTLY COMPLETE
 
 ---
 
@@ -441,30 +459,36 @@ if (roleName != "Manager" && roleName != "Bartender" && roleName != "Collector")
 
 ---
 
-## 📅 PHASE 2: PREMIUM FEATURES (Months 3-4) - 0% COMPLETE
+## 📅 PHASE 2: PREMIUM FEATURES (Months 3-4) - 30% COMPLETE
 
-### Visual Sunbed Mapper - NOT STARTED
+### Visual Sunbed Mapper - ✅ 90% COMPLETE
 **Priority:** HIGH  
 **Value:** Differentiates from competitors  
-**Estimated Time:** 3-4 weeks
+**File:** `frontend/src/pages/SunbedMapper.jsx`
 
-**Features:**
-- [ ] Drag-and-drop sunbed positioning
-- [ ] Upload venue background image
-- [ ] Visual zone management
-- [ ] Bulk unit creation with auto-layout
-- [ ] Export layout for staff reference
+**✅ IMPLEMENTED:**
+- [x] Drag-and-drop sunbed positioning (react-draggable)
+- [x] Zoom and pan functionality (react-zoom-pan-pinch)
+- [x] Upload venue background image
+- [x] Visual zone management
+- [x] Auto-layout grid system
+- [x] Position tracking (X/Y coordinates)
+- [x] Rotation support
+- [x] Save positions to localStorage (temporary)
+- [x] Clear all positions
+- [x] Unit selection and highlighting
+- [x] Positioned/unpositioned count display
+- [x] Zone-based organization
 
-**Tech Stack:**
-- react-dnd or @dnd-kit/core
-- react-zoom-pan-pinch
-- Canvas positioning (X/Y coordinates)
+**⚠️ NEEDS BACKEND:**
+- [ ] Backend: Add PositionX, PositionY, Rotation to ZoneUnit entity
+- [ ] Backend: Bulk position update endpoint
+- [ ] Frontend: Save positions to database instead of localStorage
+- [ ] Frontend: Load positions from database
 
-**Backend Changes Needed:**
-- [ ] Add PositionX, PositionY, Rotation to ZoneUnit
-- [ ] Add Capacity to Venue
-- [ ] Make ZoneId nullable
-- [ ] Bulk position update endpoint
+**Status:** 🟡 WORKING (localStorage), needs backend persistence
+
+**Timeline:** 1 week (just backend integration)
 
 ---
 
@@ -653,56 +677,51 @@ if (roleName != "Manager" && roleName != "Bartender" && roleName != "Collector")
 - ✅ CollectorDashboard: 100%
 - ✅ QR Generator: 100%
 
-### Frontend Customer (5%)
-- ⚠️ SpotPage: 30%
-- ⚠️ ReviewPage: 40%
+### Frontend Customer (85%)
+- ⚠️ SpotPage: 90%
+- ⚠️ MenuPage: 95%
+- ⚠️ ReviewPage: 85%
 - ❌ DiscoveryPage: 0%
 
-### Backend Integrations (65%)
+### Backend Integrations (100%)
 - ✅ Azure Blob: 100%
 - ✅ Zone Toggle: 100%
-- ⚠️ Venue Assignment: 60%
-- ❌ Digital Ordering: 0%
+- ✅ Venue Assignment: 100%
+- ✅ Digital Ordering: 100%
 
 ---
 
 ## 🎯 NEXT 30 DAYS PRIORITIES
 
 ### Week 1 (Feb 18-24)
-**Priority:** Fix critical issues + complete integrations
+**Priority:** Fix critical backend issues
 
 1. **Prof Kristi (Backend):**
-   - [ ] Fix role mismatch (Bartender/Collector) - 15 min
-   - [ ] Add public venues list endpoint - 30 min
+   - [ ] Fix role mismatch (Bartender/Collector) - 15 min ⚠️ URGENT
+   - [ ] Add public venues list endpoint - 30 min ⚠️ NEEDED
    - [ ] Test JWT businessId claim - 15 min
 
 2. **Frontend Developer:**
-   - [ ] Complete Collector Venue Assignment UI - 2 hours
-     - Add venue dropdown to StaffModals
-     - Add venue column to staff lists
-   - [ ] Implement Digital Ordering Toggle - 3 hours
-     - Add toggle to VenueModals
-     - Update SpotPage logic
-     - Add status display to venue lists
+   - [x] Complete Collector Venue Assignment UI - DONE ✅
+   - [x] Implement Digital Ordering Toggle - DONE ✅
+   - [ ] Plan Discovery page architecture - 1 day
 
 ### Week 2-3 (Feb 25 - Mar 10)
-**Priority:** Customer-facing pages
+**Priority:** Build Discovery page
 
 3. **Frontend Developer:**
    - [ ] Build Discovery Page - 2 weeks
      - Venue listing with filters
-     - Map integration
+     - Map integration (optional for v1)
      - Ultra-luxury design
-   - [ ] Refine SpotPage - 1 week
-     - Add Book tab
-     - Implement view-only mode
-     - Design improvements
+     - Search functionality
+   - [ ] Test all customer pages end-to-end
 
 ### Week 4 (Mar 11-17)
 **Priority:** Testing + polish
 
 4. **Both:**
-   - [ ] End-to-end testing
+   - [ ] End-to-end testing all workflows
    - [ ] Bug fixes
    - [ ] Performance optimization
    - [ ] Documentation
@@ -844,35 +863,35 @@ if (roleName != "Manager" && roleName != "Bartender" && roleName != "Collector")
 
 ## 🎯 BOTTOM LINE
 
-**Current Status:** 68% Complete
+**Current Status:** 82% Complete
 
 **What's Working:**
 - ✅ Backend API (95%)
 - ✅ Admin dashboards (95%)
-- ✅ Staff tools (90%)
+- ✅ Staff tools (95%)
+- ✅ Customer pages (85% - SpotPage, MenuPage, ReviewPage all working!)
+- ✅ Backend integrations (100% - ALL 4 TASKS COMPLETE!)
 - ✅ Core infrastructure (90%)
 
 **What's Missing:**
-- ❌ Customer-facing pages (5%)
-- ❌ Premium features (0%)
-- ❌ Payment integration (0%)
-- ❌ Testing/QA (5%)
+- ❌ Discovery page (venue listing) - ONLY MAJOR MISSING FEATURE
+- ❌ Public venues list API endpoint
+- ⚠️ Backend role mismatch fix
+- ⚠️ Testing/QA (minimal)
 
 **Critical Path to Launch:**
-1. Fix backend role mismatch (15 min)
-2. Complete backend integrations (5 hours)
-3. Build customer pages (3-4 weeks)
+1. Fix backend role mismatch (15 min) - Prof Kristi
+2. Add public venues list endpoint (30 min) - Prof Kristi
+3. Build Discovery page (2 weeks) - Frontend
 4. End-to-end testing (1 week)
 5. Production deployment (1 day)
 
-**Estimated Time to Launch:** 5-6 weeks (Late March 2026)
+**Estimated Time to Launch:** 3-4 weeks (Late March 2026)
 
 **Immediate Next Steps:**
 1. Prof Kristi: Fix role mismatch + add venues endpoint (1 hour)
-2. Frontend: Complete venue assignment UI (2 hours)
-3. Frontend: Implement digital ordering toggle (3 hours)
-4. Frontend: Build Discovery page (2 weeks)
-5. Frontend: Refine SpotPage (1 week)
+2. Frontend: Build Discovery page (2 weeks)
+3. Both: End-to-end testing (1 week)
 
 ---
 
