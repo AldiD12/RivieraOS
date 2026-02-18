@@ -4,6 +4,29 @@ import { ShoppingCart, MapPin, Check, Star } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
+// Input sanitization utility
+const sanitizeInput = (input) => {
+  if (!input) return '';
+  return String(input)
+    .replace(/[<>]/g, '') // Remove < and > to prevent basic XSS
+    .trim();
+};
+
+// Phone number validation (international format)
+const isValidPhone = (phone) => {
+  if (!phone) return false;
+  // Allow +, digits, spaces, hyphens, parentheses
+  const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/;
+  return phoneRegex.test(phone.replace(/\s/g, ''));
+};
+
+// Email validation
+const isValidEmail = (email) => {
+  if (!email) return true; // Email is optional
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
 export default function SpotPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -21,6 +44,7 @@ export default function SpotPage() {
   const [error, setError] = useState('');
   const [orderSuccess, setOrderSuccess] = useState(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
+  const [reservationSuccess, setReservationSuccess] = useState(null);
 
   // Booking form state
   const [bookingForm, setBookingForm] = useState({
@@ -39,6 +63,29 @@ export default function SpotPage() {
     }
     fetchData();
   }, [venueId, zoneId, unitId]);
+
+  // Auto-redirect for order success
+  useEffect(() => {
+    if (orderSuccess) {
+      const timer = setTimeout(() => {
+        setOrderSuccess(null);
+        setBookingForm({ guestName: '', guestPhone: '', guestEmail: '', guestCount: 2, notes: '' });
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [orderSuccess]);
+
+  // Auto-redirect for reservation success
+  useEffect(() => {
+    if (reservationSuccess) {
+      const timer = setTimeout(() => {
+        setReservationSuccess(null);
+      }, 8000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [reservationSuccess]);
 
   const fetchData = async () => {
     try {
@@ -140,12 +187,16 @@ export default function SpotPage() {
   const handlePlaceOrder = async () => {
     if (cart.length === 0) return;
 
+    // Validate and sanitize inputs
+    const sanitizedName = sanitizeInput(bookingForm.guestName);
+    const sanitizedNotes = sanitizeInput(bookingForm.notes);
+
     try {
       const orderData = {
         venueId: parseInt(venueId),
-        zoneId: parseInt(zoneId),
-        customerName: bookingForm.guestName || 'Guest',
-        notes: bookingForm.notes || '',
+        ...(zoneId && { zoneId: parseInt(zoneId) }),
+        customerName: sanitizedName || 'Guest',
+        notes: sanitizedNotes || '',
         items: cart.map(item => ({
           productId: item.id,
           quantity: item.quantity
@@ -166,21 +217,50 @@ export default function SpotPage() {
     } catch (err) {
       console.error('Error placing order:', err);
       setError('Failed to place order. Please try again.');
+      // Display error to user
+      alert('Failed to place order. Please try again.');
     }
   };
 
   const handleReservation = async (e) => {
     e.preventDefault();
     
+    // Validate inputs
+    const sanitizedName = sanitizeInput(bookingForm.guestName);
+    const sanitizedPhone = sanitizeInput(bookingForm.guestPhone);
+    const sanitizedEmail = sanitizeInput(bookingForm.guestEmail);
+    const sanitizedNotes = sanitizeInput(bookingForm.notes);
+
+    // Validation checks
+    if (!sanitizedName || sanitizedName.length < 2) {
+      setError('Please enter a valid name (at least 2 characters)');
+      return;
+    }
+
+    if (!isValidPhone(sanitizedPhone)) {
+      setError('Please enter a valid phone number');
+      return;
+    }
+
+    if (sanitizedEmail && !isValidEmail(sanitizedEmail)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (!unitId) {
+      setError('Invalid QR code - missing table information');
+      return;
+    }
+
     try {
       const bookingData = {
         zoneUnitId: parseInt(unitId),
         venueId: parseInt(venueId),
-        guestName: bookingForm.guestName,
-        guestPhone: bookingForm.guestPhone,
-        guestEmail: bookingForm.guestEmail,
+        guestName: sanitizedName,
+        guestPhone: sanitizedPhone,
+        guestEmail: sanitizedEmail || '',
         guestCount: bookingForm.guestCount,
-        notes: bookingForm.notes,
+        notes: sanitizedNotes || '',
         startTime: new Date().toISOString()
       };
 
@@ -190,10 +270,13 @@ export default function SpotPage() {
         body: JSON.stringify(bookingData)
       });
 
-      if (!response.ok) throw new Error('Failed to create reservation');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to create reservation');
+      }
       
       const result = await response.json();
-      alert(`Table reserved! Booking code: ${result.bookingCode}`);
+      setReservationSuccess(result);
       setShowReserveModal(false);
       setBookingForm({
         guestName: '',
@@ -202,9 +285,10 @@ export default function SpotPage() {
         guestCount: 2,
         notes: ''
       });
+      setError(''); // Clear any previous errors
     } catch (err) {
       console.error('Error creating reservation:', err);
-      setError('Failed to create reservation. Please try again.');
+      setError(err.message || 'Failed to create reservation. Please try again.');
     }
   };
 
@@ -239,12 +323,6 @@ export default function SpotPage() {
   }
 
   if (orderSuccess) {
-    // Auto-redirect after 5 seconds
-    setTimeout(() => {
-      setOrderSuccess(null);
-      setBookingForm({ guestName: '', guestPhone: '', guestEmail: '', guestCount: 2, notes: '' });
-    }, 5000);
-
     return (
       <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center p-6">
         <div className="text-center max-w-md animate-fadeIn">
@@ -331,6 +409,111 @@ export default function SpotPage() {
     );
   }
 
+  // Reservation Success Screen
+  if (reservationSuccess) {
+    return (
+      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center p-6">
+        <div className="text-center max-w-md animate-fadeIn">
+          {/* Success Icon with Animation */}
+          <div className="relative mb-8">
+            <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto shadow-[0_20px_60px_-15px_rgba(217,119,6,0.5)] animate-scaleIn">
+              <Check className="w-12 h-12 text-white animate-checkmark" strokeWidth={3} />
+            </div>
+            {/* Ripple effect */}
+            <div className="absolute inset-0 w-24 h-24 mx-auto rounded-full border-4 border-amber-400 animate-ping opacity-20"></div>
+          </div>
+
+          {/* Success Message */}
+          <h2 className="font-['Cormorant_Garamond'] text-5xl font-light text-[#1C1917] mb-4 tracking-tight">
+            Table Reserved!
+          </h2>
+          
+          {/* Booking Code */}
+          <div className="inline-block bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-xl rounded-2xl px-8 py-4 mb-6 border border-stone-200/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
+            <p className="text-sm tracking-widest uppercase text-[#78716C] mb-2">Booking Code</p>
+            <p className="font-['Cormorant_Garamond'] text-4xl text-[#92400E] font-medium tracking-wider">
+              {reservationSuccess.bookingCode}
+            </p>
+          </div>
+
+          {/* Description */}
+          <p className="text-lg text-[#57534E] leading-relaxed mb-8 max-w-sm mx-auto">
+            Your table has been reserved. Please show this booking code to our staff upon arrival.
+          </p>
+
+          {/* Guest Details */}
+          <div className="bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-xl rounded-2xl p-6 mb-8 border border-stone-200/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)] text-left">
+            <p className="text-xs tracking-widest uppercase text-[#78716C] mb-3">Reservation Details</p>
+            {reservationSuccess.guestName && (
+              <p className="text-[#1C1917] mb-2">
+                <span className="text-[#78716C] text-sm">Name:</span> {reservationSuccess.guestName}
+              </p>
+            )}
+            {reservationSuccess.guestPhone && (
+              <p className="text-[#1C1917] mb-2">
+                <span className="text-[#78716C] text-sm">Phone:</span> {reservationSuccess.guestPhone}
+              </p>
+            )}
+            {reservationSuccess.guestCount && (
+              <p className="text-[#1C1917]">
+                <span className="text-[#78716C] text-sm">Guests:</span> {reservationSuccess.guestCount}
+              </p>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => setReservationSuccess(null)}
+              className="px-8 py-4 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
+            >
+              Back to Menu
+            </button>
+            <button
+              onClick={() => navigate(`/review?v=${venueId}`)}
+              className="px-8 py-4 border border-stone-300 text-stone-700 rounded-full text-sm tracking-widest uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
+            >
+              Leave a Review
+            </button>
+          </div>
+
+          {/* Auto-redirect notice */}
+          <p className="text-xs text-[#78716C] mt-6 opacity-60">
+            Returning to menu in 8 seconds...
+          </p>
+        </div>
+
+        {/* Custom animations */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes fadeIn {
+              from { opacity: 0; transform: translateY(20px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes scaleIn {
+              from { transform: scale(0); }
+              to { transform: scale(1); }
+            }
+            @keyframes checkmark {
+              0% { transform: scale(0) rotate(-45deg); }
+              50% { transform: scale(1.2) rotate(-45deg); }
+              100% { transform: scale(1) rotate(0deg); }
+            }
+            .animate-fadeIn {
+              animation: fadeIn 0.6s ease-out;
+            }
+            .animate-scaleIn {
+              animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .animate-checkmark {
+              animation: checkmark 0.6s ease-out 0.3s both;
+            }
+          `
+        }} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#FAFAF9]">
       {/* Reservation Modal */}
@@ -338,7 +521,10 @@ export default function SpotPage() {
         <div className="fixed inset-0 z-50 flex items-end justify-center">
           <div 
             className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
-            onClick={() => setShowReserveModal(false)}
+            onClick={() => {
+              setShowReserveModal(false);
+              setError('');
+            }}
           ></div>
           <div 
             className="relative w-full max-w-[480px] bg-[#FAFAF9] rounded-t-[32px] shadow-[0_-10px_60px_rgba(0,0,0,0.15)] overflow-hidden animate-slideUp"
@@ -353,7 +539,10 @@ export default function SpotPage() {
             <div className="flex items-center justify-between px-6 pt-2 pb-6 border-b border-stone-200/40">
               <h2 className="font-['Cormorant_Garamond'] text-2xl text-stone-900 tracking-tight">Reserve a Table</h2>
               <button 
-                onClick={() => setShowReserveModal(false)}
+                onClick={() => {
+                  setShowReserveModal(false);
+                  setError('');
+                }}
                 className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -364,6 +553,13 @@ export default function SpotPage() {
 
             {/* Content */}
             <form onSubmit={handleReservation} className="px-6 py-6 max-h-[70vh] overflow-y-auto space-y-4">
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200/40 rounded-2xl p-4 mb-4">
+                  <p className="text-red-700 text-sm leading-relaxed">{error}</p>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Name *</label>
                 <input
@@ -459,7 +655,7 @@ export default function SpotPage() {
       </div>
 
       {/* Menu Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12 pb-32">
+      <div className="max-w-7xl mx-auto px-6 py-12 pb-24">
         <MenuDisplay 
           menu={menu} 
           cart={cart}
@@ -473,34 +669,14 @@ export default function SpotPage() {
         />
       </div>
 
-      {/* Bottom Navigation Tabs */}
-      <div className="fixed bottom-0 left-0 w-full z-40 bg-white/80 backdrop-blur-sm border-t border-stone-200/40">
-        <div className="max-w-md mx-auto flex items-center justify-around py-3">
-          <button className="flex flex-col items-center gap-1 text-stone-900">
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5zm0 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/>
-              <path d="M8 12h8v2H8z"/>
-            </svg>
-            <span className="text-xs uppercase tracking-wider font-medium">Menu</span>
-          </button>
-          <button 
-            onClick={() => setShowReserveModal(true)}
-            className="flex flex-col items-center gap-1 text-stone-600 hover:text-stone-900 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span className="text-xs uppercase tracking-wider font-medium">Book Table</span>
-          </button>
-          <button 
-            onClick={() => navigate(`/review?v=${venueId}`)}
-            className="flex flex-col items-center gap-1 text-stone-600 hover:text-stone-900 transition-colors"
-          >
-            <Star className="w-6 h-6" />
-            <span className="text-xs uppercase tracking-wider font-medium">Review</span>
-          </button>
-        </div>
-      </div>
+      {/* Floating Action Button - Leave Review (Luxury Style) */}
+      <button
+        onClick={() => navigate(`/review?v=${venueId}`)}
+        className="fixed bottom-8 right-8 bg-stone-900 text-stone-50 px-6 py-4 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:bg-stone-800 transition-all duration-300 flex items-center gap-3 group z-40"
+      >
+        <Star className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
+        <span className="text-sm tracking-widest uppercase font-medium">Leave Review</span>
+      </button>
     </div>
   );
 }
