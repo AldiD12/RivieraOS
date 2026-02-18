@@ -666,11 +666,44 @@ export default function SuperAdminDashboard() {
     }
 
     // Fetch menu data for selected business
-    await fetchMenuForBusiness(business.id);
+    try {
+      setCategories([]);
+      setSelectedCategory(null);
+      setProducts([]);
+      setIsMenuLoading(true);
+      setError('');
+
+      const categoryData = await categoryApi.business.getByBusiness(business.id);
+      setCategories(Array.isArray(categoryData) ? categoryData : []);
+
+      if (categoryData && categoryData.length > 0) {
+        const firstCategory = categoryData[0];
+        setSelectedCategory(firstCategory);
+
+        const productData = await productApi.getByCategory(firstCategory.id);
+        setProducts(Array.isArray(productData) ? productData : []);
+      }
+    } catch (err) {
+      console.error('Error fetching menu:', err);
+      if (err.response?.status !== 404) {
+        setError('Failed to load menu: ' + (err.response?.data?.message || err.message));
+      }
+    } finally {
+      setIsMenuLoading(false);
+    }
     
     // Fetch venues for selected business
-    await fetchVenuesForBusiness(business.id);
-  }, [fetchMenuForBusiness, fetchVenuesForBusiness]);
+    try {
+      setVenuesLoading(true);
+      const venueData = await venueApi.getByBusiness(business.id);
+      setVenues(Array.isArray(venueData) ? venueData : []);
+    } catch (err) {
+      console.error('Error fetching venues:', err);
+      setVenues([]);
+    } finally {
+      setVenuesLoading(false);
+    }
+  }, []);
 
   // Business Management Functions
   const handleCreateBusiness = useCallback(async (e) => {
@@ -964,7 +997,7 @@ export default function SuperAdminDashboard() {
       console.error('Error creating category:', err);
       setError('Failed to create category: ' + (err.response?.data?.message || err.message));
     }
-  }, [selectedBusiness, categoryForm, categoryExcludedVenues, fetchMenuForBusiness]);
+  }, [selectedBusiness, categoryForm, categoryExcludedVenues]);
 
   const handleUpdateCategory = useCallback(async (e) => {
     e.preventDefault();
@@ -991,7 +1024,7 @@ export default function SuperAdminDashboard() {
       console.error('Error updating category:', err);
       setError('Failed to update category: ' + (err.response?.data?.message || err.message));
     }
-  }, [selectedBusiness, editingCategory, categoryForm, categoryExcludedVenues, fetchMenuForBusiness]);
+  }, [selectedBusiness, editingCategory, categoryForm, categoryExcludedVenues]);
 
   const handleDeleteCategory = useCallback(async (categoryId) => {
     if (!selectedBusiness?.id) return;
@@ -1009,7 +1042,7 @@ export default function SuperAdminDashboard() {
       console.error('Error deleting category:', err);
       setError('Failed to delete category: ' + (err.response?.data?.message || err.message));
     }
-  }, [selectedBusiness, selectedCategory, fetchMenuForBusiness]);
+  }, [selectedBusiness, selectedCategory]);
 
   const handleCreateProduct = useCallback(async (e) => {
     e.preventDefault();
@@ -1197,7 +1230,7 @@ export default function SuperAdminDashboard() {
       console.error('Error creating venue:', err);
       setError('Failed to create venue: ' + (err.response?.data?.message || err.message));
     }
-  }, [selectedBusiness, venueForm, fetchVenuesForBusiness]);
+  }, [selectedBusiness, venueForm]);
 
   const handleUpdateVenue = useCallback(async (e) => {
     e.preventDefault();
@@ -1225,7 +1258,7 @@ export default function SuperAdminDashboard() {
       console.error('Error updating venue:', err);
       setError('Failed to update venue: ' + (err.response?.data?.message || err.message));
     }
-  }, [selectedBusiness, editingVenue, venueForm, fetchVenuesForBusiness]);
+  }, [selectedBusiness, editingVenue, venueForm]);
 
   const handleDeleteVenue = useCallback(async (venueId) => {
     if (!selectedBusiness?.id) return;
@@ -1243,7 +1276,7 @@ export default function SuperAdminDashboard() {
       console.error('Error deleting venue:', err);
       setError('Failed to delete venue: ' + (err.response?.data?.message || err.message));
     }
-  }, [selectedBusiness, selectedVenue, fetchVenuesForBusiness]);
+  }, [selectedBusiness, selectedVenue]);
 
   const handleCreateZone = useCallback(async (e) => {
     e.preventDefault();
