@@ -243,7 +243,8 @@ namespace BlackBear.Services.Core.Controllers.Business
                 zoneUnitId = booking.ZoneUnitId,
                 status = booking.Status,
                 guestName = booking.GuestName,
-                guestCount = booking.GuestCount
+                guestCount = booking.GuestCount,
+                unitCode = unit.UnitCode
             });
 
             return CreatedAtAction(nameof(GetBooking), new { venueId, id = booking.Id }, new BizBookingDetailDto
@@ -323,7 +324,8 @@ namespace BlackBear.Services.Core.Controllers.Business
                 bookingId = booking.Id,
                 zoneUnitId = booking.ZoneUnitId,
                 status = booking.Status,
-                venueId = booking.VenueId
+                venueId = booking.VenueId,
+                unitStatus = "Occupied"
             });
 
             return NoContent();
@@ -380,7 +382,8 @@ namespace BlackBear.Services.Core.Controllers.Business
                 bookingId = booking.Id,
                 zoneUnitId = booking.ZoneUnitId,
                 status = booking.Status,
-                venueId = booking.VenueId
+                venueId = booking.VenueId,
+                unitStatus = "Available"
             });
 
             return NoContent();
@@ -425,7 +428,8 @@ namespace BlackBear.Services.Core.Controllers.Business
                 bookingId = booking.Id,
                 zoneUnitId = booking.ZoneUnitId,
                 status = booking.Status,
-                venueId = booking.VenueId
+                venueId = booking.VenueId,
+                unitStatus = "Available"
             });
 
             return NoContent();
@@ -468,6 +472,15 @@ namespace BlackBear.Services.Core.Controllers.Business
             }
 
             await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.All.SendAsync("BookingStatusChanged", new
+            {
+                bookingId = booking.Id,
+                zoneUnitId = booking.ZoneUnitId,
+                status = booking.Status,
+                venueId = booking.VenueId,
+                unitStatus = "Available"
+            });
 
             return NoContent();
         }
