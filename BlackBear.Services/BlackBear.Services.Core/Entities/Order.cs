@@ -56,6 +56,9 @@ namespace BlackBear.Services.Core.Entities
         [Column("handled_by_user_id")]
         public int? HandledByUserId { get; set; }
 
+        [Column("zone_unit_id")]
+        public int? ZoneUnitId { get; set; }
+
         // Navigation properties
         [ForeignKey("VenueId")]
         public Venue? Venue { get; set; }
@@ -68,6 +71,9 @@ namespace BlackBear.Services.Core.Entities
 
         [ForeignKey("HandledByUserId")]
         public User? HandledByUser { get; set; }
+
+        [ForeignKey("ZoneUnitId")]
+        public ZoneUnit? ZoneUnit { get; set; }
 
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }

@@ -7,6 +7,7 @@ namespace BlackBear.Services.Core.DTOs.Business
     {
         public int Id { get; set; }
         public string OrderNumber { get; set; } = string.Empty;
+        public string? UnitCode { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? CustomerName { get; set; }
         public string? Notes { get; set; }
@@ -18,6 +19,7 @@ namespace BlackBear.Services.Core.DTOs.Business
         public string ZoneName { get; set; } = string.Empty;
         public int ItemCount { get; set; }
         public decimal TotalAmount { get; set; }
+        public List<BizOrderItemDto> Items { get; set; } = new();
     }
 
     // Order detail for barman/staff view

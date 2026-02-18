@@ -136,6 +136,16 @@ namespace BlackBear.Services.Core.Controllers.Public
 
             var orderNumber = (orderCount + 1).ToString("D3"); // e.g., "001", "002"
 
+            // Get unit code if a specific unit was provided
+            string? unitCode = null;
+            if (request.ZoneUnitId.HasValue)
+            {
+                var unit = await _context.ZoneUnits
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(u => u.Id == request.ZoneUnitId.Value && u.VenueId == request.VenueId);
+                unitCode = unit?.UnitCode;
+            }
+
             // Create order
             var order = new Order
             {
@@ -146,6 +156,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                 VenueId = request.VenueId,
                 VenueZoneId = request.ZoneId,
                 BusinessId = venue.BusinessId,
+                ZoneUnitId = request.ZoneUnitId,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -179,6 +190,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                 status = order.Status,
                 venueId = order.VenueId,
                 zoneName = zone.Name,
+                unitCode,
                 customerName = order.CustomerName,
                 items = request.Items.Select(i => new
                 {

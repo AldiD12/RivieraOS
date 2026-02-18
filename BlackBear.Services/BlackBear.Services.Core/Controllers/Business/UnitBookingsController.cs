@@ -1,9 +1,11 @@
 using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.DTOs.Business;
 using BlackBear.Services.Core.Entities;
+using BlackBear.Services.Core.Hubs;
 using BlackBear.Services.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlackBear.Services.Core.Controllers.Business
@@ -15,11 +17,13 @@ namespace BlackBear.Services.Core.Controllers.Business
     {
         private readonly BlackBearDbContext _context;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IHubContext<BeachHub> _hubContext;
 
-        public UnitBookingsController(BlackBearDbContext context, ICurrentUserService currentUserService)
+        public UnitBookingsController(BlackBearDbContext context, ICurrentUserService currentUserService, IHubContext<BeachHub> hubContext)
         {
             _context = context;
             _currentUserService = currentUserService;
+            _hubContext = hubContext;
         }
 
         // GET: api/business/venues/5/bookings
@@ -232,6 +236,16 @@ namespace BlackBear.Services.Core.Controllers.Business
             _context.ZoneUnitBookings.Add(booking);
             await _context.SaveChangesAsync();
 
+            await _hubContext.Clients.All.SendAsync("BookingCreated", new
+            {
+                bookingId = booking.Id,
+                venueId = booking.VenueId,
+                zoneUnitId = booking.ZoneUnitId,
+                status = booking.Status,
+                guestName = booking.GuestName,
+                guestCount = booking.GuestCount
+            });
+
             return CreatedAtAction(nameof(GetBooking), new { venueId, id = booking.Id }, new BizBookingDetailDto
             {
                 Id = booking.Id,
@@ -304,6 +318,14 @@ namespace BlackBear.Services.Core.Controllers.Business
 
             await _context.SaveChangesAsync();
 
+            await _hubContext.Clients.All.SendAsync("BookingStatusChanged", new
+            {
+                bookingId = booking.Id,
+                zoneUnitId = booking.ZoneUnitId,
+                status = booking.Status,
+                venueId = booking.VenueId
+            });
+
             return NoContent();
         }
 
@@ -353,6 +375,14 @@ namespace BlackBear.Services.Core.Controllers.Business
 
             await _context.SaveChangesAsync();
 
+            await _hubContext.Clients.All.SendAsync("BookingStatusChanged", new
+            {
+                bookingId = booking.Id,
+                zoneUnitId = booking.ZoneUnitId,
+                status = booking.Status,
+                venueId = booking.VenueId
+            });
+
             return NoContent();
         }
 
@@ -389,6 +419,14 @@ namespace BlackBear.Services.Core.Controllers.Business
             }
 
             await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.All.SendAsync("BookingStatusChanged", new
+            {
+                bookingId = booking.Id,
+                zoneUnitId = booking.ZoneUnitId,
+                status = booking.Status,
+                venueId = booking.VenueId
+            });
 
             return NoContent();
         }

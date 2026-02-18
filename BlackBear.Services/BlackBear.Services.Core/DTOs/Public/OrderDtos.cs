@@ -33,6 +33,8 @@ namespace BlackBear.Services.Core.DTOs.Public
         [Required]
         public int ZoneId { get; set; }
 
+        public int? ZoneUnitId { get; set; }
+
         [MaxLength(100)]
         public string? CustomerName { get; set; }
 

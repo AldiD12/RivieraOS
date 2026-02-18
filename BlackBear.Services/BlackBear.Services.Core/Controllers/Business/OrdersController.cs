@@ -42,6 +42,7 @@ namespace BlackBear.Services.Core.Controllers.Business
                 .Include(o => o.Venue)
                 .Include(o => o.VenueZone)
                 .Include(o => o.OrderItems)
+                .Include(o => o.ZoneUnit)
                 .Where(o => o.BusinessId == businessId.Value)
                 .AsQueryable();
 
@@ -66,6 +67,7 @@ namespace BlackBear.Services.Core.Controllers.Business
                 {
                     Id = o.Id,
                     OrderNumber = o.OrderNumber,
+                    UnitCode = o.ZoneUnit != null ? o.ZoneUnit.UnitCode : null,
                     Status = o.Status,
                     CustomerName = o.CustomerName,
                     Notes = o.Notes,
@@ -76,7 +78,16 @@ namespace BlackBear.Services.Core.Controllers.Business
                     ZoneId = o.VenueZoneId,
                     ZoneName = o.VenueZone != null ? o.VenueZone.Name : string.Empty,
                     ItemCount = o.OrderItems.Count,
-                    TotalAmount = o.OrderItems.Sum(i => i.Quantity * i.UnitPrice)
+                    TotalAmount = o.OrderItems.Sum(i => i.Quantity * i.UnitPrice),
+                    Items = o.OrderItems.Select(i => new BizOrderItemDto
+                    {
+                        Id = i.Id,
+                        ProductId = i.ProductId,
+                        ProductName = i.ProductName,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice,
+                        Notes = i.Notes
+                    }).ToList()
                 })
                 .ToListAsync();
 
@@ -99,6 +110,7 @@ namespace BlackBear.Services.Core.Controllers.Business
                 .Include(o => o.Venue)
                 .Include(o => o.VenueZone)
                 .Include(o => o.OrderItems)
+                .Include(o => o.ZoneUnit)
                 .Where(o => o.BusinessId == businessId.Value && activeStatuses.Contains(o.Status))
                 .AsQueryable();
 
@@ -113,6 +125,7 @@ namespace BlackBear.Services.Core.Controllers.Business
                 {
                     Id = o.Id,
                     OrderNumber = o.OrderNumber,
+                    UnitCode = o.ZoneUnit != null ? o.ZoneUnit.UnitCode : null,
                     Status = o.Status,
                     CustomerName = o.CustomerName,
                     Notes = o.Notes,
@@ -123,7 +136,16 @@ namespace BlackBear.Services.Core.Controllers.Business
                     ZoneId = o.VenueZoneId,
                     ZoneName = o.VenueZone != null ? o.VenueZone.Name : string.Empty,
                     ItemCount = o.OrderItems.Count,
-                    TotalAmount = o.OrderItems.Sum(i => i.Quantity * i.UnitPrice)
+                    TotalAmount = o.OrderItems.Sum(i => i.Quantity * i.UnitPrice),
+                    Items = o.OrderItems.Select(i => new BizOrderItemDto
+                    {
+                        Id = i.Id,
+                        ProductId = i.ProductId,
+                        ProductName = i.ProductName,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice,
+                        Notes = i.Notes
+                    }).ToList()
                 })
                 .ToListAsync();
 
@@ -154,12 +176,14 @@ namespace BlackBear.Services.Core.Controllers.Business
                 .Include(o => o.Venue)
                 .Include(o => o.VenueZone)
                 .Include(o => o.OrderItems)
+                .Include(o => o.ZoneUnit)
                 .Where(o => o.VenueZoneId == zoneId && o.BusinessId == businessId.Value)
                 .OrderByDescending(o => o.CreatedAt)
                 .Select(o => new BizOrderListItemDto
                 {
                     Id = o.Id,
                     OrderNumber = o.OrderNumber,
+                    UnitCode = o.ZoneUnit != null ? o.ZoneUnit.UnitCode : null,
                     Status = o.Status,
                     CustomerName = o.CustomerName,
                     Notes = o.Notes,
@@ -170,7 +194,16 @@ namespace BlackBear.Services.Core.Controllers.Business
                     ZoneId = o.VenueZoneId,
                     ZoneName = o.VenueZone != null ? o.VenueZone.Name : string.Empty,
                     ItemCount = o.OrderItems.Count,
-                    TotalAmount = o.OrderItems.Sum(i => i.Quantity * i.UnitPrice)
+                    TotalAmount = o.OrderItems.Sum(i => i.Quantity * i.UnitPrice),
+                    Items = o.OrderItems.Select(i => new BizOrderItemDto
+                    {
+                        Id = i.Id,
+                        ProductId = i.ProductId,
+                        ProductName = i.ProductName,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice,
+                        Notes = i.Notes
+                    }).ToList()
                 })
                 .ToListAsync();
 
