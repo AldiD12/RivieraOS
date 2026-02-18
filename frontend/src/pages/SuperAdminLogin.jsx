@@ -61,17 +61,19 @@ export default function SuperAdminLogin() {
       // Verification methods (in order of preference):
       // 1. Role name check (primary - if API returns correct role)
       // 2. Email-based check (fallback - configured via environment variable)
+      const userTypeUpper = (userType || '').toUpperCase();
       const isSuperAdmin = 
-        userType === 'SuperAdmin' || 
-        userType === 'SystemAdmin' || 
+        userTypeUpper === 'SUPERADMIN' || 
+        userTypeUpper === 'SYSTEMADMIN' || 
         SUPERADMIN_EMAILS.includes(userEmail);
       
       if (isSuperAdmin) {
         console.log('✅ SuperAdmin access granted');
         console.log('✅ Verification method:', {
-          roleMatch: userType === 'SuperAdmin' || userType === 'SystemAdmin',
+          roleMatch: userTypeUpper === 'SUPERADMIN' || userTypeUpper === 'SYSTEMADMIN',
           emailMatch: SUPERADMIN_EMAILS.includes(userEmail),
-          allowedEmails: SUPERADMIN_EMAILS
+          allowedEmails: SUPERADMIN_EMAILS,
+          originalRole: userType
         });
         
         // Store user session data
