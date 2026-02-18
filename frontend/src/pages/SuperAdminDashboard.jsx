@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { businessApi, staffApi, venueApi, zoneApi, categoryApi, productApi, unitApi } from '../services/superAdminApi.js';
-import { CreateVenueModal, EditVenueModal } from '../components/dashboard/modals/VenueModals.jsx';
-import { CreateZoneModal, EditZoneModal } from '../components/dashboard/modals/ZoneModals.jsx';
-import { CreateStaffModal, EditStaffModal, ResetPasswordModal } from '../components/dashboard/modals/StaffModals.jsx';
-import { CreateBusinessModal, EditBusinessModal } from '../components/dashboard/modals/BusinessModals.jsx';
-import { CreateCategoryModal, EditCategoryModal } from '../components/dashboard/modals/CategoryModals.jsx';
-import { CreateProductModal, EditProductModal } from '../components/dashboard/modals/ProductModals.jsx';
+import { CreateVenueModal, EditVenueModal } from '../components/dashboard/modals/VenueModals';
+import { CreateZoneModal, EditZoneModal } from '../components/dashboard/modals/ZoneModals';
+import { CreateStaffModal, EditStaffModal, ResetPasswordModal } from '../components/dashboard/modals/StaffModals';
+import { CreateBusinessModal, EditBusinessModal } from '../components/dashboard/modals/BusinessModals';
+import { CreateCategoryModal, EditCategoryModal } from '../components/dashboard/modals/CategoryModals';
+import { CreateProductModal, EditProductModal } from '../components/dashboard/modals/ProductModals';
 
 // Utility function to normalize phone numbers (match backend format)
 const normalizePhoneNumber = (phone) => {
