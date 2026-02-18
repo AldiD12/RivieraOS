@@ -777,7 +777,8 @@ export default function BusinessAdminDashboard() {
       
     } catch (err) {
       console.error('❌ Error creating zone:', err);
-      setError(`Failed to create zone: ${err.data || err.message}`);
+      const errorMessage = err.response?.data?.message || err.message || 'Unknown error occurred';
+      setError(`Failed to create zone: ${errorMessage}`);
     }
   };
 
@@ -800,7 +801,8 @@ export default function BusinessAdminDashboard() {
       
     } catch (err) {
       console.error('Error updating zone:', err);
-      setError(`Failed to update zone: ${err.data || err.message}`);
+      const errorMessage = err.response?.data?.message || err.message || 'Unknown error occurred';
+      setError(`Failed to update zone: ${errorMessage}`);
     }
   };
 
@@ -812,7 +814,8 @@ export default function BusinessAdminDashboard() {
       await fetchZones(selectedVenue.id);
     } catch (err) {
       console.error('Error deleting zone:', err);
-      setError(`Failed to delete zone: ${err.data || err.message}`);
+      const errorMessage = err.response?.data?.message || err.message || 'Unknown error occurred';
+      setError(`Failed to delete zone: ${errorMessage}`);
     }
   };
 

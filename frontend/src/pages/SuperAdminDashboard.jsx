@@ -1299,7 +1299,8 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('❌ [SuperAdmin] Error creating zone:', err);
-      setError('Failed to create zone: ' + (err.response?.data?.message || err.message));
+      const errorMessage = err.response?.data?.message || err.message || 'Unknown error occurred';
+      setError('Failed to create zone: ' + errorMessage);
     }
   }, [selectedVenue, zoneForm]);
 
@@ -1327,7 +1328,8 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error updating zone:', err);
-      setError('Failed to update zone: ' + (err.response?.data?.message || err.message));
+      const errorMessage = err.response?.data?.message || err.message || 'Unknown error occurred';
+      setError('Failed to update zone: ' + errorMessage);
     }
   }, [selectedVenue, editingZone, zoneForm]);
 
@@ -1344,7 +1346,8 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error deleting zone:', err);
-      setError('Failed to delete zone: ' + (err.response?.data?.message || err.message));
+      const errorMessage = err.response?.data?.message || err.message || 'Unknown error occurred';
+      setError('Failed to delete zone: ' + errorMessage);
     }
   }, [selectedVenue]);
 
