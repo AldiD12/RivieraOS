@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+
 import VenueExclusionSelector from '../../VenueExclusionSelector';
 
 export const CreateCategoryModal = ({ 
@@ -12,19 +12,13 @@ export const CreateCategoryModal = ({
   onExclusionsChange,
   loadingVenues = false
 }) => (
-  <AnimatePresence>
+  <>
     {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+      <div
         className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
         onClick={onClose}
       >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
+        <div
           className="bg-zinc-900 rounded-lg p-6 w-full max-w-md"
           onClick={(e) => e.stopPropagation()}
         >
@@ -97,10 +91,10 @@ export const CreateCategoryModal = ({
               </button>
             </div>
           </form>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     )}
-  </AnimatePresence>
+  </>
 );
 
 export const EditCategoryModal = ({ 
@@ -114,19 +108,13 @@ export const EditCategoryModal = ({
   onExclusionsChange,
   loadingVenues = false
 }) => (
-  <AnimatePresence>
+  <>
     {isOpen && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+      <div
         className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
         onClick={onClose}
       >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.9, opacity: 0 }}
+        <div
           className="bg-zinc-900 rounded-lg p-6 w-full max-w-md"
           onClick={(e) => e.stopPropagation()}
         >
@@ -197,8 +185,8 @@ export const EditCategoryModal = ({
               </button>
             </div>
           </form>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     )}
-  </AnimatePresence>
+  </>
 );
