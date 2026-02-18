@@ -842,6 +842,21 @@ export default function BusinessAdminDashboard() {
   }, []);
 
   const handleVenueFormChange = useCallback((field, value) => {
+    // Validate coordinates
+    if (field === 'latitude') {
+      const lat = parseFloat(value);
+      if (!isNaN(lat) && (lat < -90 || lat > 90)) {
+        setError('Latitude must be between -90 and 90');
+        return;
+      }
+    }
+    if (field === 'longitude') {
+      const lng = parseFloat(value);
+      if (!isNaN(lng) && (lng < -180 || lng > 180)) {
+        setError('Longitude must be between -180 and 180');
+        return;
+      }
+    }
     setVenueForm(prev => ({ ...prev, [field]: value }));
   }, []);
 
@@ -933,8 +948,7 @@ export default function BusinessAdminDashboard() {
               { id: 'staff', label: 'Staff' },
               { id: 'menu', label: 'Menu' },
               { id: 'venues', label: 'Venues' },
-              { id: 'qr-generator', label: 'QR Codes' },
-              { id: 'debug', label: 'Debug' }
+              { id: 'qr-generator', label: 'QR Codes' }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -1361,7 +1375,12 @@ export default function BusinessAdminDashboard() {
                                   sortOrder: category.sortOrder || 0,
                                   isActive: category.isActive
                                 });
-                                await fetchCategoryExclusions(category.id);
+                                try {
+                                  await fetchCategoryExclusions(category.id);
+                                } catch (error) {
+                                  console.error('Failed to fetch category exclusions:', error);
+                                  setError('Failed to load venue exclusions. You can still edit the category.');
+                                }
                               }}
                               className="text-blue-400 hover:text-blue-300 text-sm"
                             >
@@ -1429,7 +1448,12 @@ export default function BusinessAdminDashboard() {
                                   isAlcohol: product.isAlcohol || false,
                                   categoryId: selectedCategory.id
                                 });
-                                await fetchProductExclusions(selectedCategory.id, product.id);
+                                try {
+                                  await fetchProductExclusions(selectedCategory.id, product.id);
+                                } catch (error) {
+                                  console.error('Failed to fetch product exclusions:', error);
+                                  setError('Failed to load venue exclusions. You can still edit the product.');
+                                }
                               }}
                               className="text-blue-400 hover:text-blue-300 text-sm"
                             >
@@ -1746,16 +1770,6 @@ export default function BusinessAdminDashboard() {
             </div>
           </div>
         )}
-
-        {/* JWT Debug Tab */}
-        {activeTab === 'debug' && (
-          <div className="space-y-6">
-            <h2 className="text-xl font-semibold">JWT Token Debug</h2>
-            <div className="bg-zinc-900 rounded-lg p-6">
-              <JWTDebugPanel />
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Create Staff Modal */}
@@ -1893,246 +1907,6 @@ export default function BusinessAdminDashboard() {
         onSubmit={handleEditZone}
         venueName={selectedVenue?.name}
       />
-    </div>
-  );
-}
-
-// JWT Debug Panel Component
-function JWTDebugPanel() {
-  const [tokenInfo, setTokenInfo] = useState(null);
-  const [testResults, setTestResults] = useState([]);
-  const [testing, setTesting] = useState(false);
-
-  useEffect(() => {
-    analyzeToken();
-  }, []);
-
-  const analyzeToken = () => {
-    const token = localStorage.getItem('token') || localStorage.getItem('azure_jwt_token');
-    
-    if (!token) {
-      setTokenInfo({ error: 'No token found in localStorage' });
-      return;
-    }
-
-    try {
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        throw new Error('Invalid JWT format');
-      }
-
-      const header = JSON.parse(atob(parts[0]));
-      const payload = JSON.parse(atob(parts[1]));
-      
-      // Analyze token
-      const analysis = {
-        header,
-        payload,
-        isExpired: payload.exp ? new Date(payload.exp * 1000) < new Date() : false,
-        expiresAt: payload.exp ? new Date(payload.exp * 1000).toLocaleString() : 'No expiration',
-        timeLeft: payload.exp ? Math.max(0, Math.floor((new Date(payload.exp * 1000) - new Date()) / 1000 / 60)) : null,
-        issues: []
-      };
-
-      // Extract role from Microsoft claim format or simple format
-      const role = payload.role || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-      
-      // Check for issues
-      if (!payload.businessId) {
-        analysis.issues.push('Missing businessId claim - business API calls will fail');
-      }
-      if (!role || !['Owner', 'Manager', 'Waiter', 'Bartender', 'Guest'].includes(role)) {
-        analysis.issues.push(`Invalid role: ${role || 'undefined'}`);
-      }
-      
-      // Add role to analysis for display
-      analysis.role = role;
-      if (analysis.isExpired) {
-        analysis.issues.push('Token is expired');
-      }
-
-      setTokenInfo(analysis);
-    } catch (error) {
-      setTokenInfo({ error: `Failed to decode token: ${error.message}` });
-    }
-  };
-
-  const testBusinessEndpoints = async () => {
-    const token = localStorage.getItem('token') || localStorage.getItem('azure_jwt_token');
-    if (!token) return;
-
-    setTesting(true);
-    setTestResults([]);
-
-    const endpoints = [
-      { url: '/business/Profile', name: 'Business Profile' },
-      { url: '/business/Dashboard', name: 'Business Dashboard' },
-      { url: '/business/Staff', name: 'Staff Management' },
-      { url: '/business/Categories', name: 'Categories' },
-      { url: '/business/Venues', name: 'Venues' }
-    ];
-
-    const results = [];
-
-    for (const endpoint of endpoints) {
-      try {
-        const response = await fetch(`https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api${endpoint.url}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-
-        results.push({
-          name: endpoint.name,
-          url: endpoint.url,
-          status: response.status,
-          statusText: response.statusText,
-          success: response.ok,
-          error: response.ok ? null : await response.text()
-        });
-
-      } catch (error) {
-        results.push({
-          name: endpoint.name,
-          url: endpoint.url,
-          status: 0,
-          statusText: 'Network Error',
-          success: false,
-          error: error.message
-        });
-      }
-
-      setTestResults([...results]);
-      await new Promise(resolve => setTimeout(resolve, 300)); // Small delay for UX
-    }
-
-    setTesting(false);
-  };
-
-  if (!tokenInfo) {
-    return <div className="text-zinc-400">Loading token analysis...</div>;
-  }
-
-  if (tokenInfo.error) {
-    return (
-      <div className="space-y-4">
-        <div className="text-red-400">❌ {tokenInfo.error}</div>
-        <button 
-          onClick={analyzeToken}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-        >
-          Retry Analysis
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* Token Info */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div>
-          <h3 className="text-lg font-semibold mb-3 text-blue-400">Token Claims</h3>
-          <div className="bg-zinc-800 rounded-lg p-4 font-mono text-sm space-y-2">
-            <div><span className="text-purple-400">sub:</span> <span className="text-yellow-400">{tokenInfo.payload.sub}</span></div>
-            <div><span className="text-purple-400">role:</span> <span className="text-yellow-400">{tokenInfo.role || tokenInfo.payload.role || tokenInfo.payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || 'undefined'}</span></div>
-            <div><span className="text-purple-400">businessId:</span> <span className="text-yellow-400">{tokenInfo.payload.businessId || 'undefined'}</span></div>
-            <div><span className="text-purple-400">userId:</span> <span className="text-yellow-400">{tokenInfo.payload.userId}</span></div>
-            <div><span className="text-purple-400">email:</span> <span className="text-yellow-400">{tokenInfo.payload.email}</span></div>
-            <div><span className="text-purple-400">fullName:</span> <span className="text-yellow-400">{tokenInfo.payload.fullName}</span></div>
-          </div>
-        </div>
-
-        <div>
-          <h3 className="text-lg font-semibold mb-3 text-blue-400">Token Status</h3>
-          <div className="bg-zinc-800 rounded-lg p-4 space-y-2">
-            <div className="flex items-center space-x-2">
-              <span className={`w-3 h-3 rounded-full ${tokenInfo.isExpired ? 'bg-red-500' : 'bg-green-500'}`}></span>
-              <span>{tokenInfo.isExpired ? 'Expired' : 'Valid'}</span>
-            </div>
-            <div className="text-sm text-zinc-400">
-              Expires: {tokenInfo.expiresAt}
-            </div>
-            {tokenInfo.timeLeft !== null && !tokenInfo.isExpired && (
-              <div className="text-sm text-zinc-400">
-                Time left: {tokenInfo.timeLeft} minutes
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Issues */}
-      {tokenInfo.issues.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold mb-3 text-red-400">Issues Found</h3>
-          <div className="bg-red-900/20 border border-red-800 rounded-lg p-4">
-            {tokenInfo.issues.map((issue, index) => (
-              <div key={index} className="text-red-400">❌ {issue}</div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* API Testing */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold text-blue-400">API Endpoint Testing</h3>
-          <button
-            onClick={testBusinessEndpoints}
-            disabled={testing}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-          >
-            {testing ? 'Testing...' : 'Test Business APIs'}
-          </button>
-        </div>
-
-        {testResults.length > 0 && (
-          <div className="space-y-2">
-            {testResults.map((result, index) => (
-              <div key={index} className="bg-zinc-800 rounded-lg p-3 flex items-center justify-between">
-                <div>
-                  <div className="font-medium">{result.name}</div>
-                  <div className="text-sm text-zinc-400">{result.url}</div>
-                </div>
-                <div className="text-right">
-                  <div className={`font-mono text-sm ${
-                    result.success ? 'text-green-400' : 'text-red-400'
-                  }`}>
-                    {result.status} {result.statusText}
-                  </div>
-                  {result.error && (
-                    <div className="text-xs text-red-400 mt-1 max-w-xs truncate">
-                      {result.error}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Troubleshooting Guide */}
-      <div>
-        <h3 className="text-lg font-semibold mb-3 text-yellow-400">Troubleshooting 403 Errors</h3>
-        <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-4 text-sm space-y-2">
-          <div>💡 <strong>Common causes of 403 Forbidden errors:</strong></div>
-          <div>• Missing <code className="bg-zinc-700 px-1 rounded">businessId</code> claim in JWT token</div>
-          <div>• Backend authorization rules don't allow Manager role for business endpoints</div>
-          <div>• Business not properly associated with user account in database</div>
-          <div>• Token issued before business association was created</div>
-          <div className="mt-3">
-            <strong>Solutions:</strong>
-          </div>
-          <div>• Re-login to get fresh token with businessId claim</div>
-          <div>• Check backend logs for detailed authorization errors</div>
-          <div>• Verify business-user association in database</div>
-          <div>• Contact backend developer to check Manager role permissions</div>
-        </div>
-      </div>
     </div>
   );
 }

@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, User, X, Building2, Phone } from 'lucide-react';
 
+// API Configuration
+const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io';
+
 // Utility function to normalize phone numbers (match backend format)
 const normalizePhoneNumber = (phone) => {
   if (!phone) return '';
@@ -12,6 +15,7 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState('staff'); // 'staff' or 'manager'
   const [pin, setPin] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -68,7 +72,7 @@ export default function LoginPage() {
         
         try {
           console.log(`🔐 Trying phone: ${phoneFormat} with PIN`);
-          response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/auth/login/pin', {
+          response = await fetch(`${API_URL}/api/auth/login/pin`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -130,9 +134,7 @@ export default function LoginPage() {
         // LoginResponse structure
         userId = data.UserId;
         fullName = data.FullName || data.fullName;
-        // For LoginResponse, we might not have role/businessId directly
-        // Try to extract from token or use defaults
-        role = user.role || 'Manager'; // Default for business login
+        role = user.role; // No default - must be present
         businessId = user.businessId || data.businessId;
       } else if (data.id || data.userId) {
         // UserDetailDto structure
@@ -150,8 +152,25 @@ export default function LoginPage() {
         throw new Error('Invalid login response - missing user ID');
       }
       
+      if (!role) {
+        console.error('❌ No role found in response:', data);
+        throw new Error('Invalid login response - missing role. Please contact support.');
+      }
+      
+      // Validate token format (basic JWT check)
+      const token = data.token || data.Token;
+      if (!token) {
+        throw new Error('Invalid login response - missing token');
+      }
+      
+      const tokenParts = token.split('.');
+      if (tokenParts.length !== 3) {
+        console.error('❌ Invalid token format:', token);
+        throw new Error('Invalid token format received. Please try again.');
+      }
+      
       // Store authentication data
-      localStorage.setItem('token', data.token || data.Token);
+      localStorage.setItem('token', token);
       localStorage.setItem('userId', userId.toString());
       localStorage.setItem('userName', fullName || 'User');
       localStorage.setItem('phoneNumber', phoneNumber);
@@ -225,29 +244,94 @@ export default function LoginPage() {
   const handleManagerSubmit = async (e) => {
     e.preventDefault();
     
-    if (!password) return;
+    if (!email || !password) return;
 
     setLoading(true);
     setError('');
 
     try {
-      // Simple manager authentication
-      if (password === 'admin123') {
-        // Store authentication data
-        localStorage.setItem('token', 'mock-manager-token');
-        localStorage.setItem('userId', '999');
-        localStorage.setItem('userName', 'Manager');
-        localStorage.setItem('role', 'Admin');
+      console.log('🔐 Attempting manager login:', { email });
+      
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password: password
+        })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Manager login failed:', response.status, errorText);
         
-        console.log('Manager login successful');
-        navigate('/manager');
-      } else {
-        throw new Error('Invalid password');
+        if (response.status === 401) {
+          throw new Error('Invalid email or password');
+        } else if (response.status === 400) {
+          throw new Error('Invalid email format');
+        } else {
+          throw new Error('Login failed. Please try again.');
+        }
       }
+
+      const data = await response.json();
+      console.log('✅ Manager login response:', data);
+      
+      // Extract user data (handle different response structures)
+      const userId = data.userId || data.UserId || data.id;
+      const fullName = data.fullName || data.FullName || 'Manager';
+      const role = data.role;
+      const businessId = data.businessId;
+      
+      if (!userId) {
+        throw new Error('Invalid login response - missing user ID');
+      }
+      
+      if (!role) {
+        throw new Error('Invalid login response - missing role');
+      }
+      
+      // Store authentication data
+      localStorage.setItem('token', data.token || data.Token);
+      localStorage.setItem('userId', userId.toString());
+      localStorage.setItem('userName', fullName);
+      localStorage.setItem('role', role);
+      localStorage.setItem('email', email);
+      
+      if (businessId) {
+        localStorage.setItem('businessId', businessId.toString());
+      }
+      
+      console.log('✅ Manager login successful:', {
+        userId,
+        fullName,
+        role,
+        businessId
+      });
+      
+      // Route based on role
+      const roleRoutes = {
+        'Owner': '/admin',
+        'Manager': '/admin',
+        'SuperAdmin': '/superadmin'
+      };
+      
+      const targetRoute = roleRoutes[role] || '/admin';
+      console.log('🔄 Redirecting to:', targetRoute);
+      
+      // Clear form and navigate
+      setEmail('');
+      setPassword('');
+      navigate(targetRoute);
+      
     } catch (err) {
       console.error('Manager login error:', err);
-      setError('Invalid password');
+      setError(err.message || 'Invalid email or password');
       setPassword('');
+      setShake(true);
+      setTimeout(() => setShake(false), 500);
     } finally {
       setLoading(false);
     }
@@ -282,6 +366,7 @@ export default function LoginPage() {
             onClick={() => {
               setActiveTab('staff');
               setPin('');
+              setEmail('');
               setPassword('');
               setError('');
             }}
@@ -298,6 +383,7 @@ export default function LoginPage() {
             onClick={() => {
               setActiveTab('manager');
               setPin('');
+              setEmail('');
               setPassword('');
               setError('');
             }}
@@ -412,7 +498,7 @@ export default function LoginPage() {
             // Manager Login
             <form onSubmit={handleManagerSubmit}>
               <h2 className="text-lg font-bold text-zinc-900 mb-2 tracking-tight">Manager Access</h2>
-              <p className="text-sm text-zinc-600 mb-6">Enter your password to continue</p>
+              <p className="text-sm text-zinc-600 mb-6">Enter your credentials to continue</p>
 
               {/* Error Message */}
               {error && (
@@ -420,6 +506,25 @@ export default function LoginPage() {
                   {error}
                 </div>
               )}
+
+              {/* Email Input */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-zinc-700 mb-2">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError('');
+                  }}
+                  className="w-full px-4 py-3 border border-zinc-200 rounded-lg focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 outline-none transition-all"
+                  placeholder="Enter your email"
+                  disabled={loading}
+                  autoFocus
+                />
+              </div>
 
               {/* Password Input */}
               <div className="mb-6">
@@ -436,14 +541,13 @@ export default function LoginPage() {
                   className="w-full px-4 py-3 border border-zinc-200 rounded-lg focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 outline-none transition-all"
                   placeholder="Enter password"
                   disabled={loading}
-                  autoFocus
                 />
               </div>
 
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading || !password}
+                disabled={loading || !email || !password}
                 className="w-full bg-zinc-900 hover:bg-zinc-800 text-white py-3 rounded-lg font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border border-zinc-900"
               >
                 {loading ? 'Signing in...' : 'Sign In'}

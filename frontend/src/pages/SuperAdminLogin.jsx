@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff } from 'lucide-react';
 
+// SuperAdmin Configuration
+const SUPERADMIN_EMAILS = (import.meta.env.VITE_SUPERADMIN_EMAILS || 'superadmin@rivieraos.com').split(',').map(e => e.trim());
+
 export default function SuperAdminLogin() {
-  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +24,7 @@ export default function SuperAdminLogin() {
       const { azureAuth } = await import('../services/azureApi.js');
       
       const result = await azureAuth.login({
-        email: credentials.username,
+        email: credentials.email,
         password: credentials.password
       });
       
@@ -55,21 +58,20 @@ export default function SuperAdminLogin() {
       });
       
       // Check if user has SuperAdmin privileges
-      // Multiple verification methods:
-      // 1. Role name check (if API returns correct role)
-      // 2. Email-based check (fallback for superadmin@rivieraos.com)
-      // 3. User ID check (if SuperAdmin has specific ID like 6)
-      const isSuperAdmin = userType === 'SuperAdmin' || 
-                          userType === 'SystemAdmin' || 
-                          userEmail === 'superadmin@rivieraos.com' ||
-                          (userId === 6 && userEmail === 'superadmin@rivieraos.com'); // ID 6 from curl test
+      // Verification methods (in order of preference):
+      // 1. Role name check (primary - if API returns correct role)
+      // 2. Email-based check (fallback - configured via environment variable)
+      const isSuperAdmin = 
+        userType === 'SuperAdmin' || 
+        userType === 'SystemAdmin' || 
+        SUPERADMIN_EMAILS.includes(userEmail);
       
       if (isSuperAdmin) {
         console.log('✅ SuperAdmin access granted');
         console.log('✅ Verification method:', {
           roleMatch: userType === 'SuperAdmin' || userType === 'SystemAdmin',
-          emailMatch: userEmail === 'superadmin@rivieraos.com',
-          idMatch: userId === 6
+          emailMatch: SUPERADMIN_EMAILS.includes(userEmail),
+          allowedEmails: SUPERADMIN_EMAILS
         });
         
         // Store user session data
@@ -85,9 +87,9 @@ export default function SuperAdminLogin() {
           userType,
           userEmail,
           userId,
-          expectedEmail: 'superadmin@rivieraos.com'
+          allowedEmails: SUPERADMIN_EMAILS
         });
-        setError(`Access denied. SuperAdmin privileges required. Current role: ${userType}, Email: ${userEmail}`);
+        setError('Access denied. SuperAdmin privileges required.');
         
         // Clear any stored tokens
         localStorage.removeItem('token');
@@ -144,8 +146,8 @@ export default function SuperAdminLogin() {
               </label>
               <input
                 type="email"
-                value={credentials.username}
-                onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+                value={credentials.email}
+                onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none transition-colors"
                 placeholder="Enter email address"
                 required
@@ -179,7 +181,7 @@ export default function SuperAdminLogin() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading || !credentials.username || !credentials.password}
+              disabled={loading || !credentials.email || !credentials.password}
               className="w-full bg-white text-black py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Authenticating...' : 'Access System'}
@@ -189,7 +191,7 @@ export default function SuperAdminLogin() {
           {/* Back Link */}
           <div className="text-center mt-6">
             <a
-              href="/"
+              href="/login"
               className="text-sm text-zinc-400 hover:text-zinc-300 transition-colors"
             >
               ← Back to Staff Login
@@ -200,7 +202,10 @@ export default function SuperAdminLogin() {
         {/* Security Notice */}
         <div className="text-center mt-6">
           <p className="text-xs text-zinc-500">
-            This is a restricted area. All access is logged and monitored.
+            ⚠️ Restricted Area: All access attempts are logged and monitored.
+          </p>
+          <p className="text-xs text-zinc-600 mt-1">
+            Unauthorized access is prohibited and may result in legal action.
           </p>
         </div>
       </div>

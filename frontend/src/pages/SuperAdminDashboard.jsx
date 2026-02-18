@@ -417,184 +417,6 @@ const MenuTab = ({
   );
 };
 
-// Venues Tab Component - Extracted outside
-const VenuesTab = ({ 
-  selectedBusiness, 
-  venues, 
-  selectedVenue, 
-  zones, 
-  onVenueSelect, 
-  onCreateVenue, 
-  onEditVenue, 
-  onDeleteVenue,
-  onCreateZone,
-  onEditZone,
-  onDeleteZone,
-  loading 
-}) => {
-  if (!selectedBusiness) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-zinc-400">Please select a business first to manage venues.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-white">Venues & Zones</h2>
-          <p className="text-zinc-400">Managing venues for: {selectedBusiness.brandName || selectedBusiness.registeredName}</p>
-        </div>
-        <button
-          onClick={onCreateVenue}
-          className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
-        >
-          + Create Venue
-        </button>
-      </div>
-
-      {loading ? (
-        <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Venues */}
-          <div>
-            <div className="bg-zinc-800 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-white mb-4">Venues</h3>
-              <div className="space-y-3">
-                {venues.map((venue) => (
-                  <div
-                    key={venue.id}
-                    className={`p-4 rounded cursor-pointer transition-colors ${
-                      selectedVenue?.id === venue.id 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
-                    }`}
-                    onClick={() => onVenueSelect(venue)}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="font-medium">{venue.name}</h4>
-                        <p className="text-sm opacity-75">{venue.type}</p>
-                      </div>
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        venue.isActive 
-                          ? 'bg-green-900 text-green-300' 
-                          : 'bg-red-900 text-red-300'
-                      }`}>
-                        {venue.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Capacity: {venue.capacity || 'N/A'}</span>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEditVenue(venue);
-                          }}
-                          className="text-blue-400 hover:text-blue-300 text-sm"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onDeleteVenue(venue.id);
-                          }}
-                          className="text-red-400 hover:text-red-300 text-sm"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {venues.length === 0 && (
-                <p className="text-zinc-400 text-sm">No venues found. Create one to get started.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Zones */}
-          <div>
-            <div className="bg-zinc-800 rounded-lg p-4">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-white">
-                  Zones {selectedVenue && `- ${selectedVenue.name}`}
-                </h3>
-                {selectedVenue && (
-                  <button
-                    onClick={onCreateZone}
-                    className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
-                  >
-                    + Add Zone
-                  </button>
-                )}
-              </div>
-
-              {!selectedVenue ? (
-                <p className="text-zinc-400 text-sm">Select a venue to view zones.</p>
-              ) : (
-                <div className="space-y-3">
-                  {zones.map((zone) => (
-                    <div key={zone.id} className="bg-zinc-700 rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h4 className="font-medium text-white">{zone.name}</h4>
-                          <p className="text-sm text-zinc-400">{zone.type}</p>
-                        </div>
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          zone.isActive 
-                            ? 'bg-green-900 text-green-300' 
-                            : 'bg-red-900 text-red-300'
-                        }`}>
-                          {zone.isActive ? 'Active' : 'Inactive'}
-                        </span>
-                      </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-zinc-400">
-                          Capacity: {zone.capacity || 'N/A'}
-                        </span>
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => onEditZone(zone)}
-                            className="text-blue-400 hover:text-blue-300 text-sm"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => onDeleteZone(zone.id)}
-                            className="text-red-400 hover:text-red-300 text-sm"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              {selectedVenue && zones.length === 0 && (
-                <p className="text-zinc-400 text-sm">No zones found in this venue.</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 // Main SuperAdminDashboard Component
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
@@ -713,9 +535,11 @@ export default function SuperAdminDashboard() {
 
   const [zoneForm, setZoneForm] = useState({
     name: '',
-    type: '',
+    zoneType: '',
     description: '',
-    capacity: 0,
+    capacityPerUnit: 1,
+    basePrice: 0,
+    prefix: '',
     sortOrder: 0,
     isActive: true
   });
@@ -804,7 +628,18 @@ export default function SuperAdminDashboard() {
   }, []);
 
   const handleBusinessSelect = useCallback(async (business) => {
+    // Clear all previous business data before loading new business
     setSelectedBusiness(business);
+    setStaffMembers([]);
+    setCategories([]);
+    setSelectedCategory(null);
+    setProducts([]);
+    setVenues([]);
+    setSelectedVenue(null);
+    setZones([]);
+    setSelectedZone(null);
+    setUnits([]);
+    setError('');
     
     // Fetch staff for selected business
     try {
@@ -823,7 +658,7 @@ export default function SuperAdminDashboard() {
     
     // Fetch venues for selected business
     await fetchVenuesForBusiness(business.id);
-  }, []);
+  }, [fetchMenuForBusiness, fetchVenuesForBusiness]);
 
   // Business Management Functions
   const handleCreateBusiness = useCallback(async (e) => {
@@ -904,7 +739,8 @@ export default function SuperAdminDashboard() {
         fullName: staffForm.fullName,
         role: staffForm.role,
         pin: staffForm.pin,
-        isActive: staffForm.isActive
+        isActive: staffForm.isActive,
+        venueId: staffForm.venueId || null
       };
       
       console.log('📤 Creating staff with data:', {
@@ -956,7 +792,8 @@ export default function SuperAdminDashboard() {
         fullName: staffForm.fullName,
         role: staffForm.role,
         pin: staffForm.pin,
-        isActive: staffForm.isActive
+        isActive: staffForm.isActive,
+        venueId: staffForm.venueId || null
       };
       
       await staffApi.update(selectedBusiness.id, editingStaff.id, staffData);
@@ -1165,11 +1002,11 @@ export default function SuperAdminDashboard() {
   const handleCreateProduct = useCallback(async (e) => {
     e.preventDefault();
     
-    // Use categoryId from form (allows changing category in modal)
-    const categoryId = productForm.categoryId || selectedCategory?.id;
+    // Require explicit category selection - no fallback to selectedCategory
+    const categoryId = productForm.categoryId;
     
     if (!categoryId) {
-      setError('Please select a category');
+      setError('Please select a category from the dropdown');
       return;
     }
     
@@ -1202,7 +1039,7 @@ export default function SuperAdminDashboard() {
       console.error('Error creating product:', err);
       setError('Failed to create product: ' + (err.response?.data?.message || err.message));
     }
-  }, [productForm, selectedCategory, productExcludedVenues]);
+  }, [productForm, productExcludedVenues]);
 
   const handleUpdateProduct = useCallback(async (e) => {
     e.preventDefault();
@@ -1403,9 +1240,10 @@ export default function SuperAdminDashboard() {
     try {
       console.log('📤 [SuperAdmin] Creating zone with data:', {
         name: zoneForm.name,
-        type: zoneForm.type,
-        capacity: zoneForm.capacity,
-        capacityType: typeof zoneForm.capacity,
+        zoneType: zoneForm.zoneType,
+        capacityPerUnit: zoneForm.capacityPerUnit,
+        capacityType: typeof zoneForm.capacityPerUnit,
+        basePrice: zoneForm.basePrice,
         description: zoneForm.description,
         sortOrder: zoneForm.sortOrder,
         isActive: zoneForm.isActive
@@ -1418,9 +1256,10 @@ export default function SuperAdminDashboard() {
       setShowCreateZoneModal(false);
       setZoneForm({
         name: '',
-        type: '',
+        zoneType: '',
         description: '',
-        capacity: 0,
+        capacityPerUnit: 1,
+        basePrice: 0,
         sortOrder: 0,
         isActive: true
       });
@@ -1446,9 +1285,10 @@ export default function SuperAdminDashboard() {
       setEditingZone(null);
       setZoneForm({
         name: '',
-        type: '',
+        zoneType: '',
         description: '',
-        capacity: 0,
+        capacityPerUnit: 1,
+        basePrice: 0,
         sortOrder: 0,
         isActive: true
       });
@@ -1723,23 +1563,16 @@ export default function SuperAdminDashboard() {
           <StaffTab
             staffMembers={staffMembers}
             selectedBusiness={selectedBusiness}
-            onCreateStaff={async () => {
-              // Fetch venues if not already loaded
-              if (venues.length === 0 && selectedBusiness) {
-                await fetchVenuesForBusiness(selectedBusiness.id);
-              }
-              // Add venues to staffForm
+            onCreateStaff={() => {
+              // Venues already fetched in handleBusinessSelect
               setStaffForm(prev => ({
                 ...prev,
                 venues: venues
               }));
               setShowCreateStaffModal(true);
             }}
-            onEditStaff={async (staff) => {
-              // Fetch venues if not already loaded
-              if (venues.length === 0 && selectedBusiness) {
-                await fetchVenuesForBusiness(selectedBusiness.id);
-              }
+            onEditStaff={(staff) => {
+              // Venues already fetched in handleBusinessSelect
               setEditingStaff(staff);
               setStaffForm({
                 email: staff.email || '',

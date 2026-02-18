@@ -1,400 +1,416 @@
-# Backend Tasks for Prof Kristi - February 10, 2026
+# Backend Tasks for Prof Kristi - February 18, 2026
 
-## 🎯 MEETING AGENDA - COMPLETE LIST
-
-### What We Need to Discuss Today:
-
-1. **Zone IsActive Field** (CRITICAL - 10 minutes)
-2. **QR Code System Status** (5 minutes)
-3. **Optional Improvements** (5 minutes)
+**Priority:** URGENT - Blocking frontend development  
+**Estimated Total Time:** 1 hour
 
 ---
 
-## 🔴 ISSUE #1: Zone `IsActive` Field Missing (CRITICAL)
+## 🚨 CRITICAL ISSUE #1: Role Name Mismatch (15 minutes)
 
-**Problem**: `VenueZone` entity is missing the `IsActive` field, causing zones to be inactive by default.
+### Problem
+Frontend creates users with "Bartender" and "Collector" roles, but backend checks for old role names "Barman" and "Caderman". This prevents staff from logging in and accessing their dashboards.
 
-**Impact**: 
-- ✅ Zones can be created successfully
-- ❌ But they are inactive by default
-- ❌ Frontend shows "No zones found" when filtering by `is_active = 1`
-- ❌ Cannot create units for inactive zones
-- ❌ QR code system blocked completely
+### Files to Update
 
-**Root Cause**:
+#### 1. AuthController.cs (Line 173)
+**Location:** `BlackBear.Services.Core/Controllers/AuthController.cs`
+
+**Current Code:**
 ```csharp
-// File: BlackBear.Services.Core/Entities/VenueZone.cs
-public class VenueZone
+if (roleName != "Staff" && roleName != "Barman" && roleName != "Manager" && roleName != "Caderman")
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string ZoneType { get; set; }
-    // ... other fields ...
-    
-    // ❌ MISSING: public bool IsActive { get; set; }
+    return Unauthorized(new { message = "PIN login is only available for staff roles." });
 }
 ```
 
-**Solution - 3 Steps**:
-
-### Step 1: Add Field to Entity (2 minutes)
+**Change To:**
 ```csharp
-// File: BlackBear.Services.Core/Entities/VenueZone.cs
-public class VenueZone
+if (roleName != "Manager" && roleName != "Bartender" && roleName != "Collector")
 {
-    // ... existing fields ...
-    
-    public bool IsActive { get; set; } = true; // ADD THIS LINE
+    return Unauthorized(new { message = "PIN login is only available for staff roles." });
 }
 ```
 
-### Step 2: Run SQL Migration (2 minutes)
-```sql
--- Add is_active column to catalog_venue_zones table
-ALTER TABLE catalog_venue_zones 
-ADD is_active BIT NOT NULL DEFAULT 1;
+**Why:** Frontend creates "Bartender" and "Collector" roles, not "Barman" and "Caderman"
 
--- Set all existing zones to active
-UPDATE catalog_venue_zones 
-SET is_active = 1;
+---
+
+#### 2. OrdersController.cs (Line 12)
+**Location:** `BlackBear.Services.Core/Controllers/Business/OrdersController.cs`
+
+**Current Code:**
+```csharp
+[Authorize(Policy = "Barman")]
+public class OrdersController : ControllerBase
 ```
 
-### Step 3: Update CreateZone Method (2 minutes)
+**Change To:**
 ```csharp
-// File: Controllers/Business/ZonesController.cs
-// In CreateZone method, ensure IsActive is set:
+[Authorize(Policy = "Bartender")]
+public class OrdersController : ControllerBase
+```
 
-[HttpPost]
-public async Task<IActionResult> CreateZone([FromBody] CreateZoneRequest request)
+**Why:** Authorization policy needs to match the actual role name in database
+
+---
+
+#### 3. UnitBookingsController.cs (Line 13)
+**Location:** `BlackBear.Services.Core/Controllers/Business/UnitBookingsController.cs`
+
+**Current Code:**
+```csharp
+[Authorize(Policy = "Caderman")]
+public class UnitBookingsController : ControllerBase
+```
+
+**Change To:**
+```csharp
+[Authorize(Policy = "Collector")]
+public class UnitBookingsController : ControllerBase
+```
+
+**Why:** Authorization policy needs to match the actual role name in database
+
+---
+
+#### 4. UnitsController.cs (Line 13)
+**Location:** `BlackBear.Services.Core/Controllers/Business/UnitsController.cs`
+
+**Current Code:**
+```csharp
+[Authorize(Policy = "Caderman")]
+public class UnitsController : ControllerBase
+```
+
+**Change To:**
+```csharp
+[Authorize(Policy = "Collector")]
+public class UnitsController : ControllerBase
+```
+
+**Why:** Authorization policy needs to match the actual role name in database
+
+---
+
+#### 5. Program.cs or Startup.cs (Policy Configuration)
+**Location:** `BlackBear.Services.Core/Program.cs` or `Startup.cs`
+
+**Find the policy configuration section (likely looks like this):**
+```csharp
+services.AddAuthorization(options =>
 {
-    var zone = new VenueZone
+    options.AddPolicy("Barman", policy => policy.RequireRole("Barman"));
+    options.AddPolicy("Caderman", policy => policy.RequireRole("Caderman"));
+    // ... other policies
+});
+```
+
+**Change To:**
+```csharp
+services.AddAuthorization(options =>
+{
+    options.AddPolicy("Bartender", policy => policy.RequireRole("Bartender"));
+    options.AddPolicy("Collector", policy => policy.RequireRole("Collector"));
+    // ... other policies
+});
+```
+
+**Why:** Policy definitions need to match the role names
+
+---
+
+### Testing After Fix
+1. Create a Bartender user in SuperAdmin dashboard
+2. Try to login with phone + PIN
+3. Should successfully login and access BarDisplay
+4. Create a Collector user
+5. Try to login with phone + PIN
+6. Should successfully login and access CollectorDashboard
+
+---
+
+## 📋 TASK #2: Add Public Venues List Endpoint (30 minutes)
+
+### Problem
+Frontend needs to build a Discovery page where customers can browse all available venues. Currently there's no public endpoint to list venues.
+
+### What to Add
+
+#### New Controller: PublicVenuesController.cs
+**Location:** `BlackBear.Services.Core/Controllers/Public/PublicVenuesController.cs`
+
+**Create new file:**
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using BlackBear.Services.Core.Data;
+using BlackBear.Services.Core.DTOs.Public;
+
+namespace BlackBear.Services.Core.Controllers.Public
+{
+    [ApiController]
+    [Route("api/public/[controller]")]
+    public class VenuesController : ControllerBase
     {
-        VenueId = request.VenueId,
-        Name = request.Name,
-        ZoneType = request.ZoneType,
-        CapacityPerUnit = request.CapacityPerUnit,
-        BasePrice = request.BasePrice,
-        IsActive = true // ADD THIS LINE
-    };
-    
-    await _context.VenueZones.AddAsync(zone);
-    await _context.SaveChangesAsync();
-    
-    return Ok(zone);
-}
-```
+        private readonly ApplicationDbContext _context;
 
-**Testing After Fix**:
-1. Create a new zone → Should be active by default
-2. Check existing zones → Should all be active after SQL update
-3. Frontend should now show zones
-4. Units can be created
-5. QR codes will display units
-
-**Estimated Time**: 10 minutes total
-
----
-
-## ✅ ISSUE #2: QR Code System Status
-
-**Good News**: Frontend is 100% complete and deployed!
-
-**What's Working**:
-- ✅ QR Code Generator page (`/qr-generator`)
-- ✅ Fetches venues and zones
-- ✅ Fetches units for each zone
-- ✅ Generates QR codes with format: `/spot?v={venueId}&z={zoneId}&u={unitCode}`
-- ✅ Download individual QR codes as PNG
-- ✅ Print all QR codes (print-friendly layout)
-- ✅ Spot landing page (`/spot`) with Order and Book tabs
-- ✅ Public API endpoints working (orders, reservations)
-
-**What's Blocked**:
-- ❌ QR Generator shows "No units in this zone yet"
-- ❌ Reason: Zones are inactive, so units can't be created
-- ❌ Once Issue #1 is fixed, QR system will be 100% operational
-
-**No Backend Changes Needed** - Just fix Issue #1!
-
----
-
-## 🟡 ISSUE #3: Optional Improvements (Nice to Have)
-
-### 3A. Include Units in Zones API Response
-
-**Current Behavior**:
-```
-GET /api/business/venues/{venueId}/Zones
-```
-
-**Current Response**:
-```json
-[
-  {
-    "id": 10,
-    "name": "VIP - SUNBED",
-    "zoneType": "SUNBED",
-    "capacityPerUnit": 1,
-    "basePrice": 0
-  }
-]
-```
-
-**Desired Response**:
-```json
-[
-  {
-    "id": 10,
-    "name": "VIP - SUNBED",
-    "zoneType": "SUNBED",
-    "capacityPerUnit": 1,
-    "basePrice": 0,
-    "units": [
-      {
-        "id": 1,
-        "unitCode": "A1",
-        "unitType": "Sunbed",
-        "status": "Available",
-        "basePrice": 50
-      }
-    ]
-  }
-]
-```
-
-**Why?**:
-- Frontend currently makes 2 API calls (zones + units)
-- Would be more efficient with 1 call
-- Reduces load time
-
-**Solution**:
-```csharp
-// File: DTOs/Business/ZoneDtos.cs
-public class BizZoneListItemDto
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public string ZoneType { get; set; }
-    public int CapacityPerUnit { get; set; }
-    public double BasePrice { get; set; }
-    public List<BizZoneUnitListItemDto> Units { get; set; } // ADD THIS
-}
-
-// File: Controllers/Business/ZonesController.cs
-[HttpGet]
-public async Task<IActionResult> GetZones(int venueId)
-{
-    var zones = await _context.VenueZones
-        .Where(z => z.VenueId == venueId && z.IsActive)
-        .Include(z => z.Units) // ADD THIS
-        .Select(z => new BizZoneListItemDto
+        public VenuesController(ApplicationDbContext context)
         {
-            Id = z.Id,
-            Name = z.Name,
-            ZoneType = z.ZoneType,
-            CapacityPerUnit = z.CapacityPerUnit,
-            BasePrice = z.BasePrice,
-            Units = z.Units.Select(u => new BizZoneUnitListItemDto // ADD THIS
+            _context = context;
+        }
+
+        /// <summary>
+        /// Get list of all active venues (for Discovery page)
+        /// </summary>
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<PublicVenueListItemDto>>> GetVenues(
+            [FromQuery] string? type = null,
+            [FromQuery] string? city = null,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20)
+        {
+            var query = _context.Venues
+                .Where(v => v.IsActive && !v.IsDeleted)
+                .Include(v => v.Business)
+                .AsQueryable();
+
+            // Filter by type (Beach, Pool, Restaurant, Bar)
+            if (!string.IsNullOrEmpty(type))
             {
-                Id = u.Id,
-                UnitCode = u.UnitCode,
-                UnitType = u.UnitType,
-                Status = u.Status,
-                BasePrice = u.BasePrice
-            }).ToList()
-        })
-        .ToListAsync();
-        
-    return Ok(zones);
+                query = query.Where(v => v.Type.ToLower() == type.ToLower());
+            }
+
+            // Filter by city (extract from address)
+            if (!string.IsNullOrEmpty(city))
+            {
+                query = query.Where(v => v.Address.Contains(city));
+            }
+
+            // Pagination
+            var totalCount = await query.CountAsync();
+            var venues = await query
+                .OrderBy(v => v.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(v => new PublicVenueListItemDto
+                {
+                    Id = v.Id,
+                    Name = v.Name,
+                    Type = v.Type,
+                    Description = v.Description,
+                    Address = v.Address,
+                    ImageUrl = v.ImageUrl,
+                    Latitude = v.Latitude,
+                    Longitude = v.Longitude,
+                    AllowsDigitalOrdering = v.AllowsDigitalOrdering,
+                    BusinessName = v.Business.BrandName ?? v.Business.RegisteredName
+                })
+                .ToListAsync();
+
+            Response.Headers.Add("X-Total-Count", totalCount.ToString());
+            Response.Headers.Add("X-Page", page.ToString());
+            Response.Headers.Add("X-Page-Size", pageSize.ToString());
+
+            return Ok(venues);
+        }
+
+        /// <summary>
+        /// Get single venue details (already exists, just verify it's working)
+        /// </summary>
+        [HttpGet("{id}")]
+        public async Task<ActionResult<PublicVenueDetailDto>> GetVenue(int id)
+        {
+            var venue = await _context.Venues
+                .Include(v => v.Business)
+                .Include(v => v.VenueZones)
+                .FirstOrDefaultAsync(v => v.Id == id && v.IsActive && !v.IsDeleted);
+
+            if (venue == null)
+            {
+                return NotFound(new { message = "Venue not found" });
+            }
+
+            var dto = new PublicVenueDetailDto
+            {
+                Id = venue.Id,
+                Name = venue.Name,
+                Type = venue.Type,
+                Description = venue.Description,
+                Address = venue.Address,
+                ImageUrl = venue.ImageUrl,
+                Latitude = venue.Latitude,
+                Longitude = venue.Longitude,
+                AllowsDigitalOrdering = venue.AllowsDigitalOrdering,
+                BusinessName = venue.Business.BrandName ?? venue.Business.RegisteredName,
+                ZoneCount = venue.VenueZones.Count(z => z.IsActive && !z.IsDeleted)
+            };
+
+            return Ok(dto);
+        }
+    }
 }
 ```
-
-**Priority**: Low (frontend workaround exists)
-**Estimated Time**: 15 minutes
 
 ---
 
-### 3B. Add Public Venue Endpoint
+#### New DTOs: PublicVenueDtos.cs
+**Location:** `BlackBear.Services.Core/DTOs/Public/PublicVenueDtos.cs`
 
-**Current Behavior**:
-- Frontend uses menu endpoint to get venue name
-- Workaround works but not ideal
-
-**Better Solution**:
-```
-GET /api/public/venues/{venueId}
-```
-
-**Response**:
-```json
-{
-  "id": 5,
-  "name": "Beach Club Coral",
-  "type": "BEACH",
-  "address": "Durrës Beach",
-  "imageUrl": "https://...",
-  "isActive": true
-}
-```
-
-**Implementation**:
+**Create new file:**
 ```csharp
-// File: Controllers/Public/VenuesController.cs (NEW FILE)
-[ApiController]
-[Route("api/public/[controller]")]
-public class VenuesController : ControllerBase
+namespace BlackBear.Services.Core.DTOs.Public
 {
-    private readonly ApplicationDbContext _context;
-    
-    public VenuesController(ApplicationDbContext context)
+    public class PublicVenueListItemDto
     {
-        _context = context;
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string? Type { get; set; }
+        public string? Description { get; set; }
+        public string? Address { get; set; }
+        public string? ImageUrl { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+        public bool AllowsDigitalOrdering { get; set; }
+        public string BusinessName { get; set; }
     }
-    
-    [HttpGet("{venueId}")]
-    public async Task<IActionResult> GetPublicVenue(int venueId)
+
+    public class PublicVenueDetailDto
     {
-        var venue = await _context.Venues
-            .Where(v => v.Id == venueId && v.IsActive)
-            .Select(v => new PublicVenueDto
-            {
-                Id = v.Id,
-                Name = v.Name,
-                Type = v.Type,
-                Address = v.Address,
-                ImageUrl = v.ImageUrl,
-                IsActive = v.IsActive
-            })
-            .FirstOrDefaultAsync();
-            
-        if (venue == null)
-            return NotFound();
-            
-        return Ok(venue);
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string? Type { get; set; }
+        public string? Description { get; set; }
+        public string? Address { get; set; }
+        public string? ImageUrl { get; set; }
+        public double? Latitude { get; set; }
+        public double? Longitude { get; set; }
+        public bool AllowsDigitalOrdering { get; set; }
+        public string BusinessName { get; set; }
+        public int ZoneCount { get; set; }
     }
 }
 ```
 
-**Priority**: Low (frontend workaround exists)
-**Estimated Time**: 10 minutes
+---
+
+### API Endpoints Created
+- `GET /api/public/venues` - List all active venues
+  - Query params: `type`, `city`, `page`, `pageSize`
+  - Returns: Array of venues with pagination headers
+  
+- `GET /api/public/venues/{id}` - Get single venue details
+  - Returns: Venue details with zone count
+
+### Testing After Implementation
+1. Test: `GET /api/public/venues` → Should return all active venues
+2. Test: `GET /api/public/venues?type=Beach` → Should return only beach venues
+3. Test: `GET /api/public/venues?city=Durrës` → Should return venues in Durrës
+4. Test: `GET /api/public/venues/1` → Should return venue details
 
 ---
 
-## 📊 SUMMARY TABLE
+## ✅ OPTIONAL: Verify JWT businessId Claim (15 minutes)
 
-| Issue | Priority | Status | Time | Blocks QR System? |
-|-------|----------|--------|------|-------------------|
-| #1: Zone IsActive Field | 🔴 CRITICAL | Not Fixed | 10 min | ✅ YES |
-| #2: QR Code System | ✅ DONE | Complete | 0 min | N/A |
-| #3A: Units in Zones API | 🟡 Optional | Not Done | 15 min | ❌ NO |
-| #3B: Public Venue API | 🟡 Optional | Not Done | 10 min | ❌ NO |
+### What to Check
+The JWT token should include a `businessId` claim when users have a BusinessId set.
 
----
+**Location:** `AuthController.cs` around line 210-213
 
-## 🎯 RECOMMENDED ACTION PLAN
+**Current Code (should already be correct):**
+```csharp
+if (user.BusinessId.HasValue)
+{
+    claims.Add(new Claim("businessId", user.BusinessId.Value.ToString()));
+}
+```
 
-### Today (Must Do):
-1. ✅ Fix Issue #1 (Zone IsActive) - **10 minutes**
-2. ✅ Test zone creation
-3. ✅ Test unit creation
-4. ✅ Verify QR codes work
+### If Manager Gets 403 When Creating Staff
+This means the Manager user doesn't have `BusinessId` set in the database.
 
-### Later (Nice to Have):
-- Issue #3A: Include units in zones API
-- Issue #3B: Add public venue endpoint
+**Fix in database:**
+```sql
+-- Find the Manager user
+SELECT Id, Email, BusinessId FROM core_users WHERE Email = 'manager@business.com';
 
----
+-- Update BusinessId if null
+UPDATE core_users 
+SET BusinessId = 1  -- Replace with actual business ID
+WHERE Email = 'manager@business.com' AND BusinessId IS NULL;
+```
 
-## ✅ WHAT'S ALREADY WORKING
-
-### Backend APIs (All Working):
-- ✅ `POST /api/business/venues/{venueId}/Zones` - Create zone
-- ✅ `GET /api/business/venues/{venueId}/Zones` - List zones
-- ✅ `POST /api/business/venues/{venueId}/Units/bulk` - Bulk create units
-- ✅ `GET /api/business/venues/{venueId}/Units` - List units
-- ✅ `PUT /api/business/venues/{venueId}/Units/{id}` - Update unit
-- ✅ `DELETE /api/business/venues/{venueId}/Units/{id}` - Delete unit
-- ✅ `GET /api/business/venues/{venueId}/Units/by-qr/{qrCode}` - QR lookup
-- ✅ `GET /api/business/venues/{venueId}/Units/stats` - Unit statistics
-- ✅ `GET /api/business/venues/{venueId}/bookings` - List bookings
-- ✅ `POST /api/business/venues/{venueId}/bookings` - Create booking
-- ✅ `GET /api/business/venues/{venueId}/bookings/active` - Active bookings
-- ✅ `POST /api/business/venues/{venueId}/bookings/{id}/check-in` - Check-in
-- ✅ `POST /api/business/venues/{venueId}/bookings/{id}/check-out` - Check-out
-- ✅ `POST /api/business/venues/{venueId}/bookings/{id}/cancel` - Cancel
-- ✅ `POST /api/business/venues/{venueId}/bookings/{id}/no-show` - No-show
-- ✅ `POST /api/public/Orders` - Place order
-- ✅ `POST /api/public/Reservations` - Create booking
-- ✅ `GET /api/public/venues/{venueId}/menu` - Get venue menu
-- ✅ Cron job (midnight reset) - Tested and working!
-
-### Frontend Pages (All Working):
-- ✅ Business Dashboard
-- ✅ Zone Units Manager
-- ✅ QR Code Generator
-- ✅ Spot Landing Page (Order + Book tabs)
-- ✅ Test Cron Page
-
-### Deployment:
-- ✅ Frontend: https://riviera-os.vercel.app (auto-deploys from GitHub)
-- ✅ Backend: https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api
+**Or fix in SuperAdmin dashboard:**
+1. Go to SuperAdmin → Staff
+2. Edit the Manager user
+3. Ensure they're assigned to a business
+4. Save
 
 ---
 
-## 🚀 AFTER ISSUE #1 IS FIXED
+## 📦 DEPLOYMENT CHECKLIST
 
-**Entire QR Code System Will Be Production-Ready!**
+After making all changes:
 
-1. Admin creates venue
-2. Admin creates zones
-3. Admin creates units (bulk create 10+ at once)
-4. Admin generates QR codes
-5. Admin prints QR codes
-6. QR codes placed on sunbeds/tables
-7. Customers scan QR codes
-8. Customers can order food/drinks
-9. Customers can book sunbeds/tables
-10. Staff receives orders in real-time
-11. Bookings reset at midnight automatically
+1. **Build the project**
+   ```bash
+   dotnet build
+   ```
 
-**Everything works except zones being inactive by default!**
+2. **Run migrations (if any new ones)**
+   ```bash
+   dotnet ef database update
+   ```
 
----
+3. **Test locally**
+   - Test Bartender PIN login
+   - Test Collector PIN login
+   - Test public venues endpoint
+   - Test venue filtering
 
-## 📝 TESTING CHECKLIST (After Fix)
+4. **Deploy to Azure Container Apps**
+   ```bash
+   # Your usual deployment process
+   docker build -t blackbear-api .
+   docker push <your-registry>/blackbear-api
+   # Update container app
+   ```
 
-1. ✅ Create new venue
-2. ✅ Create new zone → Should be active
-3. ✅ Create units (bulk create 10 units)
-4. ✅ Go to QR Generator page
-5. ✅ Select venue
-6. ✅ Should see zones with units
-7. ✅ QR codes should display
-8. ✅ Download QR code as PNG
-9. ✅ Print all QR codes
-10. ✅ Scan QR code with phone
-11. ✅ Should open `/spot` page
-12. ✅ Order tab should show menu
-13. ✅ Book tab should show reservation form
+5. **Update Swagger**
+   - After deployment, download new swagger.json
+   - Send to frontend team to update `frontend/swagger.json`
 
----
-
-## 💬 QUESTIONS FOR PROF KRISTI
-
-1. Can you fix Issue #1 today? (10 minutes)
-2. Do you want to implement Issue #3A and #3B? (optional, 25 minutes)
-3. Any questions about the QR code system?
-4. Need help testing after deployment?
+6. **Notify Frontend Team**
+   - "Role mismatch fixed - Bartender/Collector can now login"
+   - "Public venues endpoint ready at GET /api/public/venues"
 
 ---
 
-## 📞 CONTACT
+## 🎯 SUMMARY
 
-- Frontend deployed: https://riviera-os.vercel.app
-- Backend API: https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api
-- All frontend code in GitHub (auto-deploys)
-- Test credentials available if needed
+**Total Time:** ~1 hour
+
+**Changes Required:**
+1. ✅ Fix role names in 5 files (15 min)
+2. ✅ Add public venues endpoint (30 min)
+3. ✅ Verify JWT businessId claim (15 min)
+
+**Impact:**
+- Unblocks Bartender and Collector login
+- Enables Discovery page development
+- Completes all critical backend work for Phase 1
+
+**After This:**
+- Frontend can complete all customer-facing pages
+- No more backend blockers for March launch
+- System is production-ready
 
 ---
 
-**BOTTOM LINE**: Fix Issue #1 (10 minutes) → QR Code System 100% Ready! 🎉
+## 📞 QUESTIONS?
+
+If you have any questions about these changes, please ask! The frontend team is ready to integrate as soon as these are deployed.
+
+**Priority Order:**
+1. Role mismatch fix (URGENT - staff can't login)
+2. Public venues endpoint (HIGH - needed for Discovery page)
+3. JWT verification (LOW - probably already working)
+
