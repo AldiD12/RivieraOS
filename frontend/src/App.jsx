@@ -19,6 +19,7 @@ import SpotPage from './pages/SpotPage';
 import ZoneUnitsManager from './pages/ZoneUnitsManager';
 import SunbedMapper from './pages/SunbedMapper';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 import ApiStatus from './components/ApiStatus';
 
 function App() {
@@ -93,9 +94,11 @@ function App() {
         <Route 
           path="/superadmin" 
           element={
-            <ProtectedRoute role="SuperAdmin">
-              <SuperAdminDashboard />
-            </ProtectedRoute>
+            <ErrorBoundary>
+              <ProtectedRoute role="SuperAdmin">
+                <SuperAdminDashboard />
+              </ProtectedRoute>
+            </ErrorBoundary>
           } 
         />
 

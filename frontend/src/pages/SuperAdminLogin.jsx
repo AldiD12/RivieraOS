@@ -16,9 +16,10 @@ export default function SuperAdminLogin() {
   // Handle redirect in useEffect to avoid minified code initialization issues
   useEffect(() => {
     if (shouldRedirect) {
-      navigate('/superadmin', { replace: true });
+      // Use window.location.replace for hard navigation to avoid framer-motion initialization issues
+      window.location.replace('/superadmin');
     }
-  }, [shouldRedirect, navigate]);
+  }, [shouldRedirect]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
