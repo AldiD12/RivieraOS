@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Eye, EyeOff } from 'lucide-react';
 
@@ -10,7 +10,15 @@ export default function SuperAdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
   const navigate = useNavigate();
+
+  // Handle redirect in useEffect to avoid minified code initialization issues
+  useEffect(() => {
+    if (shouldRedirect) {
+      navigate('/superadmin', { replace: true });
+    }
+  }, [shouldRedirect, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,10 +48,8 @@ export default function SuperAdminLogin() {
         
         console.log('✅ Temporary bypass successful - redirecting to dashboard');
         
-        // Use setTimeout to ensure localStorage is written before redirect
-        setTimeout(() => {
-          window.location.href = '/superadmin';
-        }, 100);
+        // Trigger redirect via state change to avoid minified code error
+        setShouldRedirect(true);
         return;
       }
       
@@ -109,10 +115,8 @@ export default function SuperAdminLogin() {
         localStorage.setItem('userName', result.user.fullName || 'Super Administrator');
         localStorage.setItem('userEmail', userEmail);
         
-        // Use setTimeout to ensure localStorage is written before redirect
-        setTimeout(() => {
-          window.location.href = '/superadmin';
-        }, 100);
+        // Trigger redirect via state change to avoid minified code error
+        setShouldRedirect(true);
       } else {
         console.log('❌ Access denied - insufficient privileges');
         console.log('❌ Verification failed:', {
