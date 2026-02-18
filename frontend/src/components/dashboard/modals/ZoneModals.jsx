@@ -8,24 +8,6 @@ export const CreateZoneModal = ({
   onSubmit,
   selectedVenue
 }) => {
-  // Auto-generate prefix from zone name
-  const generatePrefix = (name) => {
-    if (!name) return '';
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 3);
-  };
-
-  const handleNameChange = (value) => {
-    onFormChange('name', value);
-    if (!zoneForm.prefix || zoneForm.prefix === generatePrefix(zoneForm.name)) {
-      onFormChange('prefix', generatePrefix(value));
-    }
-  };
-
   return (
     <>
       {isOpen && (
@@ -51,7 +33,7 @@ export const CreateZoneModal = ({
                     type="text"
                     required
                     value={zoneForm.name}
-                    onChange={(e) => handleNameChange(e.target.value)}
+                    onChange={(e) => onFormChange('name', e.target.value)}
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                     placeholder="e.g., VIP Section, Regular Area"
                   />
@@ -108,21 +90,12 @@ export const CreateZoneModal = ({
                 </div>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Unit Code Prefix *
-                </label>
-                <input
-                  type="text"
-                  required
-                  maxLength="3"
-                  value={zoneForm.prefix}
-                  onChange={(e) => onFormChange('prefix', e.target.value.toUpperCase())}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  placeholder="e.g., VIP, REG, CAB"
-                />
-                <p className="text-xs text-zinc-500 mt-1">
-                  Preview: {zoneForm.prefix || 'XXX'}-1, {zoneForm.prefix || 'XXX'}-2, {zoneForm.prefix || 'XXX'}-3...
+              <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-4">
+                <p className="text-sm text-zinc-300 mb-2">
+                  <span className="font-medium">Unit Numbering:</span> Units will be created with simple numeric codes
+                </p>
+                <p className="text-xs text-zinc-500">
+                  Example: 1, 2, 3, 4, 5... (no prefixes)
                 </p>
               </div>
               
@@ -237,18 +210,13 @@ export const EditZoneModal = ({
               </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Unit Code Prefix *
-              </label>
-              <input
-                type="text"
-                required
-                maxLength="3"
-                value={zoneForm.prefix}
-                onChange={(e) => onFormChange('prefix', e.target.value.toUpperCase())}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-              />
+            <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-4">
+              <p className="text-sm text-zinc-300 mb-2">
+                <span className="font-medium">Unit Numbering:</span> Units use simple numeric codes
+              </p>
+              <p className="text-xs text-zinc-500">
+                Example: 1, 2, 3, 4, 5... (no prefixes)
+              </p>
             </div>
             
             <div className="flex justify-end space-x-4 pt-4">
