@@ -15,7 +15,7 @@ export default function ZoneUnitsManager() {
   
   // Bulk create form
   const [bulkForm, setBulkForm] = useState({
-    prefix: 'A',
+    prefix: '',
     startNumber: 1,
     count: 10,
     unitType: 'Sunbed',
@@ -85,6 +85,7 @@ export default function ZoneUnitsManager() {
           body: JSON.stringify({
             venueZoneId: parseInt(zoneId),
             unitType: bulkForm.unitType,
+            prefix: bulkForm.prefix,
             startNumber: bulkForm.startNumber,
             count: bulkForm.count,
             basePrice: bulkForm.basePrice
@@ -111,7 +112,7 @@ export default function ZoneUnitsManager() {
       
       setShowBulkCreate(false);
       setBulkForm({
-        prefix: 'A',
+        prefix: '',
         startNumber: 1,
         count: 10,
         unitType: 'Sunbed',
@@ -281,6 +282,19 @@ export default function ZoneUnitsManager() {
                   </select>
                 </div>
 
+                <div>
+                  <label className="block text-sm text-zinc-400 mb-2">Prefix (optional)</label>
+                  <input
+                    type="text"
+                    value={bulkForm.prefix}
+                    onChange={(e) => setBulkForm({ ...bulkForm, prefix: e.target.value })}
+                    maxLength="10"
+                    placeholder="e.g., A, B, VIP"
+                    className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white focus:outline-none focus:border-zinc-600"
+                  />
+                  <p className="text-xs text-zinc-500 mt-1">Leave empty for numbers only</p>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm text-zinc-400 mb-2">Start Number</label>
@@ -323,10 +337,10 @@ export default function ZoneUnitsManager() {
                 <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-4">
                   <p className="text-sm text-zinc-400 mb-2">Preview:</p>
                   <p className="text-white font-mono">
-                    {bulkForm.startNumber}, {bulkForm.startNumber + 1}, {bulkForm.startNumber + 2}...
+                    {bulkForm.prefix}{bulkForm.startNumber}, {bulkForm.prefix}{bulkForm.startNumber + 1}, {bulkForm.prefix}{bulkForm.startNumber + 2}...
                   </p>
                   <p className="text-xs text-zinc-500 mt-2">
-                    Will create {bulkForm.count} units ({bulkForm.startNumber} to {bulkForm.startNumber + bulkForm.count - 1})
+                    Will create {bulkForm.count} units ({bulkForm.prefix}{bulkForm.startNumber} to {bulkForm.prefix}{bulkForm.startNumber + bulkForm.count - 1})
                   </p>
                 </div>
 
