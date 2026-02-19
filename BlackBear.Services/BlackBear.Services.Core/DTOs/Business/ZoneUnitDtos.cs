@@ -115,7 +115,7 @@ namespace BlackBear.Services.Core.DTOs.Business
         [MaxLength(50)]
         public string UnitType { get; set; } = "Sunbed";
 
-        [Required]
+        [Required(AllowEmptyStrings = true)]
         [MaxLength(10)]
         public string Prefix { get; set; } = string.Empty;
 
