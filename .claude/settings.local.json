@@ -24,7 +24,14 @@
       "Bash(python3:*)",
       "Bash(findstr:*)",
       "Bash(docker tag:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(cmd /c \"start \"\"\"\" \"\"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\"\"\")",
+      "Bash(timeout:*)",
+      "Bash(ping:*)",
+      "Bash(tasklist:*)",
+      "Bash(cmd /c \"tasklist | findstr Docker\")",
+      "Bash(cmd /c \"\"\"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\"\"&\")",
+      "Bash(cmd /c \"tasklist | findstr -i docker\")"
     ]
   }
 }

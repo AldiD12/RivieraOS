@@ -36,6 +36,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
                 .Include(u => u.Business)
+                .Include(u => u.Venue)
                 .OrderByDescending(u => u.CreatedAt)
                 .Select(u => new UserListItemDto
                 {
@@ -48,7 +49,9 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                     HasPinSet = !string.IsNullOrEmpty(u.PinHash),
                     CreatedAt = u.CreatedAt,
                     BusinessId = u.BusinessId,
-                    BusinessName = u.Business != null ? u.Business.BrandName ?? u.Business.RegisteredName : null
+                    BusinessName = u.Business != null ? u.Business.BrandName ?? u.Business.RegisteredName : null,
+                    VenueId = u.VenueId,
+                    VenueName = u.Venue != null ? u.Venue.Name : null
                 })
                 .ToListAsync();
 
@@ -65,6 +68,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 .Include(u => u.UserRoles)
                     .ThenInclude(ur => ur.Role)
                 .Include(u => u.Business)
+                .Include(u => u.Venue)
                 .FirstOrDefaultAsync();
 
             if (user == null)
@@ -84,7 +88,9 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 HasPinSet = !string.IsNullOrEmpty(user.PinHash),
                 CreatedAt = user.CreatedAt,
                 BusinessId = user.BusinessId,
-                BusinessName = user.Business?.BrandName ?? user.Business?.RegisteredName
+                BusinessName = user.Business?.BrandName ?? user.Business?.RegisteredName,
+                VenueId = user.VenueId,
+                VenueName = user.Venue?.Name
             });
         }
 
@@ -121,6 +127,18 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 return BadRequest("Cannot create SuperAdmin through this endpoint");
             }
 
+            // Validate venue if provided
+            string? venueName = null;
+            if (request.VenueId.HasValue)
+            {
+                var venue = await _context.Venues
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(v => v.Id == request.VenueId.Value && v.BusinessId == businessId);
+                if (venue == null)
+                    return BadRequest("Venue not found or doesn't belong to this business");
+                venueName = venue.Name;
+            }
+
             // Create user
             var user = new User
             {
@@ -130,6 +148,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 PhoneNumber = request.PhoneNumber,
                 PinHash = !string.IsNullOrEmpty(request.Pin) ? HashPin(request.Pin) : null,
                 BusinessId = businessId,
+                VenueId = request.VenueId,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
             };
@@ -157,7 +176,9 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 HasPinSet = !string.IsNullOrEmpty(user.PinHash),
                 CreatedAt = user.CreatedAt,
                 BusinessId = user.BusinessId,
-                BusinessName = business.BrandName ?? business.RegisteredName
+                BusinessName = business.BrandName ?? business.RegisteredName,
+                VenueId = user.VenueId,
+                VenueName = venueName
             });
         }
 
@@ -168,6 +189,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
             var user = await _context.Users
                 .IgnoreQueryFilters()
                 .Include(u => u.UserRoles)
+                .Include(u => u.Venue)
                 .FirstOrDefaultAsync(u => u.Id == id && u.BusinessId == businessId);
 
             if (user == null)
@@ -209,6 +231,23 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 user.PinHash = HashPin(request.Pin);
             }
 
+            // Update venue assignment
+            if (request.VenueId.HasValue)
+            {
+                var venue = await _context.Venues
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(v => v.Id == request.VenueId.Value && v.BusinessId == businessId);
+                if (venue == null)
+                    return BadRequest("Venue not found or doesn't belong to this business");
+                user.VenueId = request.VenueId.Value;
+                user.Venue = venue;
+            }
+            else
+            {
+                user.VenueId = null;
+                user.Venue = null;
+            }
+
             // Update role (remove old, add new)
             var existingRoles = user.UserRoles.ToList();
             _context.UserRoles.RemoveRange(existingRoles);
@@ -222,7 +261,21 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
 
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new UserDetailDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
+                UserType = user.UserType,
+                Role = role.RoleName,
+                IsActive = user.IsActive,
+                HasPinSet = !string.IsNullOrEmpty(user.PinHash),
+                CreatedAt = user.CreatedAt,
+                BusinessId = user.BusinessId,
+                VenueId = user.VenueId,
+                VenueName = user.Venue?.Name
+            });
         }
 
         // POST: api/superadmin/businesses/5/users/10/reset-password

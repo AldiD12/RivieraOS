@@ -14,6 +14,8 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public DateTime CreatedAt { get; set; }
         public int? BusinessId { get; set; }
         public string? BusinessName { get; set; }
+        public int? VenueId { get; set; }
+        public string? VenueName { get; set; }
     }
 
     public class UserDetailDto
@@ -29,6 +31,8 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public DateTime CreatedAt { get; set; }
         public int? BusinessId { get; set; }
         public string? BusinessName { get; set; }
+        public int? VenueId { get; set; }
+        public string? VenueName { get; set; }
     }
 
     public class CreateUserRequest
@@ -54,6 +58,8 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
 
         [Required]
         public string Role { get; set; } = "Staff";
+
+        public int? VenueId { get; set; }
     }
 
     public class UpdateUserRequest
@@ -77,6 +83,8 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? Pin { get; set; }
 
         public bool IsActive { get; set; } = true;
+
+        public int? VenueId { get; set; }
     }
 
     public class ResetPasswordRequest
