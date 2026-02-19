@@ -90,11 +90,20 @@ export default function ZoneUnitsManager() {
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: 'Failed to create units' }));
         throw new Error(errorData.message || 'Failed to create units');
       }
 
-      const result = await response.json();
+      // Handle empty response (204 No Content)
+      let result = { createdCount: bulkForm.count };
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const text = await response.text();
+        if (text) {
+          result = JSON.parse(text);
+        }
+      }
+      
       alert(`✅ Successfully created ${result.createdCount} units!`);
       
       setShowBulkCreate(false);
