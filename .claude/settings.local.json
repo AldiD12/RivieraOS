@@ -31,7 +31,13 @@
       "Bash(tasklist:*)",
       "Bash(cmd /c \"tasklist | findstr Docker\")",
       "Bash(cmd /c \"\"\"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\"\"&\")",
-      "Bash(cmd /c \"tasklist | findstr -i docker\")"
+      "Bash(cmd /c \"tasklist | findstr -i docker\")",
+      "Bash(BASE=\"https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io\")",
+      "Bash(__NEW_LINE_ff22c4e0b017b823__ echo \"=== 1. GET /api/public/Orders/menu ===\")",
+      "Bash(__NEW_LINE_ff22c4e0b017b823__ echo \"\")",
+      "Bash(__NEW_LINE_b2b556c443caa9ff__ echo \"=== POST /api/public/Orders ===\")",
+      "Bash(__NEW_LINE_b2b556c443caa9ff__ echo \"\")",
+      "Bash(__NEW_LINE_265befffc7bdf0cb__ echo \"=== POST /api/public/Orders \\(full response\\) ===\")"
     ]
   }
 }
