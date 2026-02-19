@@ -25,7 +25,13 @@ superAdminApi.interceptors.request.use((config) => {
 
 // Response interceptor for error handling
 superAdminApi.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Handle empty responses (204 No Content)
+    if (response.status === 204 || !response.data) {
+      response.data = { success: true };
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       console.log('❌ SuperAdmin API returned 401');
@@ -510,7 +516,8 @@ export const unitApi = {
   // POST /api/superadmin/venues/{venueId}/Units/bulk - Bulk create units
   bulkCreate: async (venueId, bulkData) => {
     const response = await superAdminApi.post(`/superadmin/venues/${venueId}/Units/bulk`, bulkData);
-    return response.data;
+    // Handle empty response (204 No Content)
+    return response.data || { success: true, createdCount: bulkData.count };
   },
 
   // PUT /api/superadmin/venues/{venueId}/Units/{id} - Update unit

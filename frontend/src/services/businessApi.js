@@ -34,6 +34,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     console.log('✅ Business API success:', response.config.method.toUpperCase(), response.config.url);
+    // Handle empty responses (204 No Content)
+    if (response.status === 204 || !response.data) {
+      response.data = { success: true };
+    }
     return response;
   },
   (error) => {
