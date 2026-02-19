@@ -111,7 +111,8 @@ export const businessStaffApi = {
       fullName: staffData.fullName || '',
       phoneNumber: staffData.phoneNumber,
       role: staffData.role,
-      pin: staffData.pin
+      pin: staffData.pin,
+      venueId: staffData.venueId || null // ✅ Include venueId for venue assignment
     };
     
     console.log('📤 Creating business staff member:', {
@@ -120,7 +121,8 @@ export const businessStaffApi = {
       fullName: apiData.fullName,
       phoneNumber: apiData.phoneNumber,
       role: apiData.role,
-      pin: '****'
+      pin: '****',
+      venueId: apiData.venueId
     });
     
     try {
@@ -164,7 +166,9 @@ export const businessStaffApi = {
       role: staffData.role,
       isActive: staffData.isActive !== undefined ? staffData.isActive : true,
       // Only include PIN if it's provided and not empty (to allow PIN updates)
-      pin: (staffData.pin && staffData.pin.trim() !== '') ? staffData.pin : undefined
+      pin: (staffData.pin && staffData.pin.trim() !== '') ? staffData.pin : undefined,
+      // ✅ CRITICAL FIX: Include venueId in API payload
+      venueId: staffData.venueId !== undefined ? staffData.venueId : null
     };
     
     console.log('📤 Updating business staff member:', staffId, {
@@ -173,7 +177,8 @@ export const businessStaffApi = {
       phoneNumber: apiData.phoneNumber,
       role: apiData.role,
       isActive: apiData.isActive,
-      pin: apiData.pin ? '****' : 'not changing'
+      pin: apiData.pin ? '****' : 'not changing',
+      venueId: apiData.venueId
     });
     
     const response = await api.put(`/business/Staff/${staffId}`, apiData);

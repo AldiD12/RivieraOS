@@ -8470,6 +8470,10 @@
             "type": "string",
             "nullable": true
           },
+          "unitCode": {
+            "type": "string",
+            "nullable": true
+          },
           "status": {
             "type": "string",
             "nullable": true
@@ -8514,6 +8518,13 @@
           "totalAmount": {
             "type": "number",
             "format": "double"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BizOrderItemDto"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -11324,6 +11335,11 @@
           "zoneId": {
             "type": "integer",
             "format": "int32"
+          },
+          "zoneUnitId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "customerName": {
             "maxLength": 100,
