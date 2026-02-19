@@ -21,7 +21,10 @@ export default function SuperAdminLogin() {
       console.log('🔐 SuperAdmin Login: Attempting authentication...');
       
       // Use the standard backend API endpoint (same as business login)
-      const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+      const API_BASE = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io';
+      const API_URL = `${API_BASE}/api`;
+      
+      console.log('🔐 Using API URL:', API_URL);
       
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
@@ -49,11 +52,21 @@ export default function SuperAdminLogin() {
 
       const data = await response.json();
       console.log('✅ Login response received:', data);
+      console.log('🔍 Full response data:', JSON.stringify(data, null, 2));
       
       // Extract user data
       const userId = data.userId || data.UserId || data.id;
       const fullName = data.fullName || data.FullName || 'Super Administrator';
       const role = data.role;
+      const token = data.token || data.Token;
+      
+      console.log('🔐 Extracted values:', {
+        userId,
+        fullName,
+        role,
+        hasToken: !!token,
+        tokenPreview: token ? token.substring(0, 30) + '...' : 'NO TOKEN'
+      });
       
       if (!userId) {
         throw new Error('Invalid login response - missing user ID');
@@ -61,6 +74,10 @@ export default function SuperAdminLogin() {
       
       if (!role) {
         throw new Error('Invalid login response - missing role');
+      }
+      
+      if (!token) {
+        throw new Error('Invalid login response - missing token');
       }
       
       // Normalize role (case-insensitive)
@@ -85,7 +102,6 @@ export default function SuperAdminLogin() {
       console.log('✅ SuperAdmin access granted');
       
       // Store authentication data (use azure_jwt_token for consistency with dashboard)
-      const token = data.token || data.Token;
       localStorage.setItem('azure_jwt_token', token);
       localStorage.setItem('token', token); // Also store as 'token' for backward compatibility
       localStorage.setItem('role', 'SuperAdmin');
@@ -94,6 +110,13 @@ export default function SuperAdminLogin() {
       localStorage.setItem('userEmail', credentials.email);
       
       console.log('✅ Token stored successfully');
+      console.log('📦 LocalStorage contents:', {
+        azure_jwt_token: localStorage.getItem('azure_jwt_token')?.substring(0, 30) + '...',
+        token: localStorage.getItem('token')?.substring(0, 30) + '...',
+        role: localStorage.getItem('role'),
+        userId: localStorage.getItem('userId'),
+        userName: localStorage.getItem('userName')
+      });
       
       // Navigate to SuperAdmin dashboard
       navigate('/superadmin');
