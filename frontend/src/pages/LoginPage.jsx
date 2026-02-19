@@ -293,11 +293,28 @@ export default function LoginPage() {
         throw new Error('Invalid login response - missing role');
       }
       
+      // Normalize role name to match ProtectedRoute expectations (case-insensitive)
+      const roleMapping = {
+        'superadmin': 'SuperAdmin',
+        'super admin': 'SuperAdmin',
+        'owner': 'Owner',
+        'manager': 'Manager',
+        'bartender': 'Bartender',
+        'collector': 'Collector'
+      };
+      
+      const normalizedRole = roleMapping[role.toLowerCase()] || role;
+      
+      console.log('🔄 Role normalization:', {
+        original: role,
+        normalized: normalizedRole
+      });
+      
       // Store authentication data
       localStorage.setItem('token', data.token || data.Token);
       localStorage.setItem('userId', userId.toString());
       localStorage.setItem('userName', fullName);
-      localStorage.setItem('role', role);
+      localStorage.setItem('role', normalizedRole);
       localStorage.setItem('email', email);
       
       if (businessId) {

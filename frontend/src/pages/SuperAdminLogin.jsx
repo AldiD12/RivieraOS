@@ -18,102 +18,91 @@ export default function SuperAdminLogin() {
     setError('');
 
     try {
-      console.log('🔐 SuperAdmin Login Step 1: Attempting authentication...');
+      console.log('🔐 SuperAdmin Login: Attempting authentication...');
       
-      // Step 1: Login → Get token
-      const { azureAuth } = await import('../services/azureApi.js');
+      // Use the standard backend API endpoint (same as business login)
+      const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
       
-      const result = await azureAuth.login({
-        email: credentials.email,
-        password: credentials.password
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: credentials.email.trim(),
+          password: credentials.password
+        })
       });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ SuperAdmin login failed:', response.status, errorText);
+        
+        if (response.status === 401) {
+          throw new Error('Invalid email or password');
+        } else if (response.status === 403) {
+          throw new Error('Access forbidden. SuperAdmin privileges required.');
+        } else {
+          throw new Error('Authentication failed. Please try again.');
+        }
+      }
+
+      const data = await response.json();
+      console.log('✅ Login response received:', data);
       
-      console.log('🔐 Login result:', result);
+      // Extract user data
+      const userId = data.userId || data.UserId || data.id;
+      const fullName = data.fullName || data.FullName || 'Super Administrator';
+      const role = data.role;
       
-      // Check if login was successful
-      if (!result.success || !result.user || !result.token) {
-        console.log('❌ Login failed - missing success, user, or token');
-        setError('Authentication failed. Invalid credentials.');
-        return;
+      if (!userId) {
+        throw new Error('Invalid login response - missing user ID');
       }
       
-      console.log('🔐 Step 2: Login successful, storing token...');
+      if (!role) {
+        throw new Error('Invalid login response - missing role');
+      }
       
-      // Step 2: Store token
-      localStorage.setItem('token', result.token);
-      localStorage.setItem('azure_jwt_token', result.token);
-      
-      console.log('🔐 Step 3: Checking user permissions...');
-      
-      // Step 3: Check role from user object to show correct UI
-      const userType = result.user.userType || result.user.role || 'Guest';
-      const userEmail = result.user.email || '';
-      const userId = result.user.id;
+      // Normalize role (case-insensitive)
+      const normalizedRole = role.toLowerCase() === 'superadmin' || role.toLowerCase() === 'super admin' 
+        ? 'SuperAdmin' 
+        : role;
       
       console.log('🔐 User details:', {
         id: userId,
-        userType,
-        email: userEmail,
-        fullName: result.user.fullName
+        role: normalizedRole,
+        email: credentials.email,
+        fullName
       });
       
-      // Check if user has SuperAdmin privileges
-      // Verification methods (in order of preference):
-      // 1. Role name check (primary - if API returns correct role)
-      // 2. Email-based check (fallback - configured via environment variable)
-      const userTypeUpper = (userType || '').toUpperCase();
-      const isSuperAdmin = 
-        userTypeUpper === 'SUPERADMIN' || 
-        userTypeUpper === 'SYSTEMADMIN' || 
-        SUPERADMIN_EMAILS.includes(userEmail);
-      
-      if (isSuperAdmin) {
-        console.log('✅ SuperAdmin access granted');
-        console.log('✅ Verification method:', {
-          roleMatch: userTypeUpper === 'SUPERADMIN' || userTypeUpper === 'SYSTEMADMIN',
-          emailMatch: SUPERADMIN_EMAILS.includes(userEmail),
-          allowedEmails: SUPERADMIN_EMAILS,
-          originalRole: userType
-        });
-        
-        // Store user session data
-        localStorage.setItem('role', 'SuperAdmin');
-        localStorage.setItem('userId', userId || '0');
-        localStorage.setItem('userName', result.user.fullName || 'Super Administrator');
-        localStorage.setItem('userEmail', userEmail);
-        
-        navigate('/superadmin');
-      } else {
+      // Verify SuperAdmin role
+      if (normalizedRole !== 'SuperAdmin') {
         console.log('❌ Access denied - insufficient privileges');
-        console.log('❌ Verification failed:', {
-          userType,
-          userEmail,
-          userId,
-          allowedEmails: SUPERADMIN_EMAILS
-        });
-        setError('Access denied. SuperAdmin privileges required.');
-        
-        // Clear any stored tokens
-        localStorage.removeItem('token');
-        localStorage.removeItem('azure_jwt_token');
+        console.log('❌ User role:', normalizedRole);
+        throw new Error('Access denied. SuperAdmin privileges required.');
       }
+      
+      console.log('✅ SuperAdmin access granted');
+      
+      // Store authentication data
+      localStorage.setItem('token', data.token || data.Token);
+      localStorage.setItem('role', 'SuperAdmin');
+      localStorage.setItem('userId', userId.toString());
+      localStorage.setItem('userName', fullName);
+      localStorage.setItem('userEmail', credentials.email);
+      
+      // Navigate to SuperAdmin dashboard
+      navigate('/superadmin');
       
     } catch (err) {
       console.error('❌ SuperAdmin login error:', err);
       
       // Clear any stored tokens on error
       localStorage.removeItem('token');
-      localStorage.removeItem('azure_jwt_token');
+      localStorage.removeItem('role');
+      localStorage.removeItem('userId');
       
-      if (err.response?.status === 401) {
-        setError('Invalid email or password. Please check your credentials.');
-      } else if (err.response?.status === 400) {
-        setError('Invalid request. Please check your credentials format.');
-      } else if (err.response?.status === 403) {
-        setError('Access forbidden. SuperAdmin privileges required.');
-      } else {
-        setError('Authentication failed. Please try again. ' + (err.message || ''));
-      }
+      setError(err.message || 'Authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }
