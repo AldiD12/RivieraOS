@@ -115,7 +115,7 @@ export default function CollectorDashboard() {
   const handleUnitAction = async (unitId, newStatus) => {
     try {
       console.log(`🔄 Updating unit ${unitId} to status: ${newStatus}`);
-      await collectorApi.updateUnitStatus(unitId, { newStatus });
+      await collectorApi.updateUnitStatus(unitId, { status: newStatus });
       await fetchVenueData(); // Refresh data
       setShowUnitModal(false);
     } catch (err) {
