@@ -74,6 +74,17 @@ export default function ZoneUnitsManager() {
       const API_BASE = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io';
       const API_URL = `${API_BASE}/api`;
       
+      const payload = {
+        venueZoneId: parseInt(zoneId),
+        unitType: bulkForm.unitType,
+        prefix: bulkForm.prefix || '',  // Ensure it's at least empty string, not undefined
+        startNumber: bulkForm.startNumber,
+        count: bulkForm.count,
+        basePrice: bulkForm.basePrice
+      };
+      
+      console.log('📤 Bulk create payload:', payload);
+      
       const response = await fetch(
         `${API_URL}/business/venues/${zone.venueId}/Units/bulk`,
         {
@@ -82,20 +93,25 @@ export default function ZoneUnitsManager() {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({
-            venueZoneId: parseInt(zoneId),
-            unitType: bulkForm.unitType,
-            prefix: bulkForm.prefix,
-            startNumber: bulkForm.startNumber,
-            count: bulkForm.count,
-            basePrice: bulkForm.basePrice
-          })
+          body: JSON.stringify(payload)
         }
       );
 
+      console.log('📥 Response status:', response.status);
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Failed to create units' }));
-        throw new Error(errorData.message || 'Failed to create units');
+        const contentType = response.headers.get('content-type');
+        let errorData;
+        
+        if (contentType && contentType.includes('application/json')) {
+          errorData = await response.json();
+        } else {
+          const text = await response.text();
+          errorData = { message: text || 'Failed to create units' };
+        }
+        
+        console.error('❌ Error response:', errorData);
+        throw new Error(errorData.message || JSON.stringify(errorData) || 'Failed to create units');
       }
 
       // Handle empty response (204 No Content)
