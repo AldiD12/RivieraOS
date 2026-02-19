@@ -7825,7 +7825,6 @@
           },
           "prefix": {
             "maxLength": 10,
-            "minLength": 1,
             "type": "string"
           },
           "startNumber": {
