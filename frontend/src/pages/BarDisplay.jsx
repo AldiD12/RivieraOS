@@ -348,6 +348,9 @@ function OrderCard({ order, onUpdateStatus, formatTime, getTimeSince, getStatusC
           </div>
         </div>
         <div className="text-right">
+          <div className="text-2xl font-bold text-white mb-1">
+            €{order.totalAmount?.toFixed(2) || '0.00'}
+          </div>
           <div className="text-xs text-zinc-500 mb-1">
             {formatTime(order.createdAt)}
           </div>
@@ -365,7 +368,7 @@ function OrderCard({ order, onUpdateStatus, formatTime, getTimeSince, getStatusC
               <span className="text-xl font-bold">{item.quantity}x</span>
               <span className="text-lg">{item.productName}</span>
             </div>
-            <span className="text-zinc-400">€{(item.price * item.quantity).toFixed(2)}</span>
+            <span className="text-zinc-400">€{(item.unitPrice * item.quantity).toFixed(2)}</span>
           </div>
         ))}
       </div>
