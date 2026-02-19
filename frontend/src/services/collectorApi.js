@@ -60,7 +60,7 @@ export const collectorApi = {
   // Get venue info with all zones and units for collector's assigned venue
   getVenueUnits: async () => {
     console.log('📤 Getting collector venue units');
-    const response = await api.get('/collector');
+    const response = await api.get('/collector/units');
     return response.data;
   },
 
