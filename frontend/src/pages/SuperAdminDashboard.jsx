@@ -538,7 +538,6 @@ export default function SuperAdminDashboard() {
     description: '',
     capacityPerUnit: 1,
     basePrice: 0,
-    prefix: '',
     sortOrder: 0,
     isActive: true
   });
@@ -1898,7 +1897,8 @@ export default function SuperAdminDashboard() {
                                       zoneType: zone.zoneType || '',
                                       capacityPerUnit: zone.capacityPerUnit || 1,
                                       basePrice: zone.basePrice || 0,
-                                      prefix: zone.prefix || ''
+                                      sortOrder: zone.sortOrder || 0,
+                                      isActive: zone.isActive !== undefined ? zone.isActive : true
                                     });
                                     setShowEditZoneModal(true);
                                   }}

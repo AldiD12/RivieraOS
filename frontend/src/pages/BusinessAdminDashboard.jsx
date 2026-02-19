@@ -106,8 +106,7 @@ export default function BusinessAdminDashboard() {
     name: '',
     zoneType: '',
     capacityPerUnit: 1,
-    basePrice: 0,
-    prefix: ''
+    basePrice: 0
   });
 
   // Authentication check
@@ -768,8 +767,7 @@ export default function BusinessAdminDashboard() {
         name: '',
         zoneType: '',
         capacityPerUnit: 1,
-        basePrice: 0,
-        prefix: ''
+        basePrice: 0
       });
       setShowCreateZoneModal(false);
       
