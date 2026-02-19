@@ -84,12 +84,16 @@ export default function SuperAdminLogin() {
       
       console.log('✅ SuperAdmin access granted');
       
-      // Store authentication data
-      localStorage.setItem('token', data.token || data.Token);
+      // Store authentication data (use azure_jwt_token for consistency with dashboard)
+      const token = data.token || data.Token;
+      localStorage.setItem('azure_jwt_token', token);
+      localStorage.setItem('token', token); // Also store as 'token' for backward compatibility
       localStorage.setItem('role', 'SuperAdmin');
       localStorage.setItem('userId', userId.toString());
       localStorage.setItem('userName', fullName);
       localStorage.setItem('userEmail', credentials.email);
+      
+      console.log('✅ Token stored successfully');
       
       // Navigate to SuperAdmin dashboard
       navigate('/superadmin');
@@ -98,6 +102,7 @@ export default function SuperAdminLogin() {
       console.error('❌ SuperAdmin login error:', err);
       
       // Clear any stored tokens on error
+      localStorage.removeItem('azure_jwt_token');
       localStorage.removeItem('token');
       localStorage.removeItem('role');
       localStorage.removeItem('userId');
