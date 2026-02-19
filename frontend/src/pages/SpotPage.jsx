@@ -195,6 +195,7 @@ export default function SpotPage() {
       const orderData = {
         venueId: parseInt(venueId),
         ...(zoneId && { zoneId: parseInt(zoneId) }),
+        ...(unitId && { zoneUnitId: parseInt(unitId) }), // Send unit ID for collector tracking
         customerName: sanitizedName || 'Guest',
         notes: sanitizedNotes || '',
         items: cart.map(item => ({

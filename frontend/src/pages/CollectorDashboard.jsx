@@ -68,9 +68,13 @@ export default function CollectorDashboard() {
             setIsConnected(true);
             console.log('🔴 Collector Dashboard - SignalR Connected');
 
-            // Listen for booking events (when backend adds them)
+            // Listen for booking events
             connection.on('BookingCreated', (booking) => {
               console.log('🆕 New booking received:', booking);
+              // Show notification with unit code
+              if (booking.unitCode) {
+                console.log(`📍 Unit ${booking.unitCode} - New booking for ${booking.guestName}`);
+              }
               if (booking.venueId === selectedVenue.id) {
                 fetchUnits();
                 fetchBookings();
@@ -79,6 +83,10 @@ export default function CollectorDashboard() {
 
             connection.on('BookingStatusChanged', (data) => {
               console.log('📝 Booking status changed:', data);
+              // Show notification with unit code and status
+              if (data.unitCode && data.unitStatus) {
+                console.log(`📍 Unit ${data.unitCode} - Status: ${data.unitStatus} (${data.newStatus})`);
+              }
               fetchUnits();
               fetchBookings();
             });
