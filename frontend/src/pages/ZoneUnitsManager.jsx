@@ -71,8 +71,11 @@ export default function ZoneUnitsManager() {
     try {
       setLoading(true);
       
+      const API_BASE = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io';
+      const API_URL = `${API_BASE}/api`;
+      
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api'}/business/venues/${zone.venueId}/Units/bulk`,
+        `${API_URL}/business/venues/${zone.venueId}/Units/bulk`,
         {
           method: 'POST',
           headers: {
