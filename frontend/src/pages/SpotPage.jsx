@@ -90,14 +90,33 @@ export default function SpotPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
+      setError(''); // Clear previous errors
+      
+      console.log('🔍 Fetching data for venue:', venueId);
       
       // Fetch menu (public endpoint)
-      const menuResponse = await fetch(`${API_URL}/public/Orders/menu?venueId=${venueId}`);
-      if (!menuResponse.ok) throw new Error('Failed to load menu');
+      const menuUrl = `${API_URL}/public/Orders/menu?venueId=${venueId}`;
+      console.log('📡 Fetching menu from:', menuUrl);
+      
+      const menuResponse = await fetch(menuUrl);
+      console.log('📊 Menu response status:', menuResponse.status);
+      
+      if (!menuResponse.ok) {
+        const errorText = await menuResponse.text();
+        console.error('❌ Menu fetch failed:', errorText);
+        throw new Error(`Failed to load menu: ${menuResponse.status} ${errorText}`);
+      }
+      
       const menuData = await menuResponse.json();
       
       // DEBUG: Log menu data to check if imageUrl is present
       console.log('📋 Menu data received:', menuData);
+      console.log('📊 Menu categories count:', menuData.length);
+      
+      if (menuData.length === 0) {
+        console.warn('⚠️ No menu categories found for venue:', venueId);
+      }
+      
       if (menuData.length > 0 && menuData[0].products?.length > 0) {
         console.log('🖼️ First product imageUrl:', menuData[0].products[0].imageUrl);
       }
@@ -151,8 +170,14 @@ export default function SpotPage() {
 
       setLoading(false);
     } catch (err) {
-      console.error('Error fetching data:', err);
-      setError('Failed to load venue information');
+      console.error('❌ Error fetching data:', err);
+      console.error('Error details:', {
+        message: err.message,
+        venueId,
+        zoneId,
+        unitId
+      });
+      setError(err.message || 'Failed to load venue information');
       setLoading(false);
     }
   };
