@@ -130,7 +130,7 @@ export default function SpotPage() {
       
       try {
         // Fetch full venue details from public endpoint (includes allowsDigitalOrdering)
-        const venueResponse = await fetch(`${API_URL}/public/Venues/${venueId}`);
+        const venueResponse = await fetch(`${API_URL}/api/public/Venues/${venueId}`);
         if (venueResponse.ok) {
           venueData = await venueResponse.json();
           console.log('✅ Venue details loaded:', {
