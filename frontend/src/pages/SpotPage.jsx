@@ -44,6 +44,7 @@ export default function SpotPage() {
   const [error, setError] = useState('');
   const [orderSuccess, setOrderSuccess] = useState(null);
   const [showReserveModal, setShowReserveModal] = useState(false);
+  const [showCartModal, setShowCartModal] = useState(false);
   const [reservationSuccess, setReservationSuccess] = useState(null);
 
   // Booking form state
@@ -669,16 +670,6 @@ export default function SpotPage() {
           <h1 className="font-['Cormorant_Garamond'] text-6xl md:text-7xl font-light tracking-tighter leading-none text-[#1C1917]">
             {venue?.name || 'Riviera'}
           </h1>
-          
-          {/* Reserve Table Button (Beach/Pool only) */}
-          {canReserve && (
-            <button
-              onClick={() => setShowReserveModal(true)}
-              className="mt-6 px-8 py-4 border-2 border-stone-900 text-stone-900 rounded-full text-sm tracking-widest uppercase hover:bg-stone-900 hover:text-stone-50 transition-all duration-300"
-            >
-              Reserve Table
-            </button>
-          )}
         </div>
       </div>
 
@@ -697,109 +688,43 @@ export default function SpotPage() {
         />
       </div>
 
-      {/* Floating Action Button - Leave Review (Luxury Style) */}
+      {/* Floating Cart Button (only when canOrder and cart has items) */}
+      {canOrder && cart.length > 0 && (
+        <button
+          onClick={() => setShowCartModal(true)}
+          className="fixed bottom-8 right-8 bg-stone-900 text-stone-50 p-5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:bg-stone-800 transition-all duration-300 z-40 group"
+        >
+          <div className="relative">
+            <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" />
+            <span className="absolute -top-2 -right-2 bg-[#92400E] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
+              {cart.reduce((sum, item) => sum + item.quantity, 0)}
+            </span>
+          </div>
+        </button>
+      )}
+
+      {/* Floating Review Button */}
       <button
         onClick={() => navigate(`/review?v=${venueId}`)}
-        className="fixed bottom-8 right-8 bg-stone-900 text-stone-50 px-6 py-4 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:bg-stone-800 transition-all duration-300 flex items-center gap-3 group z-40"
+        className={`fixed ${canOrder && cart.length > 0 ? 'bottom-24' : 'bottom-8'} right-8 bg-white text-stone-900 p-5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.15)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)] hover:bg-stone-50 transition-all duration-300 z-40 group border border-stone-200/40`}
       >
-        <Star className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" />
-        <span className="text-sm tracking-widest uppercase font-medium">Leave Review</span>
+        <Star className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" />
       </button>
-    </div>
-  );
-}
 
-// Menu Display Component
-function MenuDisplay({ menu, cart, addToCart, updateQuantity, getTotalPrice, handlePlaceOrder, bookingForm, setBookingForm, canOrder }) {
-  const [selectedCategory, setSelectedCategory] = useState(null);
-
-  useEffect(() => {
-    if (menu.length > 0 && !selectedCategory) {
-      setSelectedCategory(menu[0].id);
-    }
-  }, [menu]);
-
-  const currentCategory = menu.find(cat => cat.id === selectedCategory);
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-      {/* Menu */}
-      <div className={canOrder ? "lg:col-span-2" : "lg:col-span-3"}>
-        {/* Category Tabs */}
-        <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
-          {menu.map(category => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`px-6 py-3 rounded-full text-sm tracking-wider uppercase whitespace-nowrap transition-all duration-300 ${
-                selectedCategory === category.id
-                  ? 'bg-stone-900 text-stone-50'
-                  : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-stone-50'
-              }`}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
-
-        {/* Products Grid */}
-        <div className={`grid gap-8 ${canOrder ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-          {currentCategory?.products?.map(product => (
-            <div
-              key={product.id}
-              className="bg-white/60 backdrop-blur-xl rounded-[2rem] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-stone-200/40 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 ease-out group"
-            >
-              {product.imageUrl && (
-                <div className="aspect-square rounded-2xl overflow-hidden mb-6">
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      console.error('❌ Failed to load image:', product.imageUrl);
-                      e.target.style.display = 'none';
-                    }}
-                  />
-                </div>
-              )}
-              {!product.imageUrl && (
-                <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-stone-100 flex items-center justify-center border border-stone-200/40">
-                  <p className="text-stone-400 text-sm">No image</p>
-                </div>
-              )}
-              <h3 className="font-['Cormorant_Garamond'] text-2xl font-light text-[#1C1917] mb-2">
-                {product.name}
-              </h3>
-              {product.description && (
-                <p className="text-[#78716C] text-sm leading-relaxed mb-4">
-                  {product.description}
-                </p>
-              )}
-              <div className="flex items-center justify-between">
-                <span className="font-['Cormorant_Garamond'] text-3xl text-[#92400E]">
-                  €{product.price.toFixed(2)}
-                </span>
-                {canOrder && (
-                  <button
-                    onClick={() => addToCart(product)}
-                    className="px-6 py-3 border border-stone-300 text-stone-700 rounded-full text-sm tracking-wider uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
-                  >
-                    Add
-                  </button>
-                )}
+      {/* Cart Modal */}
+      {showCartModal && canOrder && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-6" onClick={() => setShowCartModal(false)}>
+          <div className="bg-gradient-to-br from-white to-stone-50/50 rounded-t-[2rem] md:rounded-[2rem] p-8 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-stone-200/40 w-full md:max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <ShoppingCart className="w-5 h-5 text-[#92400E]" />
+                <h3 className="text-sm tracking-widest uppercase text-[#78716C]">Your Order</h3>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Cart Sidebar (Beach/Pool only) */}
-      {canOrder && (
-        <div className="lg:col-span-1">
-          <div className="bg-gradient-to-br from-white to-stone-50/50 rounded-[2rem] p-8 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] border border-stone-200/40 sticky top-32">
-            <div className="flex items-center gap-3 mb-6">
-              <ShoppingCart className="w-5 h-5 text-[#92400E]" />
-              <h3 className="text-sm tracking-widest uppercase text-[#78716C]">Your Order</h3>
+              <button onClick={() => setShowCartModal(false)} className="text-stone-500 hover:text-stone-900 transition-colors">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
 
             {cart.length === 0 ? (
@@ -868,6 +793,93 @@ function MenuDisplay({ menu, cart, addToCart, updateQuantity, getTotalPrice, han
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Menu Display Component
+function MenuDisplay({ menu, cart, addToCart, updateQuantity, getTotalPrice, handlePlaceOrder, bookingForm, setBookingForm, canOrder }) {
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  useEffect(() => {
+    if (menu.length > 0 && !selectedCategory) {
+      setSelectedCategory(menu[0].id);
+    }
+  }, [menu]);
+
+  const currentCategory = menu.find(cat => cat.id === selectedCategory);
+
+  return (
+    <div className="grid grid-cols-1 gap-12">
+      {/* Menu - Full Width */}
+      <div>
+        {/* Category Tabs */}
+        <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
+          {menu.map(category => (
+            <button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`px-6 py-3 rounded-full text-sm tracking-wider uppercase whitespace-nowrap transition-all duration-300 ${
+                selectedCategory === category.id
+                  ? 'bg-stone-900 text-stone-50'
+                  : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-stone-50'
+              }`}
+            >
+              {category.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Products Grid */}
+        <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {currentCategory?.products?.map(product => (
+            <div
+              key={product.id}
+              className="bg-white/60 backdrop-blur-xl rounded-[2rem] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-stone-200/40 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 ease-out group"
+            >
+              {product.imageUrl && (
+                <div className="aspect-square rounded-2xl overflow-hidden mb-6">
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      console.error('❌ Failed to load image:', product.imageUrl);
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                </div>
+              )}
+              {!product.imageUrl && (
+                <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-stone-100 flex items-center justify-center border border-stone-200/40">
+                  <p className="text-stone-400 text-sm">No image</p>
+                </div>
+              )}
+              <h3 className="font-['Cormorant_Garamond'] text-2xl font-light text-[#1C1917] mb-2">
+                {product.name}
+              </h3>
+              {product.description && (
+                <p className="text-[#78716C] text-sm leading-relaxed mb-4">
+                  {product.description}
+                </p>
+              )}
+              <div className="flex items-center justify-between">
+                <span className="font-['Cormorant_Garamond'] text-3xl text-[#92400E]">
+                  €{product.price.toFixed(2)}
+                </span>
+                {canOrder && (
+                  <button
+                    onClick={() => addToCart(product)}
+                    className="px-6 py-3 border border-stone-300 text-stone-700 rounded-full text-sm tracking-wider uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
+                  >
+                    Add
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
