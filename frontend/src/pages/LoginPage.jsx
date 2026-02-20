@@ -324,18 +324,28 @@ export default function LoginPage() {
       console.log('✅ Manager login successful:', {
         userId,
         fullName,
-        role,
+        role: normalizedRole,
         businessId
       });
       
-      // Route based on role
+      // Redirect SuperAdmin to correct login page
+      if (normalizedRole === 'SuperAdmin') {
+        console.log('⚠️ SuperAdmin detected - redirecting to /superadmin/login');
+        setError('SuperAdmin users must login at /superadmin/login');
+        localStorage.clear(); // Clear any stored data
+        setTimeout(() => {
+          navigate('/superadmin/login');
+        }, 2000);
+        return;
+      }
+      
+      // Route based on role (Business roles only)
       const roleRoutes = {
         'Owner': '/admin',
-        'Manager': '/admin',
-        'SuperAdmin': '/superadmin'
+        'Manager': '/admin'
       };
       
-      const targetRoute = roleRoutes[role] || '/admin';
+      const targetRoute = roleRoutes[normalizedRole] || '/admin';
       console.log('🔄 Redirecting to:', targetRoute);
       
       // Clear form and navigate
