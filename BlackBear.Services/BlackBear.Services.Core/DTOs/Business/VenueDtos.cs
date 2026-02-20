@@ -76,6 +76,8 @@ namespace BlackBear.Services.Core.DTOs.Business
         public double? Longitude { get; set; }
 
         public bool OrderingEnabled { get; set; } = false;
+
+        public bool? IsDigitalOrderingEnabled { get; set; }
     }
 
     public class BizUpdateVenueRequest
@@ -99,6 +101,8 @@ namespace BlackBear.Services.Core.DTOs.Business
         public double? Longitude { get; set; }
 
         public bool OrderingEnabled { get; set; }
+
+        public bool? IsDigitalOrderingEnabled { get; set; }
     }
 
     public class BizUpdateVenueConfigRequest

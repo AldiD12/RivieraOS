@@ -130,6 +130,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 Latitude = request.Latitude,
                 Longitude = request.Longitude,
                 OrderingEnabled = request.OrderingEnabled,
+                IsDigitalOrderingEnabled = request.IsDigitalOrderingEnabled,
                 BusinessId = businessId,
                 CreatedAt = DateTime.UtcNow
             };
@@ -201,6 +202,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
             venue.Latitude = request.Latitude;
             venue.Longitude = request.Longitude;
             venue.OrderingEnabled = request.OrderingEnabled;
+            venue.IsDigitalOrderingEnabled = request.IsDigitalOrderingEnabled;
 
             await _context.SaveChangesAsync();
 

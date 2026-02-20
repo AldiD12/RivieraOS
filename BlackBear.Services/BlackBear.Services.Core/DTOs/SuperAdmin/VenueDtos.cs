@@ -84,6 +84,8 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public double? Longitude { get; set; }
 
         public bool OrderingEnabled { get; set; } = false;
+
+        public bool? IsDigitalOrderingEnabled { get; set; }
     }
 
     // Update venue request
@@ -108,6 +110,8 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public double? Longitude { get; set; }
 
         public bool OrderingEnabled { get; set; }
+
+        public bool? IsDigitalOrderingEnabled { get; set; }
     }
 
     // Update config request
