@@ -48,7 +48,7 @@ export default function ReviewPage() {
       setLoading(true);
       
       // Fetch menu to get business name (not venue name)
-      const menuResponse = await fetch(`${API_URL}/public/Orders/menu?venueId=${actualVenueId}`);
+      const menuResponse = await fetch(`${API_URL}/api/public/Orders/menu?venueId=${actualVenueId}`);
       
       if (!menuResponse.ok) {
         throw new Error('Failed to load venue');
@@ -66,7 +66,7 @@ export default function ReviewPage() {
         let longitude = null;
         
         try {
-          const zonesResponse = await fetch(`${API_URL}/public/Reservations/zones?venueId=${actualVenueId}`);
+          const zonesResponse = await fetch(`${API_URL}/api/public/Reservations/zones?venueId=${actualVenueId}`);
           if (zonesResponse.ok) {
             const zonesData = await zonesResponse.json();
             if (zonesData.length > 0 && zonesData[0].venue) {
