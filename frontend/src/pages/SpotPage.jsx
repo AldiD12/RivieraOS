@@ -95,7 +95,9 @@ export default function SpotPage() {
       console.log('🔍 Fetching data for venue:', venueId);
       
       // Fetch menu (public endpoint)
-      const menuUrl = `${API_URL}/public/Orders/menu?venueId=${venueId}`;
+      // Ensure API_URL has /api prefix
+      const baseUrl = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
+      const menuUrl = `${baseUrl}/public/Orders/menu?venueId=${venueId}`;
       console.log('📡 Fetching menu from:', menuUrl);
       
       const menuResponse = await fetch(menuUrl);
