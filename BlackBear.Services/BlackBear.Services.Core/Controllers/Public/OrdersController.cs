@@ -56,6 +56,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                 {
                     Id = c.Id,
                     Name = c.Name,
+                    BusinessName = c.Business != null ? (c.Business.BrandName ?? c.Business.RegisteredName) : null,
                     Products = c.Products
                         .Where(p => !p.IsDeleted && p.IsAvailable && !excludedProductIds.Contains(p.Id))
                         .OrderBy(p => p.Name)

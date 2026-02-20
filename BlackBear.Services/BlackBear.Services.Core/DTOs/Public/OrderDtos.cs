@@ -22,6 +22,7 @@ namespace BlackBear.Services.Core.DTOs.Public
         public string? Description { get; set; }
         public string? IconName { get; set; }
         public List<PublicMenuItemDto> Products { get; set; } = new();
+        public string? BusinessName { get; set; }
     }
 
     // Order creation request from guest

@@ -236,6 +236,13 @@ namespace BlackBear.Services.Core.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
+            // Exclusion indexes — enable fast lookups by VenueId
+            modelBuilder.Entity<CategoryVenueExclusion>()
+                .HasIndex(e => e.VenueId);
+
+            modelBuilder.Entity<ProductVenueExclusion>()
+                .HasIndex(e => e.VenueId);
+
             // === EVENTS MODULE ===
 
             // ScheduledEvent configuration
