@@ -112,7 +112,7 @@ export default function ReviewPage() {
         guestName: 'Anonymous' // Optional
       };
 
-      const response = await fetch(`${API_URL}/public/venues/${actualVenueId}/reviews`, {
+      const response = await fetch(`${API_URL}/api/public/venues/${actualVenueId}/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(reviewData)
