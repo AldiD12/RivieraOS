@@ -1,74 +1,70 @@
 import axios from 'axios';
 
-// Base URL for the API
-const API_BASE_URL = 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+const API_URL = process.env.REACT_APP_API_URL || 
+  'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io';
 
-// Create axios instance with default config
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+const getAuthHeader = () => ({
+  Authorization: `Bearer ${localStorage.getItem('token')}`
 });
 
-// Add request interceptor to include auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token') || localStorage.getItem('azure_jwt_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-      console.log('🔐 Collector API call:', config.method.toUpperCase(), config.url);
-    } else {
-      console.warn('⚠️ No authentication token found for collector API call');
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Add response interceptor for error handling
-api.interceptors.response.use(
-  (response) => {
-    console.log('✅ Collector API success:', response.config.method.toUpperCase(), response.config.url);
-    return response;
-  },
-  (error) => {
-    console.error('❌ Collector API error:', error.response?.status, error.response?.data);
-    
-    if (error.response?.status === 401) {
-      console.log('🔒 Unauthorized - redirecting to login');
-      localStorage.clear();
-      window.location.href = '/login';
-    }
-    
-    return Promise.reject({
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message
-    });
-  }
-);
-
-// =============================================================================
-// COLLECTOR API
-// =============================================================================
-
-export const collectorApi = {
-  // Get venue info with all zones and units for collector's assigned venue
+const collectorApi = {
+  /**
+   * Get all units for collector's assigned venue
+   * Includes zones, units, current bookings, and available transitions
+   * 
+   * @returns {Promise<Object>} Venue data with zones and units
+   * @throws {Error} 403 if no venue assigned, 404 if venue not found
+   */
   getVenueUnits: async () => {
-    console.log('📤 Getting collector venue units');
-    const response = await api.get('/collector/units');
-    return response.data;
+    try {
+      const response = await axios.get(`${API_URL}/api/collector/units`, {
+        headers: getAuthHeader()
+      });
+      console.log('✅ Collector units fetched successfully');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to fetch collector units:', error);
+      // Re-throw with better error handling
+      if (error.response?.status === 403) {
+        throw { data: { message: 'No venue assigned to your account. Please contact your manager.' } };
+      }
+      throw { data: { message: error.response?.data?.error || 'Failed to load venue data' } };
+    }
   },
 
-  // Update unit status (check-in, check-out, etc.)
-  updateUnitStatus: async (unitId, statusData) => {
-    console.log('📤 Updating unit status:', unitId, statusData);
-    const response = await api.put(`/collector/units/${unitId}/status`, statusData);
-    return response.data;
+  /**
+   * Update unit status and optionally add notes
+   * Backend automatically manages bookings:
+   * - Setting to "Available" completes active bookings
+   * - Setting to "Occupied" checks in reserved bookings
+   * 
+   * @param {number} unitId - Unit ID to update
+   * @param {Object} data - Update data { status: string, notes?: string }
+   * @returns {Promise<Object>} Updated unit data
+   * @throws {Error} 403 if no venue assigned, 404 if unit not found
+   */
+  updateUnitStatus: async (unitId, data) => {
+    try {
+      const payload = {
+        status: data.status
+      };
+      
+      if (data.notes) {
+        payload.notes = data.notes;
+      }
+
+      const response = await axios.put(
+        `${API_URL}/api/collector/units/${unitId}/status`,
+        payload,
+        { headers: getAuthHeader() }
+      );
+
+      console.log(`✅ Unit ${unitId} status updated to ${data.status}`);
+      return response.data;
+    } catch (error) {
+      console.error(`❌ Failed to update unit ${unitId} status:`, error);
+      throw { data: { message: error.response?.data?.error || 'Failed to update unit status' } };
+    }
   }
 };
 
