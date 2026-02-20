@@ -8201,6 +8201,10 @@
           },
           "orderingEnabled": {
             "type": "boolean"
+          },
+          "isDigitalOrderingEnabled": {
+            "type": "boolean",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -9251,6 +9255,10 @@
           },
           "orderingEnabled": {
             "type": "boolean"
+          },
+          "isDigitalOrderingEnabled": {
+            "type": "boolean",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -10743,6 +10751,10 @@
           },
           "orderingEnabled": {
             "type": "boolean"
+          },
+          "isDigitalOrderingEnabled": {
+            "type": "boolean",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -11760,6 +11772,10 @@
             "items": {
               "$ref": "#/components/schemas/PublicMenuItemDto"
             },
+            "nullable": true
+          },
+          "businessName": {
+            "type": "string",
             "nullable": true
           }
         },
@@ -12904,6 +12920,10 @@
           },
           "orderingEnabled": {
             "type": "boolean"
+          },
+          "isDigitalOrderingEnabled": {
+            "type": "boolean",
+            "nullable": true
           }
         },
         "additionalProperties": false
