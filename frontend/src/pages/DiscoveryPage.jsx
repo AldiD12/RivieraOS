@@ -1,64 +1,60 @@
-import { useState, useEffect, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import Map, { Marker, NavigationControl } from 'react-map-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { venueApi } from '../services/venueApi';
 import VenueBottomSheet from '../components/VenueBottomSheet';
 
-// Fix Leaflet default marker icon issue
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
+// Mapbox token from environment
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-// Albanian Riviera coordinates
-const RIVIERA_CENTER = [40.1, 19.6];
-const DEFAULT_ZOOM = 10;
-
-// Custom marker icon
-const createCustomIcon = (availableCount, isSelected) => {
-  const color = isSelected ? '#d97706' : '#1c1917';
-  const badge = availableCount > 0 ? `<div style="position:absolute;top:-8px;right:-8px;background:#10b981;color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.2);">${availableCount}</div>` : '';
-  
-  return L.divIcon({
-    className: 'custom-marker',
-    html: `
-      <div style="position:relative;cursor:pointer;transition:transform 0.3s;">
-        <div style="width:48px;height:48px;background:${color};border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);${isSelected ? 'transform:scale(1.2);' : ''}">
-          <span style="font-size:24px;">🏖️</span>
-        </div>
-        ${badge}
-      </div>
-    `,
-    iconSize: [48, 48],
-    iconAnchor: [24, 48],
-  });
+// Albanian Riviera coordinates (Dhërmi center)
+const RIVIERA_CENTER = {
+  longitude: 19.6644,
+  latitude: 40.1500,
+  zoom: 11
 };
 
-// Component to handle map animations
-function MapController({ center, zoom }) {
-  const map = useMap();
+// Custom marker component with glowing pulse effect
+function VenueMarker({ venue, isSelected, onClick }) {
+  const isFull = venue.availableUnitsCount === 0;
   
-  useEffect(() => {
-    if (center && zoom) {
-      map.flyTo(center, zoom, {
-        duration: 1
-      });
-    }
-  }, [center, zoom, map]);
-  
-  return null;
+  return (
+    <div 
+      className="relative flex items-center justify-center cursor-pointer group"
+      onClick={onClick}
+    >
+      {/* Pulsing ring - only when available */}
+      {!isFull && (
+        <div className="absolute w-8 h-8 rounded-full bg-emerald-500/30 animate-ping" />
+      )}
+      
+      {/* Main marker dot */}
+      <div 
+        className={`
+          relative w-4 h-4 rounded-full border-2 border-white shadow-lg
+          transition-all duration-300 group-hover:scale-125
+          ${isFull ? 'bg-stone-400' : 'bg-emerald-500'}
+          ${isSelected ? 'scale-150 ring-4 ring-white/50' : ''}
+        `}
+      />
+      
+      {/* Availability badge */}
+      {!isFull && venue.availableUnitsCount && (
+        <div className="absolute -top-2 -right-2 bg-white text-emerald-600 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md border border-emerald-200">
+          {venue.availableUnitsCount}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function DiscoveryPage() {
+  const mapRef = useRef();
   const [venues, setVenues] = useState([]);
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [mapCenter, setMapCenter] = useState(RIVIERA_CENTER);
-  const [mapZoom, setMapZoom] = useState(DEFAULT_ZOOM);
+  const [viewState, setViewState] = useState(RIVIERA_CENTER);
 
   useEffect(() => {
     loadVenues();
@@ -97,15 +93,21 @@ export default function DiscoveryPage() {
     try {
       console.log('📍 Venue clicked:', venue.name);
       
+      // Fly to venue with smooth animation (drone landing effect)
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [venue.longitude, venue.latitude],
+          zoom: 15,
+          duration: 1500, // 1.5 second smooth flight
+          essential: true
+        });
+      }
+      
       // Load availability data
       const availability = await venueApi.getVenueAvailability(venue.id);
       
       console.log('✅ Availability loaded:', availability);
       setSelectedVenue({ ...venue, availability });
-      
-      // Animate map to venue
-      setMapCenter([venue.latitude, venue.longitude]);
-      setMapZoom(14);
       
     } catch (err) {
       console.error('❌ Failed to load availability:', err);
@@ -117,9 +119,15 @@ export default function DiscoveryPage() {
   const handleCloseBottomSheet = useCallback(() => {
     setSelectedVenue(null);
     
-    // Zoom back out to show all venues
-    setMapCenter(RIVIERA_CENTER);
-    setMapZoom(DEFAULT_ZOOM);
+    // Fly back to overview
+    if (mapRef.current) {
+      mapRef.current.flyTo({
+        center: [RIVIERA_CENTER.longitude, RIVIERA_CENTER.latitude],
+        zoom: RIVIERA_CENTER.zoom,
+        duration: 1500,
+        essential: true
+      });
+    }
   }, []);
 
   // Loading state
@@ -127,7 +135,7 @@ export default function DiscoveryPage() {
     return (
       <div className="h-screen bg-stone-50 flex flex-col items-center justify-center p-8">
         <div className="text-center max-w-md">
-          <div className="w-16 h-16 mx-auto mb-6 border-2 border-stone-300 border-t-amber-600 rounded-full animate-spin"></div>
+          <div className="w-16 h-16 mx-auto mb-6 border-2 border-stone-300 border-t-stone-900 rounded-full animate-spin"></div>
           <h2 
             className="text-4xl font-light text-stone-900 mb-4"
             style={{ fontFamily: 'Cormorant Garamond, serif' }}
@@ -194,94 +202,110 @@ export default function DiscoveryPage() {
 
   return (
     <div className="h-screen relative bg-stone-50">
-      {/* Header */}
-      <header className="absolute top-0 left-0 right-0 z-[1000] bg-gradient-to-b from-stone-900/80 to-transparent p-6 pointer-events-none">
-        <div className="max-w-7xl mx-auto">
-          <h1 
-            className="text-5xl font-light text-white mb-2 tracking-tight"
-            style={{ fontFamily: 'Cormorant Garamond, serif' }}
-          >
-            Discover
-          </h1>
-          <p className="text-sm text-stone-300 uppercase tracking-widest">
-            Albanian Riviera
-          </p>
+      {/* Mapbox - The Radar */}
+      <div className="absolute inset-0 z-0">
+        <Map
+          ref={mapRef}
+          {...viewState}
+          onMove={evt => setViewState(evt.viewState)}
+          mapStyle="mapbox://styles/mapbox/dark-v11" // Dark monochrome style
+          mapboxAccessToken={MAPBOX_TOKEN}
+          style={{ width: '100%', height: '100%' }}
+          attributionControl={false} // Remove Mapbox logo per orders
+          cooperativeGestures={selectedVenue !== null} // Prevent scroll hijacking when bottom sheet open
+        >
+          {/* Navigation controls (zoom buttons) */}
+          <NavigationControl position="bottom-right" showCompass={false} />
+          
+          {/* Venue markers - only render if coordinates exist */}
+          {venues.length > 0 && venues.map(venue => (
+            venue.latitude && venue.longitude && (
+              <Marker
+                key={venue.id}
+                longitude={venue.longitude}
+                latitude={venue.latitude}
+                anchor="center"
+              >
+                <VenueMarker
+                  venue={venue}
+                  isSelected={selectedVenue?.id === venue.id}
+                  onClick={() => handleVenueClick(venue)}
+                />
+              </Marker>
+            )
+          ))}
+        </Map>
+      </div>
+
+      {/* Header - floating above map with backdrop blur */}
+      <header className="absolute top-0 left-0 right-0 z-[1000] pointer-events-none">
+        <div className="bg-gradient-to-b from-black/60 via-black/30 to-transparent p-6 backdrop-blur-sm">
+          <div className="max-w-7xl mx-auto">
+            <h1 
+              className="text-5xl font-light text-white mb-2 tracking-tight"
+              style={{ fontFamily: 'Cormorant Garamond, serif' }}
+            >
+              Discover
+            </h1>
+            <p className="text-sm text-stone-300 uppercase tracking-widest">
+              Albanian Riviera
+            </p>
+          </div>
         </div>
       </header>
 
-      {/* Map */}
-      <MapContainer
-        center={RIVIERA_CENTER}
-        zoom={DEFAULT_ZOOM}
-        style={{ height: '100%', width: '100%' }}
-        zoomControl={false}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        
-        <MapController center={mapCenter} zoom={mapZoom} />
-        
-        {venues.length > 0 && venues.map(venue => (
-          venue.latitude && venue.longitude && (
-            <Marker
-              key={venue.id}
-              position={[venue.latitude, venue.longitude]}
-              icon={createCustomIcon(venue.availableUnitsCount || 0, selectedVenue?.id === venue.id)}
-              eventHandlers={{
-                click: () => handleVenueClick(venue)
-              }}
-            >
-              <Popup>
-                <div className="text-center p-2">
-                  <p className="font-medium text-stone-900 mb-1">{venue.name}</p>
-                  <p className="text-sm text-stone-600">
-                    {venue.availableUnitsCount > 0 
-                      ? `${venue.availableUnitsCount} available` 
-                      : 'Fully booked'
-                    }
-                  </p>
-                </div>
-              </Popup>
-            </Marker>
-          )
-        ))}
-      </MapContainer>
-
-      {/* Venue Count Badge */}
+      {/* Venue Count Badge - floating */}
       <div className="absolute top-24 left-6 z-[1000] bg-white/90 backdrop-blur-xl rounded-full px-6 py-3 shadow-lg pointer-events-none">
         <p className="text-sm text-stone-600">
-          <span className="font-medium text-stone-900">{venues.length}</span> venues
+          <span className="font-medium text-stone-900">{venues.filter(v => v.latitude && v.longitude).length}</span> venues
         </p>
       </div>
 
-      {/* Bottom Sheet */}
+      {/* Bottom Sheet - slides up over map */}
       {selectedVenue && (
-        <VenueBottomSheet
-          venue={selectedVenue}
-          onClose={handleCloseBottomSheet}
-        />
+        <div className="absolute bottom-0 left-0 right-0 z-[1001]">
+          <VenueBottomSheet
+            venue={selectedVenue}
+            onClose={handleCloseBottomSheet}
+          />
+        </div>
       )}
 
       {/* Custom Styles */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          .leaflet-container {
+          /* Mapbox container customization */
+          .mapboxgl-map {
             font-family: 'Inter', sans-serif;
           }
           
-          .leaflet-popup-content-wrapper {
-            border-radius: 1rem;
-            box-shadow: 0 20px 60px -15px rgba(0,0,0,0.15);
+          /* Hide Mapbox logo and attribution (as ordered) */
+          .mapboxgl-ctrl-logo,
+          .mapboxgl-ctrl-attrib {
+            display: none !important;
           }
           
-          .leaflet-popup-tip {
-            display: none;
+          /* Style navigation controls */
+          .mapboxgl-ctrl-group {
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(12px);
+            border-radius: 12px !important;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+            border: 1px solid rgba(0, 0, 0, 0.05) !important;
           }
           
-          .custom-marker:hover {
-            transform: scale(1.1);
+          .mapboxgl-ctrl-group button {
+            width: 36px !important;
+            height: 36px !important;
+          }
+          
+          .mapboxgl-ctrl-group button:hover {
+            background-color: rgba(0, 0, 0, 0.05) !important;
+          }
+          
+          /* Smooth marker animations */
+          .mapboxgl-marker {
+            transition: transform 0.3s ease-out;
           }
         `
       }} />
