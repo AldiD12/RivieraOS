@@ -744,6 +744,13 @@ export default function BusinessAdminDashboard() {
     }
   };
 
+  const handleZoneFormChange = (field, value) => {
+    setZoneForm(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const handleCreateZone = async (e) => {
     e.preventDefault();
     if (!selectedVenue) return;
@@ -2277,9 +2284,9 @@ export default function BusinessAdminDashboard() {
         isOpen={showCreateZoneModal && !!selectedVenue}
         onClose={() => setShowCreateZoneModal(false)}
         zoneForm={zoneForm}
-        onFormChange={setZoneForm}
+        onFormChange={handleZoneFormChange}
         onSubmit={handleCreateZone}
-        venueName={selectedVenue?.name}
+        selectedVenue={selectedVenue}
       />
 
       {/* Edit Zone Modal */}
@@ -2287,9 +2294,9 @@ export default function BusinessAdminDashboard() {
         isOpen={!!editingZone && !!selectedVenue}
         onClose={() => setEditingZone(null)}
         zoneForm={zoneForm}
-        onFormChange={setZoneForm}
+        onFormChange={handleZoneFormChange}
         onSubmit={handleEditZone}
-        venueName={selectedVenue?.name}
+        selectedVenue={selectedVenue}
       />
     </div>
   );
