@@ -32,8 +32,8 @@ class VenueApiService {
     try {
       console.log('🌐 Fetching venues from API...');
       
-      // Use NEW public venues endpoint
-      const response = await fetch(`${API_URL}/api/public/venues`, {
+      // Use NEW public venues endpoint (capital V)
+      const response = await fetch(`${API_URL}/api/public/Venues`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -89,9 +89,9 @@ class VenueApiService {
     try {
       console.log(`🌐 Fetching availability for venue ${venueId}...`);
       
-      // Use NEW venue availability endpoint
+      // Use NEW venue availability endpoint (capital V)
       const response = await fetch(
-        `${API_URL}/api/public/venues/${venueId}/availability`,
+        `${API_URL}/api/public/Venues/${venueId}/availability`,
         {
           method: 'GET',
           headers: {

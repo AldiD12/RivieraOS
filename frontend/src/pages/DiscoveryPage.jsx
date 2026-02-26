@@ -223,27 +223,29 @@ export default function DiscoveryPage() {
         
         <MapController center={mapCenter} zoom={mapZoom} />
         
-        {venues.map(venue => (
-          <Marker
-            key={venue.id}
-            position={[venue.latitude, venue.longitude]}
-            icon={createCustomIcon(venue.availableUnitsCount || 0, selectedVenue?.id === venue.id)}
-            eventHandlers={{
-              click: () => handleVenueClick(venue)
-            }}
-          >
-            <Popup>
-              <div className="text-center p-2">
-                <p className="font-medium text-stone-900 mb-1">{venue.name}</p>
-                <p className="text-sm text-stone-600">
-                  {venue.availableUnitsCount > 0 
-                    ? `${venue.availableUnitsCount} available` 
-                    : 'Fully booked'
-                  }
-                </p>
-              </div>
-            </Popup>
-          </Marker>
+        {venues.length > 0 && venues.map(venue => (
+          venue.latitude && venue.longitude && (
+            <Marker
+              key={venue.id}
+              position={[venue.latitude, venue.longitude]}
+              icon={createCustomIcon(venue.availableUnitsCount || 0, selectedVenue?.id === venue.id)}
+              eventHandlers={{
+                click: () => handleVenueClick(venue)
+              }}
+            >
+              <Popup>
+                <div className="text-center p-2">
+                  <p className="font-medium text-stone-900 mb-1">{venue.name}</p>
+                  <p className="text-sm text-stone-600">
+                    {venue.availableUnitsCount > 0 
+                      ? `${venue.availableUnitsCount} available` 
+                      : 'Fully booked'
+                    }
+                  </p>
+                </div>
+              </Popup>
+            </Marker>
+          )
         ))}
       </MapContainer>
 
