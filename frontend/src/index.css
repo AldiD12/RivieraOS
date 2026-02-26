@@ -23,6 +23,15 @@
     scrollbar-width: none;
   }
 
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
   /* Tabular numbers for prices */
   .tabular-nums {
     font-variant-numeric: tabular-nums;

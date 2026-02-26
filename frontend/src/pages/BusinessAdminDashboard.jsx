@@ -898,142 +898,210 @@ export default function BusinessAdminDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
-          <p className="text-white">Loading Business Dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4 mx-auto"></div>
+          <p className="text-zinc-400 font-mono text-sm">LOADING SYSTEM...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header - Mobile Responsive */}
-      <div className="bg-zinc-900 border-b border-zinc-800 px-4 md:px-6 py-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="max-w-md mx-auto min-h-screen relative flex flex-col pb-20 bg-zinc-950">
+      {/* Header - Sticky */}
+      <header className="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800 px-5 py-4">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold">Business Admin</h1>
-            <p className="text-zinc-400 text-xs md:text-sm">
-              {businessProfile?.name || 'Business Management Dashboard'}
-            </p>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+              </span>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">System Live</span>
+            </div>
+            <h1 className="text-lg font-bold tracking-tight text-white font-sans">
+              Mirësevjen, {businessProfile?.name || '[Emri]'}
+            </h1>
+            <p className="text-xs text-zinc-400 mt-0.5">Riviera OS Admin</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="w-full sm:w-auto px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors text-sm md:text-base"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleLogout}
+              className="p-2 rounded-full hover:bg-zinc-800 transition-colors text-zinc-400"
+            >
+              <span className="material-symbols-outlined text-xl">logout</span>
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
+      {/* Navigation Tabs - Sticky */}
+      <nav className="sticky top-[85px] z-40 bg-zinc-950 border-b border-zinc-800 overflow-x-auto no-scrollbar">
+        <div className="flex px-4 min-w-full">
+          {[
+            { id: 'overview', label: 'Overview' },
+            { id: 'staff', label: 'Staff' },
+            { id: 'menu', label: 'Menu' },
+            { id: 'venues', label: 'Venues' },
+            { id: 'qr-generator', label: 'QR Codes' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
+                activeTab === tab.id
+                  ? 'text-blue-500 border-blue-500'
+                  : 'text-zinc-400 hover:text-zinc-200 border-transparent'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </nav>
 
-      {/* Error Display - Mobile Responsive */}
+      {/* Error Display */}
       {error && (
-        <div className="mx-4 md:mx-6 mt-4 p-3 md:p-4 bg-red-900/20 border border-red-800 rounded-lg">
-          <p className="text-red-400 text-sm md:text-base">{error}</p>
+        <div className="mx-5 mt-4 p-3 bg-red-900/20 border border-red-800 rounded-lg">
+          <p className="text-red-400 text-sm">{error}</p>
           <button
             onClick={() => setError('')}
-            className="text-red-300 hover:text-red-200 text-xs md:text-sm mt-2"
+            className="text-red-300 hover:text-red-200 text-xs mt-2"
           >
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Navigation Tabs - Mobile Responsive */}
-      <div className="border-b border-zinc-800 overflow-x-auto">
-        <div className="px-4 md:px-6">
-          <nav className="flex space-x-4 md:space-x-8 min-w-max">
-            {[
-              { id: 'overview', label: 'Overview' },
-              { id: 'staff', label: 'Staff' },
-              { id: 'menu', label: 'Menu' },
-              { id: 'venues', label: 'Venues' },
-              { id: 'qr-generator', label: 'QR Codes' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-3 md:py-4 px-2 md:px-3 border-b-2 font-medium text-xs md:text-sm transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? 'border-white text-white'
-                    : 'border-transparent text-zinc-400 hover:text-zinc-300'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </div>
-
-      {/* Tab Content - Mobile Responsive */}
-      <div className="p-4 md:p-6">
-        {/* Overview Tab - Mobile Responsive */}
+      {/* Main Content */}
+      <main className="flex-1 p-5 space-y-8">
+        {/* Overview Tab */}
         {activeTab === 'overview' && (
-          <div className="space-y-6">
-            <h2 className="text-lg md:text-xl font-semibold">Business Overview</h2>
-            
-            {dashboardData ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                <div className="bg-zinc-900 rounded-lg p-4 md:p-6">
-                  <h3 className="text-base md:text-lg font-medium mb-2">Total Revenue</h3>
-                  <p className="text-2xl md:text-3xl font-bold text-green-400">
-                    €{dashboardData.totalRevenue?.toLocaleString() || '0'}
-                  </p>
-                </div>
-                <div className="bg-zinc-900 rounded-lg p-4 md:p-6">
-                  <h3 className="text-base md:text-lg font-medium mb-2">Active Staff</h3>
-                  <p className="text-2xl md:text-3xl font-bold text-blue-400">
-                    {staffMembers.filter(s => s.isActive).length}
-                  </p>
-                </div>
-                <div className="bg-zinc-900 rounded-lg p-4 md:p-6 sm:col-span-2 lg:col-span-1">
-                  <h3 className="text-base md:text-lg font-medium mb-2">Menu Items</h3>
-                  <p className="text-2xl md:text-3xl font-bold text-purple-400">
-                    {products.length}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-zinc-900 rounded-lg p-4 md:p-6">
-                <p className="text-zinc-400 text-sm md:text-base">Dashboard data will appear here once loaded.</p>
-              </div>
-            )}
+          <section>
+            {/* Business Overview Section */}
+            <div className="flex items-baseline justify-between mb-4 pl-1">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 font-mono">
+                Business Overview
+              </h2>
+              <span className="text-[10px] text-zinc-400 font-mono">UPDATED NOW</span>
+            </div>
 
-            {/* Quick Access Section - Mobile Responsive */}
-            <div className="mt-6 md:mt-8">
-              <h3 className="text-base md:text-lg font-semibold mb-4">Quick Access</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                <button
-                  onClick={() => navigate('/bar')}
-                  className="bg-zinc-900 hover:bg-zinc-800 border-2 border-zinc-800 hover:border-zinc-700 rounded-lg p-6 text-left transition-all"
-                >
-                  <div className="text-2xl mb-2">🍹</div>
-                  <h4 className="text-lg font-semibold mb-1">Bar Display</h4>
-                  <p className="text-sm text-zinc-400">Kitchen/Bar order queue screen</p>
-                </button>
-                
-                <button
-                  onClick={() => navigate('/collector')}
-                  className="bg-zinc-900 hover:bg-zinc-800 border-2 border-zinc-800 hover:border-zinc-700 rounded-lg p-6 text-left transition-all"
-                >
-                  <div className="text-2xl mb-2">🏖️</div>
-                  <h4 className="text-lg font-semibold mb-1">Collector Dashboard</h4>
-                  <p className="text-sm text-zinc-400">Manage bookings and reservations</p>
-                </button>
-                
-                <button
-                  onClick={() => navigate('/qr-generator')}
-                  className="bg-zinc-900 hover:bg-zinc-800 border-2 border-zinc-800 hover:border-zinc-700 rounded-lg p-6 text-left transition-all"
-                >
-                  <div className="text-2xl mb-2">📱</div>
-                  <h4 className="text-lg font-semibold mb-1">QR Code Generator</h4>
-                  <p className="text-sm text-zinc-400">Generate QR codes for zones</p>
-                </button>
+            <div className="grid grid-cols-1 gap-4">
+              {/* Total Revenue Card */}
+              <div className="group relative bg-zinc-900 border border-zinc-800 rounded-lg p-6 shadow-sm transition-all duration-300">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="text-xs text-zinc-400 font-medium tracking-wide uppercase">Total Revenue</p>
+                    <p className="text-4xl font-extrabold mt-3 text-white font-mono tracking-tighter">
+                      €{dashboardData?.totalRevenue?.toLocaleString() || '0'}
+                    </p>
+                  </div>
+                  <div className="p-2 bg-blue-900/10 rounded-lg">
+                    <span className="material-symbols-outlined text-blue-500 text-2xl">payments</span>
+                  </div>
+                </div>
+                <div className="mt-4 flex items-center gap-2">
+                  <div className="h-1 flex-1 bg-zinc-800 rounded-full overflow-hidden">
+                    <div className="h-full bg-blue-500 w-[2%] rounded-full"></div>
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-400">0%</span>
+                </div>
+              </div>
+
+              {/* Stats Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 shadow-sm">
+                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Active Staff</p>
+                  <div className="flex items-end justify-between mt-3">
+                    <p className="text-2xl font-bold text-white font-mono">
+                      {staffMembers.filter(s => s.isActive).length}
+                    </p>
+                    <span className="material-symbols-outlined text-zinc-700 text-xl">groups</span>
+                  </div>
+                </div>
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 shadow-sm">
+                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Menu Items</p>
+                  <div className="flex items-end justify-between mt-3">
+                    <p className="text-2xl font-bold text-white font-mono">{products.length}</p>
+                    <span className="material-symbols-outlined text-zinc-700 text-xl">restaurant_menu</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+
+            {/* Quick Access Section */}
+            <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4 font-mono pl-1 mt-8">
+              Quick Access
+            </h2>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => navigate('/bar')}
+                className="block w-full group relative overflow-hidden bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-blue-500/30 transition-all duration-300"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md bg-zinc-800 border border-zinc-700 text-lg">
+                    🍹
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <h3 className="text-sm font-bold text-white font-sans group-hover:text-blue-500 transition-colors">
+                      Bar Display
+                    </h3>
+                    <p className="text-xs text-zinc-400 mt-0.5 font-mono">
+                      Kitchen Order Queue
+                    </p>
+                  </div>
+                  <div className="text-zinc-700 group-hover:text-blue-500 transition-colors">
+                    <span className="material-symbols-outlined text-xl">chevron_right</span>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate('/collector')}
+                className="block w-full group relative overflow-hidden bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-blue-500/30 transition-all duration-300"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md bg-zinc-800 border border-zinc-700 text-lg">
+                    🏖️
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <h3 className="text-sm font-bold text-white font-sans group-hover:text-blue-500 transition-colors">
+                      Collector Dashboard
+                    </h3>
+                    <p className="text-xs text-zinc-400 mt-0.5 font-mono">
+                      Bookings & Reservations
+                    </p>
+                  </div>
+                  <div className="text-zinc-700 group-hover:text-blue-500 transition-colors">
+                    <span className="material-symbols-outlined text-xl">chevron_right</span>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                onClick={() => navigate('/qr-generator')}
+                className="block w-full group relative overflow-hidden bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-blue-500/30 transition-all duration-300"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md bg-zinc-800 border border-zinc-700 text-lg">
+                    📱
+                  </div>
+                  <div className="flex-1 min-w-0 text-left">
+                    <h3 className="text-sm font-bold text-white font-sans group-hover:text-blue-500 transition-colors">
+                      QR Code Generator
+                    </h3>
+                    <p className="text-xs text-zinc-400 mt-0.5 font-mono">
+                      Zone Management
+                    </p>
+                  </div>
+                  <div className="text-zinc-700 group-hover:text-blue-500 transition-colors">
+                    <span className="material-symbols-outlined text-xl">chevron_right</span>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </section>
         )}
 
         {/* Staff Management Tab */}
@@ -1771,7 +1839,7 @@ export default function BusinessAdminDashboard() {
             </div>
           </div>
         )}
-      </div>
+      </main>
 
       {/* Create Staff Modal */}
       <CreateStaffModal
