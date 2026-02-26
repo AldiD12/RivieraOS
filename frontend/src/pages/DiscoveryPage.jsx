@@ -7,14 +7,19 @@ import VenueBottomSheet from '../components/VenueBottomSheet';
 // Mapbox token from environment
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
+// Meridian Warm Style - Mediterranean luxury vibe
+const MERIDIAN_WARM_STYLE = "mapbox://styles/aldid1602/cmm3bp5b3001v01qy9yf3gzlo";
+
 // Albanian Riviera coordinates (Dhërmi center)
 const RIVIERA_CENTER = {
   longitude: 19.6644,
   latitude: 40.1500,
-  zoom: 11
+  zoom: 13,
+  pitch: 45,      // 3D perspective - shows depth of mountains and sea
+  bearing: -10    // Slight rotation for cinematic effect
 };
 
-// Custom marker component with glowing pulse effect
+// Custom marker component - Warm style with amber accents
 function VenueMarker({ venue, isSelected, onClick }) {
   const isFull = venue.availableUnitsCount === 0;
   
@@ -23,24 +28,24 @@ function VenueMarker({ venue, isSelected, onClick }) {
       className="relative flex items-center justify-center cursor-pointer group"
       onClick={onClick}
     >
-      {/* Pulsing ring - only when available */}
+      {/* Pulsing ring - warm amber glow when available */}
       {!isFull && (
-        <div className="absolute w-8 h-8 rounded-full bg-emerald-500/30 animate-ping" />
+        <div className="absolute w-8 h-8 rounded-full bg-amber-500/20 animate-pulse group-hover:bg-amber-500/40 transition-all" />
       )}
       
-      {/* Main marker dot */}
+      {/* Main marker dot - warm earth tones */}
       <div 
         className={`
-          relative w-4 h-4 rounded-full border-2 border-white shadow-lg
-          transition-all duration-300 group-hover:scale-125
-          ${isFull ? 'bg-stone-400' : 'bg-emerald-500'}
-          ${isSelected ? 'scale-150 ring-4 ring-white/50' : ''}
+          relative w-4 h-4 rounded-full border-2 border-white shadow-xl
+          transition-all duration-500 group-hover:scale-125
+          ${isFull ? 'bg-stone-400' : 'bg-amber-900'}
+          ${isSelected ? 'scale-150 ring-4 ring-amber-500/30' : ''}
         `}
       />
       
-      {/* Availability badge */}
+      {/* Availability badge - sophisticated amber */}
       {!isFull && venue.availableUnitsCount && (
-        <div className="absolute -top-2 -right-2 bg-white text-emerald-600 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md border border-emerald-200">
+        <div className="absolute -top-2 -right-2 bg-white text-amber-900 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg border border-amber-200">
           {venue.availableUnitsCount}
         </div>
       )}
@@ -97,9 +102,11 @@ export default function DiscoveryPage() {
       if (mapRef.current) {
         mapRef.current.flyTo({
           center: [venue.longitude, venue.latitude],
-          zoom: 15,
+          zoom: 16,
+          pitch: 60, // More dramatic 3D angle when focused on venue
+          bearing: -20,
           duration: 1500, // 1.5 second smooth flight
-          essential: true
+          essential: true // Works even with reduced motion enabled
         });
       }
       
@@ -124,6 +131,8 @@ export default function DiscoveryPage() {
       mapRef.current.flyTo({
         center: [RIVIERA_CENTER.longitude, RIVIERA_CENTER.latitude],
         zoom: RIVIERA_CENTER.zoom,
+        pitch: RIVIERA_CENTER.pitch,
+        bearing: RIVIERA_CENTER.bearing,
         duration: 1500,
         essential: true
       });
@@ -208,11 +217,12 @@ export default function DiscoveryPage() {
           ref={mapRef}
           {...viewState}
           onMove={evt => setViewState(evt.viewState)}
-          mapStyle="mapbox://styles/mapbox/dark-v11" // Dark monochrome style
+          mapStyle={MERIDIAN_WARM_STYLE} // Warm Mediterranean style
           mapboxAccessToken={MAPBOX_TOKEN}
           style={{ width: '100%', height: '100%' }}
           attributionControl={false} // Remove Mapbox logo per orders
           cooperativeGestures={selectedVenue !== null} // Prevent scroll hijacking when bottom sheet open
+          antialias={true} // Sharp rendering for thin lines
         >
           {/* Navigation controls (zoom buttons) */}
           <NavigationControl position="bottom-right" showCompass={false} />
@@ -242,12 +252,15 @@ export default function DiscoveryPage() {
         <div className="bg-gradient-to-b from-black/60 via-black/30 to-transparent p-6 backdrop-blur-sm">
           <div className="max-w-7xl mx-auto">
             <h1 
-              className="text-5xl font-light text-white mb-2 tracking-tight"
-              style={{ fontFamily: 'Cormorant Garamond, serif' }}
+              className="text-5xl font-light text-white mb-2"
+              style={{ 
+                fontFamily: 'Cormorant Garamond, serif',
+                letterSpacing: '0.02em' // Wider spacing to breathe over warm map
+              }}
             >
               Discover
             </h1>
-            <p className="text-sm text-stone-300 uppercase tracking-widest">
+            <p className="text-sm text-amber-200 uppercase tracking-widest">
               Albanian Riviera
             </p>
           </div>
