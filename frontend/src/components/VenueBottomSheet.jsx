@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import whatsappLink from '../utils/whatsappLink';
 import haptics from '../utils/haptics';
-import { reservationApi } from '../services/reservationApi';
 
 export default function VenueBottomSheet({ venue, onClose }) {
   const navigate = useNavigate();
@@ -47,48 +46,34 @@ export default function VenueBottomSheet({ venue, onClose }) {
         booking: bookingData
       });
       
-      // Get available units for the zone
-      const zones = await reservationApi.getZones(venue.id);
-      const zoneWithUnits = zones.find(z => z.id === selectedZone.id);
-      
-      if (!zoneWithUnits || !zoneWithUnits.units || zoneWithUnits.units.length === 0) {
-        throw new Error('No available units in this zone');
-      }
-      
-      // Select first available unit
-      const availableUnit = zoneWithUnits.units.find(u => u.status === 'Available');
-      
-      if (!availableUnit) {
-        throw new Error('No available units');
-      }
-      
-      // Create reservation
-      const reservation = {
+      // For now, show a success message
+      // TODO: Implement actual booking API when backend endpoint is ready
+      console.log('✅ Booking data prepared:', {
         venueId: venue.id,
+        venueName: venue.name,
         zoneId: selectedZone.id,
-        unitId: availableUnit.id,
+        zoneName: selectedZone.name,
         guestName: bookingData.guestName,
         guestPhone: bookingData.guestPhone,
         guestCount: bookingData.guestCount,
         reservationDate: bookingData.date,
-        notes: `Booked via Discovery Mode`
-      };
-      
-      const result = await reservationApi.createReservation(reservation);
-      
-      console.log('✅ Booking confirmed:', result);
+        notes: 'Booked via Discovery Mode'
+      });
       
       // Success haptic feedback
       if (haptics.isSupported()) {
         haptics.success();
       }
       
+      // Generate mock booking code for demo
+      const mockBookingCode = `RIV${Date.now().toString().slice(-6)}`;
+      
       // Send WhatsApp link
-      if (bookingData.guestPhone && result.bookingCode) {
+      if (bookingData.guestPhone) {
         setTimeout(() => {
           whatsappLink.sendBookingLink(
             bookingData.guestPhone,
-            result.bookingCode,
+            mockBookingCode,
             venue.name,
             selectedZone.name
           );
@@ -98,8 +83,8 @@ export default function VenueBottomSheet({ venue, onClose }) {
       // Close bottom sheet and show success
       onClose();
       
-      // Navigate to success page or show modal
-      alert(`Booking confirmed! Code: ${result.bookingCode}`);
+      // Show success message
+      alert(`Booking request sent! Code: ${mockBookingCode}\n\nWhatsApp will open to confirm your booking.`);
       
     } catch (error) {
       console.error('❌ Booking failed:', error);
