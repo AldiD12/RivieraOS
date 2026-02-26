@@ -167,6 +167,31 @@ export default function DiscoveryPage() {
     );
   }
 
+  // No venues state
+  if (!loading && venues.length === 0) {
+    return (
+      <div className="h-screen bg-stone-50 flex flex-col items-center justify-center p-8">
+        <div className="text-center max-w-md">
+          <h2 
+            className="text-4xl font-light text-stone-900 mb-4"
+            style={{ fontFamily: 'Cormorant Garamond, serif' }}
+          >
+            No venues available
+          </h2>
+          <p className="text-lg text-stone-600 mb-8">
+            We couldn't find any venues at the moment. Please check back later.
+          </p>
+          <button
+            onClick={loadVenues}
+            className="bg-stone-900 text-stone-50 px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen relative bg-stone-50">
       {/* Header */}
