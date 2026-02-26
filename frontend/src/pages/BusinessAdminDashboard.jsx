@@ -1485,61 +1485,100 @@ export default function BusinessAdminDashboard() {
         )}
 
         {/* Menu Management Tab */}
-        {/* Menu Management Tab - Mobile Responsive */}
         {activeTab === 'menu' && (
-          <div className="space-y-4 md:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <h2 className="text-lg md:text-xl font-semibold">Menu Management</h2>
-              <div className="flex flex-col sm:flex-row gap-2">
+          <section>
+            <div className="flex items-baseline justify-between mb-4 pl-1">
+              <h2 className={`text-xs font-bold uppercase tracking-widest font-mono ${
+                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+              }`}>
+                Menu Management
+              </h2>
+              <div className="flex gap-2">
                 <button
                   onClick={() => setShowCreateCategoryModal(true)}
-                  className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-sm md:text-base"
+                  className={`px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                    isDarkMode
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
                 >
-                  Add Category
+                  + Category
                 </button>
                 {selectedCategory && (
                   <button
                     onClick={() => setShowCreateProductModal(true)}
-                    className="w-full sm:w-auto px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm md:text-base"
+                    className={`px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                      isDarkMode
+                        ? 'bg-zinc-800 text-white hover:bg-zinc-700'
+                        : 'bg-gray-200 text-gray-900 hover:bg-gray-300'
+                    }`}
                   >
-                    Add Product
+                    + Product
                   </button>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-              {/* Categories - Mobile Responsive */}
-              <div className="bg-zinc-900 rounded-lg p-4 md:p-6">
-                <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Categories</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Categories */}
+              <div className={`border rounded-lg p-4 ${
+                isDarkMode 
+                  ? 'bg-zinc-900 border-zinc-800' 
+                  : 'bg-white border-gray-200'
+              }`}>
+                <h3 className={`text-xs font-bold uppercase tracking-widest mb-3 font-mono ${
+                  isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                }`}>
+                  Categories
+                </h3>
                 {menuLoading ? (
                   <div className="text-center py-4">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto mb-2"></div>
-                    <p className="text-zinc-400 text-sm">Loading categories...</p>
+                    <div className={`animate-spin rounded-full h-6 w-6 border-b-2 mx-auto mb-2 ${
+                      isDarkMode ? 'border-blue-500' : 'border-blue-600'
+                    }`}></div>
+                    <p className={`text-xs font-mono ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
+                      LOADING...
+                    </p>
                   </div>
+                ) : categories.length === 0 ? (
+                  <p className={`text-xs font-mono text-center py-4 ${
+                    isDarkMode ? 'text-zinc-500' : 'text-gray-400'
+                  }`}>
+                    NO CATEGORIES
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {categories.map((category) => (
                       <div
                         key={category.id}
-                        className={`p-3 rounded-lg transition-colors ${
+                        className={`p-3 rounded-lg transition-colors cursor-pointer ${
                           selectedCategory?.id === category.id
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-zinc-800 hover:bg-zinc-700'
+                            ? isDarkMode
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-blue-600 text-white'
+                            : isDarkMode
+                              ? 'bg-zinc-800 hover:bg-zinc-700'
+                              : 'bg-gray-50 hover:bg-gray-100'
                         }`}
+                        onClick={() => setSelectedCategory(category)}
                       >
                         <div className="flex items-center justify-between">
-                          <span 
-                            className="font-medium cursor-pointer flex-1"
-                            onClick={() => setSelectedCategory(category)}
-                          >
+                          <span className="font-medium text-sm flex-1">
                             {category.name}
                           </span>
-                          <div className="flex items-center space-x-2">
-                            <span className={`px-2 py-1 text-xs rounded-full ${
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded ${
                               category.isActive
-                                ? 'bg-green-900/20 text-green-400'
-                                : 'bg-red-900/20 text-red-400'
+                                ? selectedCategory?.id === category.id
+                                  ? 'bg-white/20 text-white'
+                                  : isDarkMode
+                                    ? 'bg-green-900/20 text-green-400'
+                                    : 'bg-green-50 text-green-700'
+                                : selectedCategory?.id === category.id
+                                  ? 'bg-white/20 text-white'
+                                  : isDarkMode
+                                    ? 'bg-red-900/20 text-red-400'
+                                    : 'bg-red-50 text-red-700'
                             }`}>
                               {category.isActive ? 'Active' : 'Inactive'}
                             </span>
@@ -1559,7 +1598,13 @@ export default function BusinessAdminDashboard() {
                                   setError('Failed to load venue exclusions. You can still edit the category.');
                                 }
                               }}
-                              className="text-blue-400 hover:text-blue-300 text-sm"
+                              className={`text-xs hover:underline ${
+                                selectedCategory?.id === category.id
+                                  ? 'text-white'
+                                  : isDarkMode
+                                    ? 'text-blue-400 hover:text-blue-300'
+                                    : 'text-blue-600 hover:text-blue-700'
+                              }`}
                             >
                               Edit
                             </button>
@@ -1568,7 +1613,13 @@ export default function BusinessAdminDashboard() {
                                 e.stopPropagation();
                                 handleDeleteCategory(category.id);
                               }}
-                              className="text-red-400 hover:text-red-300 text-sm"
+                              className={`text-xs hover:underline ${
+                                selectedCategory?.id === category.id
+                                  ? 'text-white'
+                                  : isDarkMode
+                                    ? 'text-red-400 hover:text-red-300'
+                                    : 'text-red-600 hover:text-red-700'
+                              }`}
                             >
                               Delete
                             </button>
@@ -1576,87 +1627,128 @@ export default function BusinessAdminDashboard() {
                         </div>
                       </div>
                     ))}
-                    
-                    {categories.length === 0 && (
-                      <p className="text-zinc-400 text-center py-4">No categories found.</p>
-                    )}
                   </div>
                 )}
               </div>
 
-              {/* Products - Mobile Responsive */}
-              <div className="bg-zinc-900 rounded-lg p-4 md:p-6">
-                <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">
+              {/* Products */}
+              <div className={`border rounded-lg p-4 ${
+                isDarkMode 
+                  ? 'bg-zinc-900 border-zinc-800' 
+                  : 'bg-white border-gray-200'
+              }`}>
+                <h3 className={`text-xs font-bold uppercase tracking-widest mb-3 font-mono ${
+                  isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                }`}>
                   Products {selectedCategory && `- ${selectedCategory.name}`}
                 </h3>
                 {selectedCategory ? (
-                  <div className="space-y-2">
-                    {products.map((product) => (
-                      <div key={product.id} className="p-3 bg-zinc-800 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="font-medium">{product.name}</div>
-                            <div className="text-sm text-zinc-400">€{product.price}</div>
-                            {product.description && (
-                              <div className="text-xs text-zinc-500 mt-1">{product.description}</div>
-                            )}
+                  products.length === 0 ? (
+                    <p className={`text-xs font-mono text-center py-4 ${
+                      isDarkMode ? 'text-zinc-500' : 'text-gray-400'
+                    }`}>
+                      NO PRODUCTS
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {products.map((product) => (
+                        <div
+                          key={product.id}
+                          className={`p-3 rounded-lg ${
+                            isDarkMode ? 'bg-zinc-800' : 'bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className={`font-medium text-sm ${
+                                isDarkMode ? 'text-white' : 'text-gray-900'
+                              }`}>
+                                {product.name}
+                              </div>
+                              <div className={`text-xs font-mono mt-1 ${
+                                isDarkMode ? 'text-zinc-400' : 'text-gray-600'
+                              }`}>
+                                €{product.price}
+                              </div>
+                              {product.description && (
+                                <div className={`text-xs mt-1 ${
+                                  isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                                }`}>
+                                  {product.description}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-2">
+                          <div className="flex items-center justify-between gap-2">
                             <button
                               onClick={() => handleToggleProductAvailability(selectedCategory.id, product.id)}
-                              className={`px-2 py-1 text-xs rounded-full ${
+                              className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded ${
                                 product.isAvailable
-                                  ? 'bg-green-900/20 text-green-400'
-                                  : 'bg-red-900/20 text-red-400'
+                                  ? isDarkMode
+                                    ? 'bg-green-900/20 text-green-400'
+                                    : 'bg-green-50 text-green-700'
+                                  : isDarkMode
+                                    ? 'bg-red-900/20 text-red-400'
+                                    : 'bg-red-50 text-red-700'
                               }`}
                             >
                               {product.isAvailable ? 'Available' : 'Unavailable'}
                             </button>
-                            <button
-                              onClick={async () => {
-                                setEditingProduct(product);
-                                setProductForm({
-                                  name: product.name,
-                                  description: product.description || '',
-                                  imageUrl: product.imageUrl || '',
-                                  price: product.price,
-                                  oldPrice: product.oldPrice || null,
-                                  isAvailable: product.isAvailable,
-                                  isAlcohol: product.isAlcohol || false,
-                                  categoryId: selectedCategory.id
-                                });
-                                try {
-                                  await fetchProductExclusions(selectedCategory.id, product.id);
-                                } catch (error) {
-                                  console.error('Failed to fetch product exclusions:', error);
-                                  setError('Failed to load venue exclusions. You can still edit the product.');
-                                }
-                              }}
-                              className="text-blue-400 hover:text-blue-300 text-sm"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleDeleteProduct(selectedCategory.id, product.id)}
-                              className="text-red-400 hover:text-red-300 text-sm"
-                            >
-                              Delete
-                            </button>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={async () => {
+                                  setEditingProduct(product);
+                                  setProductForm({
+                                    name: product.name,
+                                    description: product.description || '',
+                                    imageUrl: product.imageUrl || '',
+                                    price: product.price,
+                                    oldPrice: product.oldPrice || null,
+                                    isAvailable: product.isAvailable,
+                                    isAlcohol: product.isAlcohol || false,
+                                    categoryId: selectedCategory.id
+                                  });
+                                  try {
+                                    await fetchProductExclusions(selectedCategory.id, product.id);
+                                  } catch (error) {
+                                    console.error('Failed to fetch product exclusions:', error);
+                                    setError('Failed to load venue exclusions. You can still edit the product.');
+                                  }
+                                }}
+                                className={`text-xs hover:underline ${
+                                  isDarkMode
+                                    ? 'text-blue-400 hover:text-blue-300'
+                                    : 'text-blue-600 hover:text-blue-700'
+                                }`}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProduct(selectedCategory.id, product.id)}
+                                className={`text-xs hover:underline ${
+                                  isDarkMode
+                                    ? 'text-red-400 hover:text-red-300'
+                                    : 'text-red-600 hover:text-red-700'
+                                }`}
+                              >
+                                Delete
+                              </button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                    
-                    {products.length === 0 && (
-                      <p className="text-zinc-400 text-center py-4">No products in this category.</p>
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  )
                 ) : (
-                  <p className="text-zinc-400 text-center py-4">Select a category to view products.</p>
+                  <p className={`text-xs font-mono text-center py-4 ${
+                    isDarkMode ? 'text-zinc-500' : 'text-gray-400'
+                  }`}>
+                    SELECT A CATEGORY
+                  </p>
                 )}
               </div>
             </div>
-          </div>
+          </section>
         )}
 
         {/* Venues Tab */}
