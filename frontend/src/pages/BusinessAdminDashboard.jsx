@@ -20,6 +20,11 @@ export default function BusinessAdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [error, setError] = useState('');
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Initialize from localStorage or default to dark
+    const saved = localStorage.getItem('businessDashboardTheme');
+    return saved ? saved === 'dark' : true;
+  });
   
   // Business data
   const [businessProfile, setBusinessProfile] = useState(null);
@@ -896,21 +901,31 @@ export default function BusinessAdminDashboard() {
     navigate('/login');
   };
 
+  const toggleTheme = () => {
+    const newTheme = !isDarkMode;
+    setIsDarkMode(newTheme);
+    localStorage.setItem('businessDashboardTheme', newTheme ? 'dark' : 'light');
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-zinc-950' : 'bg-gray-50'}`}>
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4 mx-auto"></div>
-          <p className="text-zinc-400 font-mono text-sm">LOADING SYSTEM...</p>
+          <div className={`animate-spin rounded-full h-12 w-12 border-b-2 mb-4 mx-auto ${isDarkMode ? 'border-blue-500' : 'border-blue-600'}`}></div>
+          <p className={`font-mono text-sm ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>LOADING SYSTEM...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-md mx-auto min-h-screen relative flex flex-col pb-20 bg-zinc-950">
+    <div className={`max-w-md mx-auto min-h-screen relative flex flex-col pb-20 ${isDarkMode ? 'bg-zinc-950' : 'bg-gray-50'}`}>
       {/* Header - Sticky */}
-      <header className="sticky top-0 z-50 bg-zinc-950/95 backdrop-blur-md border-b border-zinc-800 px-5 py-4">
+      <header className={`sticky top-0 z-50 backdrop-blur-md border-b px-5 py-4 ${
+        isDarkMode 
+          ? 'bg-zinc-950/95 border-zinc-800' 
+          : 'bg-white/95 border-gray-200'
+      }`}>
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -918,17 +933,38 @@ export default function BusinessAdminDashboard() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">System Live</span>
+              <span className={`text-[10px] font-mono uppercase tracking-widest ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
+                System Live
+              </span>
             </div>
-            <h1 className="text-lg font-bold tracking-tight text-white font-sans">
+            <h1 className={`text-lg font-bold tracking-tight font-sans ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               Mirësevjen, {businessProfile?.name || '[Emri]'}
             </h1>
-            <p className="text-xs text-zinc-400 mt-0.5">Riviera OS Admin</p>
+            <p className={`text-xs mt-0.5 ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
+              Riviera OS Admin
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-full transition-colors ${
+                isDarkMode 
+                  ? 'hover:bg-zinc-800 text-zinc-400' 
+                  : 'hover:bg-gray-100 text-gray-600'
+              }`}
+              title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              <span className="material-symbols-outlined text-xl">
+                {isDarkMode ? 'light_mode' : 'dark_mode'}
+              </span>
+            </button>
+            <button
               onClick={handleLogout}
-              className="p-2 rounded-full hover:bg-zinc-800 transition-colors text-zinc-400"
+              className={`p-2 rounded-full transition-colors ${
+                isDarkMode 
+                  ? 'hover:bg-zinc-800 text-zinc-400' 
+                  : 'hover:bg-gray-100 text-gray-600'
+              }`}
             >
               <span className="material-symbols-outlined text-xl">logout</span>
             </button>
@@ -936,7 +972,11 @@ export default function BusinessAdminDashboard() {
         </div>
       </header>
       {/* Navigation Tabs - Sticky */}
-      <nav className="sticky top-[85px] z-40 bg-zinc-950 border-b border-zinc-800 overflow-x-auto no-scrollbar">
+      <nav className={`sticky top-[85px] z-40 border-b overflow-x-auto no-scrollbar ${
+        isDarkMode 
+          ? 'bg-zinc-950 border-zinc-800' 
+          : 'bg-white border-gray-200'
+      }`}>
         <div className="flex px-4 min-w-full">
           {[
             { id: 'overview', label: 'Overview' },
@@ -950,8 +990,12 @@ export default function BusinessAdminDashboard() {
               onClick={() => setActiveTab(tab.id)}
               className={`py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
                 activeTab === tab.id
-                  ? 'text-blue-500 border-blue-500'
-                  : 'text-zinc-400 hover:text-zinc-200 border-transparent'
+                  ? isDarkMode
+                    ? 'text-blue-500 border-blue-500'
+                    : 'text-blue-600 border-blue-600'
+                  : isDarkMode
+                    ? 'text-zinc-400 hover:text-zinc-200 border-transparent'
+                    : 'text-gray-500 hover:text-gray-700 border-transparent'
               }`}
             >
               {tab.label}
@@ -962,11 +1006,15 @@ export default function BusinessAdminDashboard() {
 
       {/* Error Display */}
       {error && (
-        <div className="mx-5 mt-4 p-3 bg-red-900/20 border border-red-800 rounded-lg">
-          <p className="text-red-400 text-sm">{error}</p>
+        <div className={`mx-5 mt-4 p-3 border rounded-lg ${
+          isDarkMode 
+            ? 'bg-red-900/20 border-red-800' 
+            : 'bg-red-50 border-red-200'
+        }`}>
+          <p className={`text-sm ${isDarkMode ? 'text-red-400' : 'text-red-600'}`}>{error}</p>
           <button
             onClick={() => setError('')}
-            className="text-red-300 hover:text-red-200 text-xs mt-2"
+            className={`text-xs mt-2 ${isDarkMode ? 'text-red-300 hover:text-red-200' : 'text-red-500 hover:text-red-700'}`}
           >
             Dismiss
           </button>
@@ -980,78 +1028,156 @@ export default function BusinessAdminDashboard() {
           <section>
             {/* Business Overview Section */}
             <div className="flex items-baseline justify-between mb-4 pl-1">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 font-mono">
+              <h2 className={`text-xs font-bold uppercase tracking-widest font-mono ${
+                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+              }`}>
                 Business Overview
               </h2>
-              <span className="text-[10px] text-zinc-400 font-mono">UPDATED NOW</span>
+              <span className={`text-[10px] font-mono ${isDarkMode ? 'text-zinc-400' : 'text-gray-400'}`}>
+                UPDATED NOW
+              </span>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
               {/* Total Revenue Card */}
-              <div className="group relative bg-zinc-900 border border-zinc-800 rounded-lg p-6 shadow-sm transition-all duration-300">
+              <div className={`group relative border rounded-lg p-6 shadow-sm transition-all duration-300 ${
+                isDarkMode 
+                  ? 'bg-zinc-900 border-zinc-800' 
+                  : 'bg-white border-gray-200'
+              }`}>
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="text-xs text-zinc-400 font-medium tracking-wide uppercase">Total Revenue</p>
-                    <p className="text-4xl font-extrabold mt-3 text-white font-mono tracking-tighter">
+                    <p className={`text-xs font-medium tracking-wide uppercase ${
+                      isDarkMode ? 'text-zinc-400' : 'text-gray-500'
+                    }`}>
+                      Total Revenue
+                    </p>
+                    <p className={`text-4xl font-extrabold mt-3 font-mono tracking-tighter ${
+                      isDarkMode ? 'text-white' : 'text-gray-900'
+                    }`}>
                       €{dashboardData?.totalRevenue?.toLocaleString() || '0'}
                     </p>
                   </div>
-                  <div className="p-2 bg-blue-900/10 rounded-lg">
-                    <span className="material-symbols-outlined text-blue-500 text-2xl">payments</span>
+                  <div className={`p-2 rounded-lg ${
+                    isDarkMode ? 'bg-blue-900/10' : 'bg-blue-50'
+                  }`}>
+                    <span className={`material-symbols-outlined text-2xl ${
+                      isDarkMode ? 'text-blue-500' : 'text-blue-600'
+                    }`}>
+                      payments
+                    </span>
                   </div>
                 </div>
                 <div className="mt-4 flex items-center gap-2">
-                  <div className="h-1 flex-1 bg-zinc-800 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 w-[2%] rounded-full"></div>
+                  <div className={`h-1 flex-1 rounded-full overflow-hidden ${
+                    isDarkMode ? 'bg-zinc-800' : 'bg-gray-200'
+                  }`}>
+                    <div className={`h-full w-[2%] rounded-full ${
+                      isDarkMode ? 'bg-blue-500' : 'bg-blue-600'
+                    }`}></div>
                   </div>
-                  <span className="text-[10px] font-mono text-zinc-400">0%</span>
+                  <span className={`text-[10px] font-mono ${
+                    isDarkMode ? 'text-zinc-400' : 'text-gray-500'
+                  }`}>
+                    0%
+                  </span>
                 </div>
               </div>
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 shadow-sm">
-                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Active Staff</p>
+                <div className={`border rounded-lg p-5 shadow-sm ${
+                  isDarkMode 
+                    ? 'bg-zinc-900 border-zinc-800' 
+                    : 'bg-white border-gray-200'
+                }`}>
+                  <p className={`text-[10px] font-bold uppercase tracking-wider ${
+                    isDarkMode ? 'text-zinc-400' : 'text-gray-500'
+                  }`}>
+                    Active Staff
+                  </p>
                   <div className="flex items-end justify-between mt-3">
-                    <p className="text-2xl font-bold text-white font-mono">
+                    <p className={`text-2xl font-bold font-mono ${
+                      isDarkMode ? 'text-white' : 'text-gray-900'
+                    }`}>
                       {staffMembers.filter(s => s.isActive).length}
                     </p>
-                    <span className="material-symbols-outlined text-zinc-700 text-xl">groups</span>
+                    <span className={`material-symbols-outlined text-xl ${
+                      isDarkMode ? 'text-zinc-700' : 'text-gray-300'
+                    }`}>
+                      groups
+                    </span>
                   </div>
                 </div>
-                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 shadow-sm">
-                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">Menu Items</p>
+                <div className={`border rounded-lg p-5 shadow-sm ${
+                  isDarkMode 
+                    ? 'bg-zinc-900 border-zinc-800' 
+                    : 'bg-white border-gray-200'
+                }`}>
+                  <p className={`text-[10px] font-bold uppercase tracking-wider ${
+                    isDarkMode ? 'text-zinc-400' : 'text-gray-500'
+                  }`}>
+                    Menu Items
+                  </p>
                   <div className="flex items-end justify-between mt-3">
-                    <p className="text-2xl font-bold text-white font-mono">{products.length}</p>
-                    <span className="material-symbols-outlined text-zinc-700 text-xl">restaurant_menu</span>
+                    <p className={`text-2xl font-bold font-mono ${
+                      isDarkMode ? 'text-white' : 'text-gray-900'
+                    }`}>
+                      {products.length}
+                    </p>
+                    <span className={`material-symbols-outlined text-xl ${
+                      isDarkMode ? 'text-zinc-700' : 'text-gray-300'
+                    }`}>
+                      restaurant_menu
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Quick Access Section */}
-            <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4 font-mono pl-1 mt-8">
+            <h2 className={`text-xs font-bold uppercase tracking-widest mb-4 font-mono pl-1 mt-8 ${
+              isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+            }`}>
               Quick Access
             </h2>
 
             <div className="space-y-3">
               <button
                 onClick={() => navigate('/bar')}
-                className="block w-full group relative overflow-hidden bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-blue-500/30 transition-all duration-300"
+                className={`block w-full group relative overflow-hidden border rounded-lg p-4 transition-all duration-300 ${
+                  isDarkMode 
+                    ? 'bg-zinc-900 border-zinc-800 hover:border-blue-500/30' 
+                    : 'bg-white border-gray-200 hover:border-blue-600/30'
+                }`}
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md bg-zinc-800 border border-zinc-700 text-lg">
+                  <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md border text-lg ${
+                    isDarkMode 
+                      ? 'bg-zinc-800 border-zinc-700' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}>
                     🍹
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <h3 className="text-sm font-bold text-white font-sans group-hover:text-blue-500 transition-colors">
+                    <h3 className={`text-sm font-bold font-sans transition-colors ${
+                      isDarkMode 
+                        ? 'text-white group-hover:text-blue-500' 
+                        : 'text-gray-900 group-hover:text-blue-600'
+                    }`}>
                       Bar Display
                     </h3>
-                    <p className="text-xs text-zinc-400 mt-0.5 font-mono">
+                    <p className={`text-xs mt-0.5 font-mono ${
+                      isDarkMode ? 'text-zinc-400' : 'text-gray-500'
+                    }`}>
                       Kitchen Order Queue
                     </p>
                   </div>
-                  <div className="text-zinc-700 group-hover:text-blue-500 transition-colors">
+                  <div className={`transition-colors ${
+                    isDarkMode 
+                      ? 'text-zinc-700 group-hover:text-blue-500' 
+                      : 'text-gray-300 group-hover:text-blue-600'
+                  }`}>
                     <span className="material-symbols-outlined text-xl">chevron_right</span>
                   </div>
                 </div>
@@ -1059,21 +1185,39 @@ export default function BusinessAdminDashboard() {
 
               <button
                 onClick={() => navigate('/collector')}
-                className="block w-full group relative overflow-hidden bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-blue-500/30 transition-all duration-300"
+                className={`block w-full group relative overflow-hidden border rounded-lg p-4 transition-all duration-300 ${
+                  isDarkMode 
+                    ? 'bg-zinc-900 border-zinc-800 hover:border-blue-500/30' 
+                    : 'bg-white border-gray-200 hover:border-blue-600/30'
+                }`}
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md bg-zinc-800 border border-zinc-700 text-lg">
+                  <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md border text-lg ${
+                    isDarkMode 
+                      ? 'bg-zinc-800 border-zinc-700' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}>
                     🏖️
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <h3 className="text-sm font-bold text-white font-sans group-hover:text-blue-500 transition-colors">
+                    <h3 className={`text-sm font-bold font-sans transition-colors ${
+                      isDarkMode 
+                        ? 'text-white group-hover:text-blue-500' 
+                        : 'text-gray-900 group-hover:text-blue-600'
+                    }`}>
                       Collector Dashboard
                     </h3>
-                    <p className="text-xs text-zinc-400 mt-0.5 font-mono">
+                    <p className={`text-xs mt-0.5 font-mono ${
+                      isDarkMode ? 'text-zinc-400' : 'text-gray-500'
+                    }`}>
                       Bookings & Reservations
                     </p>
                   </div>
-                  <div className="text-zinc-700 group-hover:text-blue-500 transition-colors">
+                  <div className={`transition-colors ${
+                    isDarkMode 
+                      ? 'text-zinc-700 group-hover:text-blue-500' 
+                      : 'text-gray-300 group-hover:text-blue-600'
+                  }`}>
                     <span className="material-symbols-outlined text-xl">chevron_right</span>
                   </div>
                 </div>
@@ -1081,21 +1225,39 @@ export default function BusinessAdminDashboard() {
 
               <button
                 onClick={() => navigate('/qr-generator')}
-                className="block w-full group relative overflow-hidden bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-blue-500/30 transition-all duration-300"
+                className={`block w-full group relative overflow-hidden border rounded-lg p-4 transition-all duration-300 ${
+                  isDarkMode 
+                    ? 'bg-zinc-900 border-zinc-800 hover:border-blue-500/30' 
+                    : 'bg-white border-gray-200 hover:border-blue-600/30'
+                }`}
               >
                 <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md bg-zinc-800 border border-zinc-700 text-lg">
+                  <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md border text-lg ${
+                    isDarkMode 
+                      ? 'bg-zinc-800 border-zinc-700' 
+                      : 'bg-gray-50 border-gray-200'
+                  }`}>
                     📱
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <h3 className="text-sm font-bold text-white font-sans group-hover:text-blue-500 transition-colors">
+                    <h3 className={`text-sm font-bold font-sans transition-colors ${
+                      isDarkMode 
+                        ? 'text-white group-hover:text-blue-500' 
+                        : 'text-gray-900 group-hover:text-blue-600'
+                    }`}>
                       QR Code Generator
                     </h3>
-                    <p className="text-xs text-zinc-400 mt-0.5 font-mono">
+                    <p className={`text-xs mt-0.5 font-mono ${
+                      isDarkMode ? 'text-zinc-400' : 'text-gray-500'
+                    }`}>
                       Zone Management
                     </p>
                   </div>
-                  <div className="text-zinc-700 group-hover:text-blue-500 transition-colors">
+                  <div className={`transition-colors ${
+                    isDarkMode 
+                      ? 'text-zinc-700 group-hover:text-blue-500' 
+                      : 'text-gray-300 group-hover:text-blue-600'
+                  }`}>
                     <span className="material-symbols-outlined text-xl">chevron_right</span>
                   </div>
                 </div>
