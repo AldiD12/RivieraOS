@@ -1752,242 +1752,353 @@ export default function BusinessAdminDashboard() {
         )}
 
         {/* Venues Tab */}
-        {/* Venues Tab - Mobile Responsive */}
         {activeTab === 'venues' && (
-          <div className="space-y-4 md:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-              <div>
-                <h2 className="text-xl md:text-2xl font-bold text-white">Venues & Zones</h2>
-                <p className="text-zinc-400 text-sm md:text-base">Manage your business venues and zones</p>
-              </div>
+          <section>
+            <div className="flex items-baseline justify-between mb-4 pl-1">
+              <h2 className={`text-xs font-bold uppercase tracking-widest font-mono ${
+                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+              }`}>
+                Venues & Zones
+              </h2>
               <button
                 onClick={() => setShowCreateVenueModal(true)}
-                className="w-full sm:w-auto px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm md:text-base"
+                className={`px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  isDarkMode
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
               >
-                + Create Venue
+                + Venue
               </button>
             </div>
 
             {venuesLoading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              <div className="text-center py-8">
+                <div className={`animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4 ${
+                  isDarkMode ? 'border-blue-500' : 'border-blue-600'
+                }`}></div>
+                <p className={`text-sm font-mono ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
+                  LOADING VENUES...
+                </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                {/* Venues Column - Mobile Responsive */}
-                <div>
-                  <div className="bg-zinc-800 rounded-lg p-3 md:p-4">
-                    <h3 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Venues</h3>
-                    <div className="space-y-3">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Venues Column */}
+                <div className={`border rounded-lg p-4 ${
+                  isDarkMode 
+                    ? 'bg-zinc-900 border-zinc-800' 
+                    : 'bg-white border-gray-200'
+                }`}>
+                  <h3 className={`text-xs font-bold uppercase tracking-widest mb-3 font-mono ${
+                    isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                  }`}>
+                    Venues
+                  </h3>
+                  {venues.length === 0 ? (
+                    <p className={`text-xs font-mono text-center py-4 ${
+                      isDarkMode ? 'text-zinc-500' : 'text-gray-400'
+                    }`}>
+                      NO VENUES
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
                       {venues.map((venue) => (
                         <div
                           key={venue.id}
-                          className={`p-4 rounded cursor-pointer transition-colors ${
+                          className={`p-3 rounded-lg cursor-pointer transition-colors ${
                             selectedVenue?.id === venue.id 
-                              ? 'bg-blue-600 text-white' 
-                              : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                              ? isDarkMode
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-blue-600 text-white'
+                              : isDarkMode
+                                ? 'bg-zinc-800 hover:bg-zinc-700'
+                                : 'bg-gray-50 hover:bg-gray-100'
                           }`}
                           onClick={() => setSelectedVenue(venue)}
                         >
                           <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h4 className="font-medium">{venue.name}</h4>
-                              {venue.type && <p className="text-sm opacity-75">{venue.type}</p>}
+                            <div className="flex-1">
+                              <h4 className={`font-bold text-sm ${
+                                selectedVenue?.id === venue.id ? 'text-white' : isDarkMode ? 'text-white' : 'text-gray-900'
+                              }`}>
+                                {venue.name}
+                              </h4>
+                              {venue.type && (
+                                <p className={`text-xs mt-1 ${
+                                  selectedVenue?.id === venue.id ? 'text-white/75' : isDarkMode ? 'text-zinc-400' : 'text-gray-600'
+                                }`}>
+                                  {venue.type}
+                                </p>
+                              )}
                             </div>
-                            <span className={`px-2 py-1 rounded text-xs ${
+                            <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded ${
                               venue.isActive 
-                                ? 'bg-green-900 text-green-300' 
-                                : 'bg-red-900 text-red-300'
+                                ? selectedVenue?.id === venue.id
+                                  ? 'bg-white/20 text-white'
+                                  : isDarkMode
+                                    ? 'bg-green-900/20 text-green-400'
+                                    : 'bg-green-50 text-green-700'
+                                : selectedVenue?.id === venue.id
+                                  ? 'bg-white/20 text-white'
+                                  : isDarkMode
+                                    ? 'bg-red-900/20 text-red-400'
+                                    : 'bg-red-50 text-red-700'
                             }`}>
                               {venue.isActive ? 'Active' : 'Inactive'}
                             </span>
                           </div>
                           
                           {venue.address && (
-                            <p className="text-sm opacity-75 mb-2">{venue.address}</p>
+                            <p className={`text-xs mb-2 ${
+                              selectedVenue?.id === venue.id ? 'text-white/75' : isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                            }`}>
+                              {venue.address}
+                            </p>
                           )}
                           
                           <div className="flex flex-wrap gap-2 mb-2">
-                            <span className={`px-2 py-1 rounded text-xs ${
+                            <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded ${
                               venue.orderingEnabled 
-                                ? 'bg-green-900/20 text-green-400' 
-                                : 'bg-red-900/20 text-red-400'
+                                ? selectedVenue?.id === venue.id
+                                  ? 'bg-white/20 text-white'
+                                  : isDarkMode
+                                    ? 'bg-green-900/20 text-green-400'
+                                    : 'bg-green-50 text-green-700'
+                                : selectedVenue?.id === venue.id
+                                  ? 'bg-white/20 text-white'
+                                  : isDarkMode
+                                    ? 'bg-red-900/20 text-red-400'
+                                    : 'bg-red-50 text-red-700'
                             }`}>
-                              {venue.orderingEnabled ? '🛒 Ordering' : '🚫 No Ordering'}
-                            </span>
-                            <span className={`px-2 py-1 rounded text-xs ${
-                              venue.allowsDigitalOrdering 
-                                ? 'bg-blue-900/20 text-blue-400' 
-                                : 'bg-amber-900/20 text-amber-400'
-                            }`}>
-                              {venue.isDigitalOrderingEnabled === null 
-                                ? '🤖 Auto Menu' 
-                                : venue.allowsDigitalOrdering 
-                                  ? '✓ Menu Enabled' 
-                                  : '✗ Menu Disabled'}
+                              {venue.orderingEnabled ? 'Ordering' : 'No Order'}
                             </span>
                           </div>
                           
-                          <div className="flex justify-between items-center">
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/admin/venues/${venue.id}/mapper`);
-                                }}
-                                className="text-purple-400 hover:text-purple-300 text-sm"
-                                title="Visual Sunbed Mapper"
-                              >
-                                🗺️ Mapper
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingVenue(venue);
-                                  setVenueForm({
-                                    name: venue.name,
-                                    type: venue.type || '',
-                                    description: venue.description || '',
-                                    address: venue.address || '',
-                                    imageUrl: venue.imageUrl || '',
-                                    latitude: venue.latitude,
-                                    longitude: venue.longitude,
-                                    orderingEnabled: venue.orderingEnabled,
-                                    googlePlaceId: venue.googlePlaceId || '',
-                                    isDigitalOrderingEnabled: venue.isDigitalOrderingEnabled ?? null
-                                  });
-                                }}
-                                className="text-blue-400 hover:text-blue-300 text-sm"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (window.confirm(`Delete venue "${venue.name}"? This cannot be undone.`)) {
-                                    handleDeleteVenue(venue.id);
-                                  }
-                                }}
-                                className="text-red-400 hover:text-red-300 text-sm"
-                              >
-                                Delete
-                              </button>
-                            </div>
+                          <div className="flex gap-2 text-xs">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/admin/venues/${venue.id}/mapper`);
+                              }}
+                              className={`hover:underline ${
+                                selectedVenue?.id === venue.id
+                                  ? 'text-white'
+                                  : isDarkMode
+                                    ? 'text-purple-400 hover:text-purple-300'
+                                    : 'text-purple-600 hover:text-purple-700'
+                              }`}
+                            >
+                              Mapper
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingVenue(venue);
+                                setVenueForm({
+                                  name: venue.name,
+                                  type: venue.type || '',
+                                  description: venue.description || '',
+                                  address: venue.address || '',
+                                  imageUrl: venue.imageUrl || '',
+                                  latitude: venue.latitude,
+                                  longitude: venue.longitude,
+                                  orderingEnabled: venue.orderingEnabled,
+                                  googlePlaceId: venue.googlePlaceId || '',
+                                  isDigitalOrderingEnabled: venue.isDigitalOrderingEnabled ?? null
+                                });
+                              }}
+                              className={`hover:underline ${
+                                selectedVenue?.id === venue.id
+                                  ? 'text-white'
+                                  : isDarkMode
+                                    ? 'text-blue-400 hover:text-blue-300'
+                                    : 'text-blue-600 hover:text-blue-700'
+                              }`}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (window.confirm('Delete venue "' + venue.name + '"? This cannot be undone.')) {
+                                  handleDeleteVenue(venue.id);
+                                }
+                              }}
+                              className={`hover:underline ${
+                                selectedVenue?.id === venue.id
+                                  ? 'text-white'
+                                  : isDarkMode
+                                    ? 'text-red-400 hover:text-red-300'
+                                    : 'text-red-600 hover:text-red-700'
+                              }`}
+                            >
+                              Delete
+                            </button>
                           </div>
                         </div>
                       ))}
                     </div>
-                    
-                    {venues.length === 0 && (
-                      <p className="text-zinc-400 text-sm">No venues found. Create one to get started.</p>
-                    )}
-                  </div>
+                  )}
                 </div>
 
                 {/* Zones Column */}
-                <div>
-                  <div className="bg-zinc-800 rounded-lg p-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-semibold text-white">
-                        Zones {selectedVenue && `- ${selectedVenue.name}`}
-                      </h3>
-                      {selectedVenue && (
-                        <button
-                          onClick={() => setShowCreateZoneModal(true)}
-                          className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
-                        >
-                          + Add Zone
-                        </button>
-                      )}
-                    </div>
+                <div className={`border rounded-lg p-4 ${
+                  isDarkMode 
+                    ? 'bg-zinc-900 border-zinc-800' 
+                    : 'bg-white border-gray-200'
+                }`}>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className={`text-xs font-bold uppercase tracking-widest font-mono ${
+                      isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                    }`}>
+                      Zones {selectedVenue && `- ${selectedVenue.name}`}
+                    </h3>
+                    {selectedVenue && (
+                      <button
+                        onClick={() => setShowCreateZoneModal(true)}
+                        className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                          isDarkMode
+                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                      >
+                        + Zone
+                      </button>
+                    )}
+                  </div>
 
-                    {!selectedVenue ? (
-                      <p className="text-zinc-400 text-sm">Select a venue to view and manage zones.</p>
+                  {!selectedVenue ? (
+                      <p className={`text-xs font-mono text-center py-4 ${
+                        isDarkMode ? 'text-zinc-500' : 'text-gray-400'
+                      }`}>
+                        SELECT A VENUE
+                      </p>
                     ) : zonesLoading ? (
-                      <div className="flex justify-center py-4">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      <div className="text-center py-4">
+                        <div className={`animate-spin rounded-full h-6 w-6 border-b-2 mx-auto mb-2 ${
+                          isDarkMode ? 'border-blue-500' : 'border-blue-600'
+                        }`}></div>
+                        <p className={`text-xs font-mono ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
+                          LOADING...
+                        </p>
                       </div>
+                    ) : zones.length === 0 ? (
+                      <p className={`text-xs font-mono text-center py-4 ${
+                        isDarkMode ? 'text-zinc-500' : 'text-gray-400'
+                      }`}>
+                        NO ZONES
+                      </p>
                     ) : (
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {zones.map((zone) => (
-                          <div key={zone.id} className="bg-zinc-700 rounded-lg p-4">
+                          <div
+                            key={zone.id}
+                            className={`p-3 rounded-lg ${
+                              isDarkMode ? 'bg-zinc-800' : 'bg-gray-50'
+                            }`}
+                          >
                             <div className="flex justify-between items-start mb-2">
-                              <div>
-                                <h4 className="font-medium text-white">{zone.name}</h4>
-                                {zone.zoneType && <p className="text-sm text-zinc-400">{zone.zoneType}</p>}
+                              <div className="flex-1">
+                                <h4 className={`font-bold text-sm ${
+                                  isDarkMode ? 'text-white' : 'text-gray-900'
+                                }`}>
+                                  {zone.name}
+                                </h4>
+                                {zone.zoneType && (
+                                  <p className={`text-xs mt-1 ${
+                                    isDarkMode ? 'text-zinc-400' : 'text-gray-600'
+                                  }`}>
+                                    {zone.zoneType}
+                                  </p>
+                                )}
                               </div>
-                              <span className={`px-2 py-1 rounded text-xs ${
+                              <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded ${
                                 zone.isActive 
-                                  ? 'bg-green-900 text-green-300' 
-                                  : 'bg-red-900 text-red-300'
+                                  ? isDarkMode
+                                    ? 'bg-green-900/20 text-green-400'
+                                    : 'bg-green-50 text-green-700'
+                                  : isDarkMode
+                                    ? 'bg-red-900/20 text-red-400'
+                                    : 'bg-red-50 text-red-700'
                               }`}>
                                 {zone.isActive ? 'Active' : 'Inactive'}
                               </span>
                             </div>
                             
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-zinc-400">
-                                Capacity: {zone.capacityPerUnit || 'N/A'} | Price: €{zone.basePrice || 0}
-                              </span>
-                              <div className="flex space-x-2">
-                                <button
-                                  onClick={() => handleToggleZoneActive(zone.id)}
-                                  className={`text-sm ${
-                                    zone.isActive 
+                            <div className={`text-xs font-mono mb-2 ${
+                              isDarkMode ? 'text-zinc-400' : 'text-gray-600'
+                            }`}>
+                              Capacity: {zone.capacityPerUnit || 'N/A'} | Price: €{zone.basePrice || 0}
+                            </div>
+                            
+                            <div className="flex gap-2 text-xs">
+                              <button
+                                onClick={() => handleToggleZoneActive(zone.id)}
+                                className={`hover:underline ${
+                                  isDarkMode
+                                    ? zone.isActive 
                                       ? 'text-yellow-400 hover:text-yellow-300' 
                                       : 'text-green-400 hover:text-green-300'
-                                  }`}
-                                >
-                                  {zone.isActive ? 'Deactivate' : 'Activate'}
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    // Navigate to unit creation for this zone
-                                    navigate(`/admin/zones/${zone.id}/units`);
-                                  }}
-                                  className="text-green-400 hover:text-green-300 text-sm"
-                                >
-                                  Units
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setEditingZone(zone);
-                                    setZoneForm({
-                                      name: zone.name,
-                                      zoneType: zone.zoneType || '',
-                                      capacityPerUnit: zone.capacityPerUnit || 1,
-                                      basePrice: zone.basePrice || 0
-                                    });
-                                  }}
-                                  className="text-blue-400 hover:text-blue-300 text-sm"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    if (window.confirm(`Delete zone "${zone.name}"? This cannot be undone.`)) {
-                                      handleDeleteZone(zone.id);
-                                    }
-                                  }}
-                                  className="text-red-400 hover:text-red-300 text-sm"
-                                >
-                                  Delete
-                                </button>
-                              </div>
+                                    : zone.isActive
+                                      ? 'text-yellow-600 hover:text-yellow-700'
+                                      : 'text-green-600 hover:text-green-700'
+                                }`}
+                              >
+                                {zone.isActive ? 'Deactivate' : 'Activate'}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  navigate(`/admin/zones/${zone.id}/units`);
+                                }}
+                                className={`hover:underline ${
+                                  isDarkMode
+                                    ? 'text-green-400 hover:text-green-300'
+                                    : 'text-green-600 hover:text-green-700'
+                                }`}
+                              >
+                                Units
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setEditingZone(zone);
+                                  setZoneForm({
+                                    name: zone.name,
+                                    zoneType: zone.zoneType || '',
+                                    capacityPerUnit: zone.capacityPerUnit || 1,
+                                    basePrice: zone.basePrice || 0
+                                  });
+                                }}
+                                className={`hover:underline ${
+                                  isDarkMode
+                                    ? 'text-blue-400 hover:text-blue-300'
+                                    : 'text-blue-600 hover:text-blue-700'
+                                }`}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (window.confirm('Delete zone "' + zone.name + '"? This cannot be undone.')) {
+                                    handleDeleteZone(zone.id);
+                                  }
+                                }}
+                                className={`hover:underline ${
+                                  isDarkMode
+                                    ? 'text-red-400 hover:text-red-300'
+                                    : 'text-red-600 hover:text-red-700'
+                                }`}
+                              >
+                                Delete
+                              </button>
                             </div>
                           </div>
                         ))}
-                        
-                        {zones.length === 0 && (
-                          <p className="text-zinc-400 text-sm">No zones found for this venue. Add one to get started.</p>
-                        )}
                       </div>
                     )}
-                  </div>
                 </div>
               </div>
             )}
-          </div>
+          </section>
         )}
 
         {/* QR Generator Tab */}
