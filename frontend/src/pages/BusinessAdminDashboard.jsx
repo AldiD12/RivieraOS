@@ -1267,11 +1267,14 @@ export default function BusinessAdminDashboard() {
         )}
 
         {/* Staff Management Tab */}
-        {/* Staff Management Tab - Mobile Responsive */}
         {activeTab === 'staff' && (
-          <div className="space-y-4 md:space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <h2 className="text-lg md:text-xl font-semibold">Staff Management</h2>
+          <section>
+            <div className="flex items-baseline justify-between mb-4 pl-1">
+              <h2 className={`text-xs font-bold uppercase tracking-widest font-mono ${
+                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+              }`}>
+                Staff Management
+              </h2>
               <button
                 onClick={async () => {
                   // Fetch venues if not already loaded
@@ -1285,257 +1288,200 @@ export default function BusinessAdminDashboard() {
                   }));
                   setShowCreateStaffModal(true);
                 }}
-                className="w-full sm:w-auto px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors text-sm md:text-base"
+                className={`px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                  isDarkMode
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
               >
-                Add Staff Member
+                + Add Staff
               </button>
             </div>
 
             {staffLoading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
-                <p className="text-zinc-400 text-sm md:text-base">Loading staff members...</p>
+                <div className={`animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-4 ${
+                  isDarkMode ? 'border-blue-500' : 'border-blue-600'
+                }`}></div>
+                <p className={`text-sm font-mono ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
+                  LOADING STAFF...
+                </p>
+              </div>
+            ) : staffMembers.length === 0 ? (
+              <div className={`border rounded-lg p-8 text-center ${
+                isDarkMode 
+                  ? 'bg-zinc-900 border-zinc-800' 
+                  : 'bg-white border-gray-200'
+              }`}>
+                <p className={`text-sm font-mono ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
+                  NO STAFF MEMBERS FOUND
+                </p>
               </div>
             ) : (
-              <>
-                {/* Desktop Table View */}
-                <div className="hidden md:block bg-zinc-900 rounded-lg overflow-hidden">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-zinc-800">
-                        <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                            Staff Member
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                            Role
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                            Venue
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                            Phone
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                            PIN
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                            Status
-                          </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-zinc-300 uppercase tracking-wider">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-zinc-800">
-                        {staffMembers.map((staff) => (
-                          <tr key={staff.id}>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div>
-                                <div className="text-sm font-medium text-white">
-                                  {staff.fullName || 'Unnamed Staff'}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                  ID: {staff.id}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="px-2 py-1 text-xs font-medium bg-blue-900/20 text-blue-400 rounded-full">
-                                {staff.role}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">
-                              {staff.venueName ? (
-                                <span className="px-2 py-1 text-xs font-medium bg-purple-900/20 text-purple-400 rounded-full">
-                                  {staff.venueName}
-                                </span>
-                              ) : (
-                                <span className="text-zinc-500 text-xs">Not Assigned</span>
-                              )}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-300">
-                              {staff.phoneNumber || staff.email || 'No contact'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                staff.hasPinSet 
-                                  ? 'bg-emerald-900/20 text-emerald-400' 
-                                  : 'bg-amber-900/20 text-amber-400'
-                              }`}>
-                                {staff.hasPinSet ? '✓ Set' : '✗ Not Set'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                staff.isActive 
-                                  ? 'bg-green-900/20 text-green-400' 
-                                  : 'bg-red-900/20 text-red-400'
-                              }`}>
-                                {staff.isActive ? 'Active' : 'Inactive'}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                              <button
-                                onClick={async () => {
-                                  // Fetch venues if not already loaded
-                                  if (venues.length === 0) {
-                                    await fetchVenues();
-                                  }
-                                  setEditingStaff(staff);
-                                  setStaffForm({
-                                    email: staff.email || '',
-                                    password: '',
-                                    phoneNumber: staff.phoneNumber || '',
-                                    fullName: staff.fullName || '',
-                                    role: staff.role || '',
-                                    pin: '',
-                                    isActive: staff.isActive,
-                                    venueId: staff.venueId || null,
-                                    venues: venues
-                                  });
-                                }}
-                                className="text-blue-400 hover:text-blue-300"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleActivateStaff(staff.id)}
-                                className="text-yellow-400 hover:text-yellow-300"
-                              >
-                                {staff.isActive ? 'Deactivate' : 'Activate'}
-                              </button>
-                              <button
-                                onClick={() => handleDeleteStaff(staff.id)}
-                                className="text-red-400 hover:text-red-300"
-                              >
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    
-                    {staffMembers.length === 0 && (
-                      <div className="text-center py-8">
-                        <p className="text-zinc-400">No staff members found.</p>
+              <div className="space-y-3">
+                {staffMembers.map((staff) => (
+                  <div
+                    key={staff.id}
+                    className={`border rounded-lg p-4 transition-all duration-300 ${
+                      isDarkMode 
+                        ? 'bg-zinc-900 border-zinc-800 hover:border-zinc-700' 
+                        : 'bg-white border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    {/* Header Row */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h3 className={`text-sm font-bold font-sans ${
+                          isDarkMode ? 'text-white' : 'text-gray-900'
+                        }`}>
+                          {staff.fullName || 'Unnamed Staff'}
+                        </h3>
+                        <p className={`text-[10px] font-mono mt-1 ${
+                          isDarkMode ? 'text-zinc-500' : 'text-gray-400'
+                        }`}>
+                          ID: {staff.id}
+                        </p>
                       </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Mobile Card View */}
-                <div className="md:hidden space-y-3">
-                  {staffMembers.length === 0 ? (
-                    <div className="bg-zinc-900 rounded-lg p-6 text-center">
-                      <p className="text-zinc-400 text-sm">No staff members found.</p>
+                      <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded ${
+                        staff.isActive 
+                          ? isDarkMode
+                            ? 'bg-green-900/20 text-green-400'
+                            : 'bg-green-50 text-green-700'
+                          : isDarkMode
+                            ? 'bg-red-900/20 text-red-400'
+                            : 'bg-red-50 text-red-700'
+                      }`}>
+                        {staff.isActive ? 'Active' : 'Inactive'}
+                      </span>
                     </div>
-                  ) : (
-                    staffMembers.map((staff) => (
-                      <div key={staff.id} className="bg-zinc-900 rounded-lg p-4 space-y-3">
-                        {/* Header */}
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h3 className="text-base font-semibold text-white">
-                              {staff.fullName || 'Unnamed Staff'}
-                            </h3>
-                            <p className="text-xs text-zinc-400 mt-1">ID: {staff.id}</p>
-                          </div>
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            staff.isActive 
-                              ? 'bg-green-900/20 text-green-400' 
-                              : 'bg-red-900/20 text-red-400'
-                          }`}>
-                            {staff.isActive ? 'Active' : 'Inactive'}
-                          </span>
-                        </div>
 
-                        {/* Info Grid */}
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          <div>
-                            <p className="text-zinc-500 text-xs mb-1">Role</p>
-                            <span className="px-2 py-1 text-xs font-medium bg-blue-900/20 text-blue-400 rounded-full">
-                              {staff.role}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="text-zinc-500 text-xs mb-1">Venue</p>
-                            {staff.venueName ? (
-                              <span className="px-2 py-1 text-xs font-medium bg-purple-900/20 text-purple-400 rounded-full">
-                                {staff.venueName}
-                              </span>
-                            ) : (
-                              <span className="text-zinc-500 text-xs">Not Assigned</span>
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-zinc-500 text-xs mb-1">PIN Status</p>
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              staff.hasPinSet 
-                                ? 'bg-emerald-900/20 text-emerald-400' 
-                                : 'bg-amber-900/20 text-amber-400'
-                            }`}>
-                              {staff.hasPinSet ? '✓ Set' : '✗ Not Set'}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Contact */}
-                        <div>
-                          <p className="text-zinc-500 text-xs mb-1">Contact</p>
-                          <p className="text-sm text-zinc-300">
-                            {staff.phoneNumber || staff.email || 'No contact'}
-                          </p>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex flex-col gap-2 pt-2 border-t border-zinc-800">
-                          <button
-                            onClick={async () => {
-                              // Fetch venues if not already loaded
-                              if (venues.length === 0) {
-                                await fetchVenues();
-                              }
-                              setEditingStaff(staff);
-                              setStaffForm({
-                                email: staff.email || '',
-                                password: '',
-                                phoneNumber: staff.phoneNumber || '',
-                                fullName: staff.fullName || '',
-                                role: staff.role || '',
-                                pin: '',
-                                isActive: staff.isActive,
-                                venueId: staff.venueId || null,
-                                venues: venues
-                              });
-                            }}
-                            className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                          >
-                            Edit
-                          </button>
-                          <div className="grid grid-cols-2 gap-2">
-                            <button
-                              onClick={() => handleActivateStaff(staff.id)}
-                              className="px-3 py-2 bg-zinc-800 text-yellow-400 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
-                            >
-                              {staff.isActive ? 'Deactivate' : 'Activate'}
-                            </button>
-                            <button
-                              onClick={() => handleDeleteStaff(staff.id)}
-                              className="px-3 py-2 bg-zinc-800 text-red-400 rounded-lg text-sm font-medium hover:bg-zinc-700 transition-colors"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </div>
+                    {/* Info Grid */}
+                    <div className="grid grid-cols-2 gap-3 mb-3">
+                      <div>
+                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                          isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                        }`}>
+                          Role
+                        </p>
+                        <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded ${
+                          isDarkMode 
+                            ? 'bg-blue-900/20 text-blue-400' 
+                            : 'bg-blue-50 text-blue-700'
+                        }`}>
+                          {staff.role}
+                        </span>
                       </div>
-                    ))
-                  )}
-                </div>
-              </>
+                      <div>
+                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                          isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                        }`}>
+                          Venue
+                        </p>
+                        {staff.venueName ? (
+                          <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded ${
+                            isDarkMode 
+                              ? 'bg-purple-900/20 text-purple-400' 
+                              : 'bg-purple-50 text-purple-700'
+                          }`}>
+                            {staff.venueName}
+                          </span>
+                        ) : (
+                          <span className={`text-[10px] font-mono ${
+                            isDarkMode ? 'text-zinc-600' : 'text-gray-400'
+                          }`}>
+                            Not Assigned
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                          isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                        }`}>
+                          PIN Status
+                        </p>
+                        <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded ${
+                          staff.hasPinSet 
+                            ? isDarkMode
+                              ? 'bg-emerald-900/20 text-emerald-400'
+                              : 'bg-emerald-50 text-emerald-700'
+                            : isDarkMode
+                              ? 'bg-amber-900/20 text-amber-400'
+                              : 'bg-amber-50 text-amber-700'
+                        }`}>
+                          {staff.hasPinSet ? '✓ Set' : '✗ Not Set'}
+                        </span>
+                      </div>
+                      <div>
+                        <p className={`text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                          isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+                        }`}>
+                          Contact
+                        </p>
+                        <p className={`text-xs font-mono ${
+                          isDarkMode ? 'text-zinc-300' : 'text-gray-700'
+                        }`}>
+                          {staff.phoneNumber || staff.email || 'No contact'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className={`flex gap-2 pt-3 border-t ${
+                      isDarkMode ? 'border-zinc-800' : 'border-gray-200'
+                    }`}>
+                      <button
+                        onClick={async () => {
+                          // Fetch venues if not already loaded
+                          if (venues.length === 0) {
+                            await fetchVenues();
+                          }
+                          setEditingStaff(staff);
+                          setStaffForm({
+                            email: staff.email || '',
+                            password: '',
+                            phoneNumber: staff.phoneNumber || '',
+                            fullName: staff.fullName || '',
+                            role: staff.role || '',
+                            pin: '',
+                            isActive: staff.isActive,
+                            venueId: staff.venueId || null,
+                            venues: venues
+                          });
+                        }}
+                        className={`flex-1 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
+                          isDarkMode
+                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                        }`}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleActivateStaff(staff.id)}
+                        className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
+                          isDarkMode
+                            ? 'bg-zinc-800 text-yellow-400 hover:bg-zinc-700'
+                            : 'bg-gray-100 text-yellow-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {staff.isActive ? 'Deactivate' : 'Activate'}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteStaff(staff.id)}
+                        className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
+                          isDarkMode
+                            ? 'bg-zinc-800 text-red-400 hover:bg-zinc-700'
+                            : 'bg-gray-100 text-red-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
-          </div>
+          </section>
         )}
 
         {/* Menu Management Tab */}
