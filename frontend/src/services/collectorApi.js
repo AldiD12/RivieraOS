@@ -65,6 +65,102 @@ const collectorApi = {
       console.error(`❌ Failed to update unit ${unitId} status:`, error);
       throw { data: { message: error.response?.data?.error || 'Failed to update unit status' } };
     }
+  },
+
+  /**
+   * Get booking details for approval page
+   * Used by /action/{bookingCode} page
+   * 
+   * @param {string} bookingCode - Booking code
+   * @returns {Promise<Object>} Booking details
+   * @throws {Error} 403 if no venue assigned, 404 if booking not found
+   */
+  getBookingDetails: async (bookingCode) => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/collector/bookings/${bookingCode}`,
+        { headers: getAuthHeader() }
+      );
+      console.log('✅ Booking details fetched successfully');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to fetch booking details:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Get available units for visual selection
+   * Returns units in the booking's requested zone
+   * 
+   * @param {string} bookingCode - Booking code
+   * @returns {Promise<Array>} Available units with positions
+   * @throws {Error} 403 if no venue assigned, 404 if booking not found
+   */
+  getAvailableUnits: async (bookingCode) => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/collector/bookings/${bookingCode}/available-units`,
+        { headers: getAuthHeader() }
+      );
+      console.log('✅ Available units fetched successfully');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to fetch available units:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Approve booking with unit assignment (supports single or multiple units)
+   * Sets booking status to Reserved and assigns unit(s)
+   * 
+   * @param {string} bookingCode - Booking code
+   * @param {number|Array<number>} unitIds - Unit ID(s) to assign (single number or array)
+   * @returns {Promise<Object>} Approval result
+   * @throws {Error} 403 if no venue assigned, 400 if booking not pending
+   */
+  approveBooking: async (bookingCode, unitIds) => {
+    try {
+      // 🚨 MULTI-SELECT: Support both single unit (legacy) and multiple units
+      const payload = Array.isArray(unitIds) 
+        ? { unitIds }  // Multi-unit: send array
+        : { unitId: unitIds };  // Single unit: send single ID (legacy)
+      
+      const response = await axios.put(
+        `${API_URL}/api/collector/bookings/${bookingCode}/approve`,
+        payload,
+        { headers: getAuthHeader() }
+      );
+      console.log('✅ Booking approved successfully');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to approve booking:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Reject booking
+   * Sets booking status to Cancelled
+   * 
+   * @param {string} bookingCode - Booking code
+   * @returns {Promise<Object>} Rejection result
+   * @throws {Error} 403 if no venue assigned, 400 if booking not pending
+   */
+  rejectBooking: async (bookingCode) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/api/collector/bookings/${bookingCode}/reject`,
+        {},
+        { headers: getAuthHeader() }
+      );
+      console.log('✅ Booking rejected successfully');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Failed to reject booking:', error);
+      throw error;
+    }
   }
 };
 

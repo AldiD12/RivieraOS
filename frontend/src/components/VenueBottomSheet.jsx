@@ -7,11 +7,17 @@ export default function VenueBottomSheet({ venue, onClose }) {
   const navigate = useNavigate();
   const [selectedZone, setSelectedZone] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
-  const [bookingData, setBookingData] = useState({
-    guestName: '',
-    guestPhone: '',
-    guestCount: 2,
-    date: new Date().toISOString().split('T')[0]
+  // 🚨 TRAP 2 FIX: Load saved guest info from localStorage
+  const [bookingData, setBookingData] = useState(() => {
+    const savedName = localStorage.getItem('riviera_guestName') || '';
+    const savedPhone = localStorage.getItem('riviera_guestPhone') || '';
+    
+    return {
+      guestName: savedName,
+      guestPhone: savedPhone,
+      guestCount: 2,
+      date: new Date().toISOString().split('T')[0]
+    };
   });
   const [submitting, setSubmitting] = useState(false);
 
@@ -46,33 +52,51 @@ export default function VenueBottomSheet({ venue, onClose }) {
         booking: bookingData
       });
       
-      // Create reservation via API
-      // For now using mock data until backend endpoint is ready
-      const mockBookingCode = `RIV${Date.now().toString().slice(-6)}`;
+      // 🚨 TRAP 2 FIX: Save guest info to localStorage for next time
+      localStorage.setItem('riviera_guestName', bookingData.guestName);
+      localStorage.setItem('riviera_guestPhone', bookingData.guestPhone);
+      console.log('💾 Guest info saved for future bookings');
       
-      // TODO: Replace with actual API call when ready
+      // 🚨 TEMPORARY: Backend requires zoneUnitId but we only have zoneId
+      // This needs backend update to support zone-level booking with auto-assignment
+      // For now, show user-friendly message
+      
+      alert('⚠️ Booking system is being updated.\n\nPlease contact the venue directly via WhatsApp to reserve your spot.\n\nWe apologize for the inconvenience!');
+      
+      // Open WhatsApp to venue
+      const venuePhone = venue.phone || '+355692000000';
+      const message = `Përshëndetje! 👋
+
+Dua të rezervoj:
+
+🏖️ Vendi: ${venue.name}
+📍 Zona: ${selectedZone.name}
+👥 Persona: ${bookingData.guestCount}
+📅 Data: ${new Date(bookingData.date).toLocaleDateString('sq-AL')}
+
+Emri: ${bookingData.guestName}
+Telefoni: ${bookingData.guestPhone}
+
+Faleminderit!`;
+
+      window.open(
+        `https://wa.me/${venuePhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`,
+        '_blank'
+      );
+      
+      // Close bottom sheet
+      onClose();
+      
+      // TODO: Implement proper booking when backend supports zone-level booking
       // const result = await reservationApi.createReservation({
       //   venueId: venue.id,
-      //   zoneId: selectedZone.id,
+      //   zoneId: selectedZone.id, // Backend needs to accept zoneId and auto-assign unit
       //   guestName: bookingData.guestName,
       //   guestPhone: bookingData.guestPhone,
       //   guestCount: bookingData.guestCount,
       //   reservationDate: bookingData.date,
       //   notes: 'Booked via Discovery Mode'
       // });
-      
-      console.log('✅ Booking created:', mockBookingCode);
-      
-      // Success haptic feedback
-      if (haptics.isSupported()) {
-        haptics.success();
-      }
-      
-      // Close bottom sheet
-      onClose();
-      
-      // Navigate to booking status page
-      navigate(`/booking/${mockBookingCode}`);
       
     } catch (error) {
       console.error('❌ Booking failed:', error);

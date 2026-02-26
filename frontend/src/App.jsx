@@ -19,6 +19,7 @@ import TestCronBookings from './pages/TestCronBookings';
 import SpotPage from './pages/SpotPage';
 import DiscoveryPage from './pages/DiscoveryPage';
 import BookingStatusPage from './pages/BookingStatusPage';
+import BookingActionPage from './pages/BookingActionPage';
 import ZoneUnitsManager from './pages/ZoneUnitsManager';
 import SunbedMapper from './pages/SunbedMapper';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -65,6 +66,9 @@ function App() {
         
         {/* Booking Status Page - Shows booking confirmation status */}
         <Route path="/booking/:bookingCode" element={<BookingStatusPage />} />
+        
+        {/* Booking Action Page - Staff approval from WhatsApp link */}
+        <Route path="/action/:bookingCode" element={<BookingActionPage />} />
         
         {/* SPOT MODE - On-site at venue (QR scanned) */}
         <Route path="/spot" element={<SpotPage />} />

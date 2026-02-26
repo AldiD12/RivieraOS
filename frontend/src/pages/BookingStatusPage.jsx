@@ -11,6 +11,9 @@ export default function BookingStatusPage() {
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showWaitlistPrompt, setShowWaitlistPrompt] = useState(false);
+  const [waitlistEmail, setWaitlistEmail] = useState('');
+  const [isExpired, setIsExpired] = useState(false); // 🚨 TRAP 1 FIX
 
   useEffect(() => {
     loadBooking();
@@ -22,9 +25,15 @@ export default function BookingStatusPage() {
     link.rel = 'stylesheet';
     document.head.appendChild(link);
     
+    // 🚨 TRAP 1 FIX: Check for expired pending bookings every 30 seconds
+    const expiryCheckInterval = setInterval(() => {
+      checkBookingExpiry();
+    }, 30000); // Check every 30 seconds
+    
     return () => {
       signalrService.disconnect();
       document.head.removeChild(link);
+      clearInterval(expiryCheckInterval);
     };
   }, [bookingCode]);
 
@@ -99,6 +108,50 @@ Faleminderit!`;
     whatsappLink.sendMessage(phone, message);
   };
 
+  // 🚨 TRAP 1 FIX: Check if booking has expired (15 minutes)
+  const checkBookingExpiry = () => {
+    if (!booking || booking.status !== 'Pending') return;
+    
+    const createdAt = new Date(booking.createdAt);
+    const now = new Date();
+    const minutesElapsed = (now - createdAt) / 1000 / 60;
+    
+    if (minutesElapsed > 15) {
+      console.log('⏰ Booking expired after 15 minutes');
+      setIsExpired(true);
+      
+      // Haptic feedback
+      if (haptics.isSupported()) {
+        haptics.error();
+      }
+    }
+  };
+
+  const handleJoinWaitlist = async () => {
+    if (!waitlistEmail) {
+      alert('Ju lutem vendosni email-in tuaj');
+      return;
+    }
+
+    try {
+      // 🚀 TWEAK 3: Waitlist placeholder (backend Phase 3)
+      console.log('📋 Waitlist request:', {
+        bookingCode: booking.bookingCode,
+        venueId: booking.venueId,
+        email: waitlistEmail,
+        zoneName: booking.zoneName,
+        guestCount: booking.guestCount
+      });
+
+      alert('✅ Ju jeni shtuar në listën e pritjes!\n\nDo të njoftoheni kur të lirohet një vend.');
+      setShowWaitlistPrompt(false);
+      
+    } catch (err) {
+      console.error('Error joining waitlist:', err);
+      alert('Gabim në shtimin në listën e pritjes');
+    }
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -136,8 +189,9 @@ Faleminderit!`;
     );
   }
 
-  const isPending = booking.status === 'Pending';
+  const isPending = booking.status === 'Pending' && !isExpired;
   const isConfirmed = booking.status === 'Confirmed';
+  const isCancelled = booking.status === 'Cancelled' || isExpired;
 
   return (
     <div className="min-h-screen bg-stone-50 p-6">
@@ -185,7 +239,7 @@ Faleminderit!`;
                 {booking.unitCode && (
                   <div className="mt-6 p-6 bg-emerald-50 rounded-2xl border border-emerald-200">
                     <p className="text-sm text-emerald-700 uppercase tracking-widest mb-2">
-                      Kodi Yt
+                      {booking.unitCode.includes(',') ? 'Kodet Tuaja' : 'Kodi Yt'}
                     </p>
                     <p 
                       className="text-5xl font-light text-emerald-900"
@@ -194,7 +248,10 @@ Faleminderit!`;
                       {booking.unitCode}
                     </p>
                     <p className="text-sm text-emerald-600 mt-2">
-                      Tregoja këtë kod djalit të plazhit
+                      {booking.unitCode.includes(',') 
+                        ? 'Tregoji këto kode djalit të plazhit'
+                        : 'Tregoja këtë kod djalit të plazhit'
+                      }
                     </p>
                   </div>
                 )}
@@ -269,6 +326,78 @@ Faleminderit!`;
                   KONTAKTO PLAZHIN
                 </button>
               </>
+            )}
+            
+            {/* 🚨 TWEAK 3: Waitlist UI for cancelled bookings */}
+            {isCancelled && (
+              <div className="space-y-6">
+                <div className="bg-red-50 rounded-2xl p-8 border border-red-200">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-red-500 rounded-full flex items-center justify-center">
+                      <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+                    <h2 className="text-2xl font-light text-red-900 mb-2">
+                      {isExpired ? 'Koha skadoi' : 'Na vjen keq'}
+                    </h2>
+                    <p className="text-red-700">
+                      {isExpired 
+                        ? 'Ju nuk dërguat mesazhin e konfirmimit në WhatsApp. Kërkesa u anullua.'
+                        : 'Nuk kemi vende të lira për momentin'
+                      }
+                    </p>
+                  </div>
+
+                  {!showWaitlistPrompt ? (
+                    <button
+                      onClick={() => setShowWaitlistPrompt(true)}
+                      className="w-full bg-red-600 text-white px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-red-700 transition-all duration-300"
+                    >
+                      📋 SHTOHEM NË WAITLIST
+                    </button>
+                  ) : (
+                    <div className="space-y-4">
+                      <p className="text-sm text-red-700 text-center">
+                        Do të njoftoheni kur të lirohet një vend
+                      </p>
+                      <input
+                        type="email"
+                        placeholder="Email juaj"
+                        value={waitlistEmail}
+                        onChange={(e) => setWaitlistEmail(e.target.value)}
+                        className="w-full px-4 py-3 border border-red-300 rounded-lg focus:outline-none focus:border-red-500"
+                      />
+                      <button
+                        onClick={handleJoinWaitlist}
+                        className="w-full bg-red-600 text-white px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-red-700 transition-all duration-300"
+                      >
+                        KONFIRMO
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-stone-50 rounded-2xl p-6 border border-stone-200">
+                  <h3 className="text-sm uppercase tracking-widest text-stone-500 font-medium mb-4">
+                    Opsione të tjera
+                  </h3>
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => navigate('/')}
+                      className="w-full border border-stone-300 text-stone-700 px-6 py-3 rounded-full hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
+                    >
+                      🗺️ Shiko Plazhe të Tjera
+                    </button>
+                    <button
+                      onClick={handleWhatsAppConfirm}
+                      className="w-full border border-stone-300 text-stone-700 px-6 py-3 rounded-full hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
+                    >
+                      📞 Kontakto Plazhin
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>
