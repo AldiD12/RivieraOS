@@ -749,20 +749,16 @@ export default function BusinessAdminDashboard() {
     if (!selectedVenue) return;
 
     try {
+      // Only send fields that backend expects (BizCreateZoneRequest schema)
       const zoneData = {
-        ...zoneForm,
-        isActive: true // Set zones as active by default
+        name: zoneForm.name,
+        zoneType: zoneForm.zoneType || null,
+        capacityPerUnit: parseInt(zoneForm.capacityPerUnit) || 1,
+        basePrice: parseFloat(zoneForm.basePrice) || 0,
+        isActive: true
       };
       
-      console.log('📤 Creating zone with data:', {
-        name: zoneData.name,
-        zoneType: zoneData.zoneType,
-        capacityPerUnit: zoneData.capacityPerUnit,
-        capacityType: typeof zoneData.capacityPerUnit,
-        basePrice: zoneData.basePrice,
-        basePriceType: typeof zoneData.basePrice,
-        isActive: zoneData.isActive
-      });
+      console.log('📤 Creating zone with data:', zoneData);
       
       const response = await businessApi.zones.create(selectedVenue.id, zoneData);
       
