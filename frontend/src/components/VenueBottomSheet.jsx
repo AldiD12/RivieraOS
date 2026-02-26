@@ -46,45 +46,33 @@ export default function VenueBottomSheet({ venue, onClose }) {
         booking: bookingData
       });
       
-      // For now, show a success message
-      // TODO: Implement actual booking API when backend endpoint is ready
-      console.log('✅ Booking data prepared:', {
-        venueId: venue.id,
-        venueName: venue.name,
-        zoneId: selectedZone.id,
-        zoneName: selectedZone.name,
-        guestName: bookingData.guestName,
-        guestPhone: bookingData.guestPhone,
-        guestCount: bookingData.guestCount,
-        reservationDate: bookingData.date,
-        notes: 'Booked via Discovery Mode'
-      });
+      // Create reservation via API
+      // For now using mock data until backend endpoint is ready
+      const mockBookingCode = `RIV${Date.now().toString().slice(-6)}`;
+      
+      // TODO: Replace with actual API call when ready
+      // const result = await reservationApi.createReservation({
+      //   venueId: venue.id,
+      //   zoneId: selectedZone.id,
+      //   guestName: bookingData.guestName,
+      //   guestPhone: bookingData.guestPhone,
+      //   guestCount: bookingData.guestCount,
+      //   reservationDate: bookingData.date,
+      //   notes: 'Booked via Discovery Mode'
+      // });
+      
+      console.log('✅ Booking created:', mockBookingCode);
       
       // Success haptic feedback
       if (haptics.isSupported()) {
         haptics.success();
       }
       
-      // Generate mock booking code for demo
-      const mockBookingCode = `RIV${Date.now().toString().slice(-6)}`;
-      
-      // Send WhatsApp link
-      if (bookingData.guestPhone) {
-        setTimeout(() => {
-          whatsappLink.sendBookingLink(
-            bookingData.guestPhone,
-            mockBookingCode,
-            venue.name,
-            selectedZone.name
-          );
-        }, 1000);
-      }
-      
-      // Close bottom sheet and show success
+      // Close bottom sheet
       onClose();
       
-      // Show success message
-      alert(`Booking request sent! Code: ${mockBookingCode}\n\nWhatsApp will open to confirm your booking.`);
+      // Navigate to booking status page
+      navigate(`/booking/${mockBookingCode}`);
       
     } catch (error) {
       console.error('❌ Booking failed:', error);

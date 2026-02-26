@@ -18,6 +18,7 @@ import QRCodeGenerator from './pages/QRCodeGenerator';
 import TestCronBookings from './pages/TestCronBookings';
 import SpotPage from './pages/SpotPage';
 import DiscoveryPage from './pages/DiscoveryPage';
+import BookingStatusPage from './pages/BookingStatusPage';
 import ZoneUnitsManager from './pages/ZoneUnitsManager';
 import SunbedMapper from './pages/SunbedMapper';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -61,6 +62,9 @@ function App() {
         {/* Customer-Facing Routes */}
         {/* DISCOVER MODE - Default for tourists (no QR scan) */}
         <Route path="/" element={<DiscoveryPage />} />
+        
+        {/* Booking Status Page - Shows booking confirmation status */}
+        <Route path="/booking/:bookingCode" element={<BookingStatusPage />} />
         
         {/* SPOT MODE - On-site at venue (QR scanned) */}
         <Route path="/spot" element={<SpotPage />} />
