@@ -751,14 +751,22 @@ export default function BusinessAdminDashboard() {
     try {
       // Only send fields that backend expects (BizCreateZoneRequest schema)
       const zoneData = {
-        name: zoneForm.name,
-        zoneType: zoneForm.zoneType || null,
+        name: zoneForm.name.trim(),
+        zoneType: zoneForm.zoneType?.trim() || null,
         capacityPerUnit: parseInt(zoneForm.capacityPerUnit) || 1,
         basePrice: parseFloat(zoneForm.basePrice) || 0,
         isActive: true
       };
       
-      console.log('📤 Creating zone with data:', zoneData);
+      console.log('📤 [Business Admin] Creating zone for venue:', selectedVenue.id);
+      console.log('📤 [Business Admin] Zone data:', JSON.stringify(zoneData, null, 2));
+      console.log('📤 [Business Admin] Data types:', {
+        name: typeof zoneData.name,
+        zoneType: typeof zoneData.zoneType,
+        capacityPerUnit: typeof zoneData.capacityPerUnit,
+        basePrice: typeof zoneData.basePrice,
+        isActive: typeof zoneData.isActive
+      });
       
       const response = await businessApi.zones.create(selectedVenue.id, zoneData);
       
