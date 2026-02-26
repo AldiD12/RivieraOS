@@ -28,6 +28,20 @@ namespace BlackBear.Services.Core.Entities
         [Column("is_active")]
         public bool IsActive { get; set; } = true;
 
+        // Manual availability override fields
+        [Column("is_manual_override")]
+        public bool IsManualOverride { get; set; } = false;
+
+        [MaxLength(500)]
+        [Column("override_reason")]
+        public string? OverrideReason { get; set; }
+
+        [Column("override_until")]
+        public DateTime? OverrideUntil { get; set; }
+
+        [Column("override_by")]
+        public int? OverrideBy { get; set; }
+
         [Column("is_deleted")]
         public bool IsDeleted { get; set; } = false;
 

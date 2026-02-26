@@ -50,6 +50,10 @@ namespace BlackBear.Services.Core.Data
 
         // Feedback schema entities
         public DbSet<Review> Reviews { get; set; }
+        public DbSet<NegativeFeedback> NegativeFeedbacks { get; set; }
+
+        // Content schema entities
+        public DbSet<Content> Contents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -122,6 +126,16 @@ namespace BlackBear.Services.Core.Data
                 (_currentUserService == null ||
                  _currentUserService.BusinessId == null ||
                  r.BusinessId == _currentUserService.BusinessId));
+
+            // NegativeFeedback: soft delete + multi-tenancy
+            modelBuilder.Entity<NegativeFeedback>().HasQueryFilter(nf =>
+                !nf.IsDeleted &&
+                (_currentUserService == null ||
+                 _currentUserService.BusinessId == null ||
+                 nf.BusinessId == _currentUserService.BusinessId));
+
+            // Content: no multi-tenancy (global content)
+            modelBuilder.Entity<Content>().HasQueryFilter(c => c.IsActive);
 
 
             // === CORE MODULE ===
@@ -376,6 +390,43 @@ namespace BlackBear.Services.Core.Data
                     .WithMany()
                     .HasForeignKey(zub => zub.HandledByUserId)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // === NEGATIVE FEEDBACK MODULE ===
+
+            modelBuilder.Entity<NegativeFeedback>(entity =>
+            {
+                entity.HasOne(nf => nf.Venue)
+                    .WithMany()
+                    .HasForeignKey(nf => nf.VenueId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(nf => nf.Business)
+                    .WithMany()
+                    .HasForeignKey(nf => nf.BusinessId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(nf => nf.ResolvedByUser)
+                    .WithMany()
+                    .HasForeignKey(nf => nf.ResolvedBy)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasIndex(nf => nf.VenueId);
+                entity.HasIndex(nf => nf.Status);
+                entity.HasIndex(nf => nf.SubmittedAt);
+            });
+
+            // === CONTENT MODULE ===
+
+            modelBuilder.Entity<Content>(entity =>
+            {
+                entity.HasOne(c => c.Venue)
+                    .WithMany()
+                    .HasForeignKey(c => c.VenueId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                entity.HasIndex(c => c.ContentType);
+                entity.HasIndex(c => c.VenueId);
             });
         }
     }

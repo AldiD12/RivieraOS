@@ -5,6 +5,7 @@ using BlackBear.Services.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace BlackBear.Services.Core.Controllers.Business
 {
@@ -200,6 +201,76 @@ namespace BlackBear.Services.Core.Controllers.Business
             await _context.SaveChangesAsync();
 
             return Ok(new { isActive = zone.IsActive });
+        }
+
+        // PUT: api/business/venues/5/zones/10/availability
+        [HttpPut("{id}/availability")]
+        public async Task<ActionResult<BizZoneAvailabilityResponseDto>> UpdateZoneAvailability(
+            int venueId, int id, BizZoneAvailabilityOverrideRequest request)
+        {
+            var businessId = _currentUserService.BusinessId;
+            if (!businessId.HasValue)
+            {
+                return StatusCode(403, new { error = "User is not associated with a business" });
+            }
+
+            var zone = await _context.VenueZones
+                .Include(z => z.Venue)
+                .FirstOrDefaultAsync(z => z.Id == id && z.VenueId == venueId);
+
+            if (zone == null)
+            {
+                return NotFound();
+            }
+
+            if (zone.Venue?.BusinessId != businessId.Value)
+            {
+                return NotFound();
+            }
+
+            // Get user ID for tracking who set the override
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            int? userId = int.TryParse(userIdClaim, out var parsedId) ? parsedId : null;
+
+            if (!request.IsAvailable)
+            {
+                // Setting manual override (marking zone as unavailable)
+                zone.IsManualOverride = true;
+                zone.OverrideReason = request.Reason;
+                zone.OverrideUntil = request.OverrideUntil;
+                zone.OverrideBy = userId;
+            }
+            else
+            {
+                // Clearing manual override (reverting to automatic)
+                zone.IsManualOverride = false;
+                zone.OverrideReason = null;
+                zone.OverrideUntil = null;
+                zone.OverrideBy = null;
+            }
+
+            await _context.SaveChangesAsync();
+
+            // Count units for response
+            var units = await _context.ZoneUnits
+                .IgnoreQueryFilters()
+                .Where(u => u.VenueZoneId == id && !u.IsDeleted)
+                .ToListAsync();
+
+            var totalUnits = units.Count;
+            var availableUnits = zone.IsManualOverride ? 0 : units.Count(u => u.Status == "Available");
+
+            return Ok(new BizZoneAvailabilityResponseDto
+            {
+                ZoneId = zone.Id,
+                ZoneName = zone.Name,
+                IsAvailable = !zone.IsManualOverride,
+                AvailableUnits = availableUnits,
+                TotalUnits = totalUnits,
+                IsManualOverride = zone.IsManualOverride,
+                OverrideReason = zone.OverrideReason,
+                OverrideUntil = zone.OverrideUntil
+            });
         }
 
         // DELETE: api/business/venues/5/zones/10 (soft delete)
