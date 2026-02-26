@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { feedbackApi } from '../services/feedbackApi';
+import whatsappLink from '../utils/whatsappLink';
+import haptics from '../utils/haptics';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
@@ -101,42 +104,84 @@ export default function ReviewPage() {
   const handleRatingClick = async (selectedRating) => {
     setRating(selectedRating);
     
+    // Haptic feedback
+    if (haptics.isSupported()) {
+      haptics.medium();
+    }
+    
     // Show success animation
     setShowSuccess(true);
 
     // Submit review to backend
     try {
-      const reviewData = {
-        rating: selectedRating,
-        comment: '', // Optional - can add text input later
-        guestName: 'Anonymous' // Optional
-      };
+      // 🚨 CRITICAL: Review Shield - Save negative feedback to database
+      if (selectedRating <= 3) {
+        console.log('🛡️ Review Shield: Intercepting negative feedback');
+        
+        const feedbackData = {
+          venueId: actualVenueId,
+          unitId: searchParams.get('u') || null,
+          rating: selectedRating,
+          comment: '', // Can be enhanced with text input later
+          customerName: 'Anonymous',
+          customerPhone: null,
+          customerEmail: null
+        };
 
-      const response = await fetch(`${API_URL}/api/public/venues/${actualVenueId}/reviews`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(reviewData)
-      });
-
-      if (!response.ok) {
-        console.error('Failed to submit review');
-      } else {
-        console.log('✅ Review submitted successfully');
-      }
-
-      // If high rating (4-5), redirect to Google Maps after delay
-      if (selectedRating >= 4 && venue.latitude && venue.longitude) {
+        const feedbackResult = await feedbackApi.submitFeedback(feedbackData);
+        console.log('✅ Negative feedback saved:', feedbackResult);
+        
+        // 🚨 CRITICAL: Send WhatsApp link for follow-up
         setTimeout(() => {
-          const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`;
-          window.open(googleMapsUrl, '_blank');
-          setTimeout(() => navigate('/'), 2000);
-        }, 2000);
+          const phone = whatsappLink.promptForPhone();
+          if (phone && feedbackResult.id) {
+            whatsappLink.sendFeedbackLink(phone, feedbackResult.id);
+          }
+        }, 1500); // Delay to show success screen first
+        
+        // Redirect after showing thank you
+        setTimeout(() => navigate('/'), 4000);
+        
       } else {
-        // For low ratings, just show thank you and redirect
-        setTimeout(() => navigate('/'), 3000);
+        // High rating (4-5) - Submit normal review
+        const reviewData = {
+          rating: selectedRating,
+          comment: '',
+          guestName: 'Anonymous'
+        };
+
+        const response = await fetch(`${API_URL}/api/public/venues/${actualVenueId}/reviews`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reviewData)
+        });
+
+        if (!response.ok) {
+          console.error('Failed to submit review');
+        } else {
+          console.log('✅ Review submitted successfully');
+        }
+
+        // Redirect to Google Maps for high ratings
+        if (venue.latitude && venue.longitude) {
+          setTimeout(() => {
+            const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`;
+            window.open(googleMapsUrl, '_blank');
+            setTimeout(() => navigate('/'), 2000);
+          }, 2000);
+        } else {
+          setTimeout(() => navigate('/'), 3000);
+        }
       }
+      
     } catch (error) {
       console.error('Error submitting review:', error);
+      
+      // Error haptic feedback
+      if (haptics.isSupported()) {
+        haptics.error();
+      }
+      
       // Still show success to user even if API fails
       setTimeout(() => navigate('/'), 3000);
     }

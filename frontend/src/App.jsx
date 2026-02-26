@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import AdminDashboard from './pages/AdminDashboard';
 import BusinessAdminDashboard from './pages/BusinessAdminDashboard';
 import CollectorDashboard from './pages/CollectorDashboard';
@@ -16,30 +17,59 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import QRCodeGenerator from './pages/QRCodeGenerator';
 import TestCronBookings from './pages/TestCronBookings';
 import SpotPage from './pages/SpotPage';
+import DiscoveryPage from './pages/DiscoveryPage';
 import ZoneUnitsManager from './pages/ZoneUnitsManager';
 import SunbedMapper from './pages/SunbedMapper';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import ApiStatus from './components/ApiStatus';
+import { useAppStore } from './store/appStore';
+
+// Context-Aware Router - Detects QR scans and manages mode
+function ContextAwareRouter() {
+  const [searchParams] = useSearchParams();
+  const { mode, startSession, isSessionActive } = useAppStore();
+  
+  useEffect(() => {
+    // Check for QR code parameters
+    const venueId = searchParams.get('v');
+    const unitId = searchParams.get('u');
+    
+    if (venueId && unitId) {
+      // QR code scanned - start new session
+      console.log('🔍 QR code detected:', { venueId, unitId });
+      startSession(venueId, unitId, ''); // venueName will be fetched by SpotPage
+    } else {
+      // No QR params - check if session is still active
+      if (!isSessionActive()) {
+        console.log('⚠️ No active session');
+      }
+    }
+  }, [searchParams, startSession, isSessionActive]);
+  
+  // For now, always show SpotPage for /spot and /menu routes
+  // Full context-aware routing will be implemented in Phase 2
+  return null;
+}
 
 function App() {
   return (
     <BrowserRouter>
+      <ContextAwareRouter />
       <ApiStatus />
       <Routes>
-        {/* Direct Login - Main Entry Point */}
-        <Route path="/" element={<LoginPage />} />
+        {/* Customer-Facing Routes */}
+        {/* DISCOVER MODE - Default for tourists (no QR scan) */}
+        <Route path="/" element={<DiscoveryPage />} />
         
-
-        
-        {/* Staff Login - After Business Setup */}
-        <Route path="/login" element={<LoginPage />} />
-        
-        {/* Customer-Facing Routes (QR Code Access) */}
-        <Route path="/menu" element={<MenuPage />} />
+        {/* SPOT MODE - On-site at venue (QR scanned) */}
         <Route path="/spot" element={<SpotPage />} />
+        <Route path="/menu" element={<MenuPage />} />
         <Route path="/review/:venueId" element={<ReviewPage />} />
         <Route path="/review" element={<ReviewPage />} />
+        
+        {/* Staff Login */}
+        <Route path="/login" element={<LoginPage />} />
         
         {/* Staff Dashboards - Protected */}
         <Route 
@@ -162,7 +192,7 @@ function App() {
           } 
         />
 
-        {/* Catch all - redirect to landing */}
+        {/* Catch all - redirect to discovery page */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

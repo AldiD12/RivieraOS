@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { ShoppingCart, MapPin, Check, Star } from 'lucide-react';
+import { ShoppingCart, MapPin, Check, Star, LogOut } from 'lucide-react';
+import { useAppStore } from '../store/appStore';
+import { useCartStore } from '../store/cartStore';
+import whatsappLink from '../utils/whatsappLink';
+import haptics from '../utils/haptics';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
@@ -30,6 +34,8 @@ const isValidEmail = (email) => {
 export default function SpotPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { session, exitSession } = useAppStore();
+  const { setVenue: setCartVenue } = useCartStore();
   
   // URL parameters
   const venueId = searchParams.get('v');
@@ -170,6 +176,9 @@ export default function SpotPage() {
         allowsDigitalOrdering: venueData.allowsDigitalOrdering,
         orderingEnabled: venueData.orderingEnabled
       });
+      
+      // Update cart store with venue context
+      setCartVenue(venueId, unitId, venueData.name);
 
       setLoading(false);
     } catch (err) {
@@ -195,6 +204,11 @@ export default function SpotPage() {
       ));
     } else {
       setCart([...cart, { ...product, quantity: 1 }]);
+    }
+    
+    // Haptic feedback for adding to cart
+    if (haptics.isSupported()) {
+      haptics.light();
     }
   };
 
@@ -241,11 +255,36 @@ export default function SpotPage() {
       if (!response.ok) throw new Error('Failed to place order');
       
       const result = await response.json();
+      
+      // 🚨 CRITICAL: Haptic feedback for order success
+      if (haptics.isSupported()) {
+        haptics.success();
+      }
+      
       setOrderSuccess(result);
       setCart([]);
+      
+      // 🚨 CRITICAL: Send WhatsApp link for retention (6-7x improvement)
+      setTimeout(() => {
+        const phone = whatsappLink.promptForPhone();
+        if (phone) {
+          whatsappLink.sendOrderLink(
+            phone,
+            result.orderNumber || result.id,
+            venue?.name || 'Riviera'
+          );
+        }
+      }, 1000); // Delay to show success screen first
+      
     } catch (err) {
       console.error('Error placing order:', err);
       setError('Failed to place order. Please try again.');
+      
+      // Error haptic feedback
+      if (haptics.isSupported()) {
+        haptics.error();
+      }
+      
       // Display error to user
       alert('Failed to place order. Please try again.');
     }
@@ -305,6 +344,12 @@ export default function SpotPage() {
       }
       
       const result = await response.json();
+      
+      // 🚨 CRITICAL: Haptic feedback for booking success
+      if (haptics.isSupported()) {
+        haptics.success();
+      }
+      
       setReservationSuccess(result);
       setShowReserveModal(false);
       setBookingForm({
@@ -315,9 +360,27 @@ export default function SpotPage() {
         notes: ''
       });
       setError(''); // Clear any previous errors
+      
+      // 🚨 CRITICAL: Send WhatsApp link for booking confirmation
+      if (sanitizedPhone && result.bookingCode) {
+        setTimeout(() => {
+          whatsappLink.sendBookingLink(
+            sanitizedPhone,
+            result.bookingCode,
+            venue?.name || 'Riviera',
+            'Beach' // Zone name - could be enhanced later
+          );
+        }, 1000); // Delay to show success screen first
+      }
+      
     } catch (err) {
       console.error('Error creating reservation:', err);
       setError(err.message || 'Failed to create reservation. Please try again.');
+      
+      // Error haptic feedback
+      if (haptics.isSupported()) {
+        haptics.error();
+      }
     }
   };
 
@@ -661,15 +724,32 @@ export default function SpotPage() {
       {/* Header */}
       <div className="bg-gradient-to-br from-white to-stone-50/50 border-b border-stone-200/40">
         <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-3 mb-4">
-            <MapPin className="w-5 h-5 text-[#92400E]" />
-            <p className="text-sm tracking-widest uppercase text-[#78716C]">
-              {unitId ? `Unit ${unitId}` : 'Welcome'}
-            </p>
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <MapPin className="w-5 h-5 text-[#92400E]" />
+                <p className="text-sm tracking-widest uppercase text-[#78716C]">
+                  {unitId ? `Unit ${unitId}` : 'Welcome'}
+                </p>
+              </div>
+              <h1 className="font-['Cormorant_Garamond'] text-6xl md:text-7xl font-light tracking-tighter leading-none text-[#1C1917]">
+                {venue?.name || 'Riviera'}
+              </h1>
+            </div>
+            
+            {/* Leave Venue Button */}
+            <button
+              onClick={() => {
+                exitSession();
+                navigate('/');
+              }}
+              className="flex items-center gap-2 px-4 py-2 text-sm text-[#78716C] hover:text-[#1C1917] transition-colors group"
+              title="Leave Venue"
+            >
+              <LogOut className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <span className="hidden sm:inline">Leave</span>
+            </button>
           </div>
-          <h1 className="font-['Cormorant_Garamond'] text-6xl md:text-7xl font-light tracking-tighter leading-none text-[#1C1917]">
-            {venue?.name || 'Riviera'}
-          </h1>
         </div>
       </div>
 
