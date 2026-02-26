@@ -46,10 +46,17 @@ class VenueApiService {
 
       const venues = await response.json();
       
+      console.log('📦 Raw API response:', venues);
+      
       if (!venues || venues.length === 0) {
         console.warn('⚠️ No venues returned from API');
         return [];
       }
+      
+      // Log each venue's coordinates
+      venues.forEach(v => {
+        console.log(`📍 Venue: ${v.name}, Lat: ${v.latitude}, Lng: ${v.longitude}`);
+      });
       
       // Cache the result
       this.cache.set(cacheKey, {
