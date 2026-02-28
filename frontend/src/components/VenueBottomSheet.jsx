@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import whatsappLink from '../utils/whatsappLink';
 import haptics from '../utils/haptics';
 
-export default function VenueBottomSheet({ venue, onClose }) {
+export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) {
   const navigate = useNavigate();
   const [selectedZone, setSelectedZone] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -116,13 +115,13 @@ Faleminderit!`;
     <>
       {/* Overlay */}
       <div 
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity duration-500"
+        className={`fixed inset-0 backdrop-blur-sm z-40 transition-opacity duration-500 ${isDayMode ? 'bg-black/30' : 'bg-black/60'}`}
         onClick={onClose}
       />
 
       {/* Bottom Sheet */}
       <div 
-        className="fixed bottom-0 left-0 right-0 bg-white rounded-t-[2rem] shadow-2xl z-50 max-h-[80vh] overflow-y-auto"
+        className={`fixed bottom-0 left-0 right-0 rounded-t-[2rem] shadow-2xl z-50 max-h-[80vh] overflow-y-auto border-t ${isDayMode ? 'bg-white border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}
         style={{
           animation: 'slideUp 0.5s ease-out',
           fontFamily: 'Inter, sans-serif'
@@ -130,14 +129,14 @@ Faleminderit!`;
       >
         {/* Handle Bar */}
         <div className="flex justify-center pt-4 pb-2">
-          <div className="w-12 h-1 bg-stone-300 rounded-full"></div>
+          <div className={`w-12 h-1 rounded-full ${isDayMode ? 'bg-zinc-300' : 'bg-zinc-700'}`}></div>
         </div>
 
         <div className="p-8">
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 text-stone-400 hover:text-stone-600 transition-colors duration-300"
+            className={`absolute top-6 right-6 transition-colors duration-300 ${isDayMode ? 'text-zinc-400 hover:text-zinc-950' : 'text-zinc-500 hover:text-white'}`}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -146,42 +145,42 @@ Faleminderit!`;
 
           {/* Venue Header */}
           <h2 
-            className="text-5xl font-light text-stone-900 mb-2 tracking-tight pr-8"
-            style={{ fontFamily: 'Cormorant Garamond, serif' }}
+            className={`text-5xl font-light mb-2 tracking-tight pr-8 ${isDayMode ? 'text-zinc-950' : 'text-white'}`}
+            style={{ fontFamily: 'Playfair Display, serif' }}
           >
             {venue.name}
           </h2>
-          <p className="text-sm text-stone-500 uppercase tracking-widest mb-2">
+          <p className={`text-sm uppercase tracking-widest mb-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
             {venue.type}
           </p>
-          <p className="text-base text-stone-600 mb-6">
+          <p className={`text-base mb-6 ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
             {venue.address}
           </p>
 
           {/* Availability Summary */}
           {hasAvailability ? (
-            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl p-6 mb-8 border border-emerald-200/40">
+            <div className={`rounded-xl p-6 mb-8 border ${isDayMode ? 'bg-emerald-50 border-emerald-200' : 'bg-zinc-900 border-zinc-800'}`}>
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                <p className="text-lg font-medium text-emerald-900">
-                  Available Now
+                <div className={`w-3 h-3 rounded-full animate-pulse ${isDayMode ? 'bg-emerald-500' : 'bg-[#10FF88]'}`}></div>
+                <p className={`text-lg font-medium ${isDayMode ? 'text-emerald-900' : 'text-[#10FF88]'}`}>
+                  {isDayMode ? 'Available Now' : 'LIVE NOW'}
                 </p>
               </div>
-              <p className="text-2xl font-light text-emerald-800 mb-1">
+              <p className={`text-2xl font-light mb-1 ${isDayMode ? 'text-emerald-800' : 'text-white'}`}>
                 {availability.availableUnits} sunbeds available
               </p>
               {availability.zones && availability.zones.length > 0 && (
-                <p className="text-sm text-emerald-700">
+                <p className={`text-sm ${isDayMode ? 'text-emerald-700' : 'text-zinc-400'}`}>
                   From €{Math.min(...availability.zones.map(z => z.basePrice))} per day
                 </p>
               )}
             </div>
           ) : (
-            <div className="bg-gradient-to-br from-stone-50 to-stone-100/50 rounded-2xl p-6 mb-8 border border-stone-200/40">
-              <p className="text-lg font-medium text-stone-700 mb-1">
+            <div className={`rounded-xl p-6 mb-8 border ${isDayMode ? 'bg-stone-50 border-stone-200' : 'bg-zinc-900 border-zinc-800'}`}>
+              <p className={`text-lg font-medium mb-1 ${isDayMode ? 'text-stone-700' : 'text-zinc-400'}`}>
                 Fully Booked
               </p>
-              <p className="text-sm text-stone-600">
+              <p className={`text-sm ${isDayMode ? 'text-stone-600' : 'text-zinc-500'}`}>
                 No availability at this time
               </p>
             </div>
@@ -190,7 +189,7 @@ Faleminderit!`;
           {/* Zones */}
           {availability && availability.zones && availability.zones.length > 0 && (
             <div className="space-y-4 mb-8">
-              <h3 className="text-sm uppercase tracking-widest text-stone-500 font-medium">
+              <h3 className={`text-sm uppercase tracking-widest font-medium ${isDayMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
                 Available Zones
               </h3>
               {availability.zones.map(zone => (
@@ -199,35 +198,37 @@ Faleminderit!`;
                   onClick={() => handleZoneSelect(zone)}
                   disabled={zone.availableUnits === 0}
                   className={`
-                    w-full bg-gradient-to-br from-white to-stone-50/50 rounded-2xl p-6 
-                    border border-stone-200/40 text-left
-                    transition-all duration-500 ease-out
+                    w-full rounded-xl p-6 border text-left
+                    transition-all duration-300 ease-out
                     ${zone.availableUnits > 0 
-                      ? 'hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.12)] hover:-translate-y-1 cursor-pointer' 
+                      ? isDayMode
+                        ? 'bg-white border-zinc-200 hover:border-zinc-400 hover:shadow-lg cursor-pointer'
+                        : 'bg-zinc-900 border-zinc-800 hover:border-[#10FF88]/50 hover:shadow-[0_0_20px_rgba(16,255,136,0.2)] cursor-pointer'
                       : 'opacity-50 cursor-not-allowed'
                     }
+                    ${isDayMode ? 'bg-white border-zinc-200' : 'bg-zinc-900 border-zinc-800'}
                   `}
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h4 className="text-xl font-medium text-stone-900 mb-2">
+                      <h4 className={`text-xl font-medium mb-2 ${isDayMode ? 'text-zinc-950' : 'text-white'}`}>
                         {zone.name}
                       </h4>
-                      <p className="text-sm text-stone-600 mb-1">
+                      <p className={`text-sm mb-1 ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
                         {zone.availableUnits} / {zone.totalUnits} available
                       </p>
-                      <p className="text-xs text-stone-500 uppercase tracking-wider">
+                      <p className={`text-xs uppercase tracking-wider ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
                         {zone.zoneType}
                       </p>
                     </div>
                     <div className="text-right">
                       <p 
-                        className="text-3xl font-light text-amber-900 mb-1"
-                        style={{ fontFamily: 'Cormorant Garamond, serif' }}
+                        className={`text-3xl font-light mb-1 ${isDayMode ? 'text-zinc-950' : 'text-[#10FF88]'}`}
+                        style={{ fontFamily: 'Playfair Display, serif' }}
                       >
                         €{zone.basePrice}
                       </p>
-                      <p className="text-xs text-stone-500">per day</p>
+                      <p className={`text-xs ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>per day</p>
                     </div>
                   </div>
                 </button>
@@ -238,10 +239,10 @@ Faleminderit!`;
           {/* Description */}
           {venue.description && (
             <div className="mb-8">
-              <h3 className="text-sm uppercase tracking-widest text-stone-500 font-medium mb-3">
+              <h3 className={`text-sm uppercase tracking-widest font-medium mb-3 ${isDayMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
                 About
               </h3>
-              <p className="text-base text-stone-600 leading-relaxed">
+              <p className={`text-base leading-relaxed ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
                 {venue.description}
               </p>
             </div>
@@ -258,21 +259,21 @@ Faleminderit!`;
                     alert('Please select a zone above');
                   }
                 }}
-                className="flex-1 bg-stone-900 text-stone-50 px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
+                className={`flex-1 px-8 py-4 rounded-full text-sm tracking-widest uppercase transition-all duration-300 ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800 shadow-lg' : 'bg-zinc-950 text-[#10FF88] border border-zinc-800 hover:shadow-[0_0_20px_rgba(16,255,136,0.4)]'}`}
               >
                 Book Now
               </button>
             ) : (
               <button
                 disabled
-                className="flex-1 bg-stone-300 text-stone-500 px-8 py-4 rounded-full text-sm tracking-widest uppercase cursor-not-allowed"
+                className={`flex-1 px-8 py-4 rounded-full text-sm tracking-widest uppercase cursor-not-allowed ${isDayMode ? 'bg-zinc-200 text-zinc-400' : 'bg-zinc-900 text-zinc-600 border border-zinc-800'}`}
               >
                 Fully Booked
               </button>
             )}
             <button
               onClick={onClose}
-              className="flex-1 border border-stone-300 text-stone-700 px-8 py-4 rounded-full hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
+              className={`flex-1 border px-8 py-4 rounded-full transition-all duration-300 ${isDayMode ? 'border-zinc-300 text-zinc-700 hover:border-zinc-400 hover:bg-stone-50' : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-900'}`}
             >
               Close
             </button>

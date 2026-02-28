@@ -571,6 +571,7 @@ export default function DiscoveryPage() {
           <VenueBottomSheet
             venue={selectedVenue}
             onClose={handleCloseBottomSheet}
+            isDayMode={isDayMode}
           />
         </div>
       )}
