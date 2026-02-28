@@ -263,34 +263,67 @@ export default function DiscoveryPage() {
             const isFillingFast = venue.availableUnitsCount > 0 && venue.availableUnitsCount < 15;
             
             return (
-              <div key={venue.id} className="relative w-full bg-zinc-900 border border-zinc-800 rounded-sm overflow-hidden group">
+              <div key={venue.id} className={`relative w-full overflow-hidden rounded-sm group ${isDayMode ? 'bg-white border border-zinc-300' : 'bg-zinc-900 border border-zinc-800'}`}>
                 {/* Venue Image */}
-                <div className="h-56 w-full bg-zinc-900 relative">
+                <div className="h-56 w-full relative overflow-hidden">
                   {/* Status Badge */}
                   {isLive && (
-                    <div className="absolute top-0 left-0 z-20 bg-zinc-950 border-r border-b border-zinc-800 px-3 py-1.5 flex items-center space-x-2">
-                      <span className="w-1.5 h-1.5 bg-[#10FF88]"></span>
-                      <span className="text-[10px] font-mono font-bold text-white tracking-[0.2em] uppercase">LIVE NOW</span>
+                    <div className={`absolute top-3 left-3 z-20 px-3 py-1.5 flex items-center space-x-2 rounded-sm ${isDayMode ? 'bg-emerald-500 border border-emerald-600' : 'bg-zinc-950 border-r border-b border-zinc-800'}`}>
+                      <span className={`w-1.5 h-1.5 ${isDayMode ? 'bg-white' : 'bg-[#10FF88]'}`}></span>
+                      <span className={`text-[10px] font-mono font-bold tracking-[0.2em] uppercase ${isDayMode ? 'text-white' : 'text-white'}`}>
+                        {isDayMode ? 'AVAILABLE' : 'LIVE NOW'}
+                      </span>
                     </div>
                   )}
                   {isFillingFast && (
-                    <div className="absolute top-0 left-0 z-20 bg-zinc-900 border-r border-b border-zinc-800 px-3 py-1.5 flex items-center space-x-2">
-                      <span className="w-1.5 h-1.5 bg-amber-500"></span>
-                      <span className="text-[10px] font-mono font-bold text-amber-500 tracking-widest uppercase">FILLING FAST</span>
+                    <div className={`absolute top-3 left-3 z-20 px-3 py-1.5 flex items-center space-x-2 rounded-sm ${isDayMode ? 'bg-white border border-zinc-300' : 'bg-zinc-900 border-r border-b border-zinc-800'}`}>
+                      <span className={`w-1.5 h-1.5 ${isDayMode ? 'bg-zinc-950' : 'bg-amber-500'}`}></span>
+                      <span className={`text-[10px] font-mono font-bold tracking-widest uppercase ${isDayMode ? 'text-zinc-950' : 'text-amber-500'}`}>
+                        {isDayMode ? 'FEW LEFT' : 'FILLING FAST'}
+                      </span>
                     </div>
+                  )}
+                  
+                  {/* Favorite Button (Day mode only) */}
+                  {isDayMode && (
+                    <div className="absolute top-3 right-3 z-20">
+                      <button className="w-8 h-8 rounded-sm bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center hover:bg-white/40 transition-colors">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Image Gradient Overlay (Day mode) */}
+                  {isDayMode && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent"></div>
                   )}
                   
                   {venue.imageUrl ? (
                     <img 
                       alt={venue.name} 
-                      className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-all duration-500" 
+                      className={`w-full h-full object-cover transition-all duration-500 ${isDayMode ? 'grayscale-[10%] group-hover:grayscale-0 group-hover:scale-105' : 'grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80'}`}
                       src={venue.imageUrl}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-zinc-700">
+                    <div className={`w-full h-full flex items-center justify-center ${isDayMode ? 'bg-stone-100 text-zinc-400' : 'bg-zinc-900 text-zinc-700'}`}>
                       <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
+                    </div>
+                  )}
+                  
+                  {/* Location Badge (Day mode, on image) */}
+                  {isDayMode && venue.latitude && venue.longitude && (
+                    <div className="absolute bottom-3 left-3 text-white z-20">
+                      <div className="flex items-center space-x-1 text-[10px] uppercase tracking-widest font-medium opacity-90">
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>Albanian Riviera</span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -298,48 +331,91 @@ export default function DiscoveryPage() {
                 {/* Venue Info */}
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-2">
-                    <h2 className="text-2xl font-serif text-white uppercase tracking-tight">{venue.name}</h2>
-                    <span className={`text-[10px] font-mono mt-2 tracking-widest ${isLive ? 'text-[#10FF88]' : 'text-zinc-500'}`}>
-                      {venue.latitude && venue.longitude ? '0.8KM_PROXIMITY' : 'LOCATION_TBD'}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 text-[10px] font-mono text-zinc-500 mb-6 uppercase tracking-wider">
-                    <span className="flex items-center">
-                      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                      </svg>
-                      {venue.type || 'Venue'}
-                    </span>
-                    <span className="w-1 h-1 bg-zinc-800"></span>
-                    <span>Tier: {venue.availableUnitsCount >= 15 ? '$$$$' : '$$$'}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
-                    <div className="flex -space-x-1">
-                      <div className="w-8 h-8 rounded-sm border border-zinc-950 bg-zinc-800 flex items-center justify-center text-[9px] font-mono text-white">
-                        {venue.availableUnitsCount || 0}
+                    <h2 className={`text-2xl font-serif uppercase tracking-tight ${isDayMode ? 'text-zinc-950' : 'text-white'}`}>{venue.name}</h2>
+                    {isDayMode ? (
+                      <div className="flex items-center space-x-0.5">
+                        <svg className="w-3.5 h-3.5 text-zinc-950 fill-current" viewBox="0 0 24 24">
+                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                        </svg>
+                        <span className="text-xs font-bold text-zinc-950">4.8</span>
+                        <span className="text-[10px] text-zinc-400">(120)</span>
                       </div>
-                      <div className="w-8 h-8 rounded-sm border border-zinc-950 bg-zinc-950 flex items-center justify-center text-[9px] font-mono text-zinc-500">
-                        OPEN
+                    ) : (
+                      <span className={`text-[10px] font-mono mt-2 tracking-widest ${isLive ? 'text-[#10FF88]' : 'text-zinc-500'}`}>
+                        {venue.latitude && venue.longitude ? '0.8KM_PROXIMITY' : 'LOCATION_TBD'}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {isDayMode && (
+                    <p className="text-zinc-500 text-xs leading-relaxed line-clamp-2 mb-4">
+                      Experience world-class service and exclusive atmosphere at one of the Albanian Riviera's finest venues.
+                    </p>
+                  )}
+                  
+                  {isDayMode ? (
+                    <div className="grid grid-cols-2 gap-4 mb-5 border-t border-b border-zinc-100 py-3">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Capacity</span>
+                        <span className="text-sm font-medium text-zinc-900">{venue.availableUnitsCount || 0} spots</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Type</span>
+                        <span className="text-sm font-medium text-zinc-900">{venue.type || 'Venue'}</span>
                       </div>
                     </div>
-                    
-                    <button 
-                      onClick={() => handleVenueClick(venue)}
-                      className={`px-5 py-2.5 rounded-sm text-[10px] font-bold tracking-widest uppercase transition-all flex items-center space-x-2 ${
-                        isLive 
-                          ? 'bg-zinc-100 text-black hover:bg-[#10FF88]' 
-                          : 'bg-transparent border border-zinc-800 text-white hover:border-zinc-100'
-                      }`}
-                    >
-                      <span>{isLive ? 'REQUEST VIP' : 'RESERVE'}</span>
-                      {isLive && (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  ) : (
+                    <div className="flex items-center space-x-3 text-[10px] font-mono text-zinc-500 mb-6 uppercase tracking-wider">
+                      <span className="flex items-center">
+                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                         </svg>
+                        {venue.type || 'Venue'}
+                      </span>
+                      <span className="w-1 h-1 bg-zinc-800"></span>
+                      <span>Tier: {venue.availableUnitsCount >= 15 ? '$$$$' : '$$$'}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
+                    {!isDayMode && (
+                      <div className="flex -space-x-1">
+                        <div className="w-8 h-8 rounded-sm border border-zinc-950 bg-zinc-800 flex items-center justify-center text-[9px] font-mono text-white">
+                          {venue.availableUnitsCount || 0}
+                        </div>
+                        <div className="w-8 h-8 rounded-sm border border-zinc-950 bg-zinc-950 flex items-center justify-center text-[9px] font-mono text-zinc-500">
+                          OPEN
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className={`flex items-center space-x-3 ${isDayMode ? 'w-full' : ''}`}>
+                      <button 
+                        onClick={() => handleVenueClick(venue)}
+                        className={`rounded-sm text-[10px] font-bold tracking-widest uppercase transition-all flex items-center justify-center space-x-2 ${
+                          isDayMode 
+                            ? 'flex-1 bg-zinc-950 text-white py-3 hover:bg-zinc-800 border border-zinc-950'
+                            : isLive 
+                            ? 'px-5 py-2.5 bg-zinc-100 text-black hover:bg-[#10FF88]' 
+                            : 'px-5 py-2.5 bg-transparent border border-zinc-800 text-white hover:border-zinc-100'
+                        }`}
+                      >
+                        <span>{isDayMode ? 'RESERVE' : isLive ? 'REQUEST VIP' : 'RESERVE'}</span>
+                        {!isDayMode && isLive && (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        )}
+                      </button>
+                      
+                      {isDayMode && (
+                        <button className="w-10 h-10 flex items-center justify-center border border-zinc-300 hover:border-zinc-950 transition-colors bg-white rounded-sm">
+                          <svg className="w-5 h-5 text-zinc-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </button>
                       )}
-                    </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -348,7 +424,7 @@ export default function DiscoveryPage() {
           
           {filteredVenues.length === 0 && (
             <div className="text-center py-20">
-              <p className="text-zinc-500 text-lg">No venues found</p>
+              <p className={`text-lg ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>No venues found</p>
             </div>
           )}
         </div>
