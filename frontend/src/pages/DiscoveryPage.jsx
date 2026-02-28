@@ -21,10 +21,10 @@ const RIVIERA_CENTER = {
 
 // Venue filters
 const VENUE_FILTERS = [
-  { id: 'all', label: 'All Venues' },
-  { id: 'Beach', label: 'Beach Clubs' },
-  { id: 'Boat', label: 'Boats' },
-  { id: 'Restaurant', label: 'Dining' }
+  { id: 'all', label: 'ALL VENUES' },
+  { id: 'Beach', label: 'BEACH CLUBS' },
+  { id: 'Boat', label: 'BOATS' },
+  { id: 'Restaurant', label: 'DINING' }
 ];
 
 // 🎯 XIXA Atmospheric Marker with pulsing ring
@@ -40,9 +40,9 @@ function VenueMarker({ venue, isSelected, onClick }) {
       {/* Pulsing ring for highlighted venues */}
       {isHighlight && !isFull && (
         <div className="absolute w-12 h-12 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
-          <div className="absolute inset-0 rounded-full border border-[#84d53f] opacity-50" 
+          <div className="absolute inset-0 rounded-full border border-[#10FF88] opacity-50" 
                style={{ animation: 'pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1)' }}></div>
-          <div className="absolute inset-0 rounded-full bg-[#84d53f]/20 animate-pulse"></div>
+          <div className="absolute inset-0 rounded-full bg-[#10FF88]/20 animate-pulse"></div>
         </div>
       )}
       
@@ -52,22 +52,22 @@ function VenueMarker({ venue, isSelected, onClick }) {
           relative flex items-center justify-center rounded-full z-10
           transition-all duration-300
           ${isHighlight && !isFull 
-            ? 'w-9 h-9 bg-gradient-to-br from-slate-800 to-black border border-[#84d53f] shadow-[0_0_15px_rgba(132,213,63,0.3)]' 
+            ? 'w-10 h-10 bg-zinc-950 border border-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]' 
             : isFull
-            ? 'w-6 h-6 bg-slate-900 border border-white/30 shadow-lg'
-            : 'w-8 h-8 bg-slate-900 border border-[#84d53f]/50 shadow-[0_0_10px_rgba(132,213,63,0.2)]'
+            ? 'w-5 h-5 bg-zinc-900 border border-zinc-600 shadow-lg'
+            : 'w-8 h-8 bg-zinc-950 border border-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
           }
           ${isSelected ? 'scale-110' : 'group-hover:scale-110'}
         `}
       >
         <span 
           className={`
-            font-bold
+            font-bold font-mono
             ${isHighlight && !isFull 
-              ? 'text-xs text-[#84d53f]' 
+              ? 'text-xs text-[#10FF88]' 
               : isFull
-              ? 'text-[8px] text-white/80'
-              : 'text-[10px] text-[#84d53f]'
+              ? 'text-[8px] text-zinc-400'
+              : 'text-[10px] text-[#10FF88]'
             }
           `}
         >
@@ -79,9 +79,10 @@ function VenueMarker({ venue, isSelected, onClick }) {
       {(isHighlight || isSelected) && (
         <div 
           className={`
-            mt-1 px-2 py-1 rounded text-[10px] font-medium tracking-wide
-            bg-white/90 backdrop-blur-md 
-            border border-slate-200
+            mt-2 px-2 py-1 rounded-sm text-[10px] font-medium tracking-widest uppercase
+            bg-zinc-950/90 backdrop-blur-md 
+            border border-zinc-800
+            text-zinc-400
             transition-opacity duration-300
             ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
           `}
@@ -158,10 +159,10 @@ export default function DiscoveryPage() {
 
   if (loading) {
     return (
-      <div className="h-screen bg-white flex items-center justify-center">
+      <div className="h-screen bg-zinc-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-6 border-2 border-slate-200 border-t-[#84d53f] rounded-full animate-spin"></div>
-          <p className="text-lg text-slate-600">Loading venues...</p>
+          <div className="w-16 h-16 mx-auto mb-6 border-2 border-zinc-800 border-t-[#10FF88] rounded-full animate-spin"></div>
+          <p className="text-lg text-zinc-400">Loading venues...</p>
         </div>
       </div>
     );
@@ -169,13 +170,13 @@ export default function DiscoveryPage() {
 
   if (error) {
     return (
-      <div className="h-screen bg-white flex items-center justify-center p-8">
+      <div className="h-screen bg-zinc-950 flex items-center justify-center p-8">
         <div className="text-center max-w-md">
-          <h2 className="text-4xl font-light text-slate-900 mb-4">Something went wrong</h2>
-          <p className="text-lg text-slate-600 mb-8">{error}</p>
+          <h2 className="text-4xl font-light text-white mb-4">Something went wrong</h2>
+          <p className="text-lg text-zinc-400 mb-8">{error}</p>
           <button
             onClick={loadVenues}
-            className="bg-[#84d53f] text-white px-8 py-4 rounded-full text-sm font-medium tracking-wide hover:bg-[#75c235] transition-all"
+            className="bg-[#10FF88] text-zinc-950 px-8 py-4 rounded-full text-sm font-medium tracking-wide hover:shadow-[0_0_20px_rgba(16,255,136,0.6)] transition-all"
           >
             Try Again
           </button>
@@ -185,9 +186,19 @@ export default function DiscoveryPage() {
   }
 
   return (
-    <div className="h-screen w-full overflow-hidden relative bg-white font-sans antialiased">
+    <div className="h-screen w-full overflow-hidden relative bg-zinc-950 font-sans antialiased">
+      {/* Grid Background Pattern */}
+      <div className="absolute inset-0 z-0" style={{
+        backgroundImage: 'linear-gradient(rgba(39, 39, 42, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(39, 39, 42, 0.3) 1px, transparent 1px)',
+        backgroundSize: '40px 40px'
+      }}></div>
+      
+      {/* Decorative shapes */}
+      <div className="absolute top-0 right-0 w-[85%] h-[75%] bg-zinc-900/40 border-b border-l border-zinc-800 rounded-bl-[120px] backdrop-blur-[2px] z-0"></div>
+      <div className="absolute bottom-20 right-0 w-[45%] h-[35%] bg-zinc-900/40 border-t border-l border-zinc-800 rounded-tl-[80px] backdrop-blur-[2px] z-0"></div>
+      
       {/* Map Background */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-[1]">
         <Map
           ref={mapRef}
           {...viewState}
@@ -222,31 +233,69 @@ export default function DiscoveryPage() {
 
       {/* Top Header */}
       <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none">
-        <div className="pointer-events-auto pt-14 px-6 flex flex-col items-start space-y-4 bg-gradient-to-b from-white/90 via-white/50 to-transparent pb-12">
-          <div className="flex justify-between items-center w-full">
-            <div>
-              <h1 className="text-4xl text-slate-900 tracking-tight font-serif">XIXA</h1>
-              <p className="text-xs tracking-[0.2em] text-slate-500 uppercase mt-1">Albanian Riviera</p>
+        <div className="pointer-events-auto pt-14 px-6 flex flex-col items-start space-y-4 bg-gradient-to-b from-zinc-950 via-zinc-950/80 to-transparent pb-12 relative">
+          
+          {/* Day/Night Toggle (centered at top) */}
+          <div className="absolute top-14 left-0 right-0 flex justify-center z-30 pointer-events-none">
+            <div className="bg-zinc-900/80 backdrop-blur-md border border-zinc-800 p-1 rounded-full flex shadow-lg pointer-events-auto">
+              <button className="flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-800 text-zinc-400 border border-zinc-700/50">
+                <span className="opacity-70">⛱️</span>
+                <span>DAY</span>
+              </button>
+              <button className="flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all bg-zinc-950 text-[#10FF88] border border-zinc-800 shadow-[0_0_12px_rgba(16,255,136,0.4)]">
+                <span style={{ filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' }}>🪩</span>
+                <span style={{ filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' }}>NIGHT</span>
+              </button>
             </div>
-            <button className="p-2 rounded-full border border-slate-200 bg-white/50 backdrop-blur-sm hover:bg-slate-100 transition-colors">
-              <svg className="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </button>
+          </div>
+          
+          <div className="flex justify-between items-start w-full relative z-20 pt-8">
+            <div>
+              <h1 className="font-serif text-4xl text-white tracking-tight drop-shadow-lg" style={{ fontFamily: 'Playfair Display, serif' }}>XIXA</h1>
+              <div className="flex items-center space-x-2 mt-1">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)] animate-pulse"></div>
+                <p className="text-[10px] font-mono tracking-[0.2em] text-zinc-400 uppercase">Albanian Riviera</p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col items-end space-y-3 pt-0">
+              {/* Notification button */}
+              <button className="w-10 h-10 flex items-center justify-center rounded-full border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm hover:bg-zinc-800 hover:border-[#10FF88]/50 transition-all group">
+                <svg className="w-5 h-5 text-zinc-400 group-hover:text-[#10FF88] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </button>
+              
+              {/* List/Map toggle */}
+              <div className="flex items-center bg-zinc-900/90 backdrop-blur-md border border-zinc-800 rounded-lg p-1 shadow-lg">
+                <button className="px-3 py-1.5 flex items-center space-x-2 text-[10px] uppercase font-medium text-zinc-500 hover:text-white transition-colors border-r border-zinc-800 pr-3">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                  <span>List</span>
+                </button>
+                <button className="px-3 py-1.5 flex items-center space-x-2 text-[10px] uppercase font-bold text-[#10FF88] bg-zinc-950 rounded border border-zinc-800 shadow-[0_0_12px_rgba(16,255,136,0.4)] ml-1">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                  </svg>
+                  <span style={{ filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' }}>Map</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Filter Pills */}
-          <div className="flex space-x-3 overflow-x-auto no-scrollbar w-full pb-2">
+          <div className="flex space-x-3 overflow-x-auto no-scrollbar w-full pb-2 pt-4 pl-0.5">
             {VENUE_FILTERS.map(filter => (
               <button
                 key={filter.id}
                 onClick={() => setActiveFilter(filter.id)}
                 className={`
-                  whitespace-nowrap px-5 py-2 rounded-full text-xs font-medium tracking-wide shadow-sm
+                  whitespace-nowrap px-5 py-2 rounded-full text-xs font-medium tracking-wide
                   transform active:scale-95 transition-all
                   ${activeFilter === filter.id
-                    ? 'bg-slate-900 text-white shadow-lg'
-                    : 'bg-white/80 backdrop-blur-md border border-slate-200 text-slate-600 hover:border-[#84d53f]/50'
+                    ? 'bg-zinc-950 border border-[#10FF88] text-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
+                    : 'bg-zinc-900/60 backdrop-blur-md border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
                   }
                 `}
               >
@@ -258,22 +307,22 @@ export default function DiscoveryPage() {
       </div>
 
       {/* Right Side Controls */}
-      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 flex flex-col space-y-3">
-        <button className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md border border-slate-200 flex items-center justify-center shadow-lg active:scale-95 transition-transform">
-          <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 flex flex-col space-y-3 pointer-events-auto">
+        <button className="w-10 h-10 rounded-full bg-zinc-900/90 backdrop-blur-md border border-zinc-800 flex items-center justify-center shadow-lg active:scale-95 transition-all hover:border-[#10FF88]/30 group">
+          <svg className="w-5 h-5 text-zinc-400 group-hover:text-[#10FF88] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ filter: 'group-hover:drop-shadow(0 0 5px rgba(16, 255, 136, 0.4))' }}>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
         </button>
         
-        <div className="flex flex-col rounded-full bg-white/90 backdrop-blur-md border border-slate-200 shadow-lg overflow-hidden">
-          <button className="w-10 h-10 flex items-center justify-center hover:bg-slate-100 active:bg-slate-200 transition-colors border-b border-slate-200">
-            <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="flex flex-col rounded-full bg-zinc-900/90 backdrop-blur-md border border-zinc-800 shadow-lg overflow-hidden">
+          <button className="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 active:bg-zinc-700 transition-colors border-b border-zinc-800 text-zinc-400 hover:text-white">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
           </button>
-          <button className="w-10 h-10 flex items-center justify-center hover:bg-slate-100 active:bg-slate-200 transition-colors">
-            <svg className="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button className="w-10 h-10 flex items-center justify-center hover:bg-zinc-800 active:bg-zinc-700 transition-colors text-zinc-400 hover:text-white">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
             </svg>
           </button>
@@ -281,23 +330,23 @@ export default function DiscoveryPage() {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 pointer-events-none">
-        <div className="pointer-events-auto bg-gradient-to-t from-white via-white/90 to-transparent pt-12 pb-6 px-6">
+      <div className="absolute bottom-0 left-0 right-0 z-30 pointer-events-none">
+        <div className="pointer-events-auto bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent pt-12 pb-8 px-6">
           {/* Search Bar */}
           <div className="relative mb-6 group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg className="w-5 h-5 text-slate-400 group-focus-within:text-[#84d53f] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-zinc-500 group-focus-within:text-[#10FF88] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
             <input
-              className="block w-full pl-11 pr-4 py-3.5 bg-white/50 backdrop-blur-lg border border-slate-300 rounded-xl text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#84d53f] focus:border-[#84d53f] transition-all shadow-sm"
+              className="block w-full pl-11 pr-12 py-3.5 bg-zinc-900/50 backdrop-blur-lg border border-zinc-800 rounded-xl text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#10FF88] focus:border-[#10FF88] transition-all shadow-inner"
               placeholder="Find elite venues, yachts..."
               type="text"
             />
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              <button className="p-1 rounded hover:bg-slate-200 transition-colors">
-                <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button className="p-1 rounded hover:bg-zinc-800 transition-colors">
+                <svg className="w-5 h-5 text-zinc-500 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                 </svg>
               </button>
@@ -305,35 +354,35 @@ export default function DiscoveryPage() {
           </div>
 
           {/* Bottom Nav Bar */}
-          <nav className="relative rounded-2xl bg-white/80 backdrop-blur-xl border border-slate-200 shadow-xl overflow-hidden">
+          <nav className="relative rounded-2xl bg-zinc-900/80 backdrop-blur-xl border border-zinc-800 shadow-2xl overflow-hidden">
             <div className="flex items-center justify-around py-4">
               <button className="flex flex-col items-center space-y-1 group w-1/4">
-                <svg className="w-7 h-7 text-[#84d53f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-7 h-7 text-[#10FF88]" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' }}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className="text-[10px] font-medium text-slate-900">Discover</span>
-                <div className="w-1 h-1 rounded-full bg-[#84d53f] mt-1"></div>
+                <span className="text-[10px] font-medium text-white tracking-wide" style={{ filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' }}>DISCOVER</span>
+                <div className="w-1 h-1 rounded-full bg-[#10FF88] mt-1 shadow-[0_0_12px_rgba(16,255,136,0.4)]"></div>
               </button>
               
               <button className="flex flex-col items-center space-y-1 group w-1/4 hover:opacity-100 opacity-60 transition-opacity">
-                <svg className="w-6 h-6 text-slate-500 group-hover:text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-zinc-500 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
-                <span className="text-[10px] font-medium text-slate-500 group-hover:text-slate-900">Saved</span>
+                <span className="text-[10px] font-medium text-zinc-500 group-hover:text-white tracking-wide">SAVED</span>
               </button>
               
               <button className="flex flex-col items-center space-y-1 group w-1/4 hover:opacity-100 opacity-60 transition-opacity">
-                <svg className="w-6 h-6 text-slate-500 group-hover:text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-zinc-500 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                 </svg>
-                <span className="text-[10px] font-medium text-slate-500 group-hover:text-slate-900">Bookings</span>
+                <span className="text-[10px] font-medium text-zinc-500 group-hover:text-white tracking-wide">BOOKINGS</span>
               </button>
               
               <button className="flex flex-col items-center space-y-1 group w-1/4 hover:opacity-100 opacity-60 transition-opacity">
-                <svg className="w-6 h-6 text-slate-500 group-hover:text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-6 h-6 text-zinc-500 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <span className="text-[10px] font-medium text-slate-500 group-hover:text-slate-900">Profile</span>
+                <span className="text-[10px] font-medium text-zinc-500 group-hover:text-white tracking-wide">PROFILE</span>
               </button>
             </div>
           </nav>
@@ -354,8 +403,8 @@ export default function DiscoveryPage() {
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes pulse-ring {
-            0% { transform: scale(0.8); opacity: 0.5; }
-            100% { transform: scale(2.5); opacity: 0; }
+            0% { transform: scale(0.8); opacity: 0.5; border-color: #10FF88; }
+            100% { transform: scale(2.5); opacity: 0; border-color: transparent; }
           }
           
           .no-scrollbar::-webkit-scrollbar {
@@ -377,20 +426,22 @@ export default function DiscoveryPage() {
           }
           
           .mapboxgl-ctrl-group {
-            background: rgba(255, 255, 255, 0.9) !important;
+            background: rgba(24, 24, 27, 0.9) !important;
             backdrop-filter: blur(12px);
             border-radius: 12px !important;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
-            border: 1px solid rgba(0, 0, 0, 0.05) !important;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid rgba(39, 39, 42, 1) !important;
           }
           
           .mapboxgl-ctrl-group button {
             width: 36px !important;
             height: 36px !important;
+            color: #A1A1AA !important;
           }
           
           .mapboxgl-ctrl-group button:hover {
-            background-color: rgba(0, 0, 0, 0.05) !important;
+            background-color: rgba(39, 39, 42, 1) !important;
+            color: #10FF88 !important;
           }
         `
       }} />
