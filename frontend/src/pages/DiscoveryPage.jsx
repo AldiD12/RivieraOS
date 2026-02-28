@@ -120,6 +120,7 @@ export default function DiscoveryPage() {
   const [viewState, setViewState] = useState(RIVIERA_CENTER);
   const [activeFilter, setActiveFilter] = useState('all');
   const [isDayMode, setIsDayMode] = useState(false); // false = night mode (default)
+  const [viewMode, setViewMode] = useState('map'); // 'map' or 'list'
 
   useEffect(() => {
     loadVenues();
@@ -218,39 +219,140 @@ export default function DiscoveryPage() {
       <div className={`absolute bottom-20 right-0 w-[45%] h-[35%] rounded-tl-[80px] backdrop-blur-[2px] z-0 ${isDayMode ? 'bg-stone-200/40 border-t border-l border-stone-300' : 'bg-zinc-900/40 border-t border-l border-zinc-800'}`}></div>
       
       {/* Map Background */}
-      <div className="absolute inset-0 z-[1]">
-        <Map
-          ref={mapRef}
-          {...viewState}
-          onMove={evt => setViewState(evt.viewState)}
-          mapStyle={DARK_STYLE}
-          mapboxAccessToken={MAPBOX_TOKEN}
-          style={{ width: '100%', height: '100%' }}
-          attributionControl={false}
-          cooperativeGestures={selectedVenue !== null}
-          antialias={true}
-        >
-          <NavigationControl position="bottom-right" showCompass={false} />
+      {viewMode === 'map' && (
+        <div className="absolute inset-0 z-[1]">
+          <Map
+            ref={mapRef}
+            {...viewState}
+            onMove={evt => setViewState(evt.viewState)}
+            mapStyle={DARK_STYLE}
+            mapboxAccessToken={MAPBOX_TOKEN}
+            style={{ width: '100%', height: '100%' }}
+            attributionControl={false}
+            cooperativeGestures={selectedVenue !== null}
+            antialias={true}
+          >
+            <NavigationControl position="bottom-right" showCompass={false} />
+            
+            {filteredVenues.map(venue => (
+              venue.latitude && venue.longitude && (
+                <Marker
+                  key={venue.id}
+                  longitude={venue.longitude}
+                  latitude={venue.latitude}
+                  anchor="center"
+                >
+                  <VenueMarker
+                    venue={venue}
+                    isSelected={selectedVenue?.id === venue.id}
+                    onClick={() => handleVenueClick(venue)}
+                    isDayMode={isDayMode}
+                  />
+                </Marker>
+              )
+            ))}
+          </Map>
+        </div>
+      )}
+
+      {/* List View */}
+      {viewMode === 'list' && (
+        <div className="absolute inset-0 pt-[250px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 space-y-8">
+          {filteredVenues.map((venue) => {
+            const isLive = venue.availableUnitsCount >= 15;
+            const isFillingFast = venue.availableUnitsCount > 0 && venue.availableUnitsCount < 15;
+            
+            return (
+              <div key={venue.id} className="relative w-full bg-zinc-900 border border-zinc-800 rounded-sm overflow-hidden group">
+                {/* Venue Image */}
+                <div className="h-56 w-full bg-zinc-900 relative">
+                  {/* Status Badge */}
+                  {isLive && (
+                    <div className="absolute top-0 left-0 z-20 bg-zinc-950 border-r border-b border-zinc-800 px-3 py-1.5 flex items-center space-x-2">
+                      <span className="w-1.5 h-1.5 bg-[#10FF88]"></span>
+                      <span className="text-[10px] font-mono font-bold text-white tracking-[0.2em] uppercase">LIVE NOW</span>
+                    </div>
+                  )}
+                  {isFillingFast && (
+                    <div className="absolute top-0 left-0 z-20 bg-zinc-900 border-r border-b border-zinc-800 px-3 py-1.5 flex items-center space-x-2">
+                      <span className="w-1.5 h-1.5 bg-amber-500"></span>
+                      <span className="text-[10px] font-mono font-bold text-amber-500 tracking-widest uppercase">FILLING FAST</span>
+                    </div>
+                  )}
+                  
+                  {venue.imageUrl ? (
+                    <img 
+                      alt={venue.name} 
+                      className="w-full h-full object-cover grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-all duration-500" 
+                      src={venue.imageUrl}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-zinc-700">
+                      <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Venue Info */}
+                <div className="p-5">
+                  <div className="flex justify-between items-start mb-2">
+                    <h2 className="text-2xl font-serif text-white uppercase tracking-tight">{venue.name}</h2>
+                    <span className={`text-[10px] font-mono mt-2 tracking-widest ${isLive ? 'text-[#10FF88]' : 'text-zinc-500'}`}>
+                      {venue.latitude && venue.longitude ? '0.8KM_PROXIMITY' : 'LOCATION_TBD'}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center space-x-3 text-[10px] font-mono text-zinc-500 mb-6 uppercase tracking-wider">
+                    <span className="flex items-center">
+                      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                      </svg>
+                      {venue.type || 'Venue'}
+                    </span>
+                    <span className="w-1 h-1 bg-zinc-800"></span>
+                    <span>Tier: {venue.availableUnitsCount >= 15 ? '$$$$' : '$$$'}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
+                    <div className="flex -space-x-1">
+                      <div className="w-8 h-8 rounded-sm border border-zinc-950 bg-zinc-800 flex items-center justify-center text-[9px] font-mono text-white">
+                        {venue.availableUnitsCount || 0}
+                      </div>
+                      <div className="w-8 h-8 rounded-sm border border-zinc-950 bg-zinc-950 flex items-center justify-center text-[9px] font-mono text-zinc-500">
+                        OPEN
+                      </div>
+                    </div>
+                    
+                    <button 
+                      onClick={() => handleVenueClick(venue)}
+                      className={`px-5 py-2.5 rounded-sm text-[10px] font-bold tracking-widest uppercase transition-all flex items-center space-x-2 ${
+                        isLive 
+                          ? 'bg-zinc-100 text-black hover:bg-[#10FF88]' 
+                          : 'bg-transparent border border-zinc-800 text-white hover:border-zinc-100'
+                      }`}
+                    >
+                      <span>{isLive ? 'REQUEST VIP' : 'RESERVE'}</span>
+                      {isLive && (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
           
-          {filteredVenues.map(venue => (
-            venue.latitude && venue.longitude && (
-              <Marker
-                key={venue.id}
-                longitude={venue.longitude}
-                latitude={venue.latitude}
-                anchor="center"
-              >
-                <VenueMarker
-                  venue={venue}
-                  isSelected={selectedVenue?.id === venue.id}
-                  onClick={() => handleVenueClick(venue)}
-                  isDayMode={isDayMode}
-                />
-              </Marker>
-            )
-          ))}
-        </Map>
-      </div>
+          {filteredVenues.length === 0 && (
+            <div className="text-center py-20">
+              <p className="text-zinc-500 text-lg">No venues found</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Top Header */}
       <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none">
@@ -295,17 +397,23 @@ export default function DiscoveryPage() {
               
               {/* List/Map toggle */}
               <div className={`flex items-center backdrop-blur-md border rounded-lg p-1 shadow-lg ${isDayMode ? 'bg-white/90 border-zinc-200' : 'bg-zinc-900/90 border-zinc-800'}`}>
-                <button className={`px-3 py-1.5 flex items-center space-x-2 text-[10px] uppercase font-medium transition-colors border-r pr-3 ${isDayMode ? 'text-zinc-500 hover:text-zinc-900 border-zinc-200' : 'text-zinc-500 hover:text-white border-zinc-800'}`}>
+                <button 
+                  onClick={() => setViewMode('list')}
+                  className={`px-3 py-1.5 flex items-center space-x-2 text-[10px] uppercase font-medium transition-colors border-r pr-3 ${viewMode === 'list' ? (isDayMode ? 'text-black bg-zinc-100 rounded-sm font-bold' : 'text-black bg-zinc-100 rounded-sm font-bold') : (isDayMode ? 'text-zinc-500 hover:text-zinc-900 border-zinc-200' : 'text-zinc-500 hover:text-white border-zinc-800')}`}
+                >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                   </svg>
                   <span>List</span>
                 </button>
-                <button className={`px-3 py-1.5 flex items-center space-x-2 text-[10px] uppercase font-bold rounded border ml-1 shadow-sm ${isDayMode ? 'text-[#10FF88] bg-zinc-950 border-zinc-950' : 'text-[#10FF88] bg-zinc-950 border-zinc-800 shadow-[0_0_12px_rgba(16,255,136,0.4)]'}`}>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>
+                <button 
+                  onClick={() => setViewMode('map')}
+                  className={`px-3 py-1.5 flex items-center space-x-2 text-[10px] uppercase rounded ml-1 shadow-sm transition-colors ${viewMode === 'map' ? (isDayMode ? 'text-[#10FF88] bg-zinc-950 border border-zinc-950 font-bold' : 'text-[#10FF88] bg-zinc-950 border border-zinc-800 shadow-[0_0_12px_rgba(16,255,136,0.4)] font-bold') : (isDayMode ? 'text-zinc-500 hover:text-zinc-900' : 'text-zinc-500 hover:text-white')}`}
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={viewMode === 'map' && !isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                   </svg>
-                  <span style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : isDayMode ? { textShadow: '-0.5px -0.5px 0 #000, 0.5px -0.5px 0 #000, -0.5px 0.5px 0 #000, 0.5px 0.5px 0 #000' } : {}}>Map</span>
+                  <span style={viewMode === 'map' && !isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : viewMode === 'map' && isDayMode ? { textShadow: '-0.5px -0.5px 0 #000, 0.5px -0.5px 0 #000, -0.5px 0.5px 0 #000, 0.5px 0.5px 0 #000' } : {}}>Map</span>
                 </button>
               </div>
             </div>
@@ -337,28 +445,30 @@ export default function DiscoveryPage() {
         </div>
       </div>
 
-      {/* Right Side Controls */}
-      <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 flex flex-col space-y-3 pointer-events-auto">
-        <button className={`w-10 h-10 rounded-full backdrop-blur-md border flex items-center justify-center shadow-lg active:scale-95 transition-all group ${isDayMode ? 'bg-white/90 border-zinc-200 hover:border-zinc-400' : 'bg-zinc-900/90 border-zinc-800 hover:border-[#10FF88]/30'}`}>
-          <svg className={`w-5 h-5 transition-colors ${isDayMode ? 'text-zinc-600 group-hover:text-zinc-950' : 'text-zinc-400 group-hover:text-[#10FF88]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" style={!isDayMode ? { filter: 'group-hover:drop-shadow(0 0 5px rgba(16, 255, 136, 0.4))' } : {}}>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-        </button>
-        
-        <div className={`flex flex-col rounded-full backdrop-blur-md border shadow-lg overflow-hidden ${isDayMode ? 'bg-white/90 border-zinc-200' : 'bg-zinc-900/90 border-zinc-800'}`}>
-          <button className={`w-10 h-10 flex items-center justify-center transition-colors border-b ${isDayMode ? 'hover:bg-stone-100 active:bg-stone-200 border-zinc-200 text-zinc-600 hover:text-zinc-950' : 'hover:bg-zinc-800 active:bg-zinc-700 border-zinc-800 text-zinc-400 hover:text-white'}`}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+      {/* Right Side Controls (Map only) */}
+      {viewMode === 'map' && (
+        <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 flex flex-col space-y-3 pointer-events-auto">
+          <button className={`w-10 h-10 rounded-full backdrop-blur-md border flex items-center justify-center shadow-lg active:scale-95 transition-all group ${isDayMode ? 'bg-white/90 border-zinc-200 hover:border-zinc-400' : 'bg-zinc-900/90 border-zinc-800 hover:border-[#10FF88]/30'}`}>
+            <svg className={`w-5 h-5 transition-colors ${isDayMode ? 'text-zinc-600 group-hover:text-zinc-950' : 'text-zinc-400 group-hover:text-[#10FF88]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" style={!isDayMode ? { filter: 'group-hover:drop-shadow(0 0 5px rgba(16, 255, 136, 0.4))' } : {}}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           </button>
-          <button className={`w-10 h-10 flex items-center justify-center transition-colors ${isDayMode ? 'hover:bg-stone-100 active:bg-stone-200 text-zinc-600 hover:text-zinc-950' : 'hover:bg-zinc-800 active:bg-zinc-700 text-zinc-400 hover:text-white'}`}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-            </svg>
-          </button>
+          
+          <div className={`flex flex-col rounded-full backdrop-blur-md border shadow-lg overflow-hidden ${isDayMode ? 'bg-white/90 border-zinc-200' : 'bg-zinc-900/90 border-zinc-800'}`}>
+            <button className={`w-10 h-10 flex items-center justify-center transition-colors border-b ${isDayMode ? 'hover:bg-stone-100 active:bg-stone-200 border-zinc-200 text-zinc-600 hover:text-zinc-950' : 'hover:bg-zinc-800 active:bg-zinc-700 border-zinc-800 text-zinc-400 hover:text-white'}`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+            <button className={`w-10 h-10 flex items-center justify-center transition-colors ${isDayMode ? 'hover:bg-stone-100 active:bg-stone-200 text-zinc-600 hover:text-zinc-950' : 'hover:bg-zinc-800 active:bg-zinc-700 text-zinc-400 hover:text-white'}`}>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Bottom Navigation */}
       <div className="absolute bottom-0 left-0 right-0 z-30 pointer-events-none">
