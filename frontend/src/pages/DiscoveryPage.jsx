@@ -118,7 +118,7 @@ export default function DiscoveryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewState, setViewState] = useState(RIVIERA_CENTER);
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState('Beach'); // Default to Beach only
   const [isDayMode, setIsDayMode] = useState(false); // false = night mode (default)
   const [viewMode, setViewMode] = useState('map'); // 'map' or 'list'
 
