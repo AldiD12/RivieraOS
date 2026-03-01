@@ -11,14 +11,48 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
     const savedName = localStorage.getItem('riviera_guestName') || '';
     const savedPhone = localStorage.getItem('riviera_guestPhone') || '';
     
+    // Get current hour + 1 for default arrival time
+    const now = new Date();
+    const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
+    const defaultArrivalTime = `${nextHour.getHours().toString().padStart(2, '0')}:00`;
+    
     return {
       guestName: savedName,
       guestPhone: savedPhone,
       guestCount: 2,
+      sunbedCount: 1, // NEW: Default 1 sunbed
+      arrivalTime: defaultArrivalTime, // NEW: Arrival time
       date: new Date().toISOString().split('T')[0]
     };
   });
   const [submitting, setSubmitting] = useState(false);
+
+  // Helper: Suggest sunbed count based on guest count
+  const suggestSunbedCount = (guestCount) => {
+    if (guestCount <= 2) return 1;
+    if (guestCount <= 4) return 2;
+    if (guestCount <= 6) return 3;
+    if (guestCount <= 8) return 4;
+    return Math.ceil(guestCount / 2);
+  };
+
+  // Helper: Get helpful tip
+  const getTip = () => {
+    const { guestCount, sunbedCount } = bookingData;
+    const suggested = suggestSunbedCount(guestCount);
+    
+    if (sunbedCount < suggested) {
+      return `💡 Për ${guestCount} persona, rekomandojmë ${suggested} shtretër`;
+    }
+    return `✅ ${sunbedCount} shtretër ${sunbedCount === 1 ? 'është' : 'janë'} të mjaftueshëm për ${guestCount} persona`;
+  };
+
+  // Time slots (09:00 - 18:00, 30-min intervals)
+  const timeSlots = [
+    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+    '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'
+  ];
 
   const availability = venue.availability;
   const hasAvailability = availability && availability.availableUnits > 0;
@@ -51,18 +85,11 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
         booking: bookingData
       });
       
-      // 🚨 TRAP 2 FIX: Save guest info to localStorage for next time
+      // Save guest info to localStorage
       localStorage.setItem('riviera_guestName', bookingData.guestName);
       localStorage.setItem('riviera_guestPhone', bookingData.guestPhone);
-      console.log('💾 Guest info saved for future bookings');
       
-      // 🚨 TEMPORARY: Backend requires zoneUnitId but we only have zoneId
-      // This needs backend update to support zone-level booking with auto-assignment
-      // For now, show user-friendly message
-      
-      alert('⚠️ Booking system is being updated.\n\nPlease contact the venue directly via WhatsApp to reserve your spot.\n\nWe apologize for the inconvenience!');
-      
-      // Open WhatsApp to venue
+      // For now: WhatsApp fallback (until backend supports group booking)
       const venuePhone = venue.phone || '+355692000000';
       const message = `Përshëndetje! 👋
 
@@ -71,6 +98,8 @@ Dua të rezervoj:
 🏖️ Vendi: ${venue.name}
 📍 Zona: ${selectedZone.name}
 👥 Persona: ${bookingData.guestCount}
+🛏️ Shtretër: ${bookingData.sunbedCount}
+🕐 Ora e Arritjes: ${bookingData.arrivalTime}
 📅 Data: ${new Date(bookingData.date).toLocaleDateString('sq-AL')}
 
 Emri: ${bookingData.guestName}
@@ -83,19 +112,20 @@ Faleminderit!`;
         '_blank'
       );
       
-      // Close bottom sheet
       onClose();
       
-      // TODO: Implement proper booking when backend supports zone-level booking
-      // const result = await reservationApi.createReservation({
+      // TODO: Implement instant booking API
+      // const result = await reservationApi.createGroupReservation({
       //   venueId: venue.id,
-      //   zoneId: selectedZone.id, // Backend needs to accept zoneId and auto-assign unit
+      //   zoneId: selectedZone.id,
       //   guestName: bookingData.guestName,
       //   guestPhone: bookingData.guestPhone,
       //   guestCount: bookingData.guestCount,
-      //   reservationDate: bookingData.date,
-      //   notes: 'Booked via Discovery Mode'
+      //   sunbedCount: bookingData.sunbedCount,
+      //   arrivalTime: bookingData.arrivalTime,
+      //   reservationDate: bookingData.date
       // });
+      // navigate(`/booking/${result.bookingCode}`);
       
     } catch (error) {
       console.error('❌ Booking failed:', error);
@@ -283,86 +313,159 @@ Faleminderit!`;
 
       {/* Booking Form Modal */}
       {showBookingForm && selectedZone && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+        <div className={`fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[60] p-4 ${isDayMode ? 'bg-black/30' : 'bg-black/60'}`}>
           <div 
-            className="bg-white rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto"
+            className={`rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto ${isDayMode ? 'bg-white' : 'bg-zinc-950 border border-zinc-800'}`}
             style={{ animation: 'fadeIn 0.3s ease-out' }}
           >
             <h3 
-              className="text-3xl font-light text-stone-900 mb-2"
-              style={{ fontFamily: 'Cormorant Garamond, serif' }}
+              className={`text-3xl font-light mb-2 ${isDayMode ? 'text-zinc-950' : 'text-white'}`}
+              style={{ fontFamily: 'Playfair Display, serif' }}
             >
-              Complete Booking
+              Rezervo Tani
             </h3>
-            <p className="text-sm text-stone-600 mb-6">
+            <p className={`text-sm mb-6 ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
               {venue.name} - {selectedZone.name}
             </p>
 
-            <form onSubmit={handleBookingSubmit} className="space-y-4">
+            <form onSubmit={handleBookingSubmit} className="space-y-5">
+              {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-2">
-                  Your Name
+                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                  Emri Juaj
                 </label>
                 <input
                   type="text"
                   required
                   value={bookingData.guestName}
                   onChange={(e) => setBookingData({ ...bookingData, guestName: e.target.value })}
-                  className="w-full px-4 py-3 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950 focus:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88] focus:border-[#10FF88]'}`}
                   placeholder="John Doe"
                 />
               </div>
 
+              {/* Phone */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-2">
-                  Phone Number
+                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                  Telefoni
                 </label>
                 <input
                   type="tel"
                   required
                   value={bookingData.guestPhone}
                   onChange={(e) => setBookingData({ ...bookingData, guestPhone: e.target.value })}
-                  className="w-full px-4 py-3 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                  className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950 focus:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88] focus:border-[#10FF88]'}`}
                   placeholder="+355 69 123 4567"
                 />
               </div>
 
+              {/* Guest Count - Quick Buttons */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-2">
-                  Number of Guests
+                <label className={`block text-sm font-medium mb-3 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                  Sa persona jeni?
                 </label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  max="10"
-                  value={bookingData.guestCount}
-                  onChange={(e) => setBookingData({ ...bookingData, guestCount: parseInt(e.target.value) })}
-                  className="w-full px-4 py-3 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                />
+                <div className="grid grid-cols-5 gap-2">
+                  {[
+                    { label: '1-2', value: 2 },
+                    { label: '3-4', value: 4 },
+                    { label: '5-6', value: 6 },
+                    { label: '7-8', value: 8 },
+                    { label: '9+', value: 10 }
+                  ].map(option => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        const newCount = option.value;
+                        setBookingData({
+                          ...bookingData,
+                          guestCount: newCount,
+                          sunbedCount: suggestSunbedCount(newCount)
+                        });
+                      }}
+                      className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                        bookingData.guestCount === option.value
+                          ? isDayMode
+                            ? 'bg-zinc-950 text-white'
+                            : 'bg-zinc-950 text-[#10FF88] border border-[#10FF88]'
+                          : isDayMode
+                          ? 'border border-zinc-300 text-zinc-700 hover:border-zinc-400'
+                          : 'border border-zinc-800 text-zinc-400 hover:border-zinc-600'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
+              {/* Sunbed Count */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-2">
-                  Date
+                <label className={`block text-sm font-medium mb-3 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                  Numri i shtretërve
                 </label>
-                <input
-                  type="date"
-                  required
-                  value={bookingData.date}
-                  onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })}
-                  min={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                />
+                <div className="grid grid-cols-6 gap-2 mb-2">
+                  {[1, 2, 3, 4, 5, 6].map(count => (
+                    <button
+                      key={count}
+                      type="button"
+                      onClick={() => setBookingData({ ...bookingData, sunbedCount: count })}
+                      className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
+                        bookingData.sunbedCount === count
+                          ? isDayMode
+                            ? 'bg-zinc-950 text-white'
+                            : 'bg-zinc-950 text-[#10FF88] border border-[#10FF88]'
+                          : isDayMode
+                          ? 'border border-zinc-300 text-zinc-700 hover:border-zinc-400'
+                          : 'border border-zinc-800 text-zinc-400 hover:border-zinc-600'
+                      }`}
+                    >
+                      {count}
+                    </button>
+                  ))}
+                </div>
+                <p className={`text-xs ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                  {getTip()}
+                </p>
               </div>
 
+              {/* Arrival Time */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                  Ora e Arritjes
+                </label>
+                <select
+                  value={bookingData.arrivalTime}
+                  onChange={(e) => setBookingData({ ...bookingData, arrivalTime: e.target.value })}
+                  className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950 focus:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88] focus:border-[#10FF88]'}`}
+                >
+                  {timeSlots.map(time => (
+                    <option key={time} value={time}>{time}</option>
+                  ))}
+                </select>
+                <p className={`text-xs mt-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                  ⏰ Rezervimi skadon 15 minuta pas orës së arritjes
+                </p>
+              </div>
+
+              {/* Summary */}
+              <div className={`p-4 rounded-lg ${isDayMode ? 'bg-stone-50 border border-stone-200' : 'bg-zinc-900 border border-zinc-800'}`}>
+                <p className={`text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>
+                  ✅ Do të rezervojmë {bookingData.sunbedCount} shtretër pranë njëri-tjetrit
+                </p>
+                <p className={`text-xs ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                  Totali: €{(selectedZone.basePrice * bookingData.sunbedCount).toFixed(2)}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
               <div className="pt-4 flex gap-3">
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 bg-stone-900 text-white px-6 py-3 rounded-full hover:bg-stone-800 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`flex-1 px-6 py-3 rounded-full text-sm font-medium tracking-wide transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800' : 'bg-zinc-950 text-[#10FF88] border border-[#10FF88] hover:shadow-[0_0_20px_rgba(16,255,136,0.4)]'}`}
                 >
-                  {submitting ? 'Booking...' : 'Confirm Booking'}
+                  {submitting ? 'Duke rezervuar...' : 'REZERVO TANI'}
                 </button>
                 <button
                   type="button"
@@ -371,9 +474,9 @@ Faleminderit!`;
                     setSelectedZone(null);
                   }}
                   disabled={submitting}
-                  className="flex-1 border border-stone-300 text-stone-700 px-6 py-3 rounded-full hover:bg-stone-50 transition-all duration-300"
+                  className={`flex-1 border px-6 py-3 rounded-full transition-all ${isDayMode ? 'border-zinc-300 text-zinc-700 hover:bg-stone-50' : 'border-zinc-800 text-zinc-400 hover:bg-zinc-900'}`}
                 >
-                  Cancel
+                  Anulo
                 </button>
               </div>
             </form>
