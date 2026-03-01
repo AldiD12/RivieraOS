@@ -88,52 +88,65 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
       
       console.log('📝 Submitting booking...', {
         zone: selectedZone,
-        booking: bookingData
+        booking: bookingData,
+        venueType: venue.type
       });
       
       // Save guest info to localStorage
       localStorage.setItem('riviera_guestName', bookingData.guestName);
       localStorage.setItem('riviera_guestPhone', bookingData.guestPhone);
       
-      // 🚨 TEMPORARY: Mock booking until backend implements instant booking API
-      // Generate mock booking code
-      const mockBookingCode = `XIXA-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+      // Check venue type
+      const isBeach = venue.type === 'Beach';
+      const isRestaurant = venue.type === 'Restaurant';
       
-      // Store mock booking data in localStorage for success page
-      localStorage.setItem('temp_booking', JSON.stringify({
-        bookingCode: mockBookingCode,
-        venueName: venue.name,
-        venuePhone: venue.phone,
-        zoneName: selectedZone.name,
-        unitCodes: [], // Will be assigned by backend
-        guestCount: bookingData.guestCount,
-        sunbedCount: bookingData.sunbedCount,
-        arrivalTime: bookingData.arrivalTime,
-        expirationTime: calculateExpiration(bookingData.arrivalTime),
-        totalPrice: selectedZone.basePrice * bookingData.sunbedCount,
-        status: 'CONFIRMED'
-      }));
-      
-      // Navigate to success page
-      navigate(`/success/${mockBookingCode}`);
-      
-      // TODO: Replace with actual instant booking API when backend is ready
-      // const result = await reservationApi.createGroupReservation({
-      //   venueId: venue.id,
-      //   zoneId: selectedZone.id,
-      //   guestName: bookingData.guestName,
-      //   guestPhone: bookingData.guestPhone,
-      //   guestCount: bookingData.guestCount,
-      //   sunbedCount: bookingData.sunbedCount,
-      //   arrivalTime: bookingData.arrivalTime,
-      //   reservationDate: bookingData.date
-      // });
-      // navigate(`/success/${result.bookingCode}`);
+      if (isRestaurant) {
+        // RESTAURANT: Open WhatsApp with prefilled message
+        const venuePhone = venue.phone || '+355692000000';
+        const message = `Përshëndetje! 👋
+
+Dua të rezervoj tavolinë:
+
+🍽️ Restoranti: ${venue.name}
+👥 Persona: ${bookingData.guestCount}
+📅 Data: ${new Date(bookingData.date).toLocaleDateString('sq-AL')}
+🕐 Ora: ${bookingData.arrivalTime}
+
+Emri: ${bookingData.guestName}
+Telefoni: ${bookingData.guestPhone}
+
+Faleminderit!`;
+
+        window.open(
+          `https://wa.me/${venuePhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`,
+          '_blank'
+        );
+        
+        onClose();
+      } else if (isBeach) {
+        // BEACH: Instant booking (mock for now)
+        const mockBookingCode = `XIXA-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+        
+        localStorage.setItem('temp_booking', JSON.stringify({
+          bookingCode: mockBookingCode,
+          venueName: venue.name,
+          venuePhone: venue.phone,
+          zoneName: selectedZone.name,
+          unitCodes: [],
+          guestCount: bookingData.guestCount,
+          sunbedCount: bookingData.sunbedCount,
+          arrivalTime: bookingData.arrivalTime,
+          expirationTime: calculateExpiration(bookingData.arrivalTime),
+          totalPrice: selectedZone.basePrice * bookingData.sunbedCount,
+          status: 'CONFIRMED'
+        }));
+        
+        navigate(`/success/${mockBookingCode}`);
+      }
       
     } catch (error) {
       console.error('❌ Booking failed:', error);
       
-      // Error haptic feedback
       if (haptics.isSupported()) {
         haptics.error();
       }
@@ -371,39 +384,41 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
                 />
               </div>
 
-              {/* Guest Count - Quick Buttons */}
+              {/* Guest Count */}
               <div>
-                <label className={`block text-sm font-medium mb-3 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
                   Sa persona jeni?
                 </label>
                 <div className="grid grid-cols-5 gap-2">
                   {[
-                    { label: '1-2', value: 2 },
-                    { label: '3-4', value: 4 },
-                    { label: '5-6', value: 6 },
-                    { label: '7-8', value: 8 },
-                    { label: '9+', value: 10 }
+                    { value: 2, label: '1-2' },
+                    { value: 4, label: '3-4' },
+                    { value: 6, label: '5-6' },
+                    { value: 8, label: '7-8' },
+                    { value: 10, label: '9+' }
                   ].map(option => (
                     <button
                       key={option.value}
                       type="button"
                       onClick={() => {
-                        const newCount = option.value;
+                        const newGuestCount = option.value;
                         setBookingData({
                           ...bookingData,
-                          guestCount: newCount,
-                          sunbedCount: suggestSunbedCount(newCount)
+                          guestCount: newGuestCount,
+                          sunbedCount: venue.type === 'Beach' ? suggestSunbedCount(newGuestCount) : 1
                         });
                       }}
-                      className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                        bookingData.guestCount === option.value
+                      className={`
+                        px-3 py-2 rounded-lg text-sm font-medium transition-all
+                        ${bookingData.guestCount === option.value
                           ? isDayMode
                             ? 'bg-zinc-950 text-white'
-                            : 'bg-zinc-950 text-[#10FF88] border border-[#10FF88]'
+                            : 'bg-[#10FF88] text-zinc-950'
                           : isDayMode
-                          ? 'border border-zinc-300 text-zinc-700 hover:border-zinc-400'
-                          : 'border border-zinc-800 text-zinc-400 hover:border-zinc-600'
-                      }`}
+                            ? 'bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-950'
+                            : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
+                        }
+                      `}
                     >
                       {option.label}
                     </button>
@@ -411,35 +426,39 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
                 </div>
               </div>
 
-              {/* Sunbed Count */}
-              <div>
-                <label className={`block text-sm font-medium mb-3 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                  Numri i shtretërve
-                </label>
-                <div className="grid grid-cols-6 gap-2 mb-2">
-                  {[1, 2, 3, 4, 5, 6].map(count => (
-                    <button
-                      key={count}
-                      type="button"
-                      onClick={() => setBookingData({ ...bookingData, sunbedCount: count })}
-                      className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                        bookingData.sunbedCount === count
-                          ? isDayMode
-                            ? 'bg-zinc-950 text-white'
-                            : 'bg-zinc-950 text-[#10FF88] border border-[#10FF88]'
-                          : isDayMode
-                          ? 'border border-zinc-300 text-zinc-700 hover:border-zinc-400'
-                          : 'border border-zinc-800 text-zinc-400 hover:border-zinc-600'
-                      }`}
-                    >
-                      {count}
-                    </button>
-                  ))}
+              {/* Sunbed Count (Beach only) */}
+              {venue.type === 'Beach' && (
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                    Numri i shtretërve
+                  </label>
+                  <div className="grid grid-cols-6 gap-2">
+                    {[1, 2, 3, 4, 5, 6].map(count => (
+                      <button
+                        key={count}
+                        type="button"
+                        onClick={() => setBookingData({ ...bookingData, sunbedCount: count })}
+                        className={`
+                          px-3 py-2 rounded-lg text-sm font-medium transition-all
+                          ${bookingData.sunbedCount === count
+                            ? isDayMode
+                              ? 'bg-zinc-950 text-white'
+                              : 'bg-[#10FF88] text-zinc-950'
+                            : isDayMode
+                              ? 'bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-950'
+                              : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
+                          }
+                        `}
+                      >
+                        {count}
+                      </button>
+                    ))}
+                  </div>
+                  <p className={`text-xs mt-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                    {getTip()}
+                  </p>
                 </div>
-                <p className={`text-xs ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                  {getTip()}
-                </p>
-              </div>
+              )}
 
               {/* Arrival Time */}
               <div>
@@ -455,42 +474,63 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
                     <option key={time} value={time}>{time}</option>
                   ))}
                 </select>
-                <p className={`text-xs mt-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                  ⏰ Rezervimi skadon 15 minuta pas orës së arritjes
-                </p>
+                {venue.type === 'Beach' && (
+                  <p className={`text-xs mt-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                    ⏰ Rezervimi skadon 15 minuta pas orës së arritjes
+                  </p>
+                )}
               </div>
 
               {/* Summary */}
-              <div className={`p-4 rounded-lg ${isDayMode ? 'bg-stone-50 border border-stone-200' : 'bg-zinc-900 border border-zinc-800'}`}>
-                <p className={`text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>
-                  ✅ Do të rezervojmë {bookingData.sunbedCount} shtretër pranë njëri-tjetrit
+              <div className={`rounded-lg p-4 border ${isDayMode ? 'bg-stone-50 border-zinc-300' : 'bg-zinc-900 border-zinc-800'}`}>
+                <p className={`text-xs uppercase tracking-wider mb-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                  Përmbledhje
                 </p>
-                <p className={`text-xs ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                  Totali: €{(selectedZone.basePrice * bookingData.sunbedCount).toFixed(2)}
-                </p>
+                {venue.type === 'Beach' ? (
+                  <>
+                    <p className={`text-sm mb-1 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                      ✅ Do të rezervojmë {bookingData.sunbedCount} shtretër{bookingData.sunbedCount > 1 ? '' : ''} pranë njëri-tjetrit
+                    </p>
+                    <p className={`text-2xl font-light ${isDayMode ? 'text-zinc-950' : 'text-[#10FF88]'}`}>
+                      €{(selectedZone.basePrice * bookingData.sunbedCount).toFixed(2)}
+                    </p>
+                    <p className={`text-xs ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                      {bookingData.sunbedCount} shtretër × €{selectedZone.basePrice}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className={`text-sm mb-1 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                      📱 Do të dërgoni mesazh në WhatsApp për të konfirmuar rezervimin
+                    </p>
+                    <p className={`text-sm ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                      {bookingData.guestCount} persona • {bookingData.arrivalTime}
+                    </p>
+                  </>
+                )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-4 flex gap-3">
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className={`flex-1 px-6 py-3 rounded-full text-sm font-medium tracking-wide transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800' : 'bg-zinc-950 text-[#10FF88] border border-[#10FF88] hover:shadow-[0_0_20px_rgba(16,255,136,0.4)]'}`}
-                >
-                  {submitting ? 'Duke rezervuar...' : 'REZERVO TANI'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowBookingForm(false);
-                    setSelectedZone(null);
-                  }}
-                  disabled={submitting}
-                  className={`flex-1 border px-6 py-3 rounded-full transition-all ${isDayMode ? 'border-zinc-300 text-zinc-700 hover:bg-stone-50' : 'border-zinc-800 text-zinc-400 hover:bg-zinc-900'}`}
-                >
-                  Anulo
-                </button>
-              </div>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={submitting}
+                className={`
+                  w-full px-8 py-4 rounded-full text-sm tracking-widest uppercase
+                  transition-all duration-300 font-medium
+                  ${submitting ? 'opacity-50 cursor-not-allowed' : ''}
+                  ${isDayMode
+                    ? 'bg-zinc-950 text-white hover:bg-zinc-800 shadow-lg'
+                    : 'bg-zinc-950 text-[#10FF88] border border-zinc-800 hover:shadow-[0_0_20px_rgba(16,255,136,0.4)]'
+                  }
+                `}
+              >
+                {submitting 
+                  ? 'Duke procesuar...' 
+                  : venue.type === 'Beach' 
+                    ? 'REZERVO TANI' 
+                    : 'DËRGO MESAZH'
+                }
+              </button>
             </form>
           </div>
         </div>
