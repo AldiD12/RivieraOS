@@ -89,32 +89,29 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
       localStorage.setItem('riviera_guestName', bookingData.guestName);
       localStorage.setItem('riviera_guestPhone', bookingData.guestPhone);
       
-      // For now: WhatsApp fallback (until backend supports group booking)
-      const venuePhone = venue.phone || '+355692000000';
-      const message = `Përshëndetje! 👋
-
-Dua të rezervoj:
-
-🏖️ Vendi: ${venue.name}
-📍 Zona: ${selectedZone.name}
-👥 Persona: ${bookingData.guestCount}
-🛏️ Shtretër: ${bookingData.sunbedCount}
-🕐 Ora e Arritjes: ${bookingData.arrivalTime}
-📅 Data: ${new Date(bookingData.date).toLocaleDateString('sq-AL')}
-
-Emri: ${bookingData.guestName}
-Telefoni: ${bookingData.guestPhone}
-
-Faleminderit!`;
-
-      window.open(
-        `https://wa.me/${venuePhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`,
-        '_blank'
-      );
+      // 🚨 TEMPORARY: Mock booking until backend implements instant booking API
+      // Generate mock booking code
+      const mockBookingCode = `XIXA-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
       
-      onClose();
+      // Store mock booking data in localStorage for success page
+      localStorage.setItem('temp_booking', JSON.stringify({
+        bookingCode: mockBookingCode,
+        venueName: venue.name,
+        venuePhone: venue.phone,
+        zoneName: selectedZone.name,
+        unitCodes: [], // Will be assigned by backend
+        guestCount: bookingData.guestCount,
+        sunbedCount: bookingData.sunbedCount,
+        arrivalTime: bookingData.arrivalTime,
+        expirationTime: calculateExpiration(bookingData.arrivalTime),
+        totalPrice: selectedZone.basePrice * bookingData.sunbedCount,
+        status: 'CONFIRMED'
+      }));
       
-      // TODO: Implement instant booking API
+      // Navigate to success page
+      navigate(`/success/${mockBookingCode}`);
+      
+      // TODO: Replace with actual instant booking API when backend is ready
       // const result = await reservationApi.createGroupReservation({
       //   venueId: venue.id,
       //   zoneId: selectedZone.id,
@@ -125,7 +122,7 @@ Faleminderit!`;
       //   arrivalTime: bookingData.arrivalTime,
       //   reservationDate: bookingData.date
       // });
-      // navigate(`/booking/${result.bookingCode}`);
+      // navigate(`/success/${result.bookingCode}`);
       
     } catch (error) {
       console.error('❌ Booking failed:', error);
@@ -139,6 +136,15 @@ Faleminderit!`;
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Helper: Calculate expiration time (arrival + 15 min)
+  const calculateExpiration = (arrivalTime) => {
+    const [hours, minutes] = arrivalTime.split(':').map(Number);
+    const expMinutes = minutes + 15;
+    const expHours = hours + Math.floor(expMinutes / 60);
+    const finalMinutes = expMinutes % 60;
+    return `${expHours.toString().padStart(2, '0')}:${finalMinutes.toString().padStart(2, '0')}`;
   };
 
   return (
