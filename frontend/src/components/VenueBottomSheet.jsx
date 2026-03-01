@@ -58,14 +58,20 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
   const hasAvailability = availability && availability.availableUnits > 0;
 
   const handleZoneSelect = (zone) => {
-    setSelectedZone(zone);
-    setShowBookingForm(true);
-    
-    // Haptic feedback
-    if (haptics.isSupported()) {
-      haptics.light();
-    }
-  };
+      setSelectedZone(zone);
+      setShowBookingForm(true);
+
+      // Haptic feedback
+      if (haptics.isSupported()) {
+        haptics.light();
+      }
+    };
+
+    // Sort zones by price (highest first = closest to beach)
+    const getSortedZones = () => {
+      if (!availability || !availability.zones) return [];
+      return [...availability.zones].sort((a, b) => b.basePrice - a.basePrice);
+    };
 
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
@@ -228,7 +234,7 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
               <h3 className={`text-sm uppercase tracking-widest font-medium ${isDayMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
                 Available Zones
               </h3>
-              {availability.zones.map(zone => (
+              {getSortedZones().map((zone, index) => (
                 <button
                   key={zone.id}
                   onClick={() => handleZoneSelect(zone)}
@@ -248,7 +254,7 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <h4 className={`text-xl font-medium mb-2 ${isDayMode ? 'text-zinc-950' : 'text-white'}`}>
-                        {zone.name}
+                        Zone {index + 1} - {zone.name}
                       </h4>
                       <p className={`text-sm mb-1 ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
                         {zone.availableUnits} / {zone.totalUnits} available
