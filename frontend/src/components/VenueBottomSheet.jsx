@@ -315,6 +315,46 @@ Faleminderit!`;
             </div>
           )}
 
+          {/* Get Directions Button */}
+          {venue.latitude && venue.longitude && (
+            <button
+              onClick={() => {
+                // Open native maps app with directions
+                const destination = `${venue.latitude},${venue.longitude}`;
+                const label = encodeURIComponent(venue.name);
+                
+                // Detect platform and open appropriate maps app
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                const isAndroid = /Android/.test(navigator.userAgent);
+                
+                let mapsUrl;
+                if (isIOS) {
+                  // Apple Maps
+                  mapsUrl = `maps://maps.apple.com/?daddr=${destination}&q=${label}`;
+                } else if (isAndroid) {
+                  // Google Maps
+                  mapsUrl = `google.navigation:q=${destination}`;
+                } else {
+                  // Desktop - Google Maps web
+                  mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}&destination_place_id=${label}`;
+                }
+                
+                window.open(mapsUrl, '_blank');
+                
+                // Haptic feedback
+                if (haptics.isSupported()) {
+                  haptics.light();
+                }
+              }}
+              className={`w-full mb-6 px-6 py-4 rounded-xl border flex items-center justify-center gap-3 transition-all duration-300 ${isDayMode ? 'bg-white border-zinc-300 text-zinc-700 hover:border-zinc-950 hover:bg-stone-50 shadow-sm' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-[#10FF88] hover:text-[#10FF88]'}`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+              <span className="text-sm font-medium tracking-wide">Get Directions</span>
+            </button>
+          )}
+
           {/* Action Buttons */}
           <div className="flex gap-4">
             {hasAvailability ? (
