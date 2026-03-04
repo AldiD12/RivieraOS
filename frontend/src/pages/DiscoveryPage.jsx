@@ -121,6 +121,40 @@ export default function DiscoveryPage() {
   const [activeFilter, setActiveFilter] = useState('Beach'); // Default to Beach only
   const [isDayMode, setIsDayMode] = useState(false); // false = night mode (default)
   const [viewMode, setViewMode] = useState('map'); // 'map' or 'list'
+  const [userLocation, setUserLocation] = useState(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+
+  // Get user location on mount
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userCoords = {
+            longitude: position.coords.longitude,
+            latitude: position.coords.latitude
+          };
+          setUserLocation(userCoords);
+          
+          // Center map on user location
+          setViewState(prev => ({
+            ...prev,
+            longitude: userCoords.longitude,
+            latitude: userCoords.latitude,
+            zoom: 14
+          }));
+        },
+        (error) => {
+          console.log('Geolocation not available, using default location:', error);
+          // Keep default RIVIERA_CENTER
+        },
+        {
+          enableHighAccuracy: false, // Faster, less battery
+          timeout: 5000,
+          maximumAge: 300000 // Cache for 5 minutes
+        }
+      );
+    }
+  }, []);
 
   useEffect(() => {
     loadVenues();
@@ -225,16 +259,27 @@ export default function DiscoveryPage() {
             ref={mapRef}
             {...viewState}
             onMove={evt => setViewState(evt.viewState)}
+            onLoad={() => setMapLoaded(true)}
             mapStyle={DARK_STYLE}
             mapboxAccessToken={MAPBOX_TOKEN}
             style={{ width: '100%', height: '100%' }}
             attributionControl={false}
             cooperativeGestures={selectedVenue !== null}
             antialias={true}
+            // Performance optimizations
+            maxPitch={60}
+            minZoom={10}
+            maxZoom={18}
+            renderWorldCopies={false}
+            optimizeForTerrain={false}
+            // Lazy load tiles
+            fadeDuration={0}
+            crossSourceCollisions={false}
           >
             <NavigationControl position="bottom-right" showCompass={false} />
             
-            {filteredVenues.map(venue => (
+            {/* Only render markers after map loads */}
+            {mapLoaded && filteredVenues.map(venue => (
               venue.latitude && venue.longitude && (
                 <Marker
                   key={venue.id}
@@ -251,6 +296,24 @@ export default function DiscoveryPage() {
                 </Marker>
               )
             ))}
+            
+            {/* User location marker */}
+            {userLocation && (
+              <Marker
+                longitude={userLocation.longitude}
+                latitude={userLocation.latitude}
+                anchor="center"
+              >
+                <div className="relative flex items-center justify-center">
+                  {/* Pulsing ring */}
+                  <div className="absolute w-8 h-8">
+                    <div className={`absolute inset-0 rounded-full ${isDayMode ? 'bg-blue-500/30' : 'bg-blue-400/30'} animate-ping`}></div>
+                  </div>
+                  {/* Center dot */}
+                  <div className={`w-4 h-4 rounded-full border-2 ${isDayMode ? 'bg-blue-500 border-white' : 'bg-blue-400 border-zinc-950'} shadow-lg z-10`}></div>
+                </div>
+              </Marker>
+            )}
           </Map>
         </div>
       )}
@@ -480,7 +543,42 @@ export default function DiscoveryPage() {
       {/* Right Side Controls (Map only) */}
       {viewMode === 'map' && (
         <div className="absolute right-4 top-1/2 transform -translate-y-1/2 z-30 flex flex-col space-y-3 pointer-events-auto">
-          <button className={`w-10 h-10 rounded-full backdrop-blur-md border flex items-center justify-center shadow-lg active:scale-95 transition-all group ${isDayMode ? 'bg-white/90 border-zinc-200 hover:border-zinc-400' : 'bg-zinc-900/90 border-zinc-800 hover:border-[#10FF88]/30'}`}>
+          {/* Center on user location */}
+          <button 
+            onClick={() => {
+              if (userLocation && mapRef.current) {
+                mapRef.current.flyTo({
+                  center: [userLocation.longitude, userLocation.latitude],
+                  zoom: 14,
+                  duration: 1500,
+                  essential: true
+                });
+              } else if ('geolocation' in navigator) {
+                // Request location if not already available
+                navigator.geolocation.getCurrentPosition(
+                  (position) => {
+                    const coords = {
+                      longitude: position.coords.longitude,
+                      latitude: position.coords.latitude
+                    };
+                    setUserLocation(coords);
+                    if (mapRef.current) {
+                      mapRef.current.flyTo({
+                        center: [coords.longitude, coords.latitude],
+                        zoom: 14,
+                        duration: 1500,
+                        essential: true
+                      });
+                    }
+                  },
+                  (error) => {
+                    alert('Unable to get your location. Please enable location services.');
+                  }
+                );
+              }
+            }}
+            className={`w-10 h-10 rounded-full backdrop-blur-md border flex items-center justify-center shadow-lg active:scale-95 transition-all group ${isDayMode ? 'bg-white/90 border-zinc-200 hover:border-zinc-400' : 'bg-zinc-900/90 border-zinc-800 hover:border-[#10FF88]/30'}`}
+          >
             <svg className={`w-5 h-5 transition-colors ${isDayMode ? 'text-zinc-600 group-hover:text-zinc-950' : 'text-zinc-400 group-hover:text-[#10FF88]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" style={!isDayMode ? { filter: 'group-hover:drop-shadow(0 0 5px rgba(16, 255, 136, 0.4))' } : {}}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
