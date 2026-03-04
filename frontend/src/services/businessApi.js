@@ -650,6 +650,63 @@ export const businessDashboardApi = {
   }
 };
 
+// =============================================================================
+// BUSINESS EVENTS API
+// =============================================================================
+
+export const businessEventsApi = {
+  // Get all events for the business
+  list: async () => {
+    console.log('📤 Getting business events list');
+    try {
+      const response = await api.get('/business/Events');
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error('Error fetching business events:', error);
+      return [];
+    }
+  },
+  
+  // Get event details
+  get: async (id) => {
+    console.log('📤 Getting business event:', id);
+    const response = await api.get(`/business/Events/${id}`);
+    return response.data;
+  },
+  
+  // Create new event
+  create: async (eventData) => {
+    console.log('📤 Creating business event:', eventData);
+    const response = await api.post('/business/Events', eventData);
+    return response.data;
+  },
+  
+  // Update event
+  update: async (id, eventData) => {
+    console.log('📤 Updating business event:', id);
+    const response = await api.put(`/business/Events/${id}`, eventData);
+    return response.data;
+  },
+  
+  // Delete event
+  delete: async (id) => {
+    console.log('📤 Deleting business event:', id);
+    await api.delete(`/business/Events/${id}`);
+  },
+  
+  // Publish event
+  publish: async (id) => {
+    console.log('📤 Publishing business event:', id);
+    await api.post(`/business/Events/${id}/publish`, {});
+  },
+  
+  // Unpublish event
+  unpublish: async (id) => {
+    console.log('📤 Unpublishing business event:', id);
+    await api.post(`/business/Events/${id}/unpublish`, {});
+  }
+};
+
 // Export all APIs
 export default {
   profile: profileApi,
@@ -661,5 +718,6 @@ export default {
   units: businessUnitApi,
   bookings: businessBookingApi,
   orders: businessOrderApi,
-  dashboard: businessDashboardApi
+  dashboard: businessDashboardApi,
+  events: businessEventsApi
 };

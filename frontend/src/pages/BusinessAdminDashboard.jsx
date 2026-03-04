@@ -8,7 +8,6 @@ import { CreateStaffModal, EditStaffModal, ResetPasswordModal } from '../compone
 import { CreateCategoryModal, EditCategoryModal } from '../components/dashboard/modals/CategoryModals';
 import { CreateProductModal, EditProductModal } from '../components/dashboard/modals/ProductModals';
 import { CreateEventModal, EditEventModal, DeleteEventModal } from '../components/dashboard/modals/EventModals';
-import { businessEventsApi } from '../services/eventsApi';
 
 // Utility function to normalize phone numbers (match backend format)
 const normalizePhoneNumber = (phone) => {
@@ -417,7 +416,7 @@ export default function BusinessAdminDashboard() {
   const fetchEvents = useCallback(async () => {
     try {
       setEventsLoading(true);
-      const eventsData = await businessEventsApi.getEvents();
+      const eventsData = await businessApi.events.list();
       setEvents(eventsData);
     } catch (err) {
       console.error('Error fetching events:', err);
@@ -434,7 +433,7 @@ export default function BusinessAdminDashboard() {
 
   const handleCreateEvent = async (eventData) => {
     try {
-      await businessEventsApi.createEvent(eventData);
+      await businessApi.events.create(eventData);
       setShowCreateEventModal(false);
       await fetchEvents();
     } catch (err) {
@@ -445,7 +444,7 @@ export default function BusinessAdminDashboard() {
 
   const handleEditEvent = async (id, eventData) => {
     try {
-      await businessEventsApi.updateEvent(id, eventData);
+      await businessApi.events.update(id, eventData);
       setEditingEvent(null);
       await fetchEvents();
     } catch (err) {
@@ -456,7 +455,7 @@ export default function BusinessAdminDashboard() {
 
   const handleDeleteEvent = async (id) => {
     try {
-      await businessEventsApi.deleteEvent(id);
+      await businessApi.events.delete(id);
       setDeletingEvent(null);
       await fetchEvents();
     } catch (err) {
@@ -468,9 +467,9 @@ export default function BusinessAdminDashboard() {
   const handleTogglePublish = async (event) => {
     try {
       if (event.isPublished) {
-        await businessEventsApi.unpublishEvent(event.id);
+        await businessApi.events.unpublish(event.id);
       } else {
-        await businessEventsApi.publishEvent(event.id);
+        await businessApi.events.publish(event.id);
       }
       await fetchEvents();
     } catch (err) {
