@@ -7,8 +7,9 @@ import VenueBottomSheet from '../components/VenueBottomSheet';
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-// 🎯 XIXA: Dark atmospheric map (custom style with NO POIs)
-const DARK_STYLE = "mapbox://styles/aldid1602/cmm3bp5b3001v01qy9yf3gzlo";
+// 🎯 Use Mapbox's clean "streets" style without POIs
+// We'll customize it to remove all POI layers
+const DARK_STYLE = "mapbox://styles/mapbox/dark-v11"; // Clean dark style without custom POIs
 
 // Map configuration to hide all default POIs
 const MAP_CONFIG = {
@@ -276,34 +277,37 @@ export default function DiscoveryPage() {
             onLoad={(e) => {
               setMapLoaded(true);
               
-              // Hide ALL Mapbox POI layers (restaurants, hotels, shops, etc.)
+              // Hide ALL Mapbox POI layers aggressively
               const map = e.target;
-              const layers = map.getStyle().layers;
               
-              // List of POI layer prefixes to hide
-              const poiPrefixes = [
-                'poi-',           // All POI labels
-                'transit-',       // Transit stations
-                'road-label',     // Road labels with businesses
-                'place-',         // Place labels
-                'airport-label',  // Airports
-                'settlement-',    // City/town labels with businesses
-              ];
-              
-              layers.forEach(layer => {
-                // Hide any layer that matches POI patterns
-                if (poiPrefixes.some(prefix => layer.id.includes(prefix))) {
-                  map.setLayoutProperty(layer.id, 'visibility', 'none');
-                }
+              // Wait for style to fully load
+              map.once('idle', () => {
+                const layers = map.getStyle().layers;
                 
-                // Also hide specific business-related layers
-                if (layer.id.includes('label') && 
-                    (layer.id.includes('business') || 
-                     layer.id.includes('shop') || 
-                     layer.id.includes('restaurant') ||
-                     layer.id.includes('hotel'))) {
-                  map.setLayoutProperty(layer.id, 'visibility', 'none');
-                }
+                // Hide ALL POI-related layers
+                layers.forEach(layer => {
+                  const layerId = layer.id.toLowerCase();
+                  
+                  // Hide if layer contains any of these keywords
+                  const hideKeywords = [
+                    'poi', 'label', 'place', 'transit', 'airport',
+                    'settlement', 'state', 'country', 'marine',
+                    'natural', 'park', 'landuse', 'building-number'
+                  ];
+                  
+                  // Check if layer should be hidden
+                  const shouldHide = hideKeywords.some(keyword => layerId.includes(keyword));
+                  
+                  if (shouldHide) {
+                    try {
+                      map.setLayoutProperty(layer.id, 'visibility', 'none');
+                    } catch (e) {
+                      // Layer might not support visibility, skip
+                    }
+                  }
+                });
+                
+                console.log('✅ All POI layers hidden');
               });
             }}
             mapStyle={DARK_STYLE}
