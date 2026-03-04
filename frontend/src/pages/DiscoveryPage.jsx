@@ -277,19 +277,30 @@ export default function DiscoveryPage() {
               // Hide ALL Mapbox POI layers aggressively
               const map = e.target;
               
-              // Wait for style to fully load
-              map.once('idle', () => {
-                const layers = map.getStyle().layers;
+              // Function to hide POI layers
+              const hidePOILayers = () => {
+                const style = map.getStyle();
+                if (!style || !style.layers) return;
+                
+                const layers = style.layers;
+                let hiddenCount = 0;
                 
                 // Hide ALL POI-related layers
                 layers.forEach(layer => {
                   const layerId = layer.id.toLowerCase();
                   
-                  // Hide if layer contains any of these keywords
+                  // Comprehensive list of keywords to hide
                   const hideKeywords = [
                     'poi', 'label', 'place', 'transit', 'airport',
                     'settlement', 'state', 'country', 'marine',
-                    'natural', 'park', 'landuse', 'building-number'
+                    'natural', 'park', 'landuse', 'building-number',
+                    'road-label', 'ferry', 'waterway', 'water-point',
+                    'peak', 'volcano', 'disputed', 'admin', 'boundary',
+                    'poi-label', 'transit-label', 'place-label',
+                    'natural-point', 'natural-line', 'landuse-label',
+                    'water-label', 'marine-label', 'country-label',
+                    'state-label', 'settlement-label', 'settlement-subdivision',
+                    'airport-label', 'poi-parks', 'road-number'
                   ];
                   
                   // Check if layer should be hidden
@@ -298,14 +309,28 @@ export default function DiscoveryPage() {
                   if (shouldHide) {
                     try {
                       map.setLayoutProperty(layer.id, 'visibility', 'none');
+                      hiddenCount++;
                     } catch (e) {
                       // Layer might not support visibility, skip
                     }
                   }
                 });
                 
-                console.log('✅ All POI layers hidden');
+                console.log(`✅ Hidden ${hiddenCount} POI/label layers`);
+              };
+              
+              // Try hiding immediately
+              hidePOILayers();
+              
+              // Also hide after style loads completely
+              map.once('idle', () => {
+                hidePOILayers();
               });
+              
+              // And hide again after a short delay (for late-loading layers)
+              setTimeout(() => {
+                hidePOILayers();
+              }, 1000);
             }}
             mapStyle={DARK_STYLE}
             mapboxAccessToken={MAPBOX_TOKEN}
