@@ -7,6 +7,8 @@ import { CreateZoneModal, EditZoneModal } from '../components/dashboard/modals/Z
 import { CreateStaffModal, EditStaffModal, ResetPasswordModal } from '../components/dashboard/modals/StaffModals';
 import { CreateCategoryModal, EditCategoryModal } from '../components/dashboard/modals/CategoryModals';
 import { CreateProductModal, EditProductModal } from '../components/dashboard/modals/ProductModals';
+import { CreateEventModal, EditEventModal, DeleteEventModal } from '../components/dashboard/modals/EventModals';
+import { businessEventsApi } from '../services/eventsApi';
 
 // Utility function to normalize phone numbers (match backend format)
 const normalizePhoneNumber = (phone) => {
@@ -51,6 +53,13 @@ export default function BusinessAdminDashboard() {
   const [categoryExcludedVenues, setCategoryExcludedVenues] = useState([]);
   const [productExcludedVenues, setProductExcludedVenues] = useState([]);
   const [loadingExclusions, setLoadingExclusions] = useState(false);
+
+  // Events data
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [deletingEvent, setDeletingEvent] = useState(null);
 
   // Modal states
   const [showCreateStaffModal, setShowCreateStaffModal] = useState(false);
@@ -401,6 +410,67 @@ export default function BusinessAdminDashboard() {
     } catch (err) {
       console.error('Error activating staff:', err);
       setError(`Failed to activate staff member: ${err.data || err.message}`);
+    }
+  };
+
+  // Events management functions
+  const fetchEvents = useCallback(async () => {
+    try {
+      setEventsLoading(true);
+      const eventsData = await businessEventsApi.getEvents();
+      setEvents(eventsData);
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError('Failed to load events');
+    } finally {
+      setEventsLoading(false);
+    }
+  }, []);
+
+  const handleCreateEvent = async (eventData) => {
+    try {
+      await businessEventsApi.createEvent(eventData);
+      setShowCreateEventModal(false);
+      await fetchEvents();
+    } catch (err) {
+      console.error('Error creating event:', err);
+      setError(`Failed to create event: ${err.response?.data?.message || err.message}`);
+    }
+  };
+
+  const handleEditEvent = async (id, eventData) => {
+    try {
+      await businessEventsApi.updateEvent(id, eventData);
+      setEditingEvent(null);
+      await fetchEvents();
+    } catch (err) {
+      console.error('Error updating event:', err);
+      setError(`Failed to update event: ${err.response?.data?.message || err.message}`);
+    }
+  };
+
+  const handleDeleteEvent = async (id) => {
+    try {
+      await businessEventsApi.deleteEvent(id);
+      setDeletingEvent(null);
+      await fetchEvents();
+    } catch (err) {
+      console.error('Error deleting event:', err);
+      setError(`Failed to delete event: ${err.response?.data?.message || err.message}`);
+    }
+  };
+
+  const handleTogglePublish = async (event) => {
+    try {
+      if (event.isPublished) {
+        await businessEventsApi.unpublishEvent(event.id);
+      } else {
+        await businessEventsApi.publishEvent(event.id);
+      }
+      await fetchEvents();
+    } catch (err) {
+      console.error('Error toggling publish status:', err);
+      setError(`Failed to ${event.isPublished ? 'unpublish' : 'publish'} event`);
     }
   };
 
@@ -890,8 +960,15 @@ export default function BusinessAdminDashboard() {
       }
     } else if (activeTab === 'venues' && venues.length === 0) {
       fetchVenues();
+    } else if (activeTab === 'events') {
+      if (events.length === 0) {
+        fetchEvents();
+      }
+      if (venues.length === 0) {
+        fetchVenues(); // Fetch venues for event creation
+      }
     }
-  }, [activeTab, staffMembers.length, categories.length, venues.length, fetchStaffMembers, fetchCategories, fetchVenues]);
+  }, [activeTab, staffMembers.length, categories.length, venues.length, events.length, fetchStaffMembers, fetchCategories, fetchVenues, fetchEvents]);
 
   // Load products when category is selected
   useEffect(() => {
@@ -994,6 +1071,7 @@ export default function BusinessAdminDashboard() {
             { id: 'staff', label: 'Staff' },
             { id: 'menu', label: 'Menu' },
             { id: 'venues', label: 'Venues' },
+            { id: 'events', label: 'Events' },
             { id: 'qr-generator', label: 'QR Codes' }
           ].map((tab) => (
             <button
@@ -2112,6 +2190,180 @@ export default function BusinessAdminDashboard() {
           </section>
         )}
 
+        {/* Events Tab */}
+        {activeTab === 'events' && (
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Events</h2>
+                <p className={`text-sm mt-1 ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
+                  Manage nightlife events and parties
+                </p>
+              </div>
+              <button
+                onClick={() => setShowCreateEventModal(true)}
+                className="px-4 py-2 bg-white text-black rounded-md hover:bg-zinc-200 transition-colors font-medium flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-lg">add</span>
+                Create Event
+              </button>
+            </div>
+
+            {eventsLoading ? (
+              <div className="flex justify-center py-12">
+                <div className={`animate-spin rounded-full h-8 w-8 border-b-2 ${isDarkMode ? 'border-white' : 'border-gray-900'}`}></div>
+              </div>
+            ) : events.length === 0 ? (
+              <div className={`text-center py-12 border-2 border-dashed rounded-lg ${isDarkMode ? 'border-zinc-800 bg-zinc-900/50' : 'border-gray-300 bg-gray-50'}`}>
+                <span className="material-symbols-outlined text-5xl mb-3 opacity-30">event</span>
+                <p className={`text-lg font-medium mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>No events yet</p>
+                <p className={`text-sm mb-4 ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
+                  Create your first event to attract nightlife crowds
+                </p>
+                <button
+                  onClick={() => setShowCreateEventModal(true)}
+                  className="px-6 py-2 bg-white text-black rounded-md hover:bg-zinc-200 transition-colors font-medium"
+                >
+                  Create Event
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {events.map((event) => {
+                  const startDate = new Date(event.startTime);
+                  const endDate = new Date(event.endTime);
+                  const isUpcoming = startDate > new Date();
+                  const isPast = endDate < new Date();
+                  
+                  return (
+                    <div
+                      key={event.id}
+                      className={`border rounded-lg p-4 ${isDarkMode ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-gray-200'}`}
+                    >
+                      <div className="flex gap-4">
+                        {/* Event Flyer */}
+                        <div className="flex-shrink-0">
+                          {event.flyerImageUrl ? (
+                            <img
+                              src={event.flyerImageUrl}
+                              alt={event.name}
+                              className="w-24 h-32 object-cover rounded-md"
+                            />
+                          ) : (
+                            <div className={`w-24 h-32 rounded-md flex items-center justify-center ${isDarkMode ? 'bg-zinc-800' : 'bg-gray-100'}`}>
+                              <span className="material-symbols-outlined text-3xl opacity-30">event</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Event Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex-1 min-w-0">
+                              <h3 className={`text-lg font-bold truncate ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                {event.name}
+                              </h3>
+                              <p className={`text-sm ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
+                                {event.venueName}
+                              </p>
+                            </div>
+                            
+                            {/* Status Badges */}
+                            <div className="flex items-center gap-2">
+                              {event.isPublished ? (
+                                <span className="px-2 py-1 text-xs font-medium bg-green-500/20 text-green-400 rounded">
+                                  Published
+                                </span>
+                              ) : (
+                                <span className="px-2 py-1 text-xs font-medium bg-zinc-700 text-zinc-400 rounded">
+                                  Draft
+                                </span>
+                              )}
+                              {isPast && (
+                                <span className="px-2 py-1 text-xs font-medium bg-zinc-700 text-zinc-500 rounded">
+                                  Past
+                                </span>
+                              )}
+                              {isUpcoming && (
+                                <span className="px-2 py-1 text-xs font-medium bg-blue-500/20 text-blue-400 rounded">
+                                  Upcoming
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Date & Time */}
+                          <div className={`text-sm mb-2 ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
+                            <div className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-base">calendar_today</span>
+                              <span>{startDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                            </div>
+                            <div className="flex items-center gap-1 mt-1">
+                              <span className="material-symbols-outlined text-base">schedule</span>
+                              <span>
+                                {startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - {endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Ticketing Info */}
+                          {event.isTicketed && (
+                            <div className={`text-sm mb-3 ${isDarkMode ? 'text-zinc-300' : 'text-gray-700'}`}>
+                              <span className="font-medium">€{event.ticketPrice}</span>
+                              {event.maxGuests > 0 && (
+                                <span className={`ml-2 ${isDarkMode ? 'text-zinc-400' : 'text-gray-600'}`}>
+                                  • Max {event.maxGuests} guests
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Stats */}
+                          <div className={`text-xs mb-3 ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
+                            {event.bookingCount || 0} bookings • {event.totalGuests || 0} guests
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => handleTogglePublish(event)}
+                              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                                event.isPublished
+                                  ? isDarkMode
+                                    ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                  : 'bg-green-600 text-white hover:bg-green-700'
+                              }`}
+                            >
+                              {event.isPublished ? 'Unpublish' : 'Publish'}
+                            </button>
+                            <button
+                              onClick={() => setEditingEvent(event)}
+                              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                                isDarkMode
+                                  ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
+                                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              }`}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => setDeletingEvent(event)}
+                              className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
         {/* QR Generator Tab */}
         {activeTab === 'qr-generator' && (
           <div className="space-y-6">
@@ -2162,6 +2414,29 @@ export default function BusinessAdminDashboard() {
           </div>
         )}
       </main>
+
+      {/* Event Modals */}
+      <CreateEventModal
+        isOpen={showCreateEventModal}
+        onClose={() => setShowCreateEventModal(false)}
+        onSubmit={handleCreateEvent}
+        venues={venues}
+      />
+
+      <EditEventModal
+        isOpen={!!editingEvent}
+        onClose={() => setEditingEvent(null)}
+        onSubmit={handleEditEvent}
+        event={editingEvent}
+        venues={venues}
+      />
+
+      <DeleteEventModal
+        isOpen={!!deletingEvent}
+        onClose={() => setDeletingEvent(null)}
+        onConfirm={handleDeleteEvent}
+        event={deletingEvent}
+      />
 
       {/* Create Staff Modal */}
       <CreateStaffModal
