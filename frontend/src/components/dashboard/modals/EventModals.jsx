@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import ImageUpload from '../../ImageUpload';
+import { ImageUpload } from '../../ImageUpload';
 
 // Create Event Modal
 export function CreateEventModal({ isOpen, onClose, onSubmit, venues }) {
@@ -93,8 +93,8 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues }) {
           <div>
             <label className="block text-sm font-medium text-zinc-400 mb-2">Event Flyer</label>
             <ImageUpload
-              currentImageUrl={formData.flyerImageUrl}
-              onImageUrlChange={(url) => setFormData({ ...formData, flyerImageUrl: url })}
+              value={formData.flyerImageUrl}
+              onChange={(url) => setFormData({ ...formData, flyerImageUrl: url })}
               label="Upload Flyer"
             />
           </div>
@@ -318,8 +318,8 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues }) {
           <div>
             <label className="block text-sm font-medium text-zinc-400 mb-2">Event Flyer</label>
             <ImageUpload
-              currentImageUrl={formData.flyerImageUrl}
-              onImageUrlChange={(url) => setFormData({ ...formData, flyerImageUrl: url })}
+              value={formData.flyerImageUrl}
+              onChange={(url) => setFormData({ ...formData, flyerImageUrl: url })}
               label="Upload Flyer"
             />
           </div>
