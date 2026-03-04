@@ -7,14 +7,12 @@ import VenueBottomSheet from '../components/VenueBottomSheet';
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-// 🎯 XIXA: Your custom 3D dark atmospheric map
-const DARK_STYLE = "mapbox://styles/aldid1602/cmm3bp5b3001v01qy9yf3gzlo";
+// 🎯 XIXA: Clean 3D map without POIs (new "Warm" style)
+const DARK_STYLE = "mapbox://styles/aldid1602/cmm3szrbo001e01s26c6ahwgv";
 
-// Map configuration to hide all default POIs
+// Map configuration
 const MAP_CONFIG = {
-  // Hide all Mapbox POI labels (restaurants, hotels, etc.)
   interactiveLayerIds: [],
-  // Prevent default POI clicks
   clickTolerance: 0
 };
 
