@@ -4,7 +4,8 @@
  * Industrial Grade: Error handling, retry logic
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.riviera-os.com';
+// Note: VITE_API_URL already includes /api in production
+const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
 class FeedbackApiService {
   /**
@@ -16,7 +17,7 @@ class FeedbackApiService {
     try {
       console.log('🌐 Submitting negative feedback...', feedbackData);
       
-      const response = await fetch(`${API_URL}/api/public/Feedback`, {
+      const response = await fetch(`${API_URL}/public/Feedback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

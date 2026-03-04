@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Base URL for the API (hardcoded like businessApi)
-const API_BASE_URL = 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+// Base URL for the API - uses env variable that already includes /api
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
 // Create axios instance with default config
 const api = axios.create({

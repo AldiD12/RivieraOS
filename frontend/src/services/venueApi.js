@@ -33,7 +33,8 @@ class VenueApiService {
       console.log('🌐 Fetching venues from API...');
       
       // Use NEW public venues endpoint (capital V)
-      const response = await fetch(`${API_URL}/api/public/Venues`, {
+      // Note: API_URL already includes /api from env variable
+      const response = await fetch(`${API_URL}/public/Venues`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
@@ -97,8 +98,9 @@ class VenueApiService {
       console.log(`🌐 Fetching availability for venue ${venueId}...`);
       
       // Use NEW venue availability endpoint (capital V)
+      // Note: API_URL already includes /api from env variable
       const response = await fetch(
-        `${API_URL}/api/public/Venues/${venueId}/availability`,
+        `${API_URL}/public/Venues/${venueId}/availability`,
         {
           method: 'GET',
           headers: {
