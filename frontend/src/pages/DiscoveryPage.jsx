@@ -117,16 +117,18 @@ export default function DiscoveryPage() {
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [viewState, setViewState] = useState(RIVIERA_CENTER);
   const [activeFilter, setActiveFilter] = useState('Beach'); // Default to Beach only
   const [isDayMode, setIsDayMode] = useState(false); // false = night mode (default)
   const [viewMode, setViewMode] = useState('map'); // 'map' or 'list'
   const [userLocation, setUserLocation] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [initialViewState, setInitialViewState] = useState(RIVIERA_CENTER);
+  const [viewState, setViewState] = useState(RIVIERA_CENTER);
 
-  // Get user location on mount
+  // Get user location IMMEDIATELY on mount (before anything else)
   useEffect(() => {
     if ('geolocation' in navigator) {
+      // Start geolocation request immediately
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const userCoords = {
@@ -135,13 +137,16 @@ export default function DiscoveryPage() {
           };
           setUserLocation(userCoords);
           
-          // Center map on user location
-          setViewState(prev => ({
-            ...prev,
+          // Update initial view state so map starts at user location
+          const newViewState = {
             longitude: userCoords.longitude,
             latitude: userCoords.latitude,
-            zoom: 14
-          }));
+            zoom: 14,
+            pitch: 45,
+            bearing: -10
+          };
+          setInitialViewState(newViewState);
+          setViewState(newViewState);
         },
         (error) => {
           console.log('Geolocation not available, using default location:', error);
@@ -149,7 +154,7 @@ export default function DiscoveryPage() {
         },
         {
           enableHighAccuracy: false, // Faster, less battery
-          timeout: 5000,
+          timeout: 3000, // Reduced to 3 seconds for faster response
           maximumAge: 300000 // Cache for 5 minutes
         }
       );
@@ -257,6 +262,7 @@ export default function DiscoveryPage() {
         <div className="absolute inset-0 z-[1]">
           <Map
             ref={mapRef}
+            initialViewState={initialViewState}
             {...viewState}
             onMove={evt => setViewState(evt.viewState)}
             onLoad={() => setMapLoaded(true)}
