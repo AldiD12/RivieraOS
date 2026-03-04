@@ -22,13 +22,39 @@ export const reservationApi = {
 
   // Create a reservation
   async createReservation(reservationData) {
+    console.log('🌐 API Request:', {
+      url: `${API_URL}/public/Reservations`,
+      method: 'POST',
+      data: reservationData
+    });
+    
     const response = await fetch(`${API_URL}/public/Reservations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(reservationData)
     });
-    if (!response.ok) throw new Error('Failed to create reservation');
-    return response.json();
+    
+    console.log('🌐 API Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('🌐 API Error:', errorData);
+      
+      const error = new Error(errorData.message || errorData.error || 'Failed to create reservation');
+      error.response = {
+        status: response.status,
+        data: errorData
+      };
+      throw error;
+    }
+    
+    const result = await response.json();
+    console.log('🌐 API Success:', result);
+    return result;
   },
 
   // Get reservation status by booking code

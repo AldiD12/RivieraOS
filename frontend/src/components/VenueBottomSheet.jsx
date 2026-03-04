@@ -108,6 +108,7 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
       
       if (isRestaurant) {
         // RESTAURANT: Open WhatsApp with prefilled message
+        console.log('📱 Opening WhatsApp for restaurant booking...');
         const venuePhone = venue.phone || '+355692000000';
         const message = `Përshëndetje! 👋
 
@@ -123,14 +124,29 @@ Telefoni: ${bookingData.guestPhone}
 
 Faleminderit!`;
 
-        window.open(
-          `https://wa.me/${venuePhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`,
-          '_blank'
-        );
+        const whatsappUrl = `https://wa.me/${venuePhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
+        console.log('📱 WhatsApp URL:', whatsappUrl);
         
-        onClose();
+        window.open(whatsappUrl, '_blank');
+        
+        // Close modal after short delay
+        setTimeout(() => {
+          onClose();
+        }, 500);
+        
       } else if (isBeach) {
         // BEACH: Real instant booking API
+        console.log('🏖️ Creating beach reservation...', {
+          venueId: venue.id,
+          zoneId: selectedZone.id,
+          guestName: bookingData.guestName,
+          guestPhone: bookingData.guestPhone,
+          guestCount: bookingData.guestCount,
+          sunbedCount: bookingData.sunbedCount,
+          arrivalTime: bookingData.arrivalTime,
+          reservationDate: bookingData.date
+        });
+        
         const result = await reservationApi.createReservation({
           venueId: venue.id,
           zoneId: selectedZone.id,
@@ -145,10 +161,18 @@ Faleminderit!`;
         
         console.log('✅ Booking successful:', result);
         navigate(`/success/${result.bookingCode}`);
+      } else {
+        console.warn('⚠️ Unknown venue type:', venueType);
+        alert('Lloji i vendit nuk është i njohur. Ju lutem kontaktoni stafin.');
       }
       
     } catch (error) {
       console.error('❌ Booking failed:', error);
+      console.error('❌ Error details:', {
+        message: error.message,
+        response: error.response,
+        stack: error.stack
+      });
       
       if (haptics.isSupported()) {
         haptics.error();
@@ -160,8 +184,13 @@ Faleminderit!`;
         alert(`Na vjen keq, vetëm ${available} shtretër të lirë në këtë zonë. Ju lutem zgjidhni më pak shtretër ose provoni zonë tjetër.`);
       } else if (error.message.includes('Invalid arrivalTime')) {
         alert('Ora e arritjes është e pavlefshme. Ju lutem provoni përsëri.');
+      } else if (error.response?.status === 404) {
+        alert('Vendi ose zona nuk u gjet. Ju lutem provoni përsëri.');
+      } else if (error.response?.status === 400) {
+        const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Të dhënat janë të pavlefshme';
+        alert(`Gabim: ${errorMsg}`);
       } else {
-        alert('Rezervimi dështoi. Ju lutem provoni përsëri ose kontaktoni stafin.');
+        alert(`Rezervimi dështoi: ${error.message}\n\nJu lutem provoni përsëri ose kontaktoni stafin.`);
       }
     } finally {
       setSubmitting(false);
