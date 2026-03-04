@@ -10,7 +10,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 {
     [Route("api/business/[controller]")]
     [ApiController]
-    [Authorize(Policy = "BusinessOwner")]
+    [Authorize(Policy = "Manager")]
     public class EventsController : ControllerBase
     {
         private readonly BlackBearDbContext _context;
@@ -24,7 +24,6 @@ namespace BlackBear.Services.Core.Controllers.Business
 
         // GET: api/business/events?venueId=1&upcoming=true
         [HttpGet]
-        [Authorize(Policy = "Manager")]
         public async Task<ActionResult<List<BizEventListItemDto>>> GetEvents(
             [FromQuery] int? venueId = null,
             [FromQuery] bool? upcoming = null)
@@ -79,7 +78,6 @@ namespace BlackBear.Services.Core.Controllers.Business
 
         // GET: api/business/events/5
         [HttpGet("{id}")]
-        [Authorize(Policy = "Manager")]
         public async Task<ActionResult<BizEventDetailDto>> GetEvent(int id)
         {
             var businessId = _currentUserService.BusinessId;
