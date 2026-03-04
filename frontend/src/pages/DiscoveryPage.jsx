@@ -7,9 +7,8 @@ import VenueBottomSheet from '../components/VenueBottomSheet';
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-// 🎯 Use Mapbox's clean "streets" style without POIs
-// We'll customize it to remove all POI layers
-const DARK_STYLE = "mapbox://styles/mapbox/dark-v11"; // Clean dark style without custom POIs
+// 🎯 XIXA: Your custom 3D dark atmospheric map
+const DARK_STYLE = "mapbox://styles/aldid1602/cmm3bp5b3001v01qy9yf3gzlo";
 
 // Map configuration to hide all default POIs
 const MAP_CONFIG = {
