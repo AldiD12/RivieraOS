@@ -7,8 +7,16 @@ import VenueBottomSheet from '../components/VenueBottomSheet';
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-// 🎯 XIXA: Dark atmospheric map
+// 🎯 XIXA: Dark atmospheric map (custom style with NO POIs)
 const DARK_STYLE = "mapbox://styles/aldid1602/cmm3bp5b3001v01qy9yf3gzlo";
+
+// Map configuration to hide all default POIs
+const MAP_CONFIG = {
+  // Hide all Mapbox POI labels (restaurants, hotels, etc.)
+  interactiveLayerIds: [],
+  // Prevent default POI clicks
+  clickTolerance: 0
+};
 
 // Albanian Riviera center
 const RIVIERA_CENTER = {
@@ -265,7 +273,39 @@ export default function DiscoveryPage() {
             initialViewState={initialViewState}
             {...viewState}
             onMove={evt => setViewState(evt.viewState)}
-            onLoad={() => setMapLoaded(true)}
+            onLoad={(e) => {
+              setMapLoaded(true);
+              
+              // Hide ALL Mapbox POI layers (restaurants, hotels, shops, etc.)
+              const map = e.target;
+              const layers = map.getStyle().layers;
+              
+              // List of POI layer prefixes to hide
+              const poiPrefixes = [
+                'poi-',           // All POI labels
+                'transit-',       // Transit stations
+                'road-label',     // Road labels with businesses
+                'place-',         // Place labels
+                'airport-label',  // Airports
+                'settlement-',    // City/town labels with businesses
+              ];
+              
+              layers.forEach(layer => {
+                // Hide any layer that matches POI patterns
+                if (poiPrefixes.some(prefix => layer.id.includes(prefix))) {
+                  map.setLayoutProperty(layer.id, 'visibility', 'none');
+                }
+                
+                // Also hide specific business-related layers
+                if (layer.id.includes('label') && 
+                    (layer.id.includes('business') || 
+                     layer.id.includes('shop') || 
+                     layer.id.includes('restaurant') ||
+                     layer.id.includes('hotel'))) {
+                  map.setLayoutProperty(layer.id, 'visibility', 'none');
+                }
+              });
+            }}
             mapStyle={DARK_STYLE}
             mapboxAccessToken={MAPBOX_TOKEN}
             style={{ width: '100%', height: '100%' }}
@@ -281,6 +321,8 @@ export default function DiscoveryPage() {
             // Lazy load tiles
             fadeDuration={0}
             crossSourceCollisions={false}
+            // Prevent default POI interactions
+            interactiveLayerIds={[]}
           >
             <NavigationControl position="bottom-right" showCompass={false} />
             
