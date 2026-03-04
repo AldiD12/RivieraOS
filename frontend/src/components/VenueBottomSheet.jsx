@@ -90,7 +90,9 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
       console.log('📝 Submitting booking...', {
         zone: selectedZone,
         booking: bookingData,
-        venueType: venue.type
+        venueType: venue.type,
+        venueName: venue.name,
+        fullVenue: venue
       });
       
       // Save guest info to localStorage

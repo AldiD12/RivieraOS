@@ -1177,6 +1177,212 @@
         }
       }
     },
+    "/api/collector/bookings/{bookingCode}": {
+      "get": {
+        "tags": [
+          "CollectorBookings"
+        ],
+        "parameters": [
+          {
+            "name": "bookingCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectorBookingDetailsDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectorBookingDetailsDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectorBookingDetailsDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collector/bookings/{bookingCode}/available-units": {
+      "get": {
+        "tags": [
+          "CollectorBookings"
+        ],
+        "parameters": [
+          {
+            "name": "bookingCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CollectorAvailableUnitDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CollectorAvailableUnitDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CollectorAvailableUnitDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collector/bookings/{bookingCode}/approve": {
+      "put": {
+        "tags": [
+          "CollectorBookings"
+        ],
+        "parameters": [
+          {
+            "name": "bookingCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CollectorApproveBookingRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CollectorApproveBookingRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CollectorApproveBookingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectorBookingDetailsDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectorBookingDetailsDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectorBookingDetailsDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collector/bookings/{bookingCode}/reject": {
+      "put": {
+        "tags": [
+          "CollectorBookings"
+        ],
+        "parameters": [
+          {
+            "name": "bookingCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectorBookingDetailsDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectorBookingDetailsDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CollectorBookingDetailsDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/collector/bookings/{bookingCode}/checkin": {
+      "post": {
+        "tags": [
+          "CollectorBookings"
+        ],
+        "parameters": [
+          {
+            "name": "bookingCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/collector/units": {
       "get": {
         "tags": [
@@ -8272,7 +8478,8 @@
           },
           "zoneUnitId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "unitCode": {
             "type": "string",
@@ -8358,7 +8565,8 @@
           },
           "zoneUnitId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "unitCode": {
             "type": "string",
@@ -11079,6 +11287,124 @@
         },
         "additionalProperties": false
       },
+      "CollectorApproveBookingRequest": {
+        "required": [
+          "unitIds"
+        ],
+        "type": "object",
+        "properties": {
+          "unitIds": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "CollectorAvailableUnitDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "unitType": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "basePrice": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "positionX": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "positionY": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CollectorBookingDetailsDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "bookingCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "guestCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitsNeeded": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "zoneName": {
+            "type": "string",
+            "nullable": true
+          },
+          "zoneId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "CollectorCurrentBookingDto": {
         "type": "object",
         "properties": {
@@ -13005,6 +13331,16 @@
             "type": "string",
             "nullable": true
           },
+          "unitCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "areAdjacent": {
+            "type": "boolean"
+          },
           "zoneName": {
             "type": "string",
             "nullable": true
@@ -13022,11 +13358,27 @@
             "format": "date-time",
             "nullable": true
           },
+          "arrivalTime": {
+            "type": "string",
+            "nullable": true
+          },
+          "expirationTime": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalPrice": {
+            "type": "number",
+            "format": "double"
+          },
           "guestName": {
             "type": "string",
             "nullable": true
           },
           "guestCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unitsNeeded": {
             "type": "integer",
             "format": "int32"
           },
@@ -13039,14 +13391,19 @@
       },
       "PublicReservationRequest": {
         "required": [
-          "venueId",
-          "zoneUnitId"
+          "venueId"
         ],
         "type": "object",
         "properties": {
           "zoneUnitId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
+          },
+          "zoneId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           },
           "venueId": {
             "type": "integer",
@@ -13073,6 +13430,22 @@
             "minimum": 1,
             "type": "integer",
             "format": "int32"
+          },
+          "sunbedCount": {
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "arrivalTime": {
+            "type": "string",
+            "nullable": true
+          },
+          "reservationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           },
           "startTime": {
             "type": "string",
@@ -13111,6 +13484,13 @@
             "type": "string",
             "nullable": true
           },
+          "unitCodes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
           "zoneName": {
             "type": "string",
             "nullable": true
@@ -13124,6 +13504,11 @@
             "format": "date-time"
           },
           "endTime": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "expirationTime": {
             "type": "string",
             "format": "date-time",
             "nullable": true
@@ -15005,7 +15390,8 @@
           },
           "zoneUnitId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "unitCode": {
             "type": "string",
@@ -15099,7 +15485,8 @@
           },
           "zoneUnitId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "unitCode": {
             "type": "string",
