@@ -196,14 +196,19 @@ export default function DiscoveryPage() {
   const loadEvents = async () => {
     try {
       setEventsLoading(true);
+      console.log('🌐 Fetching events from API...');
       const data = await publicEventsApi.getEvents();
+      console.log('📦 Raw events API response:', data);
+      
       // Filter only published, non-deleted events
       const published = Array.isArray(data) 
         ? data.filter(e => e.isPublished && !e.isDeleted)
         : [];
+      
+      console.log(`✅ Filtered to ${published.length} published events:`, published);
       setEvents(published);
     } catch (err) {
-      console.error('Failed to load events:', err);
+      console.error('❌ Failed to load events:', err);
     } finally {
       setEventsLoading(false);
     }
