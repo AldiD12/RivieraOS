@@ -1,31 +1,49 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Clock, Users, Bed, CheckCircle, ArrowLeft, Share2 } from 'lucide-react';
+import { reservationApi } from '../services/reservationApi';
 
 export default function BookingSuccessPage() {
   const { bookingCode } = useParams();
   const navigate = useNavigate();
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Load booking data from localStorage (temporary until backend API is ready)
+  // Fetch real booking data from API
   useEffect(() => {
-    const tempBooking = localStorage.getItem('temp_booking');
-    if (tempBooking) {
-      const data = JSON.parse(tempBooking);
-      setBooking(data);
-      setLoading(false);
-      
-      // Clean up
-      localStorage.removeItem('temp_booking');
-    } else {
-      // TODO: Replace with actual API call when backend is ready
-      // const data = await reservationApi.getReservationStatus(bookingCode);
-      // setBooking(data);
-      // setLoading(false);
-      
-      setLoading(false);
-      setBooking(null);
+    const fetchBooking = async () => {
+      try {
+        setLoading(true);
+        const data = await reservationApi.getReservationStatus(bookingCode);
+        
+        // Transform API response to match our UI expectations
+        const transformedBooking = {
+          bookingCode: data.bookingCode,
+          venueName: data.venueName,
+          venuePhone: data.venuePhone || '+355692000000',
+          zoneName: data.zoneName,
+          unitCodes: data.unitCodes || [],
+          guestCount: data.guestCount,
+          sunbedCount: data.unitsNeeded || 1,
+          arrivalTime: data.startTime ? new Date(data.startTime).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+          expirationTime: data.expirationTime ? new Date(data.expirationTime).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
+          totalPrice: data.totalPrice || 0,
+          status: data.status
+        };
+        
+        setBooking(transformedBooking);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch booking:', err);
+        setError('Rezervimi nuk u gjet / Booking not found');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (bookingCode) {
+      fetchBooking();
     }
   }, [bookingCode]);
 
@@ -43,6 +61,22 @@ export default function BookingSuccessPage() {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error || !booking) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-red-500 text-xl mb-4">{error || 'Rezervimi nuk u gjet'}</p>
+          <button
+            onClick={() => navigate('/discover')}
+            className="bg-zinc-900 border border-zinc-800 text-white px-6 py-3 rounded-full hover:border-[#10FF88] transition-all"
+          >
+            Kthehu në Discovery / Back to Discovery
+          </button>
+        </div>
       </div>
     );
   }

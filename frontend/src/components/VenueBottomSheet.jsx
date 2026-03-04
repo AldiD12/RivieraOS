@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import haptics from '../utils/haptics';
+import { reservationApi } from '../services/reservationApi';
 
 export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) {
   const navigate = useNavigate();
@@ -124,24 +125,21 @@ Faleminderit!`;
         
         onClose();
       } else if (isBeach) {
-        // BEACH: Instant booking (mock for now)
-        const mockBookingCode = `XIXA-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
-        
-        localStorage.setItem('temp_booking', JSON.stringify({
-          bookingCode: mockBookingCode,
-          venueName: venue.name,
-          venuePhone: venue.phone,
-          zoneName: selectedZone.name,
-          unitCodes: [],
+        // BEACH: Real instant booking API
+        const result = await reservationApi.createReservation({
+          venueId: venue.id,
+          zoneId: selectedZone.id,
+          guestName: bookingData.guestName,
+          guestPhone: bookingData.guestPhone,
           guestCount: bookingData.guestCount,
           sunbedCount: bookingData.sunbedCount,
           arrivalTime: bookingData.arrivalTime,
-          expirationTime: calculateExpiration(bookingData.arrivalTime),
-          totalPrice: selectedZone.basePrice * bookingData.sunbedCount,
-          status: 'CONFIRMED'
-        }));
+          reservationDate: bookingData.date,
+          notes: 'Booked via XIXA Discovery'
+        });
         
-        navigate(`/success/${mockBookingCode}`);
+        console.log('✅ Booking successful:', result);
+        navigate(`/success/${result.bookingCode}`);
       }
       
     } catch (error) {
@@ -151,19 +149,18 @@ Faleminderit!`;
         haptics.error();
       }
       
-      alert('Booking failed. Please try again.');
+      // Better error handling
+      if (error.response?.data?.error === 'INSUFFICIENT_CAPACITY') {
+        const available = error.response.data.availableUnits;
+        alert(`Na vjen keq, vetëm ${available} shtretër të lirë në këtë zonë. Ju lutem zgjidhni më pak shtretër ose provoni zonë tjetër.`);
+      } else if (error.message.includes('Invalid arrivalTime')) {
+        alert('Ora e arritjes është e pavlefshme. Ju lutem provoni përsëri.');
+      } else {
+        alert('Rezervimi dështoi. Ju lutem provoni përsëri ose kontaktoni stafin.');
+      }
     } finally {
       setSubmitting(false);
     }
-  };
-
-  // Helper: Calculate expiration time (arrival + 15 min)
-  const calculateExpiration = (arrivalTime) => {
-    const [hours, minutes] = arrivalTime.split(':').map(Number);
-    const expMinutes = minutes + 15;
-    const expHours = hours + Math.floor(expMinutes / 60);
-    const finalMinutes = expMinutes % 60;
-    return `${expHours.toString().padStart(2, '0')}:${finalMinutes.toString().padStart(2, '0')}`;
   };
 
   return (
