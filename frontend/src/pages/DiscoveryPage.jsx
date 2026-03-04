@@ -200,9 +200,15 @@ export default function DiscoveryPage() {
       const data = await publicEventsApi.getEvents();
       console.log('📦 Raw events API response:', data);
       
-      // Filter only published, non-deleted events
+      // Public API should only return published events
+      // Filter only if fields exist, otherwise trust the API
       const published = Array.isArray(data) 
-        ? data.filter(e => e.isPublished && !e.isDeleted)
+        ? data.filter(e => {
+            // If isPublished field exists, check it. Otherwise assume published.
+            const isPublished = e.isPublished !== undefined ? e.isPublished : true;
+            const isDeleted = e.isDeleted !== undefined ? e.isDeleted : false;
+            return isPublished && !isDeleted;
+          })
         : [];
       
       console.log(`✅ Filtered to ${published.length} published events:`, published);
