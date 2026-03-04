@@ -421,7 +421,12 @@ export default function BusinessAdminDashboard() {
       setEvents(eventsData);
     } catch (err) {
       console.error('Error fetching events:', err);
-      setError('Failed to load events');
+      if (err.status === 403) {
+        console.warn('⚠️ Events access denied - events management will be disabled');
+        setEvents([]); // Empty array, don't show error
+      } else {
+        setError('Failed to load events');
+      }
     } finally {
       setEventsLoading(false);
     }

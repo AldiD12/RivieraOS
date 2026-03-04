@@ -5,10 +5,17 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 // Business Admin APIs
 export const businessEventsApi = {
   getEvents: async () => {
-    const response = await axios.get(`${API_BASE_URL}/api/business/Events`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    });
-    return response.data;
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/business/Events`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      // Ensure we always return an array
+      return Array.isArray(response.data) ? response.data : [];
+    } catch (error) {
+      console.error('Error fetching business events:', error);
+      // Return empty array on error to prevent .map crashes
+      return [];
+    }
   },
   
   getEventDetails: async (id) => {
