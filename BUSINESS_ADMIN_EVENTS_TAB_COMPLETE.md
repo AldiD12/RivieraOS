@@ -213,8 +213,16 @@ EventDetailDto {
 1. **Image Upload:** Uses existing ImageUpload component (Azure Blob Storage)
 2. **Date Validation:** Frontend validates start < end, but could add more checks
 3. **Timezone:** Uses browser timezone, may need server timezone handling
-4. **Booking System:** Events show booking stats but booking flow not yet implemented
-5. **Notifications:** No notifications when events are published/updated
+4. **Notifications:** No notifications when events are published/updated
+
+## Event Booking Flow (WhatsApp)
+
+Event bookings will work exactly like venue bookings:
+- User clicks "Get Tickets" button on event
+- Opens WhatsApp with pre-filled message
+- Message includes: Event name, venue, date/time, ticket price, guest count
+- Business confirms booking manually via WhatsApp
+- Backend tracks booking stats (bookingCount, totalGuests)
 
 ---
 

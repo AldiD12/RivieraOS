@@ -529,9 +529,37 @@ export const publicEventsApi = {
 ## Questions for User
 
 1. **Events Display:** Do you prefer Events as a filter (Option A), separate section (Option B), or separate tab (Option C)?
-2. **Ticketing:** Should events link to WhatsApp for booking, or build in-app ticketing?
-3. **Image Upload:** Use same ImageUpload component as venues/products?
+2. ~~**Ticketing:** Should events link to WhatsApp for booking, or build in-app ticketing?~~ ✅ **CONFIRMED: WhatsApp booking (same as venues)**
+3. **Image Upload:** Use same ImageUpload component as venues/products? ✅ **YES**
 4. **Notifications:** Should users get notified about new events at their favorite venues?
+
+## Event Booking Flow (WhatsApp)
+
+✅ **CONFIRMED:** Events will use WhatsApp booking flow, same as venues:
+
+```javascript
+// When user clicks "Get Tickets" on event
+const eventWhatsAppMessage = `Hi! I'd like to book tickets for:
+
+📅 Event: ${event.name}
+📍 Venue: ${event.venueName}
+🗓️ Date: ${formatDate(event.startTime)}
+⏰ Time: ${formatTime(event.startTime)}
+💰 Price: €${event.ticketPrice} per person
+👥 Guests: ${guestCount}
+
+Total: €${event.ticketPrice * guestCount}
+
+Please confirm availability!`;
+
+const whatsappUrl = `https://wa.me/${venuePhone}?text=${encodeURIComponent(eventWhatsAppMessage)}`;
+window.open(whatsappUrl, '_blank');
+```
+
+Backend will track:
+- `bookingCount` - Number of confirmed bookings
+- `totalGuests` - Total guests across all bookings
+- Business manually updates these after WhatsApp confirmation
 
 ---
 
