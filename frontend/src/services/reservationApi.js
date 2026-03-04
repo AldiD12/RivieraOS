@@ -1,5 +1,5 @@
 // Reservation API Service
-const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+const API_URL = (import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api').replace(/\/api$/, '') + '/api';
 
 export const reservationApi = {
   // Get available time slots for a venue on a specific date
