@@ -298,58 +298,84 @@ namespace BlackBear.Services.Core.Controllers.Public
                 return BadRequest("Zone not found");
             }
 
-            var startTime = request.StartTime ?? DateTime.UtcNow;
-            var unitsNeeded = (int)Math.Ceiling(request.GuestCount / 2.0);
+            // Compute start time from arrivalTime + reservationDate or fallback to StartTime
+            DateTime startTime;
+            if (!string.IsNullOrEmpty(request.ArrivalTime) && request.ReservationDate.HasValue)
+            {
+                if (!TimeSpan.TryParse(request.ArrivalTime, out var arrival))
+                    return BadRequest("Invalid arrivalTime format. Use HH:mm (e.g. 11:30)");
+                startTime = request.ReservationDate.Value.Date + arrival;
+            }
+            else
+            {
+                startTime = request.StartTime ?? DateTime.UtcNow;
+            }
 
-            // Count available units in zone for the requested date
-            var availableUnitIds = await _context.ZoneUnits
+            var unitsNeeded = request.SunbedCount ?? (int)Math.Ceiling(request.GuestCount / 2.0);
+            var targetDate = startTime.Date;
+
+            // Get available units in zone, ordered by position for adjacency
+            var availableUnits = await _context.ZoneUnits
                 .IgnoreQueryFilters()
                 .Where(u => u.VenueZoneId == request.ZoneId!.Value &&
                             u.VenueId == request.VenueId &&
                             !u.IsDeleted &&
                             u.Status == "Available")
-                .Select(u => u.Id)
+                .OrderBy(u => u.PositionY)
+                .ThenBy(u => u.PositionX)
+                .ThenBy(u => u.UnitCode)
                 .ToListAsync();
+
+            var unitIds = availableUnits.Select(u => u.Id).ToList();
 
             // Exclude units already booked for this date
             var bookedUnitIds = await _context.ZoneUnitBookings
                 .IgnoreQueryFilters()
-                .Where(b => availableUnitIds.Contains(b.ZoneUnitId!.Value) &&
+                .Where(b => b.ZoneUnitId.HasValue &&
+                            unitIds.Contains(b.ZoneUnitId.Value) &&
                             !b.IsDeleted &&
                             (b.Status == "Active" || b.Status == "Reserved") &&
-                            b.StartTime.Date == startTime.Date)
+                            b.StartTime.Date == targetDate)
                 .Select(b => b.ZoneUnitId!.Value)
                 .Distinct()
                 .ToListAsync();
 
-            var freeCount = availableUnitIds.Count - bookedUnitIds.Count;
+            var freeUnits = availableUnits.Where(u => !bookedUnitIds.Contains(u.Id)).ToList();
 
-            if (freeCount < unitsNeeded)
+            if (freeUnits.Count < unitsNeeded)
             {
                 return BadRequest(new
                 {
                     error = "INSUFFICIENT_CAPACITY",
-                    message = $"Not enough available units. Needed: {unitsNeeded}, Available: {freeCount}",
+                    message = $"Not enough available sunbeds. Needed: {unitsNeeded}, Available: {freeUnits.Count}",
                     needed = unitsNeeded,
-                    available = freeCount
+                    available = freeUnits.Count
                 });
             }
 
-            var bookingCode = $"RIV-{request.ZoneId!.Value}-{GenerateBookingCode()[..3]}";
+            // Auto-assign units with adjacency preference
+            var selectedUnits = FindAdjacentUnits(freeUnits, unitsNeeded);
+            var areAdjacent = AreUnitsAdjacent(selectedUnits);
+
+            // Calculate expiration time (arrival + 15 minutes)
+            var expirationTime = startTime.AddMinutes(15);
+
+            var bookingCode = $"RIV-{request.ZoneId!.Value}-{GenerateBookingCode()[..5]}";
 
             var booking = new ZoneUnitBooking
             {
                 BookingCode = bookingCode,
-                Status = "Pending",
+                Status = "Reserved",
                 GuestName = request.GuestName,
                 GuestPhone = request.GuestPhone,
                 GuestEmail = request.GuestEmail,
                 GuestCount = request.GuestCount,
                 StartTime = startTime,
                 EndTime = request.EndTime,
+                ExpirationTime = expirationTime,
                 Notes = request.Notes,
                 ZoneId = request.ZoneId!.Value,
-                ZoneUnitId = null,
+                ZoneUnitId = selectedUnits[0].Id,
                 UnitsNeeded = unitsNeeded,
                 VenueId = request.VenueId,
                 BusinessId = venue.BusinessId,
@@ -359,19 +385,78 @@ namespace BlackBear.Services.Core.Controllers.Public
             _context.ZoneUnitBookings.Add(booking);
             await _context.SaveChangesAsync();
 
+            // Assign all selected units to this booking
+            foreach (var unit in selectedUnits)
+            {
+                unit.Status = "Reserved";
+                unit.CurrentBookingId = booking.Id;
+            }
+            await _context.SaveChangesAsync();
+
+            var totalPrice = selectedUnits.Sum(u => u.BasePrice ?? zone.BasePrice);
+            var unitCodes = selectedUnits.Select(u => u.UnitCode).ToList();
+
             return CreatedAtAction(nameof(GetReservationStatus), new { bookingCode }, new PublicReservationConfirmationDto
             {
                 BookingCode = booking.BookingCode,
                 Status = booking.Status,
+                UnitCode = selectedUnits[0].UnitCode,
+                UnitType = selectedUnits[0].UnitType,
+                UnitCodes = unitCodes,
+                AreAdjacent = areAdjacent,
                 ZoneName = zone.Name,
                 VenueName = venue.Name,
                 StartTime = booking.StartTime,
                 EndTime = booking.EndTime,
+                ArrivalTime = startTime.ToString("HH:mm"),
+                ExpirationTime = expirationTime.ToString("HH:mm"),
+                TotalPrice = totalPrice,
                 GuestName = booking.GuestName,
                 GuestCount = booking.GuestCount,
                 UnitsNeeded = unitsNeeded,
-                Message = $"Your reservation request for {unitsNeeded} unit(s) in {zone.Name} is pending approval. Booking code: {bookingCode}"
+                Message = $"Your reservation for {unitsNeeded} sunbed(s) in {zone.Name} is confirmed. Arrive by {expirationTime:HH:mm} or it will expire. Booking code: {bookingCode}"
             });
+        }
+
+        private static List<ZoneUnit> FindAdjacentUnits(List<ZoneUnit> availableUnits, int count)
+        {
+            if (count == 1)
+                return new List<ZoneUnit> { availableUnits[0] };
+
+            // Try to find consecutive units in same row (same PositionY, consecutive PositionX)
+            for (int i = 0; i <= availableUnits.Count - count; i++)
+            {
+                var group = availableUnits.Skip(i).Take(count).ToList();
+                if (AreUnitsAdjacent(group))
+                    return group;
+            }
+
+            // Fallback: return first N available units (even if not adjacent)
+            return availableUnits.Take(count).ToList();
+        }
+
+        private static bool AreUnitsAdjacent(List<ZoneUnit> units)
+        {
+            if (units.Count <= 1) return true;
+
+            // All units must have position data
+            if (units.Any(u => u.PositionX == null || u.PositionY == null))
+                return false;
+
+            // All units must be in same row
+            var firstRow = units[0].PositionY;
+            if (units.Any(u => u.PositionY != firstRow))
+                return false;
+
+            // Column numbers must be consecutive
+            var columns = units.Select(u => u.PositionX!.Value).OrderBy(c => c).ToList();
+            for (int i = 1; i < columns.Count; i++)
+            {
+                if (columns[i] != columns[i - 1] + 1)
+                    return false;
+            }
+
+            return true;
         }
 
         // GET: api/public/reservations/{bookingCode}
@@ -384,6 +469,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                     .ThenInclude(zu => zu!.VenueZone)
                 .Include(b => b.VenueZone)
                 .Include(b => b.Venue)
+                .Include(b => b.AssignedUnits)
                 .FirstOrDefaultAsync(b => b.BookingCode == bookingCode && !b.IsDeleted);
 
             if (booking == null)
@@ -391,16 +477,24 @@ namespace BlackBear.Services.Core.Controllers.Public
                 return NotFound("Reservation not found");
             }
 
+            var unitCodes = booking.AssignedUnits.Any()
+                ? booking.AssignedUnits.Select(u => u.UnitCode).ToList()
+                : booking.ZoneUnit != null
+                    ? new List<string> { booking.ZoneUnit.UnitCode }
+                    : new List<string>();
+
             return Ok(new PublicReservationStatusDto
             {
                 BookingCode = booking.BookingCode,
                 Status = booking.Status,
                 UnitCode = booking.ZoneUnit?.UnitCode,
                 UnitType = booking.ZoneUnit?.UnitType,
+                UnitCodes = unitCodes,
                 ZoneName = booking.ZoneUnit?.VenueZone?.Name ?? booking.VenueZone?.Name ?? "",
                 VenueName = booking.Venue?.Name ?? "",
                 StartTime = booking.StartTime,
                 EndTime = booking.EndTime,
+                ExpirationTime = booking.ExpirationTime,
                 CheckedInAt = booking.CheckedInAt,
                 CheckedOutAt = booking.CheckedOutAt,
                 GuestName = booking.GuestName,
@@ -415,6 +509,7 @@ namespace BlackBear.Services.Core.Controllers.Public
             var booking = await _context.ZoneUnitBookings
                 .IgnoreQueryFilters()
                 .Include(b => b.ZoneUnit)
+                .Include(b => b.AssignedUnits)
                 .FirstOrDefaultAsync(b => b.BookingCode == bookingCode && !b.IsDeleted);
 
             if (booking == null)
@@ -429,7 +524,14 @@ namespace BlackBear.Services.Core.Controllers.Public
 
             booking.Status = "Cancelled";
 
-            // Update unit status if it was reserved
+            // Release all assigned units
+            foreach (var unit in booking.AssignedUnits)
+            {
+                unit.Status = "Available";
+                unit.CurrentBookingId = null;
+            }
+
+            // Also release primary unit if set
             if (booking.ZoneUnit != null && booking.ZoneUnit.Status == "Reserved")
             {
                 booking.ZoneUnit.Status = "Available";

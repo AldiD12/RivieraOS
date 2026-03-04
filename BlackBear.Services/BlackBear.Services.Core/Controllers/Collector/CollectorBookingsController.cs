@@ -269,6 +269,83 @@ namespace BlackBear.Services.Core.Controllers.Collector
             });
         }
 
+        // POST: api/collector/bookings/{bookingCode}/checkin
+        [HttpPost("{bookingCode}/checkin")]
+        public async Task<IActionResult> CheckInBooking(string bookingCode)
+        {
+            var collectorVenueId = await GetCollectorVenueIdAsync();
+            if (collectorVenueId == null)
+                return StatusCode(403, new { error = "No venue assigned to this account" });
+
+            var booking = await _context.ZoneUnitBookings
+                .IgnoreQueryFilters()
+                .Include(b => b.AssignedUnits)
+                .Include(b => b.ZoneUnit)
+                .FirstOrDefaultAsync(b => b.BookingCode == bookingCode &&
+                                          b.VenueId == collectorVenueId.Value &&
+                                          !b.IsDeleted);
+
+            if (booking == null)
+                return NotFound("Booking not found");
+
+            if (booking.Status != "Reserved")
+                return BadRequest($"Cannot check in a booking with status '{booking.Status}'");
+
+            // Check if expired
+            if (booking.ExpirationTime.HasValue && DateTime.UtcNow > booking.ExpirationTime.Value)
+            {
+                booking.Status = "Expired";
+
+                foreach (var unit in booking.AssignedUnits)
+                {
+                    unit.Status = "Available";
+                    unit.CurrentBookingId = null;
+                }
+                if (booking.ZoneUnit != null && booking.ZoneUnit.Status == "Reserved")
+                    booking.ZoneUnit.Status = "Available";
+
+                await _context.SaveChangesAsync();
+
+                return BadRequest(new
+                {
+                    error = "BOOKING_EXPIRED",
+                    message = "Reservation has expired",
+                    expirationTime = booking.ExpirationTime
+                });
+            }
+
+            booking.Status = "Active";
+            booking.CheckedInAt = DateTime.UtcNow;
+
+            if (int.TryParse(_currentUserService.UserId, out var userId))
+                booking.HandledByUserId = userId;
+
+            // Update all assigned units to Occupied
+            foreach (var unit in booking.AssignedUnits)
+            {
+                unit.Status = "Occupied";
+            }
+            if (booking.ZoneUnit != null)
+                booking.ZoneUnit.Status = "Occupied";
+
+            await _context.SaveChangesAsync();
+
+            var unitCodes = booking.AssignedUnits.Select(u => u.UnitCode).ToList();
+
+            await _hubContext.Clients.All.SendAsync("BookingCheckedIn", new
+            {
+                booking.BookingCode,
+                booking.Status,
+                unitCodes
+            });
+
+            return Ok(new
+            {
+                message = "Check-in successful",
+                unitCodes
+            });
+        }
+
         private async Task<int?> GetCollectorVenueIdAsync()
         {
             if (!int.TryParse(_currentUserService.UserId, out var userId))

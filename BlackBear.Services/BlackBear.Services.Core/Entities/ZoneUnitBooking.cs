@@ -41,6 +41,9 @@ namespace BlackBear.Services.Core.Entities
         [Column("end_time")]
         public DateTime? EndTime { get; set; }
 
+        [Column("expiration_time")]
+        public DateTime? ExpirationTime { get; set; }
+
         [Column("checked_in_at")]
         public DateTime? CheckedInAt { get; set; }
 

@@ -285,6 +285,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 
             var booking = await _context.ZoneUnitBookings
                 .Include(b => b.ZoneUnit)
+                .Include(b => b.AssignedUnits)
                 .FirstOrDefaultAsync(b => b.Id == id && b.VenueId == venueId);
 
             if (booking == null)
@@ -295,6 +296,32 @@ namespace BlackBear.Services.Core.Controllers.Business
             if (booking.Status != "Reserved")
             {
                 return BadRequest($"Cannot check in a booking with status '{booking.Status}'");
+            }
+
+            // Check if booking has expired
+            if (booking.ExpirationTime.HasValue && DateTime.UtcNow > booking.ExpirationTime.Value)
+            {
+                booking.Status = "Expired";
+
+                // Release all assigned units
+                foreach (var assignedUnit in booking.AssignedUnits)
+                {
+                    assignedUnit.Status = "Available";
+                    assignedUnit.CurrentBookingId = null;
+                }
+                if (booking.ZoneUnit != null && booking.ZoneUnit.Status == "Reserved")
+                {
+                    booking.ZoneUnit.Status = "Available";
+                }
+
+                await _context.SaveChangesAsync();
+
+                return BadRequest(new
+                {
+                    error = "BOOKING_EXPIRED",
+                    message = "Reservation has expired",
+                    expirationTime = booking.ExpirationTime
+                });
             }
 
             booking.Status = "Active";
@@ -311,7 +338,13 @@ namespace BlackBear.Services.Core.Controllers.Business
                     : $"{booking.Notes}\n{request.Notes}";
             }
 
-            // Update unit status
+            // Update all assigned units to Occupied
+            foreach (var assignedUnit in booking.AssignedUnits)
+            {
+                assignedUnit.Status = "Occupied";
+            }
+
+            // Also update primary unit if not in AssignedUnits
             if (booking.ZoneUnit != null)
             {
                 booking.ZoneUnit.Status = "Occupied";
@@ -325,7 +358,8 @@ namespace BlackBear.Services.Core.Controllers.Business
                 zoneUnitId = booking.ZoneUnitId,
                 status = booking.Status,
                 venueId = booking.VenueId,
-                unitStatus = "Occupied"
+                unitStatus = "Occupied",
+                unitCodes = booking.AssignedUnits.Select(u => u.UnitCode).ToList()
             });
 
             return NoContent();

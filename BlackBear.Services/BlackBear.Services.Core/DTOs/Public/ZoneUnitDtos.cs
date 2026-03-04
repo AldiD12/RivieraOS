@@ -68,6 +68,13 @@ namespace BlackBear.Services.Core.DTOs.Public
         [Range(1, 20)]
         public int GuestCount { get; set; } = 1;
 
+        [Range(1, 20)]
+        public int? SunbedCount { get; set; }
+
+        public string? ArrivalTime { get; set; }
+
+        public DateTime? ReservationDate { get; set; }
+
         public DateTime? StartTime { get; set; }
 
         public DateTime? EndTime { get; set; }
@@ -83,10 +90,15 @@ namespace BlackBear.Services.Core.DTOs.Public
         public string Status { get; set; } = string.Empty;
         public string? UnitCode { get; set; }
         public string? UnitType { get; set; }
+        public List<string> UnitCodes { get; set; } = new();
+        public bool AreAdjacent { get; set; }
         public string ZoneName { get; set; } = string.Empty;
         public string VenueName { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
+        public string? ArrivalTime { get; set; }
+        public string? ExpirationTime { get; set; }
+        public decimal TotalPrice { get; set; }
         public string? GuestName { get; set; }
         public int GuestCount { get; set; }
         public int UnitsNeeded { get; set; }
@@ -113,10 +125,12 @@ namespace BlackBear.Services.Core.DTOs.Public
         public string Status { get; set; } = string.Empty;
         public string? UnitCode { get; set; }
         public string? UnitType { get; set; }
+        public List<string> UnitCodes { get; set; } = new();
         public string ZoneName { get; set; } = string.Empty;
         public string VenueName { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
+        public DateTime? ExpirationTime { get; set; }
         public DateTime? CheckedInAt { get; set; }
         public DateTime? CheckedOutAt { get; set; }
         public string? GuestName { get; set; }
