@@ -2,7 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Map, { Marker, NavigationControl } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { venueApi } from '../services/venueApi';
+import { publicEventsApi } from '../services/eventsApi';
 import VenueBottomSheet from '../components/VenueBottomSheet';
+import EventsView from '../components/EventsView';
 
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -125,11 +127,17 @@ export default function DiscoveryPage() {
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('Beach'); // Default to Beach only
   const [isDayMode, setIsDayMode] = useState(false); // false = night mode (default)
-  const [viewMode, setViewMode] = useState('map'); // 'map' or 'list'
+  const [viewMode, setViewMode] = useState('map'); // 'map', 'list', or 'events'
   const [userLocation, setUserLocation] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [initialViewState, setInitialViewState] = useState(RIVIERA_CENTER);
   const [viewState, setViewState] = useState(RIVIERA_CENTER);
+  
+  // Events state
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventVibeFilter, setEventVibeFilter] = useState('all');
+  const [eventDateFilter, setEventDateFilter] = useState('all');
 
   // Get user location IMMEDIATELY on mount (before anything else)
   useEffect(() => {
@@ -169,6 +177,7 @@ export default function DiscoveryPage() {
 
   useEffect(() => {
     loadVenues();
+    loadEvents();
   }, []);
 
   const loadVenues = async () => {
@@ -181,6 +190,22 @@ export default function DiscoveryPage() {
       setError('Failed to load venues');
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const loadEvents = async () => {
+    try {
+      setEventsLoading(true);
+      const data = await publicEventsApi.getEvents();
+      // Filter only published, non-deleted events
+      const published = Array.isArray(data) 
+        ? data.filter(e => e.isPublished && !e.isDeleted)
+        : [];
+      setEvents(published);
+    } catch (err) {
+      console.error('Failed to load events:', err);
+    } finally {
+      setEventsLoading(false);
     }
   };
 
@@ -215,6 +240,41 @@ export default function DiscoveryPage() {
       });
     }
   }, []);
+  
+  const handleEventClick = (event) => {
+    const venue = venues.find(v => v.id === event.venueId);
+    if (!venue) return;
+    
+    // Generate WhatsApp message
+    const eventDate = new Date(event.startTime).toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    
+    const eventTime = new Date(event.startTime).toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    let message = `Hi! I'd like to book for ${event.name} at ${venue.name} on ${eventDate}.\n\n`;
+    message += `📅 Event: ${event.name}\n`;
+    message += `📍 Venue: ${venue.name}\n`;
+    message += `🕐 Date & Time: ${eventDate} at ${eventTime}\n`;
+    
+    if (event.minimumSpend > 0) {
+      message += `💎 Minimum Spend: €${event.minimumSpend} per table\n`;
+    } else if (event.isTicketed && event.ticketPrice > 0) {
+      message += `🎫 Ticket Price: €${event.ticketPrice}\n`;
+    }
+    
+    message += `\nHow many people: \n`;
+    message += `Preferred arrival time: `;
+    
+    const whatsappUrl = `https://wa.me/${venue.whatsappNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
 
   const filteredVenues = venues.filter(v => {
     if (activeFilter === 'all') return true;
@@ -520,6 +580,23 @@ export default function DiscoveryPage() {
               <p className={`text-lg ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>No venues found</p>
             </div>
           )}
+        </div>
+      )}
+      
+      {/* Events View */}
+      {viewMode === 'events' && (
+        <div className={`absolute inset-0 pt-[250px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
+          <EventsView
+            events={events}
+            venues={venues}
+            loading={eventsLoading}
+            vibeFilter={eventVibeFilter}
+            dateFilter={eventDateFilter}
+            onVibeChange={setEventVibeFilter}
+            onDateChange={setEventDateFilter}
+            onEventClick={handleEventClick}
+            isDayMode={isDayMode}
+          />
         </div>
       )}
 

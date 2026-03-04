@@ -129,31 +129,71 @@ export const superAdminEventsApi = {
 };
 
 // Public APIs (for DiscoveryPage) - No auth needed
-const publicApi = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
+// Use fetch like venueApi to avoid double /api/ issue
 export const publicEventsApi = {
   getEvents: async () => {
-    const response = await publicApi.get('/public/Events');
-    return response.data;
+    try {
+      const response = await fetch(`${API_BASE_URL}/public/Events`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error fetching public events:', error);
+      return [];
+    }
   },
   
   getEventDetails: async (id) => {
-    const response = await publicApi.get(`/public/Events/${id}`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/public/Events/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return response.json();
   },
   
   getEventsByVenue: async (venueId) => {
-    const response = await publicApi.get(`/public/Events/venue/${venueId}`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/public/Events/venue/${venueId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return response.json();
   },
   
   getEventsByBusiness: async (businessId) => {
-    const response = await publicApi.get(`/public/Events/business/${businessId}`);
-    return response.data;
+    const response = await fetch(`${API_BASE_URL}/public/Events/business/${businessId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    
+    return response.json();
   }
 };

@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { businessApi, staffApi, venueApi, zoneApi, categoryApi, productApi, unitApi } from '../services/superAdminApi.js';
+import { businessApi, staffApi, venueApi, zoneApi, categoryApi, productApi, unitApi, eventsApi } from '../services/superAdminApi.js';
 import { CreateVenueModal, EditVenueModal } from '../components/dashboard/modals/VenueModals';
 import { CreateZoneModal, EditZoneModal } from '../components/dashboard/modals/ZoneModals';
 import { CreateStaffModal, EditStaffModal, ResetPasswordModal } from '../components/dashboard/modals/StaffModals';
 import { CreateBusinessModal, EditBusinessModal } from '../components/dashboard/modals/BusinessModals';
 import { CreateCategoryModal, EditCategoryModal } from '../components/dashboard/modals/CategoryModals';
-import { CreateProductModal, EditProductModal } from '../components/dashboard/modals/ProductModals';
+import { CreateEventModal, EditEventModal, DeleteEventModal } from '../components/dashboard/modals/EventModals';
 
 // Utility function to normalize phone numbers (match backend format)
 const normalizePhoneNumber = (phone) => {
@@ -416,6 +416,205 @@ const MenuTab = ({
   );
 };
 
+// Events Tab Component - Extracted outside
+const EventsTab = ({
+  events,
+  businesses,
+  venues,
+  selectedBusiness,
+  onCreateEvent,
+  onEditEvent,
+  onDeleteEvent,
+  onTogglePublish,
+  onRestoreEvent,
+  eventsLoading
+}) => {
+  const [filterBusiness, setFilterBusiness] = useState('all');
+  const [filterVenue, setFilterVenue] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  // Filter events
+  const filteredEvents = events.filter(event => {
+    if (filterBusiness !== 'all' && event.businessId !== parseInt(filterBusiness)) return false;
+    if (filterVenue !== 'all' && event.venueId !== parseInt(filterVenue)) return false;
+    if (filterStatus === 'published' && !event.isPublished) return false;
+    if (filterStatus === 'draft' && event.isPublished) return false;
+    if (filterStatus === 'deleted' && !event.isDeleted) return false;
+    return true;
+  });
+
+  // Get venues for selected business
+  const businessVenues = filterBusiness !== 'all' 
+    ? venues.filter(v => v.businessId === parseInt(filterBusiness))
+    : venues;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-white">Events Management</h2>
+        <button
+          onClick={onCreateEvent}
+          className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+        >
+          + Create Event
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className="flex space-x-4">
+        <select
+          value={filterBusiness}
+          onChange={(e) => {
+            setFilterBusiness(e.target.value);
+            setFilterVenue('all');
+          }}
+          className="px-4 py-2 bg-zinc-800 text-white rounded-lg border border-zinc-700"
+        >
+          <option value="all">All Businesses</option>
+          {businesses.map(b => (
+            <option key={b.id} value={b.id}>{b.brandName || b.registeredName}</option>
+          ))}
+        </select>
+
+        <select
+          value={filterVenue}
+          onChange={(e) => setFilterVenue(e.target.value)}
+          className="px-4 py-2 bg-zinc-800 text-white rounded-lg border border-zinc-700"
+          disabled={filterBusiness === 'all'}
+        >
+          <option value="all">All Venues</option>
+          {businessVenues.map(v => (
+            <option key={v.id} value={v.id}>{v.name}</option>
+          ))}
+        </select>
+
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          className="px-4 py-2 bg-zinc-800 text-white rounded-lg border border-zinc-700"
+        >
+          <option value="all">All Status</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+          <option value="deleted">Deleted</option>
+        </select>
+      </div>
+
+      {eventsLoading ? (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredEvents.map((event) => (
+            <div
+              key={event.id}
+              className="bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700"
+            >
+              {/* Event Flyer */}
+              {event.flyerImageUrl && (
+                <div className="h-48 bg-zinc-900 overflow-hidden">
+                  <img
+                    src={event.flyerImageUrl}
+                    alt={event.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              <div className="p-4 space-y-3">
+                {/* Title & Status */}
+                <div className="flex justify-between items-start">
+                  <h3 className="text-lg font-semibold text-white">{event.title}</h3>
+                  <div className="flex flex-col items-end space-y-1">
+                    {event.isPublished && (
+                      <span className="px-2 py-1 bg-green-900 text-green-300 text-xs rounded">
+                        Published
+                      </span>
+                    )}
+                    {!event.isPublished && !event.isDeleted && (
+                      <span className="px-2 py-1 bg-yellow-900 text-yellow-300 text-xs rounded">
+                        Draft
+                      </span>
+                    )}
+                    {event.isDeleted && (
+                      <span className="px-2 py-1 bg-red-900 text-red-300 text-xs rounded">
+                        Deleted
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Business & Venue */}
+                <div className="text-sm text-zinc-400 space-y-1">
+                  <div>🏢 {event.businessName}</div>
+                  <div>📍 {event.venueName}</div>
+                </div>
+
+                {/* Date & Time */}
+                <div className="text-sm text-zinc-300">
+                  📅 {new Date(event.startTime).toLocaleDateString()} at {new Date(event.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </div>
+
+                {/* Ticket Info */}
+                {event.isTicketed && (
+                  <div className="text-sm text-zinc-300">
+                    🎫 €{event.ticketPrice} • {event.spotsRemaining}/{event.maxGuests} spots left
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {!event.isDeleted && (
+                    <>
+                      <button
+                        onClick={() => onEditEvent(event)}
+                        className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => onTogglePublish(event)}
+                        className={`px-3 py-1 rounded text-sm ${
+                          event.isPublished
+                            ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                            : 'bg-green-600 text-white hover:bg-green-700'
+                        }`}
+                      >
+                        {event.isPublished ? 'Unpublish' : 'Publish'}
+                      </button>
+                      <button
+                        onClick={() => onDeleteEvent(event)}
+                        className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                  {event.isDeleted && (
+                    <button
+                      onClick={() => onRestoreEvent(event.id)}
+                      className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+                    >
+                      Restore
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {filteredEvents.length === 0 && !eventsLoading && (
+        <div className="text-center py-12">
+          <p className="text-zinc-400">No events found matching the selected filters.</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // Main SuperAdminDashboard Component
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
@@ -462,6 +661,12 @@ export default function SuperAdminDashboard() {
   const [unitsLoading, setUnitsLoading] = useState(false);
   const [showBulkCreateModal, setShowBulkCreateModal] = useState(false);
   
+  // Events state
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [deletingEvent, setDeletingEvent] = useState(null);
+  
   // Business state
   const [editingBusiness, setEditingBusiness] = useState(null);
   
@@ -479,6 +684,9 @@ export default function SuperAdminDashboard() {
   const [showEditVenueModal, setShowEditVenueModal] = useState(false);
   const [showCreateZoneModal, setShowCreateZoneModal] = useState(false);
   const [showEditZoneModal, setShowEditZoneModal] = useState(false);
+  const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [showEditEventModal, setShowEditEventModal] = useState(false);
+  const [showDeleteEventModal, setShowDeleteEventModal] = useState(false);
   
   // Form states
   const [staffForm, setStaffForm] = useState({
@@ -1430,6 +1638,80 @@ export default function SuperAdminDashboard() {
     }
   }, [selectedVenue, selectedZone, fetchUnitsForZone]);
 
+  // Events Management Functions
+  const fetchEvents = useCallback(async () => {
+    try {
+      setEventsLoading(true);
+      const response = await eventsApi.list();
+      setEvents(response.items || response);
+    } catch (err) {
+      console.error('Error fetching events:', err);
+    } finally {
+      setEventsLoading(false);
+    }
+  }, []);
+
+  const handleToggleEventPublish = async (event) => {
+    try {
+      if (event.isPublished) {
+        await eventsApi.unpublish(event.id);
+      } else {
+        await eventsApi.publish(event.id);
+      }
+      await fetchEvents();
+    } catch (err) {
+      console.error('Error toggling event publish status:', err);
+    }
+  };
+
+  const handleRestoreEvent = async (eventId) => {
+    try {
+      await eventsApi.restore(eventId);
+      await fetchEvents();
+    } catch (err) {
+      console.error('Error restoring event:', err);
+    }
+  };
+
+  const handleCreateEvent = async (eventData) => {
+    try {
+      await eventsApi.create(eventData);
+      setShowCreateEventModal(false);
+      await fetchEvents();
+    } catch (err) {
+      console.error('Error creating event:', err);
+    }
+  };
+
+  const handleUpdateEvent = async (eventId, eventData) => {
+    try {
+      await eventsApi.update(eventId, eventData);
+      setShowEditEventModal(false);
+      setEditingEvent(null);
+      await fetchEvents();
+    } catch (err) {
+      console.error('Error updating event:', err);
+    }
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!deletingEvent) return;
+    
+    try {
+      await eventsApi.delete(deletingEvent.id);
+      setShowDeleteEventModal(false);
+      setDeletingEvent(null);
+      await fetchEvents();
+    } catch (err) {
+      console.error('Error deleting event:', err);
+    }
+  };
+
+  // Fetch events on mount
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
+
   // Memoized tab content to prevent unnecessary re-renders
   const tabContent = useMemo(() => {
     switch (activeTab) {
@@ -1508,6 +1790,28 @@ export default function SuperAdminDashboard() {
               </div>
             )}
           </div>
+        );
+
+      case 'events':
+        return (
+          <EventsTab
+            events={events}
+            businesses={businesses}
+            venues={venues}
+            selectedBusiness={selectedBusiness}
+            onCreateEvent={() => setShowCreateEventModal(true)}
+            onEditEvent={(event) => {
+              setEditingEvent(event);
+              setShowEditEventModal(true);
+            }}
+            onDeleteEvent={(event) => {
+              setDeletingEvent(event);
+              setShowDeleteEventModal(true);
+            }}
+            onTogglePublish={handleToggleEventPublish}
+            onRestoreEvent={handleRestoreEvent}
+            eventsLoading={eventsLoading}
+          />
         );
 
       case 'qr-generator':
@@ -2098,6 +2402,7 @@ export default function SuperAdminDashboard() {
               { id: 'staff', label: 'Staff Management' },
               { id: 'menu', label: 'Menu Management' },
               { id: 'venues', label: 'Venues & Zones' },
+              { id: 'events', label: 'Events' },
               { id: 'qr-generator', label: 'QR Codes' }
             ].map((tab) => (
               <button
@@ -2410,6 +2715,41 @@ export default function SuperAdminDashboard() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Event Modals */}
+      {showCreateEventModal && (
+        <CreateEventModal
+          isOpen={showCreateEventModal}
+          onClose={() => setShowCreateEventModal(false)}
+          onSubmit={handleCreateEvent}
+          venues={venues}
+        />
+      )}
+
+      {showEditEventModal && editingEvent && (
+        <EditEventModal
+          isOpen={showEditEventModal}
+          onClose={() => {
+            setShowEditEventModal(false);
+            setEditingEvent(null);
+          }}
+          onSubmit={handleUpdateEvent}
+          event={editingEvent}
+          venues={venues}
+        />
+      )}
+
+      {showDeleteEventModal && deletingEvent && (
+        <DeleteEventModal
+          isOpen={showDeleteEventModal}
+          onClose={() => {
+            setShowDeleteEventModal(false);
+            setDeletingEvent(null);
+          }}
+          onConfirm={handleDeleteEvent}
+          event={deletingEvent}
+        />
       )}
     </div>
   );

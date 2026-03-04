@@ -661,6 +661,68 @@ export const orderApi = {
   }
 };
 
+// Events Management APIs - SuperAdmin endpoints
+export const eventsApi = {
+  // GET /api/superadmin/Events - Get all events with pagination (cross-business)
+  list: async (filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.page) params.append('page', filters.page);
+    if (filters.pageSize) params.append('pageSize', filters.pageSize);
+    if (filters.businessId) params.append('businessId', filters.businessId);
+    if (filters.venueId) params.append('venueId', filters.venueId);
+    if (filters.isPublished !== undefined) params.append('isPublished', filters.isPublished);
+    if (filters.search) params.append('search', filters.search);
+    
+    const queryString = params.toString();
+    const url = queryString ? `/superadmin/Events?${queryString}` : '/superadmin/Events';
+    
+    const response = await superAdminApi.get(url);
+    return response.data;
+  },
+
+  // GET /api/superadmin/Events/{id} - Get event details
+  getById: async (eventId) => {
+    const response = await superAdminApi.get(`/superadmin/Events/${eventId}`);
+    return response.data;
+  },
+
+  // POST /api/superadmin/Events - Create event
+  create: async (eventData) => {
+    const response = await superAdminApi.post('/superadmin/Events', eventData);
+    return response.data;
+  },
+
+  // PUT /api/superadmin/Events/{id} - Update event
+  update: async (eventId, eventData) => {
+    const response = await superAdminApi.put(`/superadmin/Events/${eventId}`, eventData);
+    return response.data;
+  },
+
+  // DELETE /api/superadmin/Events/{id} - Delete event (soft delete)
+  delete: async (eventId) => {
+    const response = await superAdminApi.delete(`/superadmin/Events/${eventId}`);
+    return response.data;
+  },
+
+  // POST /api/superadmin/Events/{id}/publish - Publish event
+  publish: async (eventId) => {
+    const response = await superAdminApi.post(`/superadmin/Events/${eventId}/publish`, {});
+    return response.data;
+  },
+
+  // POST /api/superadmin/Events/{id}/unpublish - Unpublish event
+  unpublish: async (eventId) => {
+    const response = await superAdminApi.post(`/superadmin/Events/${eventId}/unpublish`, {});
+    return response.data;
+  },
+
+  // POST /api/superadmin/Events/{id}/restore - Restore deleted event
+  restore: async (eventId) => {
+    const response = await superAdminApi.post(`/superadmin/Events/${eventId}/restore`);
+    return response.data;
+  }
+};
+
 export default {
   business: businessApi,
   staff: staffApi,
@@ -673,5 +735,6 @@ export default {
   dashboard: dashboardApi,
   unit: unitApi,
   booking: bookingApi,
-  order: orderApi
+  order: orderApi,
+  events: eventsApi
 };

@@ -9,9 +9,11 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues }) {
     flyerImageUrl: '',
     startTime: '',
     endTime: '',
-    isTicketed: false,
+    entryType: 'free', // 'free' | 'ticketed' | 'reservation'
     ticketPrice: 0,
+    minimumSpend: 0,
     maxGuests: 0,
+    vibe: '', // House | Techno | Commercial | Live Music | Hip Hop | Chill
     isPublished: false,
     venueId: ''
   });
@@ -23,7 +25,9 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues }) {
     const eventData = {
       ...formData,
       venueId: parseInt(formData.venueId),
-      ticketPrice: parseFloat(formData.ticketPrice) || 0,
+      isTicketed: formData.entryType === 'ticketed',
+      ticketPrice: formData.entryType === 'ticketed' ? parseFloat(formData.ticketPrice) || 0 : 0,
+      minimumSpend: formData.entryType === 'reservation' ? parseFloat(formData.minimumSpend) || 0 : 0,
       maxGuests: parseInt(formData.maxGuests) || 0,
       startTime: new Date(formData.startTime).toISOString(),
       endTime: new Date(formData.endTime).toISOString()
@@ -77,6 +81,27 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues }) {
             </select>
           </div>
 
+          {/* Vibe Tag - Discovery Engine */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-400 mb-2">
+              Vibe * <span className="text-zinc-500 text-xs">(for Discovery Map filtering)</span>
+            </label>
+            <select
+              required
+              value={formData.vibe}
+              onChange={(e) => setFormData({ ...formData, vibe: e.target.value })}
+              className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
+            >
+              <option value="">Select vibe</option>
+              <option value="House">🎵 House</option>
+              <option value="Techno">⚡ Techno</option>
+              <option value="Commercial">🎤 Commercial</option>
+              <option value="Live Music">🎸 Live Music</option>
+              <option value="Hip Hop">🎧 Hip Hop</option>
+              <option value="Chill">🌊 Chill</option>
+            </select>
+          </div>
+
           {/* Description */}
           <div>
             <label className="block text-sm font-medium text-zinc-400 mb-2">Description</label>
@@ -123,29 +148,55 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues }) {
             </div>
           </div>
 
-          {/* Ticketing */}
+          {/* VIP Configuration - Entry Type Segmented Control */}
           <div className="space-y-4">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isTicketed"
-                checked={formData.isTicketed}
-                onChange={(e) => setFormData({ ...formData, isTicketed: e.target.checked })}
-                className="w-5 h-5 bg-black border-zinc-700 rounded"
-              />
-              <label htmlFor="isTicketed" className="ml-3 text-sm font-medium text-white">
-                This is a ticketed event
-              </label>
+            <label className="block text-sm font-medium text-zinc-400">Entry Type *</label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, entryType: 'free' })}
+                className={`px-4 py-3 rounded-md font-medium transition-all ${
+                  formData.entryType === 'free'
+                    ? 'bg-white text-black'
+                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                }`}
+              >
+                FREE ENTRY
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, entryType: 'ticketed' })}
+                className={`px-4 py-3 rounded-md font-medium transition-all ${
+                  formData.entryType === 'ticketed'
+                    ? 'bg-white text-black'
+                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                }`}
+              >
+                TICKETED
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, entryType: 'reservation' })}
+                className={`px-4 py-3 rounded-md font-medium transition-all ${
+                  formData.entryType === 'reservation'
+                    ? 'bg-white text-black'
+                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                }`}
+              >
+                RESERVATION ONLY
+              </button>
             </div>
 
-            {formData.isTicketed && (
-              <div className="grid grid-cols-2 gap-4 pl-8">
+            {/* Ticketed Configuration */}
+            {formData.entryType === 'ticketed' && (
+              <div className="grid grid-cols-2 gap-4 pt-2">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Ticket Price (€)</label>
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Ticket Price (€) *</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
+                    required
                     value={formData.ticketPrice}
                     onChange={(e) => setFormData({ ...formData, ticketPrice: e.target.value })}
                     className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
@@ -163,6 +214,28 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues }) {
                     placeholder="200"
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Reservation Only Configuration */}
+            {formData.entryType === 'reservation' && (
+              <div className="pt-2">
+                <label className="block text-sm font-medium text-zinc-400 mb-2">
+                  Minimum Spend (€) * <span className="text-zinc-500 text-xs">(per table/reservation)</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  required
+                  value={formData.minimumSpend}
+                  onChange={(e) => setFormData({ ...formData, minimumSpend: e.target.value })}
+                  className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
+                  placeholder="500.00"
+                />
+                <p className="text-xs text-zinc-500 mt-2">
+                  💎 Users will contact via WhatsApp to book a table with this minimum spend
+                </p>
               </div>
             )}
           </div>
@@ -211,9 +284,11 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues }) {
     flyerImageUrl: '',
     startTime: '',
     endTime: '',
-    isTicketed: false,
+    entryType: 'free',
     ticketPrice: 0,
+    minimumSpend: 0,
     maxGuests: 0,
+    vibe: '',
     isPublished: false,
     venueId: ''
   });
@@ -232,15 +307,25 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues }) {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
       };
 
+      // Determine entry type from existing data (backward compatibility)
+      let entryType = 'free';
+      if (event.minimumSpend && event.minimumSpend > 0) {
+        entryType = 'reservation';
+      } else if (event.isTicketed) {
+        entryType = 'ticketed';
+      }
+
       setFormData({
         name: event.name || '',
         description: event.description || '',
         flyerImageUrl: event.flyerImageUrl || '',
         startTime: formatDateForInput(event.startTime),
         endTime: formatDateForInput(event.endTime),
-        isTicketed: event.isTicketed || false,
+        entryType: entryType,
         ticketPrice: event.ticketPrice || 0,
+        minimumSpend: event.minimumSpend || 0,
         maxGuests: event.maxGuests || 0,
+        vibe: event.vibe || '',
         isPublished: event.isPublished || false,
         venueId: event.venueId || ''
       });
@@ -253,7 +338,9 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues }) {
     const eventData = {
       ...formData,
       venueId: parseInt(formData.venueId),
-      ticketPrice: parseFloat(formData.ticketPrice) || 0,
+      isTicketed: formData.entryType === 'ticketed',
+      ticketPrice: formData.entryType === 'ticketed' ? parseFloat(formData.ticketPrice) || 0 : 0,
+      minimumSpend: formData.entryType === 'reservation' ? parseFloat(formData.minimumSpend) || 0 : 0,
       maxGuests: parseInt(formData.maxGuests) || 0,
       startTime: new Date(formData.startTime).toISOString(),
       endTime: new Date(formData.endTime).toISOString()
@@ -347,31 +434,82 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues }) {
             </div>
           </div>
 
+          {/* Vibe Tag Dropdown - VIP Feature */}
+          <div>
+            <label className="block text-sm font-medium text-zinc-400 mb-2">
+              Vibe * <span className="text-zinc-500 text-xs">(for Discovery Map filtering)</span>
+            </label>
+            <select
+              required
+              value={formData.vibe}
+              onChange={(e) => setFormData({ ...formData, vibe: e.target.value })}
+              className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
+            >
+              <option value="">Select a vibe</option>
+              <option value="House">🎵 House</option>
+              <option value="Techno">⚡ Techno</option>
+              <option value="Commercial">🎤 Commercial</option>
+              <option value="Live Music">🎸 Live Music</option>
+              <option value="Hip Hop">🎧 Hip Hop</option>
+              <option value="Chill">🌊 Chill</option>
+            </select>
+          </div>
+
+          {/* Entry Type Segmented Control - VIP Feature */}
           <div className="space-y-4">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isTicketed-edit"
-                checked={formData.isTicketed}
-                onChange={(e) => setFormData({ ...formData, isTicketed: e.target.checked })}
-                className="w-5 h-5 bg-black border-zinc-700 rounded"
-              />
-              <label htmlFor="isTicketed-edit" className="ml-3 text-sm font-medium text-white">
-                This is a ticketed event
-              </label>
+            <label className="block text-sm font-medium text-zinc-400">
+              Entry Type * <span className="text-zinc-500 text-xs">(how guests access this event)</span>
+            </label>
+            <div className="grid grid-cols-3 gap-2 p-1 bg-black rounded-lg border border-zinc-700">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, entryType: 'free' })}
+                className={`px-4 py-3 rounded-md text-sm font-medium transition-all ${
+                  formData.entryType === 'free'
+                    ? 'bg-white text-black'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                FREE ENTRY
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, entryType: 'ticketed' })}
+                className={`px-4 py-3 rounded-md text-sm font-medium transition-all ${
+                  formData.entryType === 'ticketed'
+                    ? 'bg-white text-black'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                TICKETED
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, entryType: 'reservation' })}
+                className={`px-4 py-3 rounded-md text-sm font-medium transition-all ${
+                  formData.entryType === 'reservation'
+                    ? 'bg-white text-black'
+                    : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                RESERVATION ONLY
+              </button>
             </div>
 
-            {formData.isTicketed && (
-              <div className="grid grid-cols-2 gap-4 pl-8">
+            {/* Ticketed Configuration */}
+            {formData.entryType === 'ticketed' && (
+              <div className="grid grid-cols-2 gap-4 pt-2">
                 <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Ticket Price (€)</label>
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Ticket Price (€) *</label>
                   <input
                     type="number"
                     step="0.01"
                     min="0"
+                    required
                     value={formData.ticketPrice}
                     onChange={(e) => setFormData({ ...formData, ticketPrice: e.target.value })}
                     className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
+                    placeholder="25.00"
                   />
                 </div>
                 <div>
@@ -382,8 +520,31 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues }) {
                     value={formData.maxGuests}
                     onChange={(e) => setFormData({ ...formData, maxGuests: e.target.value })}
                     className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
+                    placeholder="200"
                   />
                 </div>
+              </div>
+            )}
+
+            {/* Reservation Only Configuration */}
+            {formData.entryType === 'reservation' && (
+              <div className="pt-2">
+                <label className="block text-sm font-medium text-zinc-400 mb-2">
+                  Minimum Spend (€) * <span className="text-zinc-500 text-xs">(per table/reservation)</span>
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  required
+                  value={formData.minimumSpend}
+                  onChange={(e) => setFormData({ ...formData, minimumSpend: e.target.value })}
+                  className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
+                  placeholder="500.00"
+                />
+                <p className="text-xs text-zinc-500 mt-2">
+                  💎 Users will contact via WhatsApp to book a table with this minimum spend
+                </p>
               </div>
             )}
           </div>
