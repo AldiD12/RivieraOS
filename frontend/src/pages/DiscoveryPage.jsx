@@ -7,8 +7,8 @@ import VenueBottomSheet from '../components/VenueBottomSheet';
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
-// 🎯 XIXA: Clean 3D map without POIs (new "Warm" style)
-const DARK_STYLE = "mapbox://styles/aldid1602/cmm3szrbo001e01s26c6ahwgv";
+// 🎯 XIXA: Clean 3D map without POIs (Warm-copy style with POIs disabled)
+const DARK_STYLE = "mapbox://styles/aldid1602/cmmbysf09002i01s95t611fmm";
 
 // Map configuration
 const MAP_CONFIG = {
