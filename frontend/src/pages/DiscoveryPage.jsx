@@ -608,14 +608,20 @@ export default function DiscoveryPage() {
           <div className="absolute top-14 left-0 right-0 flex justify-center z-30 pointer-events-none">
             <div className={`backdrop-blur-md border p-1 rounded-full flex shadow-lg pointer-events-auto ${isDayMode ? 'bg-white/80 border-zinc-200' : 'bg-zinc-900/80 border-zinc-800'}`}>
               <button 
-                onClick={() => setIsDayMode(true)}
+                onClick={() => {
+                  setIsDayMode(true);
+                  setViewMode('map'); // Day = Beach clubs on map
+                }}
                 className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${isDayMode ? 'bg-zinc-950 text-white border border-zinc-950 shadow-sm' : 'bg-transparent text-zinc-500 border border-transparent hover:bg-zinc-800'}`}
               >
                 <span>⛱️</span>
                 <span>DAY</span>
               </button>
               <button 
-                onClick={() => setIsDayMode(false)}
+                onClick={() => {
+                  setIsDayMode(false);
+                  setViewMode('events'); // Night = Events/nightlife
+                }}
                 className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!isDayMode ? 'bg-zinc-950 text-[#10FF88] border border-zinc-800 shadow-[0_0_12px_rgba(16,255,136,0.4)]' : 'bg-transparent text-zinc-500 border border-transparent hover:bg-stone-100'}`}
               >
                 <span className={!isDayMode ? '' : 'opacity-70'} style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>🪩</span>
