@@ -28,25 +28,7 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
   });
   const [submitting, setSubmitting] = useState(false);
 
-  // Helper: Suggest sunbed count based on guest count
-  const suggestSunbedCount = (guestCount) => {
-    if (guestCount <= 2) return 1;
-    if (guestCount <= 4) return 2;
-    if (guestCount <= 6) return 3;
-    if (guestCount <= 8) return 4;
-    return Math.ceil(guestCount / 2);
-  };
 
-  // Helper: Get helpful tip
-  const getTip = () => {
-    const { guestCount, sunbedCount } = bookingData;
-    const suggested = suggestSunbedCount(guestCount);
-    
-    if (sunbedCount < suggested) {
-      return `💡 Për ${guestCount} persona, rekomandojmë ${suggested} shtretër`;
-    }
-    return `✅ ${sunbedCount} shtretër ${sunbedCount === 1 ? 'është' : 'janë'} të mjaftueshëm për ${guestCount} persona`;
-  };
 
   // Time slots (09:00 - 18:00, 30-min intervals)
   const timeSlots = [
@@ -152,7 +134,6 @@ Faleminderit!`;
           zoneId: selectedZone.id,
           guestName: bookingData.guestName,
           guestPhone: bookingData.guestPhone,
-          guestCount: bookingData.guestCount,
           sunbedCount: bookingData.sunbedCount,
           arrivalTime: bookingData.arrivalTime,
           reservationDate: bookingData.date,
@@ -415,55 +396,48 @@ Faleminderit!`;
                 />
               </div>
 
-              {/* Guest Count */}
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                  Sa persona jeni?
-                </label>
-                <div className="grid grid-cols-5 gap-2">
-                  {[
-                    { value: 2, label: '1-2' },
-                    { value: 4, label: '3-4' },
-                    { value: 6, label: '5-6' },
-                    { value: 8, label: '7-8' },
-                    { value: 10, label: '9+' }
-                  ].map(option => (
-                    <button
-                      key={option.value}
-                      type="button"
-                      onClick={() => {
-                        const newGuestCount = option.value;
-                        const venueType = (venue.type || '').toLowerCase();
-                        const isBeach = venueType.includes('beach') || venueType.includes('plazh');
-                        setBookingData({
-                          ...bookingData,
-                          guestCount: newGuestCount,
-                          sunbedCount: isBeach ? suggestSunbedCount(newGuestCount) : 1
-                        });
-                      }}
-                      className={`
-                        px-3 py-2 rounded-lg text-sm font-medium transition-all
-                        ${bookingData.guestCount === option.value
-                          ? isDayMode
-                            ? 'bg-zinc-950 text-white'
-                            : 'bg-[#10FF88] text-zinc-950'
-                          : isDayMode
-                            ? 'bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-950'
-                            : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
-                        }
-                      `}
-                    >
-                      {option.label}
-                    </button>
-                  ))}
+              {/* Guest Count (Restaurant only) */}
+              {(venue.type || '').toLowerCase().includes('restaurant') && (
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                    Sa persona jeni?
+                  </label>
+                  <div className="grid grid-cols-5 gap-2">
+                    {[
+                      { value: 2, label: '1-2' },
+                      { value: 4, label: '3-4' },
+                      { value: 6, label: '5-6' },
+                      { value: 8, label: '7-8' },
+                      { value: 10, label: '9+' }
+                    ].map(option => (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setBookingData({ ...bookingData, guestCount: option.value })}
+                        className={`
+                          px-3 py-2 rounded-lg text-sm font-medium transition-all
+                          ${bookingData.guestCount === option.value
+                            ? isDayMode
+                              ? 'bg-zinc-950 text-white'
+                              : 'bg-[#10FF88] text-zinc-950'
+                            : isDayMode
+                              ? 'bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-950'
+                              : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
+                          }
+                        `}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Sunbed Count (Beach only) */}
               {(venue.type || '').toLowerCase().includes('beach') && (
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                    Numri i shtretërve
+                    Sa shtretër dëshironi?
                   </label>
                   <div className="grid grid-cols-6 gap-2">
                     {[1, 2, 3, 4, 5, 6].map(count => (
@@ -487,11 +461,10 @@ Faleminderit!`;
                       </button>
                     ))}
                   </div>
-                  <p className={`text-xs mt-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                    {getTip()}
-                  </p>
                 </div>
               )}
+
+
 
               {/* Arrival Time */}
               <div>
