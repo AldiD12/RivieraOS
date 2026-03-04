@@ -671,29 +671,31 @@ export default function DiscoveryPage() {
             </div>
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex space-x-3 overflow-x-auto no-scrollbar w-full pb-2 pt-4 pl-0.5">
-            {VENUE_FILTERS.map(filter => (
-              <button
-                key={filter.id}
-                onClick={() => setActiveFilter(filter.id)}
-                className={`
-                  whitespace-nowrap px-5 py-2 rounded-full text-xs font-medium tracking-wide
-                  transform active:scale-95 transition-all
-                  ${activeFilter === filter.id
-                    ? isDayMode
-                      ? 'bg-zinc-950 border border-zinc-950 text-[#10FF88] shadow-md'
-                      : 'bg-zinc-950 border border-[#10FF88] text-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
-                    : isDayMode
-                    ? 'bg-white/80 backdrop-blur-md border border-zinc-200 text-zinc-500 hover:text-zinc-950 hover:border-zinc-400 shadow-sm'
-                    : 'bg-zinc-900/60 backdrop-blur-md border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
-                  }
-                `}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
+          {/* Filter Pills - Only show for map/list views, not events */}
+          {viewMode !== 'events' && (
+            <div className="flex space-x-3 overflow-x-auto no-scrollbar w-full pb-2 pt-4 pl-0.5">
+              {VENUE_FILTERS.map(filter => (
+                <button
+                  key={filter.id}
+                  onClick={() => setActiveFilter(filter.id)}
+                  className={`
+                    whitespace-nowrap px-5 py-2 rounded-full text-xs font-medium tracking-wide
+                    transform active:scale-95 transition-all
+                    ${activeFilter === filter.id
+                      ? isDayMode
+                        ? 'bg-zinc-950 border border-zinc-950 text-[#10FF88] shadow-md'
+                        : 'bg-zinc-950 border border-[#10FF88] text-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
+                      : isDayMode
+                      ? 'bg-white/80 backdrop-blur-md border border-zinc-200 text-zinc-500 hover:text-zinc-950 hover:border-zinc-400 shadow-sm'
+                      : 'bg-zinc-900/60 backdrop-blur-md border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
+                    }
+                  `}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
