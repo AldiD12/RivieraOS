@@ -99,9 +99,12 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
       localStorage.setItem('riviera_guestName', bookingData.guestName);
       localStorage.setItem('riviera_guestPhone', bookingData.guestPhone);
       
-      // Check venue type
-      const isBeach = venue.type === 'Beach';
-      const isRestaurant = venue.type === 'Restaurant';
+      // Check venue type (case-insensitive and partial match)
+      const venueType = (venue.type || '').toLowerCase();
+      const isBeach = venueType.includes('beach') || venueType.includes('plazh');
+      const isRestaurant = venueType.includes('restaurant') || venueType.includes('restorant');
+      
+      console.log('🔍 Type check:', { venueType, isBeach, isRestaurant });
       
       if (isRestaurant) {
         // RESTAURANT: Open WhatsApp with prefilled message
@@ -401,10 +404,12 @@ Faleminderit!`;
                       type="button"
                       onClick={() => {
                         const newGuestCount = option.value;
+                        const venueType = (venue.type || '').toLowerCase();
+                        const isBeach = venueType.includes('beach') || venueType.includes('plazh');
                         setBookingData({
                           ...bookingData,
                           guestCount: newGuestCount,
-                          sunbedCount: venue.type === 'Beach' ? suggestSunbedCount(newGuestCount) : 1
+                          sunbedCount: isBeach ? suggestSunbedCount(newGuestCount) : 1
                         });
                       }}
                       className={`
@@ -426,7 +431,7 @@ Faleminderit!`;
               </div>
 
               {/* Sunbed Count (Beach only) */}
-              {venue.type === 'Beach' && (
+              {(venue.type || '').toLowerCase().includes('beach') && (
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
                     Numri i shtretërve
@@ -473,7 +478,7 @@ Faleminderit!`;
                     <option key={time} value={time}>{time}</option>
                   ))}
                 </select>
-                {venue.type === 'Beach' && (
+                {(venue.type || '').toLowerCase().includes('beach') && (
                   <p className={`text-xs mt-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
                     ⏰ Rezervimi skadon 15 minuta pas orës së arritjes
                   </p>
@@ -485,7 +490,7 @@ Faleminderit!`;
                 <p className={`text-xs uppercase tracking-wider mb-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
                   Përmbledhje
                 </p>
-                {venue.type === 'Beach' ? (
+                {(venue.type || '').toLowerCase().includes('beach') ? (
                   <>
                     <p className={`text-sm mb-1 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
                       ✅ Do të rezervojmë {bookingData.sunbedCount} shtretër{bookingData.sunbedCount > 1 ? '' : ''} pranë njëri-tjetrit
@@ -525,7 +530,7 @@ Faleminderit!`;
               >
                 {submitting 
                   ? 'Duke procesuar...' 
-                  : venue.type === 'Beach' 
+                  : (venue.type || '').toLowerCase().includes('beach')
                     ? 'REZERVO TANI' 
                     : 'DËRGO MESAZH'
                 }
