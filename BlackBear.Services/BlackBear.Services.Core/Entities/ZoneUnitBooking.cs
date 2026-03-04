@@ -62,7 +62,13 @@ namespace BlackBear.Services.Core.Entities
 
         // Foreign keys
         [Column("zone_unit_id")]
-        public int ZoneUnitId { get; set; }
+        public int? ZoneUnitId { get; set; }
+
+        [Column("zone_id")]
+        public int? ZoneId { get; set; }
+
+        [Column("units_needed")]
+        public int UnitsNeeded { get; set; } = 1;
 
         [Column("venue_id")]
         public int VenueId { get; set; }
@@ -77,6 +83,9 @@ namespace BlackBear.Services.Core.Entities
         [ForeignKey("ZoneUnitId")]
         public ZoneUnit? ZoneUnit { get; set; }
 
+        [ForeignKey("ZoneId")]
+        public VenueZone? VenueZone { get; set; }
+
         [ForeignKey("VenueId")]
         public Venue? Venue { get; set; }
 
@@ -85,5 +94,8 @@ namespace BlackBear.Services.Core.Entities
 
         [ForeignKey("HandledByUserId")]
         public User? HandledByUser { get; set; }
+
+        // Multi-unit assignment (collector assigns specific units)
+        public ICollection<ZoneUnit> AssignedUnits { get; set; } = new List<ZoneUnit>();
     }
 }

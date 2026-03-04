@@ -54,11 +54,12 @@ namespace BlackBear.Services.Core.Controllers.Public
             // Get reservations for today (to determine availability)
             var reservedUnitIds = await _context.ZoneUnitBookings
                 .IgnoreQueryFilters()
-                .Where(b => unitIds.Contains(b.ZoneUnitId) &&
+                .Where(b => b.ZoneUnitId.HasValue &&
+                            unitIds.Contains(b.ZoneUnitId.Value) &&
                             !b.IsDeleted &&
                             (b.Status == "Active" || b.Status == "Reserved") &&
                             b.StartTime.Date == targetDate)
-                .Select(b => b.ZoneUnitId)
+                .Select(b => b.ZoneUnitId!.Value)
                 .Distinct()
                 .ToListAsync();
 
@@ -146,12 +147,13 @@ namespace BlackBear.Services.Core.Controllers.Public
 
             var reservedCounts = await _context.ZoneUnitBookings
                 .IgnoreQueryFilters()
-                .Include(b => b.ZoneUnit)
-                .Where(b => zoneIds.Contains(b.ZoneUnit!.VenueZoneId) &&
+                .Where(b => b.ZoneUnitId.HasValue &&
                             !b.IsDeleted &&
                             (b.Status == "Active" || b.Status == "Reserved") &&
                             b.StartTime.Date == today)
-                .GroupBy(b => b.ZoneUnit!.VenueZoneId)
+                .Join(_context.ZoneUnits.IgnoreQueryFilters().Where(u => zoneIds.Contains(u.VenueZoneId) && !u.IsDeleted),
+                    b => b.ZoneUnitId, u => u.Id, (b, u) => u.VenueZoneId)
+                .GroupBy(zoneId => zoneId)
                 .Select(g => new { ZoneId = g.Key, Reserved = g.Count() })
                 .ToListAsync();
 
@@ -195,10 +197,22 @@ namespace BlackBear.Services.Core.Controllers.Public
                 return BadRequest("Venue not found");
             }
 
+            // Zone-based booking path: guest picks a zone, system checks capacity
+            if (request.ZoneId.HasValue && !request.ZoneUnitId.HasValue)
+            {
+                return await CreateZoneBooking(request, venue);
+            }
+
+            // Legacy unit-based booking path
+            if (!request.ZoneUnitId.HasValue)
+            {
+                return BadRequest("Either ZoneUnitId or ZoneId must be provided");
+            }
+
             var unit = await _context.ZoneUnits
                 .IgnoreQueryFilters()
                 .Include(zu => zu.VenueZone)
-                .FirstOrDefaultAsync(zu => zu.Id == request.ZoneUnitId &&
+                .FirstOrDefaultAsync(zu => zu.Id == request.ZoneUnitId.Value &&
                                            zu.VenueId == request.VenueId &&
                                            !zu.IsDeleted);
 
@@ -216,7 +230,7 @@ namespace BlackBear.Services.Core.Controllers.Public
             var startTime = request.StartTime ?? DateTime.UtcNow;
             var existingBooking = await _context.ZoneUnitBookings
                 .IgnoreQueryFilters()
-                .AnyAsync(b => b.ZoneUnitId == request.ZoneUnitId &&
+                .AnyAsync(b => b.ZoneUnitId == request.ZoneUnitId.Value &&
                                !b.IsDeleted &&
                                (b.Status == "Active" || b.Status == "Reserved") &&
                                b.StartTime.Date == startTime.Date);
@@ -239,7 +253,9 @@ namespace BlackBear.Services.Core.Controllers.Public
                 StartTime = startTime,
                 EndTime = request.EndTime,
                 Notes = request.Notes,
-                ZoneUnitId = request.ZoneUnitId,
+                ZoneUnitId = request.ZoneUnitId.Value,
+                ZoneId = unit.VenueZoneId,
+                UnitsNeeded = 1,
                 VenueId = request.VenueId,
                 BusinessId = venue.BusinessId,
                 CreatedAt = DateTime.UtcNow
@@ -263,7 +279,98 @@ namespace BlackBear.Services.Core.Controllers.Public
                 EndTime = booking.EndTime,
                 GuestName = booking.GuestName,
                 GuestCount = booking.GuestCount,
+                UnitsNeeded = 1,
                 Message = $"Your reservation for {unit.UnitType} {unit.UnitCode} is confirmed. Please show your booking code ({bookingCode}) upon arrival."
+            });
+        }
+
+        private async Task<ActionResult<PublicReservationConfirmationDto>> CreateZoneBooking(
+            PublicReservationRequest request, Venue venue)
+        {
+            var zone = await _context.VenueZones
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(z => z.Id == request.ZoneId!.Value &&
+                                          z.VenueId == request.VenueId &&
+                                          !z.IsDeleted);
+
+            if (zone == null)
+            {
+                return BadRequest("Zone not found");
+            }
+
+            var startTime = request.StartTime ?? DateTime.UtcNow;
+            var unitsNeeded = (int)Math.Ceiling(request.GuestCount / 2.0);
+
+            // Count available units in zone for the requested date
+            var availableUnitIds = await _context.ZoneUnits
+                .IgnoreQueryFilters()
+                .Where(u => u.VenueZoneId == request.ZoneId!.Value &&
+                            u.VenueId == request.VenueId &&
+                            !u.IsDeleted &&
+                            u.Status == "Available")
+                .Select(u => u.Id)
+                .ToListAsync();
+
+            // Exclude units already booked for this date
+            var bookedUnitIds = await _context.ZoneUnitBookings
+                .IgnoreQueryFilters()
+                .Where(b => availableUnitIds.Contains(b.ZoneUnitId!.Value) &&
+                            !b.IsDeleted &&
+                            (b.Status == "Active" || b.Status == "Reserved") &&
+                            b.StartTime.Date == startTime.Date)
+                .Select(b => b.ZoneUnitId!.Value)
+                .Distinct()
+                .ToListAsync();
+
+            var freeCount = availableUnitIds.Count - bookedUnitIds.Count;
+
+            if (freeCount < unitsNeeded)
+            {
+                return BadRequest(new
+                {
+                    error = "INSUFFICIENT_CAPACITY",
+                    message = $"Not enough available units. Needed: {unitsNeeded}, Available: {freeCount}",
+                    needed = unitsNeeded,
+                    available = freeCount
+                });
+            }
+
+            var bookingCode = $"RIV-{request.ZoneId!.Value}-{GenerateBookingCode()[..3]}";
+
+            var booking = new ZoneUnitBooking
+            {
+                BookingCode = bookingCode,
+                Status = "Pending",
+                GuestName = request.GuestName,
+                GuestPhone = request.GuestPhone,
+                GuestEmail = request.GuestEmail,
+                GuestCount = request.GuestCount,
+                StartTime = startTime,
+                EndTime = request.EndTime,
+                Notes = request.Notes,
+                ZoneId = request.ZoneId!.Value,
+                ZoneUnitId = null,
+                UnitsNeeded = unitsNeeded,
+                VenueId = request.VenueId,
+                BusinessId = venue.BusinessId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _context.ZoneUnitBookings.Add(booking);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetReservationStatus), new { bookingCode }, new PublicReservationConfirmationDto
+            {
+                BookingCode = booking.BookingCode,
+                Status = booking.Status,
+                ZoneName = zone.Name,
+                VenueName = venue.Name,
+                StartTime = booking.StartTime,
+                EndTime = booking.EndTime,
+                GuestName = booking.GuestName,
+                GuestCount = booking.GuestCount,
+                UnitsNeeded = unitsNeeded,
+                Message = $"Your reservation request for {unitsNeeded} unit(s) in {zone.Name} is pending approval. Booking code: {bookingCode}"
             });
         }
 
@@ -275,6 +382,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                 .IgnoreQueryFilters()
                 .Include(b => b.ZoneUnit)
                     .ThenInclude(zu => zu!.VenueZone)
+                .Include(b => b.VenueZone)
                 .Include(b => b.Venue)
                 .FirstOrDefaultAsync(b => b.BookingCode == bookingCode && !b.IsDeleted);
 
@@ -287,9 +395,9 @@ namespace BlackBear.Services.Core.Controllers.Public
             {
                 BookingCode = booking.BookingCode,
                 Status = booking.Status,
-                UnitCode = booking.ZoneUnit?.UnitCode ?? "",
-                UnitType = booking.ZoneUnit?.UnitType ?? "",
-                ZoneName = booking.ZoneUnit?.VenueZone?.Name ?? "",
+                UnitCode = booking.ZoneUnit?.UnitCode,
+                UnitType = booking.ZoneUnit?.UnitType,
+                ZoneName = booking.ZoneUnit?.VenueZone?.Name ?? booking.VenueZone?.Name ?? "",
                 VenueName = booking.Venue?.Name ?? "",
                 StartTime = booking.StartTime,
                 EndTime = booking.EndTime,
@@ -314,7 +422,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                 return NotFound("Reservation not found");
             }
 
-            if (booking.Status != "Reserved")
+            if (booking.Status != "Reserved" && booking.Status != "Pending")
             {
                 return BadRequest($"Cannot cancel a reservation with status '{booking.Status}'");
             }

@@ -48,8 +48,9 @@ namespace BlackBear.Services.Core.DTOs.Public
     // Guest reservation request
     public class PublicReservationRequest
     {
-        [Required]
-        public int ZoneUnitId { get; set; }
+        public int? ZoneUnitId { get; set; }
+
+        public int? ZoneId { get; set; }
 
         [Required]
         public int VenueId { get; set; }
@@ -80,14 +81,15 @@ namespace BlackBear.Services.Core.DTOs.Public
     {
         public string BookingCode { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
-        public string UnitCode { get; set; } = string.Empty;
-        public string UnitType { get; set; } = string.Empty;
+        public string? UnitCode { get; set; }
+        public string? UnitType { get; set; }
         public string ZoneName { get; set; } = string.Empty;
         public string VenueName { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public string? GuestName { get; set; }
         public int GuestCount { get; set; }
+        public int UnitsNeeded { get; set; }
         public string Message { get; set; } = string.Empty;
     }
 
@@ -109,8 +111,8 @@ namespace BlackBear.Services.Core.DTOs.Public
     {
         public string BookingCode { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
-        public string UnitCode { get; set; } = string.Empty;
-        public string UnitType { get; set; } = string.Empty;
+        public string? UnitCode { get; set; }
+        public string? UnitType { get; set; }
         public string ZoneName { get; set; } = string.Empty;
         public string VenueName { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }

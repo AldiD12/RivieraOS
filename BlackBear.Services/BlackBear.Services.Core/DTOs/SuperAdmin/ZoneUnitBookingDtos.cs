@@ -14,9 +14,9 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public DateTime? EndTime { get; set; }
         public DateTime? CheckedInAt { get; set; }
         public DateTime? CheckedOutAt { get; set; }
-        public int ZoneUnitId { get; set; }
-        public string UnitCode { get; set; } = string.Empty;
-        public string UnitType { get; set; } = string.Empty;
+        public int? ZoneUnitId { get; set; }
+        public string? UnitCode { get; set; }
+        public string? UnitType { get; set; }
         public string ZoneName { get; set; } = string.Empty;
         public int VenueId { get; set; }
         public string VenueName { get; set; } = string.Empty;
@@ -39,9 +39,9 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public DateTime? CheckedOutAt { get; set; }
         public string? Notes { get; set; }
         public DateTime CreatedAt { get; set; }
-        public int ZoneUnitId { get; set; }
-        public string UnitCode { get; set; } = string.Empty;
-        public string UnitType { get; set; } = string.Empty;
+        public int? ZoneUnitId { get; set; }
+        public string? UnitCode { get; set; }
+        public string? UnitType { get; set; }
         public int VenueZoneId { get; set; }
         public string ZoneName { get; set; } = string.Empty;
         public int VenueId { get; set; }

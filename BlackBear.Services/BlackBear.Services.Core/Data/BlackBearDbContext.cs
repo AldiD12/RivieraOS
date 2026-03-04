@@ -314,6 +314,7 @@ namespace BlackBear.Services.Core.Data
             modelBuilder.Entity<ZoneUnit>(entity =>
             {
                 entity.HasIndex(zu => zu.QrCode).IsUnique();
+                entity.HasIndex(zu => zu.CurrentBookingId);
 
                 entity.HasOne(zu => zu.VenueZone)
                     .WithMany()
@@ -330,10 +331,15 @@ namespace BlackBear.Services.Core.Data
                     .HasForeignKey(zu => zu.BusinessId)
                     .OnDelete(DeleteBehavior.Restrict);
 
+                entity.HasOne(zu => zu.CurrentBooking)
+                    .WithMany(zub => zub.AssignedUnits)
+                    .HasForeignKey(zu => zu.CurrentBookingId)
+                    .OnDelete(DeleteBehavior.SetNull);
+
                 entity.HasMany(zu => zu.Bookings)
                     .WithOne(zub => zub.ZoneUnit)
                     .HasForeignKey(zub => zub.ZoneUnitId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             // === FEEDBACK MODULE ===
@@ -375,6 +381,12 @@ namespace BlackBear.Services.Core.Data
             modelBuilder.Entity<ZoneUnitBooking>(entity =>
             {
                 entity.HasIndex(zub => zub.BookingCode).IsUnique();
+                entity.HasIndex(zub => zub.ZoneId);
+
+                entity.HasOne(zub => zub.VenueZone)
+                    .WithMany()
+                    .HasForeignKey(zub => zub.ZoneId)
+                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(zub => zub.Venue)
                     .WithMany()

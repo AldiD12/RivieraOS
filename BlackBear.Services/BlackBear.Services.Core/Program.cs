@@ -136,6 +136,7 @@ builder.Services.AddSignalR();
 
 // 7. Add Background Services
 builder.Services.AddHostedService<DailyUnitResetService>();
+builder.Services.AddHostedService<BookingCleanupService>();
 
 // 7. Add Health Checks
 builder.Services.AddHealthChecks()

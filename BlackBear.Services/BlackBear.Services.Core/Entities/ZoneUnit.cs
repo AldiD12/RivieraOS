@@ -62,6 +62,9 @@ namespace BlackBear.Services.Core.Entities
         [Column("business_id")]
         public int BusinessId { get; set; }
 
+        [Column("current_booking_id")]
+        public int? CurrentBookingId { get; set; }
+
         // Navigation properties
         [ForeignKey("VenueZoneId")]
         public VenueZone? VenueZone { get; set; }
@@ -71,6 +74,9 @@ namespace BlackBear.Services.Core.Entities
 
         [ForeignKey("BusinessId")]
         public Business? Business { get; set; }
+
+        [ForeignKey("CurrentBookingId")]
+        public ZoneUnitBooking? CurrentBooking { get; set; }
 
         public ICollection<ZoneUnitBooking> Bookings { get; set; } = new List<ZoneUnitBooking>();
     }
