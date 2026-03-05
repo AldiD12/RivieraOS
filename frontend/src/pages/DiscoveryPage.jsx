@@ -224,6 +224,8 @@ export default function DiscoveryPage() {
 
   // Group venues by business
   const groupVenuesByBusiness = useCallback((venuesList) => {
+    if (!venuesList || !Array.isArray(venuesList)) return [];
+    
     const businessMap = new Map();
     
     venuesList.forEach(venue => {
@@ -374,6 +376,7 @@ export default function DiscoveryPage() {
 
   // Group filtered venues by business for map display
   const businessGroups = useMemo(() => {
+    if (!filteredVenues || filteredVenues.length === 0) return [];
     return groupVenuesByBusiness(filteredVenues);
   }, [filteredVenues, groupVenuesByBusiness]);
 
