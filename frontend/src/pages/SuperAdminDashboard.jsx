@@ -825,6 +825,7 @@ export default function SuperAdminDashboard() {
   const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [userInfo, setUserInfo] = useState(null);
   
   // Staff state
@@ -1289,18 +1290,66 @@ export default function SuperAdminDashboard() {
 
   const handleResetPassword = useCallback(async (e) => {
     e.preventDefault();
-    if (!selectedBusiness || !editingStaff || !newPassword) return;
+    if (!selectedBusiness || !editingStaff || !newPassword) {
+      console.warn('Missing required data for password reset:', {
+        selectedBusiness: !!selectedBusiness,
+        editingStaff: !!editingStaff,
+        newPassword: !!newPassword
+      });
+      setError('Missing required information for password reset');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
     
     try {
-      await staffApi.resetPassword(selectedBusiness.id, editingStaff.id, newPassword);
+      setError('');
+      console.log('🔄 Attempting to reset password for staff:', {
+        businessId: selectedBusiness.id,
+        staffId: editingStaff.id,
+        staffName: editingStaff.fullName,
+        passwordLength: newPassword.length
+      });
+      
+      const result = await staffApi.resetPassword(selectedBusiness.id, editingStaff.id, newPassword);
+      
+      console.log('✅ Password reset successful:', result);
+      
       setShowResetPasswordModal(false);
       setEditingStaff(null);
       setNewPassword('');
       setError('');
-      alert('Password reset successfully!');
+      
+      // Better success feedback
+      setSuccessMessage(`Password reset successfully for ${editingStaff.fullName}`);
+      setTimeout(() => setSuccessMessage(''), 5000);
+      
     } catch (err) {
-      console.error('Error resetting password:', err);
-      setError('Failed to reset password: ' + (err.response?.data?.message || err.message));
+      console.error('❌ Error resetting password:', {
+        error: err,
+        response: err.response?.data,
+        status: err.response?.status,
+        statusText: err.response?.statusText
+      });
+      
+      let errorMessage = 'Failed to reset password';
+      
+      if (err.response?.status === 401) {
+        errorMessage = 'Unauthorized - Please check your login status';
+      } else if (err.response?.status === 403) {
+        errorMessage = 'Forbidden - You do not have permission to reset passwords';
+      } else if (err.response?.status === 404) {
+        errorMessage = 'Staff member not found';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     }
   }, [selectedBusiness, editingStaff, newPassword]);
 
@@ -2634,6 +2683,16 @@ export default function SuperAdminDashboard() {
         </div>
       </div>
 
+      {/* Success Message */}
+      {successMessage && (
+        <div className="mx-6 mt-4 p-4 bg-green-900/20 border border-green-700 rounded-lg">
+          <div className="flex items-center gap-2 text-green-400">
+            <span>✅</span>
+            <span className="font-medium">{successMessage}</span>
+          </div>
+        </div>
+      )}
+
       {/* Error Display */}
       {error && (
         <div className="bg-red-900 border border-red-700 text-red-300 px-6 py-3 mx-6 mt-4 rounded-lg">
@@ -2705,11 +2764,14 @@ export default function SuperAdminDashboard() {
           setShowResetPasswordModal(false);
           setEditingStaff(null);
           setNewPassword('');
+          setError('');
         }}
         staffMember={editingStaff}
         newPassword={newPassword}
         onPasswordChange={setNewPassword}
         onSubmit={handleResetPassword}
+        error={error}
+        loading={loading}
       />
 
       {/* Create Business Modal */}

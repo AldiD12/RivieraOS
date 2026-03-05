@@ -352,7 +352,9 @@ export const ResetPasswordModal = ({
   staffMember,
   newPassword,
   onPasswordChange,
-  onSubmit 
+  onSubmit,
+  error,
+  loading 
 }) => (
   <>
     {isOpen && (
@@ -372,6 +374,12 @@ export const ResetPasswordModal = ({
             </p>
           </div>
           
+          {error && (
+            <div className="mb-4 p-3 bg-red-900/20 border border-red-700 rounded-lg">
+              <p className="text-red-300 text-sm">{error}</p>
+            </div>
+          )}
+          
           <form onSubmit={onSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -385,6 +393,7 @@ export const ResetPasswordModal = ({
                 onChange={(e) => onPasswordChange(e.target.value)}
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                 placeholder="Enter new password (min 6 characters)"
+                disabled={loading}
               />
             </div>
             
@@ -392,15 +401,24 @@ export const ResetPasswordModal = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors"
+                disabled={loading}
+                className="px-4 py-2 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+                disabled={loading || !newPassword || newPassword.length < 6}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Reset Password
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                    <span>Resetting...</span>
+                  </>
+                ) : (
+                  'Reset Password'
+                )}
               </button>
             </div>
           </form>
