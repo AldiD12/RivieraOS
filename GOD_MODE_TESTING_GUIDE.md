@@ -63,14 +63,15 @@ Content-Type: application/json
 
 ---
 
-### **Scenario 2: Business Dashboard "Doors" Testing**
+### **Scenario 2: Business Dashboard "Real-Time Sync" Testing**
 
 #### Step 1: Login as Business Manager
 1. **Login with Manager/Owner role**
 2. **Navigate to Business Dashboard**
 3. **Verify:** `fetchFeatures()` called automatically
+4. **Verify:** "Auto-Sync" indicator appears in header (next to "System Live")
 
-#### Step 2: Check Tab Visibility
+#### Step 2: Check Tab Visibility & Polling
 **Expected Behavior Based on Features:**
 - **Overview Tab:** Always visible
 - **Staff Tab:** Always visible  
@@ -78,26 +79,31 @@ Content-Type: application/json
 - **Venues Tab:** Only if `hasBookings = true`
 - **Events Tab:** Only if `hasEvents = true`
 - **QR Generator Tab:** Only if `hasDigitalMenu = true`
+- **Auto-Sync:** Polls every 30 seconds for feature changes
 
-#### Step 3: Test Feature Guards
-1. **If Menu tab is hidden:**
-   - Features should show `hasDigitalMenu = false`
-   - No Menu tab in navigation
-2. **If Menu tab is visible:**
-   - Click Menu tab
-   - Should show menu management interface
-3. **Test with disabled feature:**
-   - SuperAdmin disables `hasEvents`
-   - Business user refreshes page
-   - Events tab should disappear
+#### Step 3: Test Real-Time Feature Updates
+1. **Keep Business Dashboard open**
+2. **In another tab/window:** Login as SuperAdmin
+3. **SuperAdmin:** Toggle `hasEvents` from OFF → ON for this business
+4. **SuperAdmin:** Click "Save Changes"
+5. **Wait up to 30 seconds**
+6. **Business Dashboard:** Events tab should appear automatically (no refresh needed!)
+
+#### Step 4: Verify Polling Behavior
+**Check Browser DevTools Network Tab:**
+- Should see GET `/api/business/Profile/features` requests every 30 seconds
+- Requests should be "silent" (no loading spinners during polling)
+- Console should show: `🔄 Starting feature polling (30s interval)...`
 
 ---
 
 ### **Scenario 3: Upgrade Prompts Testing**
 
-#### Step 1: Disable Features
-1. **SuperAdmin:** Disable `hasEvents` for a business
-2. **Business Manager:** Try to access events functionality
+#### Step 1: Disable Features (Real-Time Test)
+1. **Business Manager:** Keep dashboard open
+2. **SuperAdmin:** Disable `hasEvents` for this business
+3. **Wait 30 seconds:** Events tab should disappear automatically
+4. **Business Manager:** Try to access events functionality
 
 #### Step 2: Verify Upgrade Prompts
 **Expected UI:**
@@ -107,10 +113,10 @@ This feature is not included in your current plan.
 [Contact Sales to Upgrade]
 ```
 
-#### Step 3: Test All Feature Prompts
-- Disable `hasDigitalMenu` → Check Menu/QR tabs
-- Disable `hasBookings` → Check Venues tab
-- Disable `hasEvents` → Check Events tab
+#### Step 3: Test Re-enabling Features
+- **SuperAdmin:** Re-enable `hasEvents`
+- **Wait 30 seconds:** Events tab should reappear automatically
+- **Business Manager:** Should be able to access events again
 
 ---
 
@@ -330,6 +336,19 @@ GET /api/business/orders          # Requires hasTableOrdering
 
 ## 🎯 Ready to Test!
 
-The "God Mode" system is now ready for comprehensive testing. Start with **Scenario 1** (SuperAdmin Features Panel) to verify the core functionality, then move through the other scenarios to test the complete system.
+The "God Mode" system now includes **real-time polling** for seamless feature updates:
+
+✅ **SuperAdmin Features Panel:** Saves state properly  
+✅ **Business Dashboard:** Respects feature settings  
+✅ **Real-Time Sync:** Polls every 30 seconds for changes  
+✅ **Auto-Update UI:** Tabs appear/disappear without refresh  
+✅ **Visual Indicators:** "Auto-Sync" status in header  
+
+**New Flow:**
+1. SuperAdmin changes features → Saves successfully
+2. Business Dashboard polls every 30 seconds → Detects changes
+3. UI updates automatically → No manual refresh needed!
+
+Start with **Scenario 1** (SuperAdmin Features Panel), then test **Scenario 2** (Real-Time Sync) to see the automatic updates in action.
 
 **Happy Testing!** 🚀

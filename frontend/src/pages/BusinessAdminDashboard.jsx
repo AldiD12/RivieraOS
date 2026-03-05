@@ -20,7 +20,7 @@ const normalizePhoneNumber = (phone) => {
 // Business Admin Dashboard - For Manager/Owner role
 export default function BusinessAdminDashboard() {
   const navigate = useNavigate();
-  const { features, fetchFeatures, hasFeature } = useBusinessFeatures();
+  const { features, fetchFeatures, hasFeature, startPolling, stopPolling, isPollingEnabled } = useBusinessFeatures();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [error, setError] = useState('');
@@ -125,6 +125,13 @@ export default function BusinessAdminDashboard() {
     basePrice: 0
   });
 
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      stopPolling();
+    };
+  }, [stopPolling]);
+
   // Authentication check
   useEffect(() => {
     const checkAuth = () => {
@@ -193,6 +200,9 @@ export default function BusinessAdminDashboard() {
       // Fetch business features first (critical for UI rendering)
       console.log('🔄 Initializing business features...');
       await fetchFeatures();
+      
+      // Start polling for feature changes every 30 seconds
+      startPolling();
 
       // Fetch business profile and dashboard data
       const [profile, dashboard] = await Promise.all([
@@ -1035,6 +1045,14 @@ export default function BusinessAdminDashboard() {
               <span className={`text-[10px] font-mono uppercase tracking-widest ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
                 System Live
               </span>
+              {isPollingEnabled && (
+                <>
+                  <span className={`text-[10px] ${isDarkMode ? 'text-zinc-600' : 'text-gray-400'}`}>•</span>
+                  <span className={`text-[10px] font-mono uppercase tracking-widest ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                    Auto-Sync
+                  </span>
+                </>
+              )}
             </div>
             <h1 className={`text-lg font-bold tracking-tight font-sans ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
               Mirësevjen, {businessProfile?.name || '[Emri]'}

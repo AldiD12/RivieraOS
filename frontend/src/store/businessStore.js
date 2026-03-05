@@ -29,20 +29,28 @@ export const useBusinessStore = create(
       // Business profile data
       businessProfile: null,
       
+      // Polling state
+      pollingInterval: null,
+      isPollingEnabled: false,
+      
       /**
        * Fetch business features for the logged-in venue
        * Endpoint: GET /api/business/profile/features
        */
-      fetchFeatures: async () => {
+      fetchFeatures: async (silent = false) => {
         try {
-          set({ featuresLoading: true, featuresError: null });
+          if (!silent) {
+            set({ featuresLoading: true, featuresError: null });
+          }
           
           const token = localStorage.getItem('token') || localStorage.getItem('azure_jwt_token');
           if (!token) {
             throw new Error('No authentication token found');
           }
           
-          console.log('🔄 Fetching business features...');
+          if (!silent) {
+            console.log('🔄 Fetching business features...');
+          }
           
           const response = await fetch(`${API_BASE_URL}/business/Profile/features`, {
             method: 'GET',
@@ -71,7 +79,17 @@ export const useBusinessStore = create(
             data = await response.text();
           }
           
-          console.log('✅ Business features loaded:', data);
+          if (!silent) {
+            console.log('✅ Business features loaded:', data);
+          }
+          
+          // Check if features have changed (for polling)
+          const currentFeatures = get().features;
+          const hasChanged = JSON.stringify(currentFeatures) !== JSON.stringify(data);
+          
+          if (hasChanged && !silent) {
+            console.log('🔄 Features changed, updating UI...');
+          }
           
           set({ 
             features: data,
@@ -82,12 +100,14 @@ export const useBusinessStore = create(
           return data;
         } catch (error) {
           console.error('❌ Failed to load business features:', error);
-          set({ 
-            featuresLoading: false,
-            featuresError: error.message
-          });
+          if (!silent) {
+            set({ 
+              featuresLoading: false,
+              featuresError: error.message
+            });
+          }
           
-          // Return default features on error
+          // Return current features on error
           return get().features;
         }
       },
@@ -217,6 +237,49 @@ export const useBusinessStore = create(
       },
       
       /**
+       * Start polling for feature changes every 30 seconds
+       */
+      startPolling: () => {
+        const { pollingInterval, isPollingEnabled } = get();
+        
+        // Don't start if already polling
+        if (isPollingEnabled || pollingInterval) {
+          return;
+        }
+        
+        console.log('🔄 Starting feature polling (30s interval)...');
+        
+        const interval = setInterval(async () => {
+          try {
+            // Silent fetch to avoid loading states during polling
+            await get().fetchFeatures(true);
+          } catch (error) {
+            console.warn('⚠️ Polling fetch failed:', error.message);
+          }
+        }, 30000); // 30 seconds
+        
+        set({ 
+          pollingInterval: interval,
+          isPollingEnabled: true
+        });
+      },
+      
+      /**
+       * Stop polling for feature changes
+       */
+      stopPolling: () => {
+        const { pollingInterval } = get();
+        
+        if (pollingInterval) {
+          console.log('⏹️ Stopping feature polling...');
+          clearInterval(pollingInterval);
+          set({ 
+            pollingInterval: null,
+            isPollingEnabled: false
+          });
+        }
+      },
+      /**
        * Set business profile data
        */
       setBusinessProfile: (profile) => {
@@ -244,7 +307,10 @@ export const useBusinessFeatures = () => {
     hasAllFeatures: store.hasAllFeatures,
     hasAnyFeature: store.hasAnyFeature,
     fetchFeatures: store.fetchFeatures,
-    getFeatureSummary: store.getFeatureSummary
+    getFeatureSummary: store.getFeatureSummary,
+    startPolling: store.startPolling,
+    stopPolling: store.stopPolling,
+    isPollingEnabled: store.isPollingEnabled
   };
 };
 
