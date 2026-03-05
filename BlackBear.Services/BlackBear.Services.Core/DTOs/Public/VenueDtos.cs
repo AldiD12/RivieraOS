@@ -14,6 +14,8 @@ namespace BlackBear.Services.Core.DTOs.Public
         public bool AllowsDigitalOrdering { get; set; }
         public bool HasAvailability { get; set; }
         public int AvailableUnitsCount { get; set; }
+        public int BusinessId { get; set; }
+        public string? BusinessName { get; set; }
     }
 
     public class PublicVenueAvailabilityDetailDto

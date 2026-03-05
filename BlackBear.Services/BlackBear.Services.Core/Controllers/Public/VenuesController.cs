@@ -23,6 +23,7 @@ namespace BlackBear.Services.Core.Controllers.Public
             [FromQuery] bool? isActive = true)
         {
             var query = _context.Venues
+                .Include(v => v.Business)
                 .IgnoreQueryFilters()
                 .Where(v => !v.IsDeleted)
                 .AsQueryable();
@@ -78,7 +79,9 @@ namespace BlackBear.Services.Core.Controllers.Public
                     IsActive = v.IsActive,
                     AllowsDigitalOrdering = v.AllowsDigitalOrdering,
                     HasAvailability = availableCount > 0,
-                    AvailableUnitsCount = availableCount
+                    AvailableUnitsCount = availableCount,
+                    BusinessId = v.BusinessId,
+                    BusinessName = v.Business?.BrandName ?? v.Business?.RegisteredName
                 };
             }).ToList();
 
