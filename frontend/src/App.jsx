@@ -1,4 +1,6 @@
-// RivieraOS Main App - Cache Invalidation v2.0 (2026-03-05)
+// RivieraOS Main App - EMERGENCY CACHE BYPASS v3.0 (2026-03-05-FINAL)
+// CRITICAL: Vercel deployment cache locked - forcing complete rebuild
+// Bundle hash MUST change from index-D7eDW5Y-.js
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import AdminDashboard from './pages/AdminDashboard';

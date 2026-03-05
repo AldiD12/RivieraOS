@@ -1,6 +1,7 @@
 
-// Product Modal Components - Fixed exports (v2.0)
-// Force cache invalidation with timestamp: 2026-03-05
+// Product Modal Components - EMERGENCY REBUILD v3.0 (2026-03-05-FINAL)
+// CRITICAL: Force Vercel to generate new bundle hash
+// Current hash index-D7eDW5Y-.js MUST change
 import { ImageUpload } from '../../ImageUpload';
 import VenueExclusionSelector from '../../VenueExclusionSelector';
 
