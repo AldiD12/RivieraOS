@@ -153,6 +153,7 @@ function VenueMarker({ venue, isSelected, onClick, isDayMode }) {
 }
 
 export default function DiscoveryPage() {
+  // Force rebuild timestamp: 2026-03-05 15:30
   const mapRef = useRef();
   const [venues, setVenues] = useState([]);
   const [selectedVenue, setSelectedVenue] = useState(null);
@@ -254,10 +255,11 @@ export default function DiscoveryPage() {
     }
   };
 
-  // Group venues by business - Fixed Map constructor issue
+  // Group venues by business - Fixed Map constructor issue v2
   const groupVenuesByBusiness = useCallback((venuesList) => {
     if (!venuesList || !Array.isArray(venuesList)) return [];
     
+    // Use proper Map constructor (not minified variable)
     const businessMap = new Map();
     
     venuesList.forEach(venue => {
