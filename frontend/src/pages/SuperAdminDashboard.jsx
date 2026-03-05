@@ -1643,10 +1643,34 @@ export default function SuperAdminDashboard() {
   const fetchEvents = useCallback(async () => {
     try {
       setEventsLoading(true);
+      console.log('🔄 Fetching SuperAdmin events...');
+      
+      // Check if we have a valid token
+      const token = localStorage.getItem('azure_jwt_token') || localStorage.getItem('token');
+      if (!token) {
+        console.error('❌ No authentication token found');
+        setEvents([]);
+        return;
+      }
+      
       const response = await eventsApi.list();
-      setEvents(response.items || response);
+      console.log('✅ SuperAdmin events response:', response);
+      
+      // Handle different response structures
+      const eventsData = response.items || response.data || response || [];
+      console.log('📊 Events data:', eventsData);
+      setEvents(eventsData);
     } catch (err) {
-      console.error('Error fetching events:', err);
+      console.error('❌ Error fetching events:', err);
+      console.error('❌ Error details:', {
+        status: err.response?.status,
+        statusText: err.response?.statusText,
+        data: err.response?.data,
+        message: err.message
+      });
+      
+      // Set empty array on error to prevent UI issues
+      setEvents([]);
     } finally {
       setEventsLoading(false);
     }
