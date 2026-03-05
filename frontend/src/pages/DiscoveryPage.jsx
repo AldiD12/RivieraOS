@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import Map, { Marker, NavigationControl } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { venueApi } from '../services/venueApi';
@@ -373,7 +373,9 @@ export default function DiscoveryPage() {
   });
 
   // Group filtered venues by business for map display
-  const businessGroups = groupVenuesByBusiness(filteredVenues);
+  const businessGroups = useMemo(() => {
+    return groupVenuesByBusiness(filteredVenues);
+  }, [filteredVenues, groupVenuesByBusiness]);
 
   if (loading) {
     return (
