@@ -433,14 +433,29 @@ const EventsTab = ({
   const [filterBusiness, setFilterBusiness] = useState('all');
   const [filterVenue, setFilterVenue] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterVibe, setFilterVibe] = useState('all');
+  const [filterEntryType, setFilterEntryType] = useState('all');
 
-  // Filter events
+  // Filter events with improved logic
   const filteredEvents = events.filter(event => {
+    // Business filter
     if (filterBusiness !== 'all' && event.businessId !== parseInt(filterBusiness)) return false;
+    
+    // Venue filter (depends on business selection)
     if (filterVenue !== 'all' && event.venueId !== parseInt(filterVenue)) return false;
-    if (filterStatus === 'published' && !event.isPublished) return false;
-    if (filterStatus === 'draft' && event.isPublished) return false;
+    
+    // Status filter with proper deleted event handling
+    if (filterStatus === 'published' && (!event.isPublished || event.isDeleted)) return false;
+    if (filterStatus === 'draft' && (event.isPublished || event.isDeleted)) return false;
     if (filterStatus === 'deleted' && !event.isDeleted) return false;
+    
+    // For 'all' status, exclude deleted events unless explicitly showing deleted
+    if (filterStatus === 'all' && event.isDeleted) return false;
+    
+    // VIP filters
+    if (filterVibe !== 'all' && event.vibe !== filterVibe) return false;
+    if (filterEntryType !== 'all' && event.entryType?.toLowerCase() !== filterEntryType.toLowerCase()) return false;
+    
     return true;
   });
 
@@ -506,7 +521,7 @@ const EventsTab = ({
       )}
 
       {/* Filters */}
-      <div className="flex space-x-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <select
           value={filterBusiness}
           onChange={(e) => {
@@ -543,6 +558,31 @@ const EventsTab = ({
           <option value="draft">Draft</option>
           <option value="deleted">Deleted</option>
         </select>
+
+        <select
+          value={filterVibe}
+          onChange={(e) => setFilterVibe(e.target.value)}
+          className="px-4 py-2 bg-zinc-800 text-white rounded-lg border border-zinc-700"
+        >
+          <option value="all">All Vibes</option>
+          <option value="House">🎵 House</option>
+          <option value="Techno">🎵 Techno</option>
+          <option value="Commercial">🎵 Commercial</option>
+          <option value="Live Music">🎵 Live Music</option>
+          <option value="Hip Hop">🎵 Hip Hop</option>
+          <option value="Chill">🎵 Chill</option>
+        </select>
+
+        <select
+          value={filterEntryType}
+          onChange={(e) => setFilterEntryType(e.target.value)}
+          className="px-4 py-2 bg-zinc-800 text-white rounded-lg border border-zinc-700"
+        >
+          <option value="all">All Entry Types</option>
+          <option value="free">🆓 Free</option>
+          <option value="reservation">💎 Reservation</option>
+          <option value="ticketed">🎫 Ticketed</option>
+        </select>
       </div>
 
       {eventsLoading ? (
@@ -551,125 +591,207 @@ const EventsTab = ({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEvents.map((event) => (
-            <div
-              key={event.id}
-              className="bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700"
-            >
-              {/* Event Flyer */}
-              {event.flyerImageUrl && (
-                <div className="h-48 bg-zinc-900 overflow-hidden">
-                  <img
-                    src={event.flyerImageUrl}
-                    alt={event.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-
-              <div className="p-4 space-y-3">
-                {/* Title & Status - Enhanced */}
-                <div className="flex justify-between items-start">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-white truncate">{event.name}</h3>
-                    {event.description && (
-                      <p className="text-sm text-zinc-400 mt-1 line-clamp-2">{event.description}</p>
-                    )}
-                  </div>
-                  <div className="flex flex-col items-end space-y-1 ml-3">
-                    {event.isPublished && (
-                      <span className="px-2 py-1 bg-green-900 text-green-300 text-xs rounded">
+          {filteredEvents.map((event) => {
+            const startDate = new Date(event.startTime);
+            const endDate = new Date(event.endTime);
+            const isUpcoming = startDate > new Date();
+            const isPast = endDate < new Date();
+            
+            return (
+              <div
+                key={event.id}
+                className="bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700 hover:border-zinc-600 transition-all duration-300"
+              >
+                {/* Event Flyer */}
+                <div className="h-48 bg-zinc-900 overflow-hidden relative">
+                  {event.flyerImageUrl ? (
+                    <img
+                      src={event.flyerImageUrl}
+                      alt={event.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-6xl opacity-20">🎉</span>
+                    </div>
+                  )}
+                  
+                  {/* Status Overlay */}
+                  <div className="absolute top-3 right-3 flex flex-col gap-1">
+                    {event.isPublished && !event.isDeleted && (
+                      <span className="px-2 py-1 bg-green-900/80 text-green-300 text-xs rounded backdrop-blur-sm">
                         Published
                       </span>
                     )}
                     {!event.isPublished && !event.isDeleted && (
-                      <span className="px-2 py-1 bg-yellow-900 text-yellow-300 text-xs rounded">
+                      <span className="px-2 py-1 bg-yellow-900/80 text-yellow-300 text-xs rounded backdrop-blur-sm">
                         Draft
                       </span>
                     )}
                     {event.isDeleted && (
-                      <span className="px-2 py-1 bg-red-900 text-red-300 text-xs rounded">
+                      <span className="px-2 py-1 bg-red-900/80 text-red-300 text-xs rounded backdrop-blur-sm">
                         Deleted
                       </span>
                     )}
-                  </div>
-                </div>
-
-                {/* Business & Venue - Enhanced */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-zinc-400">
-                      <div className="flex items-center gap-2">
-                        <span className="text-blue-400">🏢</span>
-                        <span className="font-medium text-blue-300">{event.businessName}</span>
-                      </div>
-                    </div>
-                    {filterBusiness === 'all' && (
-                      <span className="px-2 py-1 bg-blue-900/30 text-blue-300 text-xs rounded border border-blue-700/30">
-                        Business {event.businessId}
+                    {isPast && !event.isDeleted && (
+                      <span className="px-2 py-1 bg-zinc-900/80 text-zinc-400 text-xs rounded backdrop-blur-sm">
+                        Past
+                      </span>
+                    )}
+                    {isUpcoming && !event.isDeleted && (
+                      <span className="px-2 py-1 bg-blue-900/80 text-blue-300 text-xs rounded backdrop-blur-sm">
+                        Upcoming
                       </span>
                     )}
                   </div>
-                  <div className="text-sm text-zinc-400">
-                    <div className="flex items-center gap-2">
-                      <span className="text-green-400">📍</span>
-                      <span className="text-zinc-300">{event.venueName}</span>
+                </div>
+
+                <div className="p-4 space-y-3">
+                  {/* Title & Business */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-white truncate">{event.name}</h3>
+                    <div className="flex items-center justify-between mt-1">
+                      <div className="text-sm text-zinc-400">
+                        <div className="flex items-center gap-2">
+                          <span className="text-blue-400">🏢</span>
+                          <span className="font-medium text-blue-300">{event.businessName}</span>
+                        </div>
+                      </div>
+                      {filterBusiness === 'all' && (
+                        <span className="px-2 py-1 bg-blue-900/30 text-blue-300 text-xs rounded border border-blue-700/30">
+                          Business {event.businessId}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-zinc-400 mt-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-400">📍</span>
+                        <span className="text-zinc-300">{event.venueName}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Date & Time */}
-                <div className="text-sm text-zinc-300">
-                  📅 {new Date(event.startTime).toLocaleDateString()} at {new Date(event.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                </div>
-
-                {/* Ticket Info */}
-                {event.isTicketed && (
-                  <div className="text-sm text-zinc-300">
-                    🎫 €{event.ticketPrice} • {event.spotsRemaining}/{event.maxGuests} spots left
+                  {/* Date & Time */}
+                  <div className="text-sm text-zinc-300 space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-zinc-400">📅</span>
+                      <span>{startDate.toLocaleDateString('en-US', { 
+                        weekday: 'short', 
+                        month: 'short', 
+                        day: 'numeric', 
+                        year: 'numeric' 
+                      })}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-zinc-400">⏰</span>
+                      <span>
+                        {startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })} - {endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
                   </div>
-                )}
 
-                {/* Actions */}
-                <div className="flex flex-wrap gap-2 pt-2">
-                  {!event.isDeleted && (
-                    <>
-                      <button
-                        onClick={() => onEditEvent(event)}
-                        className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => onTogglePublish(event)}
-                        className={`px-3 py-1 rounded text-sm ${
-                          event.isPublished
-                            ? 'bg-yellow-600 text-white hover:bg-yellow-700'
-                            : 'bg-green-600 text-white hover:bg-green-700'
-                        }`}
-                      >
-                        {event.isPublished ? 'Unpublish' : 'Publish'}
-                      </button>
-                      <button
-                        onClick={() => onDeleteEvent(event)}
-                        className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
-                      >
-                        Delete
-                      </button>
-                    </>
+                  {/* Description */}
+                  {event.description && (
+                    <p className="text-sm text-zinc-400 line-clamp-2">{event.description}</p>
                   )}
-                  {event.isDeleted && (
-                    <button
-                      onClick={() => onRestoreEvent(event.id)}
-                      className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700"
-                    >
-                      Restore
-                    </button>
+
+                  {/* VIP Features */}
+                  <div className="flex flex-wrap gap-2">
+                    {/* Vibe Tag */}
+                    {event.vibe && (
+                      <span className={`px-2 py-1 text-xs rounded font-medium ${
+                        event.vibe === 'House' ? 'bg-purple-900/30 text-purple-300 border border-purple-700/30' :
+                        event.vibe === 'Techno' ? 'bg-red-900/30 text-red-300 border border-red-700/30' :
+                        event.vibe === 'Commercial' ? 'bg-orange-900/30 text-orange-300 border border-orange-700/30' :
+                        event.vibe === 'Live Music' ? 'bg-yellow-900/30 text-yellow-300 border border-yellow-700/30' :
+                        event.vibe === 'Hip Hop' ? 'bg-indigo-900/30 text-indigo-300 border border-indigo-700/30' :
+                        event.vibe === 'Chill' ? 'bg-cyan-900/30 text-cyan-300 border border-cyan-700/30' :
+                        'bg-zinc-700 text-zinc-300'
+                      }`}>
+                        🎵 {event.vibe}
+                      </span>
+                    )}
+                    
+                    {/* Entry Type */}
+                    {event.entryType && (
+                      <span className={`px-2 py-1 text-xs rounded font-medium ${
+                        event.entryType.toLowerCase() === 'free' ? 'bg-green-900/30 text-green-300 border border-green-700/30' :
+                        event.entryType.toLowerCase() === 'reservation' ? 'bg-amber-900/30 text-amber-300 border border-amber-700/30' :
+                        event.entryType.toLowerCase() === 'ticketed' ? 'bg-blue-900/30 text-blue-300 border border-blue-700/30' :
+                        'bg-zinc-700 text-zinc-300'
+                      }`}>
+                        {event.entryType.toLowerCase() === 'free' ? '🆓' :
+                         event.entryType.toLowerCase() === 'reservation' ? '💎' :
+                         event.entryType.toLowerCase() === 'ticketed' ? '🎫' : '🎟️'} {event.entryType}
+                      </span>
+                    )}
+                    
+                    {/* Minimum Spend for VIP Events */}
+                    {event.minimumSpend && event.minimumSpend > 0 && (
+                      <span className="px-2 py-1 bg-yellow-900/30 text-yellow-300 border border-yellow-700/30 text-xs rounded font-medium">
+                        💰 €{event.minimumSpend} min
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Ticket Info */}
+                  {event.isTicketed && (
+                    <div className="text-sm text-zinc-300">
+                      <span className="font-medium">🎫 €{event.ticketPrice}</span>
+                      {event.maxGuests > 0 && (
+                        <span className="text-zinc-400 ml-2">
+                          • {event.spotsRemaining || 0}/{event.maxGuests} spots left
+                        </span>
+                      )}
+                    </div>
                   )}
+
+                  {/* Stats */}
+                  <div className="text-xs text-zinc-500">
+                    {event.bookingCount || 0} bookings • {event.totalGuests || 0} guests
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-zinc-700">
+                    {!event.isDeleted && (
+                      <>
+                        <button
+                          onClick={() => onEditEvent(event)}
+                          className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => onTogglePublish(event)}
+                          className={`px-3 py-1 rounded text-sm transition-colors ${
+                            event.isPublished
+                              ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                              : 'bg-green-600 text-white hover:bg-green-700'
+                          }`}
+                        >
+                          {event.isPublished ? 'Unpublish' : 'Publish'}
+                        </button>
+                        <button
+                          onClick={() => onDeleteEvent(event)}
+                          className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition-colors"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                    {event.isDeleted && (
+                      <button
+                        onClick={() => onRestoreEvent(event.id)}
+                        className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition-colors"
+                      >
+                        Restore
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -1750,8 +1872,10 @@ export default function SuperAdminDashboard() {
         await eventsApi.publish(event.id);
       }
       await fetchEvents();
+      setError(''); // Clear any previous errors
     } catch (err) {
       console.error('Error toggling event publish status:', err);
+      setError(`Failed to ${event.isPublished ? 'unpublish' : 'publish'} event: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -1759,8 +1883,10 @@ export default function SuperAdminDashboard() {
     try {
       await eventsApi.restore(eventId);
       await fetchEvents();
+      setError(''); // Clear any previous errors
     } catch (err) {
       console.error('Error restoring event:', err);
+      setError(`Failed to restore event: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -1769,8 +1895,10 @@ export default function SuperAdminDashboard() {
       await eventsApi.create(eventData);
       setShowCreateEventModal(false);
       await fetchEvents();
+      setError(''); // Clear any previous errors
     } catch (err) {
       console.error('Error creating event:', err);
+      setError(`Failed to create event: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -1780,8 +1908,10 @@ export default function SuperAdminDashboard() {
       setShowEditEventModal(false);
       setEditingEvent(null);
       await fetchEvents();
+      setError(''); // Clear any previous errors
     } catch (err) {
       console.error('Error updating event:', err);
+      setError(`Failed to update event: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -1793,8 +1923,10 @@ export default function SuperAdminDashboard() {
       setShowDeleteEventModal(false);
       setDeletingEvent(null);
       await fetchEvents();
+      setError(''); // Clear any previous errors
     } catch (err) {
       console.error('Error deleting event:', err);
+      setError(`Failed to delete event: ${err.response?.data?.message || err.message}`);
     }
   };
 
