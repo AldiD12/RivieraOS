@@ -56,7 +56,21 @@ export const useBusinessStore = create(
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
           
-          const data = await response.json();
+          // Handle different response types
+          let data = null;
+          const contentType = response.headers.get('content-type');
+          
+          if (contentType && contentType.includes('application/json')) {
+            // Only parse as JSON if content-type indicates JSON
+            const text = await response.text();
+            if (text.trim()) {
+              data = JSON.parse(text);
+            }
+          } else {
+            // For non-JSON responses, just get the text
+            data = await response.text();
+          }
+          
           console.log('✅ Business features loaded:', data);
           
           set({ 
@@ -106,7 +120,21 @@ export const useBusinessStore = create(
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
           
-          const data = await response.json();
+          // Handle different response types
+          let data = null;
+          const contentType = response.headers.get('content-type');
+          
+          if (contentType && contentType.includes('application/json')) {
+            // Only parse as JSON if content-type indicates JSON
+            const text = await response.text();
+            if (text.trim()) {
+              data = JSON.parse(text);
+            }
+          } else {
+            // For non-JSON responses (like 204 No Content), just get the text
+            data = await response.text();
+          }
+          
           console.log('✅ Business features updated:', data);
           
           set({ 
