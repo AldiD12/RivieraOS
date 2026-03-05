@@ -4,6 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { venueApi } from '../services/venueApi';
 import { publicEventsApi } from '../services/eventsApi';
 import VenueBottomSheet from '../components/VenueBottomSheet';
+import BusinessBottomSheet from '../components/BusinessBottomSheet';
 import EventsView from '../components/EventsView';
 
 // Mapbox token
@@ -123,6 +124,7 @@ export default function DiscoveryPage() {
   const mapRef = useRef();
   const [venues, setVenues] = useState([]);
   const [selectedVenue, setSelectedVenue] = useState(null);
+  const [selectedBusiness, setSelectedBusiness] = useState(null); // For business grouping
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('Beach'); // Default to Beach only
@@ -220,6 +222,83 @@ export default function DiscoveryPage() {
     }
   };
 
+  // Group venues by business
+  const groupVenuesByBusiness = useCallback((venuesList) => {
+    const businessMap = new Map();
+    
+    venuesList.forEach(venue => {
+      // Use businessId if available, otherwise use businessName, fallback to venue name
+      const businessKey = venue.businessId || venue.businessName || venue.name;
+      const businessName = venue.businessName || venue.name;
+      
+      if (!businessMap.has(businessKey)) {
+        businessMap.set(businessKey, {
+          id: businessKey,
+          name: businessName,
+          venues: [],
+          totalAvailableUnits: 0,
+          latitude: 0,
+          longitude: 0,
+          type: venue.type
+        });
+      }
+      
+      const business = businessMap.get(businessKey);
+      business.venues.push(venue);
+      business.totalAvailableUnits += venue.availableUnitsCount || 0;
+    });
+    
+    // Calculate average coordinates for each business
+    businessMap.forEach(business => {
+      const validVenues = business.venues.filter(v => v.latitude && v.longitude);
+      if (validVenues.length > 0) {
+        business.latitude = validVenues.reduce((sum, v) => sum + v.latitude, 0) / validVenues.length;
+        business.longitude = validVenues.reduce((sum, v) => sum + v.longitude, 0) / validVenues.length;
+      }
+    });
+    
+    return Array.from(businessMap.values());
+  }, []);
+
+  const handleBusinessClick = useCallback(async (business) => {
+    try {
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [business.longitude, business.latitude],
+          zoom: 16,
+          pitch: 60,
+          bearing: -20,
+          duration: 1500,
+          essential: true
+        });
+      }
+      
+      // Load availability for all venues in this business
+      const venuesWithAvailability = await Promise.all(
+        business.venues.map(async (venue) => {
+          try {
+            const availability = await venueApi.getVenueAvailability(venue.id);
+            return { ...venue, availability };
+          } catch (err) {
+            console.error(`Failed to load availability for venue ${venue.id}:`, err);
+            return { ...venue, availability: null };
+          }
+        })
+      );
+      
+      setSelectedBusiness({
+        ...business,
+        venues: venuesWithAvailability
+      });
+    } catch (err) {
+      console.error('Failed to load business venues:', err);
+      setSelectedBusiness({
+        ...business,
+        venues: business.venues.map(v => ({ ...v, availability: null }))
+      });
+    }
+  }, []);
+
   const handleVenueClick = useCallback(async (venue) => {
     try {
       if (mapRef.current) {
@@ -243,6 +322,7 @@ export default function DiscoveryPage() {
 
   const handleCloseBottomSheet = useCallback(() => {
     setSelectedVenue(null);
+    setSelectedBusiness(null);
     if (mapRef.current) {
       mapRef.current.flyTo({
         ...RIVIERA_CENTER,
@@ -291,6 +371,9 @@ export default function DiscoveryPage() {
     if (activeFilter === 'all') return true;
     return v.type === activeFilter;
   });
+
+  // Group filtered venues by business for map display
+  const businessGroups = groupVenuesByBusiness(filteredVenues);
 
   if (loading) {
     return (
@@ -423,19 +506,22 @@ export default function DiscoveryPage() {
           >
             <NavigationControl position="bottom-right" showCompass={false} />
             
-            {/* Only render markers after map loads */}
-            {mapLoaded && filteredVenues.map(venue => (
-              venue.latitude && venue.longitude && (
+            {/* Only render markers after map loads - GROUP BY BUSINESS */}
+            {mapLoaded && businessGroups.map(business => (
+              business.latitude && business.longitude && (
                 <Marker
-                  key={venue.id}
-                  longitude={venue.longitude}
-                  latitude={venue.latitude}
+                  key={business.id}
+                  longitude={business.longitude}
+                  latitude={business.latitude}
                   anchor="center"
                 >
                   <VenueMarker
-                    venue={venue}
-                    isSelected={selectedVenue?.id === venue.id}
-                    onClick={() => handleVenueClick(venue)}
+                    venue={{
+                      ...business,
+                      availableUnitsCount: business.totalAvailableUnits
+                    }}
+                    isSelected={selectedBusiness?.id === business.id}
+                    onClick={() => handleBusinessClick(business)}
                     isDayMode={isDayMode}
                   />
                 </Marker>
@@ -833,7 +919,19 @@ export default function DiscoveryPage() {
         </div>
       </div>
 
-      {/* Bottom Sheet */}
+      {/* Business Bottom Sheet (shows list of venues) */}
+      {selectedBusiness && !selectedVenue && (
+        <div className="absolute bottom-0 left-0 right-0 z-[1001]">
+          <BusinessBottomSheet
+            business={selectedBusiness}
+            onClose={handleCloseBottomSheet}
+            onVenueSelect={handleVenueClick}
+            isDayMode={isDayMode}
+          />
+        </div>
+      )}
+
+      {/* Venue Bottom Sheet (shows single venue details) */}
       {selectedVenue && (
         <div className="absolute bottom-0 left-0 right-0 z-[1001]">
           <VenueBottomSheet
