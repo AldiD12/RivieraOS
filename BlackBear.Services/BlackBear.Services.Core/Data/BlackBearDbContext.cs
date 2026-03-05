@@ -55,6 +55,9 @@ namespace BlackBear.Services.Core.Data
         // Content schema entities
         public DbSet<Content> Contents { get; set; }
 
+        // Feature toggles
+        public DbSet<BusinessFeature> BusinessFeatures { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -137,6 +140,9 @@ namespace BlackBear.Services.Core.Data
             // Content: no multi-tenancy (global content)
             modelBuilder.Entity<Content>().HasQueryFilter(c => c.IsActive);
 
+            // BusinessFeature: soft delete only
+            modelBuilder.Entity<BusinessFeature>().HasQueryFilter(bf => !bf.IsDeleted);
+
 
             // === CORE MODULE ===
 
@@ -161,6 +167,11 @@ namespace BlackBear.Services.Core.Data
                 entity.HasMany(b => b.Products)
                     .WithOne(p => p.Business)
                     .HasForeignKey(p => p.BusinessId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(b => b.Feature)
+                    .WithOne(bf => bf.Business)
+                    .HasForeignKey<BusinessFeature>(bf => bf.BusinessId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
 

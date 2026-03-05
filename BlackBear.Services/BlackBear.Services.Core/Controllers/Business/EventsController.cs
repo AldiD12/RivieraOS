@@ -1,3 +1,4 @@
+using BlackBear.Services.Core.Attributes;
 using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.DTOs.Business;
 using BlackBear.Services.Core.Entities;
@@ -11,6 +12,7 @@ namespace BlackBear.Services.Core.Controllers.Business
     [Route("api/business/[controller]")]
     [ApiController]
     [Authorize(Policy = "Manager")]
+    [RequireFeature(nameof(BusinessFeature.HasEvents))]
     public class EventsController : ControllerBase
     {
         private readonly BlackBearDbContext _context;

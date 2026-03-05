@@ -136,6 +136,19 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
             _context.Businesses.Add(business);
             await _context.SaveChangesAsync();
 
+            // Auto-seed default feature toggles (Spot tier)
+            var features = new Entities.BusinessFeature
+            {
+                BusinessId = business.Id,
+                HasDigitalMenu = true,
+                HasTableOrdering = false,
+                HasBookings = false,
+                HasEvents = false,
+                HasPulse = false
+            };
+            _context.BusinessFeatures.Add(features);
+            await _context.SaveChangesAsync();
+
             return CreatedAtAction(nameof(GetBusiness), new { id = business.Id }, new BusinessDetailDto
             {
                 Id = business.Id,

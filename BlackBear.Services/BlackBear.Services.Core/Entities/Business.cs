@@ -52,5 +52,6 @@ namespace BlackBear.Services.Core.Entities
         public ICollection<Venue> Venues { get; set; } = new List<Venue>();
         public ICollection<Category> Categories { get; set; } = new List<Category>();
         public ICollection<Product> Products { get; set; } = new List<Product>();
+        public BusinessFeature? Feature { get; set; }
     }
 }

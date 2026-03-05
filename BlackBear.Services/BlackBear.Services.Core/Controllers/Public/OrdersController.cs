@@ -35,6 +35,14 @@ namespace BlackBear.Services.Core.Controllers.Public
                 return NotFound("Venue not found");
             }
 
+            // Feature gate: check if business has table ordering enabled
+            var hasOrdering = await _context.BusinessFeatures
+                .AnyAsync(bf => bf.BusinessId == venue.BusinessId && bf.HasTableOrdering);
+            if (!hasOrdering)
+            {
+                return NotFound("Digital ordering is not available for this venue");
+            }
+
             // Get categories with products for this business, excluding venue-specific exclusions
             var excludedCategoryIds = await _context.CategoryVenueExclusions
                 .Where(e => e.VenueId == venueId)
@@ -93,6 +101,14 @@ namespace BlackBear.Services.Core.Controllers.Public
             if (venue == null)
             {
                 return BadRequest("Venue not found");
+            }
+
+            // Feature gate: check if business has table ordering enabled
+            var hasOrdering = await _context.BusinessFeatures
+                .AnyAsync(bf => bf.BusinessId == venue.BusinessId && bf.HasTableOrdering);
+            if (!hasOrdering)
+            {
+                return BadRequest("Digital ordering is not available for this venue");
             }
 
             // Verify zone exists and belongs to venue

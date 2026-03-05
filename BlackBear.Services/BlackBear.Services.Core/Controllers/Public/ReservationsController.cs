@@ -34,6 +34,14 @@ namespace BlackBear.Services.Core.Controllers.Public
                 return NotFound("Venue not found");
             }
 
+            // Feature gate: check if business has bookings enabled
+            var hasBookings = await _context.BusinessFeatures
+                .AnyAsync(bf => bf.BusinessId == venue.BusinessId && bf.HasBookings);
+            if (!hasBookings)
+            {
+                return NotFound("Reservations are not available for this venue");
+            }
+
             // Get zones with their units
             var zones = await _context.VenueZones
                 .IgnoreQueryFilters()
@@ -123,6 +131,14 @@ namespace BlackBear.Services.Core.Controllers.Public
                 return NotFound("Venue not found");
             }
 
+            // Feature gate: check if business has bookings enabled
+            var hasBookings = await _context.BusinessFeatures
+                .AnyAsync(bf => bf.BusinessId == venue.BusinessId && bf.HasBookings);
+            if (!hasBookings)
+            {
+                return NotFound("Reservations are not available for this venue");
+            }
+
             var today = DateTime.UtcNow.Date;
 
             var zones = await _context.VenueZones
@@ -195,6 +211,14 @@ namespace BlackBear.Services.Core.Controllers.Public
             if (venue == null)
             {
                 return BadRequest("Venue not found");
+            }
+
+            // Feature gate: check if business has bookings enabled
+            var hasBookings = await _context.BusinessFeatures
+                .AnyAsync(bf => bf.BusinessId == venue.BusinessId && bf.HasBookings);
+            if (!hasBookings)
+            {
+                return BadRequest("Reservations are not available for this venue");
             }
 
             // Zone-based booking path: guest picks a zone, system checks capacity

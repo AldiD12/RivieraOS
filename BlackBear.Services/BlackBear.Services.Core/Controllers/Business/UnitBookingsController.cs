@@ -1,3 +1,4 @@
+using BlackBear.Services.Core.Attributes;
 using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.DTOs.Business;
 using BlackBear.Services.Core.Entities;
@@ -13,6 +14,7 @@ namespace BlackBear.Services.Core.Controllers.Business
     [Route("api/business/venues/{venueId}/bookings")]
     [ApiController]
     [Authorize(Policy = "Collector")]
+    [RequireFeature(nameof(BusinessFeature.HasBookings))]
     public class UnitBookingsController : ControllerBase
     {
         private readonly BlackBearDbContext _context;

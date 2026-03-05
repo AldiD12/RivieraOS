@@ -29,6 +29,9 @@ namespace BlackBear.Services.Core.Controllers.Public
                 .Include(e => e.EventBookings)
                 .IgnoreQueryFilters()
                 .Where(e => !e.IsDeleted && e.IsPublished && e.StartTime >= DateTime.UtcNow)
+                // Feature gate: only show events for businesses that have HasEvents enabled
+                .Where(e => e.Venue != null && _context.BusinessFeatures
+                    .Any(bf => bf.BusinessId == e.Venue.BusinessId && !bf.IsDeleted && bf.HasEvents))
                 .AsQueryable();
 
             if (venueId.HasValue)
@@ -83,6 +86,9 @@ namespace BlackBear.Services.Core.Controllers.Public
                 .Include(e => e.EventBookings)
                 .IgnoreQueryFilters()
                 .Where(e => !e.IsDeleted && e.IsPublished)
+                // Feature gate: only show events for businesses that have HasEvents enabled
+                .Where(e => e.Venue != null && _context.BusinessFeatures
+                    .Any(bf => bf.BusinessId == e.Venue.BusinessId && !bf.IsDeleted && bf.HasEvents))
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             if (evt == null)
@@ -129,6 +135,8 @@ namespace BlackBear.Services.Core.Controllers.Public
                 .Include(e => e.EventBookings)
                 .IgnoreQueryFilters()
                 .Where(e => !e.IsDeleted && e.IsPublished && e.VenueId == venueId && e.StartTime >= DateTime.UtcNow)
+                .Where(e => e.Venue != null && _context.BusinessFeatures
+                    .Any(bf => bf.BusinessId == e.Venue.BusinessId && !bf.IsDeleted && bf.HasEvents))
                 .OrderBy(e => e.StartTime)
                 .Take(limit)
                 .Select(e => new PublicEventListItemDto
@@ -170,6 +178,8 @@ namespace BlackBear.Services.Core.Controllers.Public
                 .Include(e => e.EventBookings)
                 .IgnoreQueryFilters()
                 .Where(e => !e.IsDeleted && e.IsPublished && e.Venue != null && e.Venue.BusinessId == businessId && e.StartTime >= DateTime.UtcNow)
+                .Where(e => _context.BusinessFeatures
+                    .Any(bf => bf.BusinessId == e.Venue!.BusinessId && !bf.IsDeleted && bf.HasEvents))
                 .OrderBy(e => e.StartTime)
                 .Take(limit)
                 .Select(e => new PublicEventListItemDto

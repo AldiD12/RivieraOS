@@ -1,5 +1,7 @@
+using BlackBear.Services.Core.Attributes;
 using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.DTOs.Business;
+using BlackBear.Services.Core.Entities;
 using BlackBear.Services.Core.Hubs;
 using BlackBear.Services.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -12,6 +14,7 @@ namespace BlackBear.Services.Core.Controllers.Business
     [Route("api/business/[controller]")]
     [ApiController]
     [Authorize(Policy = "Bartender")]
+    [RequireFeature(nameof(BusinessFeature.HasTableOrdering))]
     public class OrdersController : ControllerBase
     {
         private readonly BlackBearDbContext _context;

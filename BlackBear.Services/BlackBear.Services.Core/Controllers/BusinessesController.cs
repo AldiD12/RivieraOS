@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.Entities;
+using BlackBear.Services.Core.DTOs.Business;
 
 namespace BlackBear.Services.Core.Controllers
 {
@@ -46,6 +47,19 @@ namespace BlackBear.Services.Core.Controllers
             // Force create timestamp
             // Note: Ideally we use DTOs, but for Sprint 1, this is fine.
             _context.Businesses.Add(business);
+            await _context.SaveChangesAsync();
+
+            // Auto-seed default feature toggles (Spot tier)
+            var features = new BusinessFeature
+            {
+                BusinessId = business.Id,
+                HasDigitalMenu = true,
+                HasTableOrdering = false,
+                HasBookings = false,
+                HasEvents = false,
+                HasPulse = false
+            };
+            _context.BusinessFeatures.Add(features);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction("GetBusiness", new { id = business.Id }, business);

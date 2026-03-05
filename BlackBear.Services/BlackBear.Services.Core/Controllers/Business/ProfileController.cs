@@ -54,6 +54,35 @@ namespace BlackBear.Services.Core.Controllers.Business
             });
         }
 
+        // GET: api/business/profile/features
+        [HttpGet("features")]
+        [Authorize(Policy = "Manager")]
+        public async Task<ActionResult<BizBusinessFeatureDto>> GetMyFeatures()
+        {
+            var businessId = _currentUserService.BusinessId;
+            if (!businessId.HasValue)
+            {
+                return StatusCode(403, new { error = "User is not associated with a business" });
+            }
+
+            var features = await _context.BusinessFeatures
+                .FirstOrDefaultAsync(f => f.BusinessId == businessId.Value);
+
+            if (features == null)
+            {
+                return NotFound("Features not configured for this business");
+            }
+
+            return Ok(new BizBusinessFeatureDto
+            {
+                HasDigitalMenu = features.HasDigitalMenu,
+                HasTableOrdering = features.HasTableOrdering,
+                HasBookings = features.HasBookings,
+                HasEvents = features.HasEvents,
+                HasPulse = features.HasPulse
+            });
+        }
+
         // PUT: api/business/profile
         [HttpPut]
         public async Task<IActionResult> UpdateProfile(UpdateBusinessProfileRequest request)
