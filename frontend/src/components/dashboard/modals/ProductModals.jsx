@@ -1,5 +1,6 @@
 
-// Product Modal Components - Fixed exports
+// Product Modal Components - Fixed exports (v2.0)
+// Force cache invalidation with timestamp: 2026-03-05
 import { ImageUpload } from '../../ImageUpload';
 import VenueExclusionSelector from '../../VenueExclusionSelector';
 

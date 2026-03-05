@@ -1,3 +1,4 @@
+// RivieraOS Main App - Cache Invalidation v2.0 (2026-03-05)
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useSearchParams } from 'react-router-dom';
 import AdminDashboard from './pages/AdminDashboard';
