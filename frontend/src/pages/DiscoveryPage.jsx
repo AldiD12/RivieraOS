@@ -370,7 +370,22 @@ export default function DiscoveryPage() {
   
   const handleEventClick = (event) => {
     const venue = venues.find(v => v.id === event.venueId);
-    if (!venue) return;
+    if (!venue) {
+      console.error('❌ Venue not found for event:', event);
+      return;
+    }
+    
+    console.log('🏨 Venue data:', venue);
+    console.log('📱 WhatsApp number:', venue.whatsappNumber || venue.whatsAppNumber || venue.phone);
+    
+    // Check for WhatsApp number in different possible field names
+    const whatsappNumber = venue.whatsappNumber || venue.whatsAppNumber || venue.phone;
+    
+    if (!whatsappNumber) {
+      console.error('❌ No WhatsApp number found for venue:', venue.name);
+      alert(`Sorry, ${venue.name} doesn't have a WhatsApp number configured yet. Please contact the venue directly.`);
+      return;
+    }
     
     // Generate WhatsApp message
     const eventDate = new Date(event.startTime).toLocaleDateString('en-GB', {
@@ -399,7 +414,11 @@ export default function DiscoveryPage() {
     message += `\nHow many people: \n`;
     message += `Preferred arrival time: `;
     
-    const whatsappUrl = `https://wa.me/${venue.whatsappNumber}?text=${encodeURIComponent(message)}`;
+    // Clean the phone number (remove any non-digits except +)
+    const cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
+    const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
+    
+    console.log('📱 Opening WhatsApp URL:', whatsappUrl);
     window.open(whatsappUrl, '_blank');
   };
 

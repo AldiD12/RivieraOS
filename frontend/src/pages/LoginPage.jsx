@@ -72,7 +72,7 @@ export default function LoginPage() {
         
         try {
           console.log(`🔐 Trying phone: ${phoneFormat} with PIN`);
-          response = await fetch(`${API_URL}/api/auth/login/pin`, {
+          response = await fetch(`${API_URL}/auth/login/pin`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -252,7 +252,7 @@ export default function LoginPage() {
     try {
       console.log('🔐 Attempting manager login:', { email });
       
-      const response = await fetch(`${API_URL}/api/auth/login`, {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
