@@ -65,7 +65,10 @@ namespace BlackBear.Services.Core.Controllers.Business
                     EndTime = e.EndTime,
                     IsTicketed = e.IsTicketed,
                     TicketPrice = e.TicketPrice,
+                    MinimumSpend = e.MinimumSpend,
                     MaxGuests = e.MaxGuests,
+                    Vibe = e.Vibe,
+                    EntryType = e.EntryType,
                     IsPublished = e.IsPublished,
                     VenueId = e.VenueId,
                     VenueName = e.Venue != null ? e.Venue.Name : null,
@@ -106,7 +109,10 @@ namespace BlackBear.Services.Core.Controllers.Business
                 EndTime = evt.EndTime,
                 IsTicketed = evt.IsTicketed,
                 TicketPrice = evt.TicketPrice,
+                MinimumSpend = evt.MinimumSpend,
                 MaxGuests = evt.MaxGuests,
+                Vibe = evt.Vibe,
+                EntryType = evt.EntryType,
                 IsPublished = evt.IsPublished,
                 CreatedAt = evt.CreatedAt,
                 VenueId = evt.VenueId,
@@ -143,7 +149,10 @@ namespace BlackBear.Services.Core.Controllers.Business
                 EndTime = request.EndTime,
                 IsTicketed = request.IsTicketed,
                 TicketPrice = request.TicketPrice,
+                MinimumSpend = request.MinimumSpend,
                 MaxGuests = request.MaxGuests,
+                Vibe = request.Vibe,
+                EntryType = request.EntryType,
                 IsPublished = request.IsPublished,
                 VenueId = request.VenueId,
                 CreatedAt = DateTime.UtcNow
@@ -162,7 +171,10 @@ namespace BlackBear.Services.Core.Controllers.Business
                 EndTime = evt.EndTime,
                 IsTicketed = evt.IsTicketed,
                 TicketPrice = evt.TicketPrice,
+                MinimumSpend = evt.MinimumSpend,
                 MaxGuests = evt.MaxGuests,
+                Vibe = evt.Vibe,
+                EntryType = evt.EntryType,
                 IsPublished = evt.IsPublished,
                 CreatedAt = evt.CreatedAt,
                 VenueId = evt.VenueId,
@@ -208,7 +220,10 @@ namespace BlackBear.Services.Core.Controllers.Business
             evt.EndTime = request.EndTime;
             evt.IsTicketed = request.IsTicketed;
             evt.TicketPrice = request.TicketPrice;
+            evt.MinimumSpend = request.MinimumSpend;
             evt.MaxGuests = request.MaxGuests;
+            evt.Vibe = request.Vibe;
+            evt.EntryType = request.EntryType;
             evt.IsPublished = request.IsPublished;
             evt.VenueId = request.VenueId;
 

@@ -11,7 +11,10 @@ namespace BlackBear.Services.Core.DTOs.Business
         public DateTime EndTime { get; set; }
         public bool IsTicketed { get; set; }
         public decimal TicketPrice { get; set; }
+        public decimal MinimumSpend { get; set; }
         public int MaxGuests { get; set; }
+        public string? Vibe { get; set; }
+        public string? EntryType { get; set; }
         public bool IsPublished { get; set; }
         public int VenueId { get; set; }
         public string? VenueName { get; set; }
@@ -28,7 +31,10 @@ namespace BlackBear.Services.Core.DTOs.Business
         public DateTime EndTime { get; set; }
         public bool IsTicketed { get; set; }
         public decimal TicketPrice { get; set; }
+        public decimal MinimumSpend { get; set; }
         public int MaxGuests { get; set; }
+        public string? Vibe { get; set; }
+        public string? EntryType { get; set; }
         public bool IsPublished { get; set; }
         public DateTime CreatedAt { get; set; }
         public int VenueId { get; set; }
@@ -58,7 +64,15 @@ namespace BlackBear.Services.Core.DTOs.Business
 
         public decimal TicketPrice { get; set; } = 0;
 
+        public decimal MinimumSpend { get; set; } = 0;
+
         public int MaxGuests { get; set; } = 0;
+
+        [MaxLength(50)]
+        public string? Vibe { get; set; }
+
+        [MaxLength(20)]
+        public string? EntryType { get; set; }
 
         public bool IsPublished { get; set; } = false;
 
@@ -87,7 +101,15 @@ namespace BlackBear.Services.Core.DTOs.Business
 
         public decimal TicketPrice { get; set; } = 0;
 
+        public decimal MinimumSpend { get; set; } = 0;
+
         public int MaxGuests { get; set; } = 0;
+
+        [MaxLength(50)]
+        public string? Vibe { get; set; }
+
+        [MaxLength(20)]
+        public string? EntryType { get; set; }
 
         public bool IsPublished { get; set; } = false;
 

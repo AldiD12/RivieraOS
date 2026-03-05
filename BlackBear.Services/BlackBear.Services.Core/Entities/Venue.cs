@@ -75,6 +75,10 @@ namespace BlackBear.Services.Core.Entities
             }
         }
 
+        [MaxLength(20)]
+        [Column("whatsapp_number")]
+        public string? WhatsappNumber { get; set; }
+
         [Column("is_deleted")]
         public bool IsDeleted { get; set; } = false;
 

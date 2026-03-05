@@ -37,6 +37,17 @@ namespace BlackBear.Services.Core.Entities
         [Column("max_guests")]
         public int MaxGuests { get; set; } = 0;
 
+        [MaxLength(50)]
+        [Column("vibe")]
+        public string? Vibe { get; set; }
+
+        [MaxLength(20)]
+        [Column("entry_type")]
+        public string? EntryType { get; set; }
+
+        [Column("minimum_spend", TypeName = "decimal(10,2)")]
+        public decimal MinimumSpend { get; set; } = 0;
+
         [Column("is_published")]
         public bool IsPublished { get; set; } = false;
 

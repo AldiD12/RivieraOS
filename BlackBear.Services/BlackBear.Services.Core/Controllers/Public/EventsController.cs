@@ -48,17 +48,25 @@ namespace BlackBear.Services.Core.Controllers.Public
                 {
                     Id = e.Id,
                     Name = e.Name,
+                    Description = e.Description,
                     FlyerImageUrl = e.FlyerImageUrl,
                     StartTime = e.StartTime,
                     EndTime = e.EndTime,
                     IsTicketed = e.IsTicketed,
                     TicketPrice = e.TicketPrice,
+                    MinimumSpend = e.MinimumSpend,
                     MaxGuests = e.MaxGuests,
+                    Vibe = e.Vibe,
+                    EntryType = e.EntryType,
                     VenueId = e.VenueId,
                     VenueName = e.Venue != null ? e.Venue.Name : null,
                     VenueAddress = e.Venue != null ? e.Venue.Address : null,
+                    VenueWhatsappNumber = e.Venue != null ? e.Venue.WhatsappNumber : null,
+                    BusinessId = e.Venue != null ? e.Venue.BusinessId : null,
                     BusinessName = e.Venue != null && e.Venue.Business != null ? e.Venue.Business.BrandName ?? e.Venue.Business.RegisteredName : null,
-                    SpotsRemaining = e.MaxGuests > 0 ? e.MaxGuests - e.EventBookings.Sum(b => b.GuestCount) : 0
+                    SpotsRemaining = e.MaxGuests > 0 ? e.MaxGuests - e.EventBookings.Sum(b => b.GuestCount) : 0,
+                    IsPublished = e.IsPublished,
+                    IsDeleted = e.IsDeleted
                 })
                 .ToListAsync();
 
@@ -92,15 +100,22 @@ namespace BlackBear.Services.Core.Controllers.Public
                 EndTime = evt.EndTime,
                 IsTicketed = evt.IsTicketed,
                 TicketPrice = evt.TicketPrice,
+                MinimumSpend = evt.MinimumSpend,
                 MaxGuests = evt.MaxGuests,
+                Vibe = evt.Vibe,
+                EntryType = evt.EntryType,
                 SpotsRemaining = evt.MaxGuests > 0 ? evt.MaxGuests - evt.EventBookings.Sum(b => b.GuestCount) : 0,
                 VenueId = evt.VenueId,
                 VenueName = evt.Venue?.Name,
                 VenueAddress = evt.Venue?.Address,
+                VenueWhatsappNumber = evt.Venue?.WhatsappNumber,
                 VenueLatitude = evt.Venue?.Latitude,
                 VenueLongitude = evt.Venue?.Longitude,
+                BusinessId = evt.Venue?.BusinessId,
                 BusinessName = evt.Venue?.Business?.BrandName ?? evt.Venue?.Business?.RegisteredName,
-                BusinessLogoUrl = evt.Venue?.Business?.LogoUrl
+                BusinessLogoUrl = evt.Venue?.Business?.LogoUrl,
+                IsPublished = evt.IsPublished,
+                IsDeleted = evt.IsDeleted
             });
         }
 
@@ -120,17 +135,25 @@ namespace BlackBear.Services.Core.Controllers.Public
                 {
                     Id = e.Id,
                     Name = e.Name,
+                    Description = e.Description,
                     FlyerImageUrl = e.FlyerImageUrl,
                     StartTime = e.StartTime,
                     EndTime = e.EndTime,
                     IsTicketed = e.IsTicketed,
                     TicketPrice = e.TicketPrice,
+                    MinimumSpend = e.MinimumSpend,
                     MaxGuests = e.MaxGuests,
+                    Vibe = e.Vibe,
+                    EntryType = e.EntryType,
                     VenueId = e.VenueId,
                     VenueName = e.Venue != null ? e.Venue.Name : null,
                     VenueAddress = e.Venue != null ? e.Venue.Address : null,
+                    VenueWhatsappNumber = e.Venue != null ? e.Venue.WhatsappNumber : null,
+                    BusinessId = e.Venue != null ? e.Venue.BusinessId : null,
                     BusinessName = e.Venue != null && e.Venue.Business != null ? e.Venue.Business.BrandName ?? e.Venue.Business.RegisteredName : null,
-                    SpotsRemaining = e.MaxGuests > 0 ? e.MaxGuests - e.EventBookings.Sum(b => b.GuestCount) : 0
+                    SpotsRemaining = e.MaxGuests > 0 ? e.MaxGuests - e.EventBookings.Sum(b => b.GuestCount) : 0,
+                    IsPublished = e.IsPublished,
+                    IsDeleted = e.IsDeleted
                 })
                 .ToListAsync();
 
@@ -153,17 +176,25 @@ namespace BlackBear.Services.Core.Controllers.Public
                 {
                     Id = e.Id,
                     Name = e.Name,
+                    Description = e.Description,
                     FlyerImageUrl = e.FlyerImageUrl,
                     StartTime = e.StartTime,
                     EndTime = e.EndTime,
                     IsTicketed = e.IsTicketed,
                     TicketPrice = e.TicketPrice,
+                    MinimumSpend = e.MinimumSpend,
                     MaxGuests = e.MaxGuests,
+                    Vibe = e.Vibe,
+                    EntryType = e.EntryType,
                     VenueId = e.VenueId,
                     VenueName = e.Venue != null ? e.Venue.Name : null,
                     VenueAddress = e.Venue != null ? e.Venue.Address : null,
+                    VenueWhatsappNumber = e.Venue != null ? e.Venue.WhatsappNumber : null,
+                    BusinessId = e.Venue != null ? e.Venue.BusinessId : null,
                     BusinessName = e.Venue != null && e.Venue.Business != null ? e.Venue.Business.BrandName ?? e.Venue.Business.RegisteredName : null,
-                    SpotsRemaining = e.MaxGuests > 0 ? e.MaxGuests - e.EventBookings.Sum(b => b.GuestCount) : 0
+                    SpotsRemaining = e.MaxGuests > 0 ? e.MaxGuests - e.EventBookings.Sum(b => b.GuestCount) : 0,
+                    IsPublished = e.IsPublished,
+                    IsDeleted = e.IsDeleted
                 })
                 .ToListAsync();
 
