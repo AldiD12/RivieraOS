@@ -38,15 +38,18 @@ const VENUE_FILTERS = [
 
 // 🎯 XIXA Atmospheric Marker with pulsing ring (theme-aware)
 function VenueMarker({ venue, isSelected, onClick, isDayMode }) {
-  const isFull = venue.availableUnitsCount === 0;
-  const isHighlight = venue.availableUnitsCount >= 15;
+  // Only show availability for Beach venues (sunbeds)
+  const isBeachVenue = venue.type === 'Beach' || venue.type === 'BEACH';
+  const isFull = isBeachVenue && venue.availableUnitsCount === 0;
+  const isHighlight = isBeachVenue && venue.availableUnitsCount >= 15;
+  const hasAvailability = isBeachVenue && venue.availableUnitsCount > 0;
   
   return (
     <div 
       className="relative flex flex-col items-center cursor-pointer group"
       onClick={onClick}
     >
-      {/* Pulsing ring for highlighted venues */}
+      {/* Pulsing ring for highlighted beach venues only */}
       {isHighlight && !isFull && (
         <div className="absolute w-12 h-12 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
           <div className={`absolute inset-0 rounded-full border opacity-50 ${isDayMode ? 'border-zinc-950' : 'border-[#10FF88]'}`}
@@ -60,47 +63,76 @@ function VenueMarker({ venue, isSelected, onClick, isDayMode }) {
         className={`
           relative flex items-center justify-center rounded-full z-10
           transition-all duration-300
-          ${isHighlight && !isFull 
-            ? isDayMode
-              ? 'w-10 h-10 bg-stone-50 border border-zinc-950 shadow-lg'
-              : 'w-10 h-10 bg-zinc-950 border border-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
-            : isFull
-            ? isDayMode
-              ? 'w-5 h-5 bg-white border border-zinc-400 shadow-sm'
-              : 'w-5 h-5 bg-zinc-900 border border-zinc-600 shadow-lg'
+          ${isBeachVenue
+            ? isHighlight && !isFull 
+              ? isDayMode
+                ? 'w-10 h-10 bg-stone-50 border border-zinc-950 shadow-lg'
+                : 'w-10 h-10 bg-zinc-950 border border-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
+              : isFull
+              ? isDayMode
+                ? 'w-5 h-5 bg-white border border-zinc-400 shadow-sm'
+                : 'w-5 h-5 bg-zinc-900 border border-zinc-600 shadow-lg'
+              : isDayMode
+              ? 'w-8 h-8 bg-stone-50 border border-zinc-950 shadow-lg'
+              : 'w-8 h-8 bg-zinc-950 border border-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
             : isDayMode
             ? 'w-8 h-8 bg-stone-50 border border-zinc-950 shadow-lg'
-            : 'w-8 h-8 bg-zinc-950 border border-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
+            : 'w-8 h-8 bg-zinc-950 border border-zinc-700 shadow-lg'
           }
           ${isSelected ? 'scale-110' : 'group-hover:scale-110'}
         `}
       >
-        <span 
-          className={`
-            font-bold font-mono
-            ${isHighlight && !isFull 
-              ? isDayMode
-                ? 'text-xs text-xixa-green'
-                : 'text-xs text-[#10FF88]'
-              : isFull
-              ? isDayMode
-                ? 'text-[8px] text-zinc-500'
-                : 'text-[8px] text-zinc-400'
-              : isDayMode
-              ? 'text-[10px] text-xixa-green'
-              : 'text-[10px] text-[#10FF88]'
-            }
-          `}
-          style={isDayMode ? {
-            textShadow: '-0.5px -0.5px 0 #000, 0.5px -0.5px 0 #000, -0.5px 0.5px 0 #000, 0.5px 0.5px 0 #000'
-          } : {}}
-        >
-          {venue.availableUnitsCount || 0}
-        </span>
+        {isBeachVenue ? (
+          // Show availability count for beach venues
+          <span 
+            className={`
+              font-bold font-mono
+              ${isHighlight && !isFull 
+                ? isDayMode
+                  ? 'text-xs text-xixa-green'
+                  : 'text-xs text-[#10FF88]'
+                : isFull
+                ? isDayMode
+                  ? 'text-[8px] text-zinc-500'
+                  : 'text-[8px] text-zinc-400'
+                : isDayMode
+                ? 'text-[10px] text-xixa-green'
+                : 'text-[10px] text-[#10FF88]'
+              }
+            `}
+            style={isDayMode ? {
+              textShadow: '-0.5px -0.5px 0 #000, 0.5px -0.5px 0 #000, -0.5px 0.5px 0 #000, 0.5px 0.5px 0 #000'
+            } : {}}
+          >
+            {venue.availableUnitsCount || 0}
+          </span>
+        ) : (
+          // Show venue type icon for non-beach venues
+          <div className={`${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+            {venue.type === 'Restaurant' || venue.type === 'RESTAURANT' ? (
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8.1 13.34l2.83-2.83L3.91 3.5c-1.56 1.56-1.56 4.09 0 5.66l4.19 4.18zm6.78-1.81c1.53.71 3.68.21 5.27-1.38 1.91-1.91 2.28-4.65.81-6.12-1.46-1.46-4.20-1.10-6.12.81-1.59 1.59-2.09 3.74-1.38 5.27L3.7 19.87l1.41 1.41L12 14.41l6.88 6.88 1.41-1.41L13.41 13l1.47-1.47z"/>
+              </svg>
+            ) : venue.type === 'Bar' || venue.type === 'BAR' ? (
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M21 5V3H3v2l8 9v5H6v2h12v-2h-5v-5l8-9zM7.43 7L5.66 5h12.69l-1.78 2H7.43z"/>
+              </svg>
+            ) : venue.type === 'Boat' || venue.type === 'BOAT' ? (
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+              </svg>
+            ) : (
+              // Default venue icon
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+            )}
+          </div>
+        )}
       </div>
       
       {/* Venue label */}
-      {(isHighlight || isSelected) && (
+      {((isBeachVenue && (isHighlight || isSelected)) || (!isBeachVenue && isSelected)) && (
         <div 
           className={`
             mt-2 px-2 py-1 rounded-sm text-[10px] font-medium tracking-widest uppercase
@@ -226,15 +258,15 @@ export default function DiscoveryPage() {
   const groupVenuesByBusiness = useCallback((venuesList) => {
     if (!venuesList || !Array.isArray(venuesList)) return [];
     
-    const businessMap = {};
+    const businessMap = new Map();
     
     venuesList.forEach(venue => {
       // Use businessId if available, otherwise use businessName, fallback to venue name
       const businessKey = venue.businessId || venue.businessName || venue.name;
       const businessName = venue.businessName || venue.name;
       
-      if (!businessMap[businessKey]) {
-        businessMap[businessKey] = {
+      if (!businessMap.has(businessKey)) {
+        businessMap.set(businessKey, {
           id: businessKey,
           name: businessName,
           venues: [],
@@ -242,16 +274,16 @@ export default function DiscoveryPage() {
           latitude: 0,
           longitude: 0,
           type: venue.type
-        };
+        });
       }
       
-      const business = businessMap[businessKey];
+      const business = businessMap.get(businessKey);
       business.venues.push(venue);
       business.totalAvailableUnits += venue.availableUnitsCount || 0;
     });
     
     // Calculate average coordinates for each business
-    Object.values(businessMap).forEach(business => {
+    Array.from(businessMap.values()).forEach(business => {
       const validVenues = business.venues.filter(v => v.latitude && v.longitude);
       if (validVenues.length > 0) {
         business.latitude = validVenues.reduce((sum, v) => sum + v.latitude, 0) / validVenues.length;
@@ -259,7 +291,7 @@ export default function DiscoveryPage() {
       }
     });
     
-    return Object.values(businessMap);
+    return Array.from(businessMap.values());
   }, []);
 
   const handleBusinessClick = useCallback(async (business) => {
@@ -560,36 +592,41 @@ export default function DiscoveryPage() {
       {viewMode === 'list' && (
         <div className="absolute inset-0 pt-[250px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 space-y-6">
           {filteredVenues.map((venue) => {
-            const isAvailable = venue.availableUnitsCount >= 15;
-            const isFewLeft = venue.availableUnitsCount > 0 && venue.availableUnitsCount < 15;
+            // Only show availability for Beach venues
+            const isBeachVenue = venue.type === 'Beach' || venue.type === 'BEACH';
+            const isAvailable = isBeachVenue && venue.availableUnitsCount >= 15;
+            const isFewLeft = isBeachVenue && venue.availableUnitsCount > 0 && venue.availableUnitsCount < 15;
+            const isFull = isBeachVenue && venue.availableUnitsCount === 0;
             
             return (
               <div key={venue.id} className={`group relative overflow-hidden rounded-sm ${isDayMode ? 'bg-white border border-zinc-300' : 'bg-zinc-900 border border-zinc-800'}`}>
                 {/* Venue Image */}
                 <div className={`relative h-64 w-full overflow-hidden ${isDayMode ? 'bg-stone-100' : 'bg-zinc-900'}`}>
-                  {/* Status Badge */}
-                  <div className="absolute top-3 left-3 z-20 flex items-center space-x-2">
-                    {isAvailable && (
-                      <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm ${isDayMode ? 'bg-emerald-500 border border-emerald-600 text-white' : 'bg-zinc-950 border-r border-b border-zinc-800 text-white'}`}>
-                        {isDayMode ? 'Available' : (
-                          <>
-                            <span className="w-1.5 h-1.5 bg-[#10FF88] inline-block mr-1.5"></span>
-                            LIVE NOW
-                          </>
-                        )}
-                      </span>
-                    )}
-                    {isFewLeft && (
-                      <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm ${isDayMode ? 'bg-white border border-zinc-300 text-zinc-950' : 'bg-zinc-900 border-r border-b border-zinc-800 text-amber-500'}`}>
-                        {isDayMode ? 'Few Left' : (
-                          <>
-                            <span className="w-1.5 h-1.5 bg-amber-500 inline-block mr-1.5"></span>
-                            FILLING FAST
-                          </>
-                        )}
-                      </span>
-                    )}
-                  </div>
+                  {/* Status Badge - Only for Beach venues */}
+                  {isBeachVenue && (
+                    <div className="absolute top-3 left-3 z-20 flex items-center space-x-2">
+                      {isAvailable && (
+                        <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm ${isDayMode ? 'bg-emerald-500 border border-emerald-600 text-white' : 'bg-zinc-950 border-r border-b border-zinc-800 text-white'}`}>
+                          {isDayMode ? 'Available' : (
+                            <>
+                              <span className="w-1.5 h-1.5 bg-[#10FF88] inline-block mr-1.5"></span>
+                              LIVE NOW
+                            </>
+                          )}
+                        </span>
+                      )}
+                      {isFewLeft && (
+                        <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm ${isDayMode ? 'bg-white border border-zinc-300 text-zinc-950' : 'bg-zinc-900 border-r border-b border-zinc-800 text-amber-500'}`}>
+                          {isDayMode ? 'Few Left' : (
+                            <>
+                              <span className="w-1.5 h-1.5 bg-amber-500 inline-block mr-1.5"></span>
+                              FILLING FAST
+                            </>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  )}
                   
                   {/* Favorite Button */}
                   <div className="absolute top-3 right-3 z-20">
@@ -647,12 +684,30 @@ export default function DiscoveryPage() {
                   </p>
                   
                   <div className={`grid grid-cols-2 gap-4 mb-5 border-t border-b py-3 ${isDayMode ? 'border-zinc-100' : 'border-zinc-800'}`}>
-                    <div className="flex flex-col">
-                      <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Min. Spend</span>
-                      <span className={`text-sm font-medium ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>
-                        €{venue.availableUnitsCount >= 15 ? '200' : '150'} / bed
-                      </span>
-                    </div>
+                    {isBeachVenue ? (
+                      // Beach venues show availability-based pricing
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Min. Spend</span>
+                        <span className={`text-sm font-medium ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>
+                          €{venue.availableUnitsCount >= 15 ? '200' : '150'} / bed
+                        </span>
+                      </div>
+                    ) : (
+                      // Other venues show simple pricing without availability logic
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">
+                          {venue.type === 'Restaurant' || venue.type === 'RESTAURANT' ? 'Avg. Price' : 'Entry'}
+                        </span>
+                        <span className={`text-sm font-medium ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>
+                          {venue.type === 'Restaurant' || venue.type === 'RESTAURANT'
+                            ? '€35-50 / person'
+                            : venue.type === 'Bar' || venue.type === 'BAR'
+                            ? '€15-25 / drink'
+                            : 'Free Entry'
+                          }
+                        </span>
+                      </div>
+                    )}
                     <div className="flex flex-col">
                       <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Vibe</span>
                       <span className={`text-sm font-medium ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>

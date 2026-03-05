@@ -85,6 +85,24 @@ export const CreateVenueModal = ({
             
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-2">
+                WhatsApp Number
+              </label>
+              <input
+                type="text"
+                value={venueForm.whatsappNumber || ''}
+                onChange={(e) => onFormChange('whatsappNumber', e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                placeholder="355123456789 (country code + number, no spaces)"
+              />
+              <p className="text-xs text-zinc-500 mt-1">
+                Used for WhatsApp booking links. Format: country code + number without spaces or symbols.
+                <br />
+                Example: 355123456789 (Albania), 306912345678 (Greece)
+              </p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
                 Google Place ID
               </label>
               <input
@@ -279,6 +297,24 @@ export const EditVenueModal = ({
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                 placeholder="Enter address"
               />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                WhatsApp Number
+              </label>
+              <input
+                type="text"
+                value={venueForm.whatsappNumber || ''}
+                onChange={(e) => onFormChange('whatsappNumber', e.target.value)}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                placeholder="355123456789 (country code + number, no spaces)"
+              />
+              <p className="text-xs text-zinc-500 mt-1">
+                Used for WhatsApp booking links. Format: country code + number without spaces or symbols.
+                <br />
+                Example: 355123456789 (Albania), 306912345678 (Greece)
+              </p>
             </div>
             
             <div>
