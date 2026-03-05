@@ -1,4 +1,5 @@
 
+// Product Modal Components - Fixed exports
 import { ImageUpload } from '../../ImageUpload';
 import VenueExclusionSelector from '../../VenueExclusionSelector';
 
