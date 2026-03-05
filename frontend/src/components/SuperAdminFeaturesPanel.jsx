@@ -22,16 +22,61 @@ export function SuperAdminFeaturesPanel({ businessId, businessName, onClose }) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [loadingFeatures, setLoadingFeatures] = useState(true);
 
   // Fetch current features when panel opens
   useEffect(() => {
     const fetchCurrentFeatures = async () => {
       try {
-        // For now, we'll start with default values
-        // In a real implementation, you'd fetch current business features
+        setLoadingFeatures(true);
         console.log(`📡 Loading features for business ${businessId}`);
+        
+        // Fetch current business features from the API
+        const token = localStorage.getItem('azure_jwt_token') || localStorage.getItem('token');
+        if (!token) {
+          console.error('No authentication token found');
+          return;
+        }
+        
+        const response = await fetch(`https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/superadmin/Features/business/${businessId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        // Handle different response types
+        let data = null;
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          const text = await response.text();
+          if (text.trim()) {
+            data = JSON.parse(text);
+          }
+        }
+        
+        if (data) {
+          console.log('✅ Current business features loaded:', data);
+          setFeatures({
+            hasDigitalMenu: data.hasDigitalMenu || false,
+            hasTableOrdering: data.hasTableOrdering || false,
+            hasBookings: data.hasBookings || false,
+            hasEvents: data.hasEvents || false,
+            hasPulse: data.hasPulse || false
+          });
+        }
+        
       } catch (err) {
         console.error('Failed to load current features:', err);
+        // Keep default values if loading fails
+      } finally {
+        setLoadingFeatures(false);
       }
     };
     
@@ -138,56 +183,70 @@ export function SuperAdminFeaturesPanel({ businessId, businessName, onClose }) {
           </div>
 
           {/* Feature Toggles */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white border-b border-zinc-700 pb-2">
-              Business Features
-            </h3>
-            
-            {featureDefinitions.map((feature) => (
-              <div 
-                key={feature.key}
-                className="bg-zinc-800 border border-zinc-700 rounded-lg p-4 hover:border-zinc-600 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{feature.icon}</span>
-                    <div>
-                      <h4 className="text-white font-medium">{feature.name}</h4>
-                      <p className="text-zinc-400 text-sm">{feature.description}</p>
-                    </div>
-                  </div>
-                  
-                  {/* Toggle Switch */}
-                  <button
-                    onClick={() => handleToggle(feature.key)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-900 ${
-                      features[feature.key] 
-                        ? 'bg-green-600' 
-                        : 'bg-zinc-600'
-                    }`}
-                  >
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        features[feature.key] ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                    />
-                  </button>
-                </div>
-                
-                {/* Status Indicator */}
-                <div className="mt-3 flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${
-                    features[feature.key] ? 'bg-green-500' : 'bg-red-500'
-                  }`} />
-                  <span className={`text-xs font-mono ${
-                    features[feature.key] ? 'text-green-400' : 'text-red-400'
-                  }`}>
-                    {features[feature.key] ? 'ENABLED' : 'DISABLED'}
-                  </span>
+          {loadingFeatures ? (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white border-b border-zinc-700 pb-2">
+                Business Features
+              </h3>
+              <div className="flex items-center justify-center py-8">
+                <div className="flex items-center gap-3 text-zinc-400">
+                  <div className="w-5 h-5 border-2 border-zinc-600 border-t-white rounded-full animate-spin"></div>
+                  <span>Loading current feature settings...</span>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-white border-b border-zinc-700 pb-2">
+                Business Features
+              </h3>
+              
+              {featureDefinitions.map((feature) => (
+                <div 
+                  key={feature.key}
+                  className="bg-zinc-800 border border-zinc-700 rounded-lg p-4 hover:border-zinc-600 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{feature.icon}</span>
+                      <div>
+                        <h4 className="text-white font-medium">{feature.name}</h4>
+                        <p className="text-zinc-400 text-sm">{feature.description}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Toggle Switch */}
+                    <button
+                      onClick={() => handleToggle(feature.key)}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-900 ${
+                        features[feature.key] 
+                          ? 'bg-green-600' 
+                          : 'bg-zinc-600'
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          features[feature.key] ? 'translate-x-6' : 'translate-x-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  
+                  {/* Status Indicator */}
+                  <div className="mt-3 flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${
+                      features[feature.key] ? 'bg-green-500' : 'bg-red-500'
+                    }`} />
+                    <span className={`text-xs font-mono ${
+                      features[feature.key] ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {features[feature.key] ? 'ENABLED' : 'DISABLED'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Status Messages */}
           {saveError && (
