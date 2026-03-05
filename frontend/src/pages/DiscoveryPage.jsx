@@ -255,20 +255,20 @@ export default function DiscoveryPage() {
     }
   };
 
-  // Group venues by business - Fixed Map constructor issue v2
+  // Group venues by business - Alternative approach without Map constructor
   const groupVenuesByBusiness = useCallback((venuesList) => {
     if (!venuesList || !Array.isArray(venuesList)) return [];
     
-    // Use proper Map constructor (not minified variable)
-    const businessMap = new Map();
+    // Use plain object instead of Map to avoid minification issues
+    const businessMap = {};
     
     venuesList.forEach(venue => {
       // Use businessId if available, otherwise use businessName, fallback to venue name
       const businessKey = venue.businessId || venue.businessName || venue.name;
       const businessName = venue.businessName || venue.name;
       
-      if (!businessMap.has(businessKey)) {
-        businessMap.set(businessKey, {
+      if (!businessMap[businessKey]) {
+        businessMap[businessKey] = {
           id: businessKey,
           name: businessName,
           venues: [],
@@ -276,16 +276,16 @@ export default function DiscoveryPage() {
           latitude: 0,
           longitude: 0,
           type: venue.type
-        });
+        };
       }
       
-      const business = businessMap.get(businessKey);
+      const business = businessMap[businessKey];
       business.venues.push(venue);
       business.totalAvailableUnits += venue.availableUnitsCount || 0;
     });
     
     // Calculate average coordinates for each business
-    Array.from(businessMap.values()).forEach(business => {
+    Object.values(businessMap).forEach(business => {
       const validVenues = business.venues.filter(v => v.latitude && v.longitude);
       if (validVenues.length > 0) {
         business.latitude = validVenues.reduce((sum, v) => sum + v.latitude, 0) / validVenues.length;
@@ -293,7 +293,7 @@ export default function DiscoveryPage() {
       }
     });
     
-    return Array.from(businessMap.values());
+    return Object.values(businessMap);
   }, []);
 
   const handleBusinessClick = useCallback(async (business) => {
