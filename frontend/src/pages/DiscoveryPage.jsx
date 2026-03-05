@@ -369,16 +369,18 @@ export default function DiscoveryPage() {
     window.open(whatsappUrl, '_blank');
   };
 
-  const filteredVenues = venues.filter(v => {
-    if (activeFilter === 'all') return true;
-    return v.type === activeFilter;
-  });
+  const filteredVenues = useMemo(() => {
+    return venues.filter(v => {
+      if (activeFilter === 'all') return true;
+      return v.type === activeFilter;
+    });
+  }, [venues, activeFilter]);
 
   // Group filtered venues by business for map display
   const businessGroups = useMemo(() => {
     if (!filteredVenues || filteredVenues.length === 0) return [];
     return groupVenuesByBusiness(filteredVenues);
-  }, [filteredVenues, groupVenuesByBusiness]);
+  }, [filteredVenues]);
 
   if (loading) {
     return (
