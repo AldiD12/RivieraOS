@@ -1,0 +1,4 @@
+EMERGENCY BUILD TRIGGER - 2026-03-05
+This file forces Vercel to rebuild the entire application.
+CreateProductModal import issue must be resolved.
+Bundle hash must change from index-D7eDW5Y-.js
