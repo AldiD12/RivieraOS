@@ -254,7 +254,7 @@ export default function DiscoveryPage() {
     }
   };
 
-  // Group venues by business
+  // Group venues by business - Fixed Map constructor issue
   const groupVenuesByBusiness = useCallback((venuesList) => {
     if (!venuesList || !Array.isArray(venuesList)) return [];
     
