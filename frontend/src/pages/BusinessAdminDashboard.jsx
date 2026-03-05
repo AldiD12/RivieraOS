@@ -2402,6 +2402,7 @@ export default function BusinessAdminDashboard() {
               </div>
             )}
           </section>
+          </FeatureGuard>
         )}
 
         {/* QR Generator Tab */}
@@ -2460,6 +2461,7 @@ export default function BusinessAdminDashboard() {
                 </div>
               </div>
             </div>
+          </div>
           </FeatureGuard>
         )}
       </main>

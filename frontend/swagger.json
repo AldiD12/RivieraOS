@@ -2566,6 +2566,164 @@
         }
       }
     },
+    "/api/superadmin/Features": {
+      "get": {
+        "tags": [
+          "Features"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BusinessFeatureDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BusinessFeatureDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BusinessFeatureDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/superadmin/Features/business/{businessId}": {
+      "get": {
+        "tags": [
+          "Features"
+        ],
+        "parameters": [
+          {
+            "name": "businessId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessFeatureDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessFeatureDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessFeatureDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Features"
+        ],
+        "parameters": [
+          {
+            "name": "businessId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBusinessFeatureRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBusinessFeatureRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBusinessFeatureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Features"
+        ],
+        "parameters": [
+          {
+            "name": "businessId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchBusinessFeatureRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchBusinessFeatureRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchBusinessFeatureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/public/Feedback": {
       "post": {
         "tags": [
@@ -4121,6 +4279,35 @@
         "responses": {
           "200": {
             "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/business/Profile/features": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BizBusinessFeatureDto"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BizBusinessFeatureDto"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BizBusinessFeatureDto"
+                }
+              }
+            }
           }
         }
       }
@@ -8677,6 +8864,27 @@
         },
         "additionalProperties": false
       },
+      "BizBusinessFeatureDto": {
+        "type": "object",
+        "properties": {
+          "hasDigitalMenu": {
+            "type": "boolean"
+          },
+          "hasTableOrdering": {
+            "type": "boolean"
+          },
+          "hasBookings": {
+            "type": "boolean"
+          },
+          "hasEvents": {
+            "type": "boolean"
+          },
+          "hasPulse": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "BizCategoryDetailDto": {
         "type": "object",
         "properties": {
@@ -8871,9 +9079,23 @@
             "type": "number",
             "format": "double"
           },
+          "minimumSpend": {
+            "type": "number",
+            "format": "double"
+          },
           "maxGuests": {
             "type": "integer",
             "format": "int32"
+          },
+          "vibe": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "entryType": {
+            "maxLength": 20,
+            "type": "string",
+            "nullable": true
           },
           "isPublished": {
             "type": "boolean"
@@ -9166,9 +9388,21 @@
             "type": "number",
             "format": "double"
           },
+          "minimumSpend": {
+            "type": "number",
+            "format": "double"
+          },
           "maxGuests": {
             "type": "integer",
             "format": "int32"
+          },
+          "vibe": {
+            "type": "string",
+            "nullable": true
+          },
+          "entryType": {
+            "type": "string",
+            "nullable": true
           },
           "isPublished": {
             "type": "boolean"
@@ -9226,9 +9460,21 @@
             "type": "number",
             "format": "double"
           },
+          "minimumSpend": {
+            "type": "number",
+            "format": "double"
+          },
           "maxGuests": {
             "type": "integer",
             "format": "int32"
+          },
+          "vibe": {
+            "type": "string",
+            "nullable": true
+          },
+          "entryType": {
+            "type": "string",
+            "nullable": true
           },
           "isPublished": {
             "type": "boolean"
@@ -9987,9 +10233,23 @@
             "type": "number",
             "format": "double"
           },
+          "minimumSpend": {
+            "type": "number",
+            "format": "double"
+          },
           "maxGuests": {
             "type": "integer",
             "format": "int32"
+          },
+          "vibe": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "entryType": {
+            "maxLength": 20,
+            "type": "string",
+            "nullable": true
           },
           "isPublished": {
             "type": "boolean"
@@ -10835,6 +11095,9 @@
               "$ref": "#/components/schemas/Product"
             },
             "nullable": true
+          },
+          "feature": {
+            "$ref": "#/components/schemas/BusinessFeature"
           }
         },
         "additionalProperties": false
@@ -10935,6 +11198,79 @@
               "$ref": "#/components/schemas/UserSummaryDto"
             },
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "BusinessFeature": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "businessId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "hasDigitalMenu": {
+            "type": "boolean"
+          },
+          "hasTableOrdering": {
+            "type": "boolean"
+          },
+          "hasBookings": {
+            "type": "boolean"
+          },
+          "hasEvents": {
+            "type": "boolean"
+          },
+          "hasPulse": {
+            "type": "boolean"
+          },
+          "isDeleted": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "business": {
+            "$ref": "#/components/schemas/Business"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BusinessFeatureDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "businessId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "businessName": {
+            "type": "string",
+            "nullable": true
+          },
+          "hasDigitalMenu": {
+            "type": "boolean"
+          },
+          "hasTableOrdering": {
+            "type": "boolean"
+          },
+          "hasBookings": {
+            "type": "boolean"
+          },
+          "hasEvents": {
+            "type": "boolean"
+          },
+          "hasPulse": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -11832,9 +12168,23 @@
             "type": "number",
             "format": "double"
           },
+          "minimumSpend": {
+            "type": "number",
+            "format": "double"
+          },
           "maxGuests": {
             "type": "integer",
             "format": "int32"
+          },
+          "vibe": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "entryType": {
+            "maxLength": 20,
+            "type": "string",
+            "nullable": true
           },
           "isPublished": {
             "type": "boolean"
@@ -12222,9 +12572,21 @@
             "type": "number",
             "format": "double"
           },
+          "minimumSpend": {
+            "type": "number",
+            "format": "double"
+          },
           "maxGuests": {
             "type": "integer",
             "format": "int32"
+          },
+          "vibe": {
+            "type": "string",
+            "nullable": true
+          },
+          "entryType": {
+            "type": "string",
+            "nullable": true
           },
           "isPublished": {
             "type": "boolean"
@@ -12291,9 +12653,21 @@
             "type": "number",
             "format": "double"
           },
+          "minimumSpend": {
+            "type": "number",
+            "format": "double"
+          },
           "maxGuests": {
             "type": "integer",
             "format": "int32"
+          },
+          "vibe": {
+            "type": "string",
+            "nullable": true
+          },
+          "entryType": {
+            "type": "string",
+            "nullable": true
           },
           "isPublished": {
             "type": "boolean"
@@ -12594,6 +12968,32 @@
           "hasNext": {
             "type": "boolean",
             "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PatchBusinessFeatureRequest": {
+        "type": "object",
+        "properties": {
+          "hasDigitalMenu": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "hasTableOrdering": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "hasBookings": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "hasEvents": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "hasPulse": {
+            "type": "boolean",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -12947,6 +13347,10 @@
             "type": "number",
             "format": "double"
           },
+          "minimumSpend": {
+            "type": "number",
+            "format": "double"
+          },
           "maxGuests": {
             "type": "integer",
             "format": "int32"
@@ -12954,6 +13358,14 @@
           "spotsRemaining": {
             "type": "integer",
             "format": "int32"
+          },
+          "vibe": {
+            "type": "string",
+            "nullable": true
+          },
+          "entryType": {
+            "type": "string",
+            "nullable": true
           },
           "venueId": {
             "type": "integer",
@@ -12967,6 +13379,10 @@
             "type": "string",
             "nullable": true
           },
+          "venueWhatsappNumber": {
+            "type": "string",
+            "nullable": true
+          },
           "venueLatitude": {
             "type": "number",
             "format": "double",
@@ -12977,6 +13393,11 @@
             "format": "double",
             "nullable": true
           },
+          "businessId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "businessName": {
             "type": "string",
             "nullable": true
@@ -12984,6 +13405,12 @@
           "businessLogoUrl": {
             "type": "string",
             "nullable": true
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "isDeleted": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -12996,6 +13423,10 @@
             "format": "int32"
           },
           "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
             "type": "string",
             "nullable": true
           },
@@ -13018,9 +13449,25 @@
             "type": "number",
             "format": "double"
           },
+          "minimumSpend": {
+            "type": "number",
+            "format": "double"
+          },
           "maxGuests": {
             "type": "integer",
             "format": "int32"
+          },
+          "spotsRemaining": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "vibe": {
+            "type": "string",
+            "nullable": true
+          },
+          "entryType": {
+            "type": "string",
+            "nullable": true
           },
           "venueId": {
             "type": "integer",
@@ -13034,13 +13481,24 @@
             "type": "string",
             "nullable": true
           },
+          "venueWhatsappNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "businessId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
           "businessName": {
             "type": "string",
             "nullable": true
           },
-          "spotsRemaining": {
-            "type": "integer",
-            "format": "int32"
+          "isPublished": {
+            "type": "boolean"
+          },
+          "isDeleted": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -13869,6 +14327,14 @@
           "availableUnitsCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "businessId": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "businessName": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -14127,6 +14593,20 @@
             "type": "integer",
             "format": "int32"
           },
+          "vibe": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "entryType": {
+            "maxLength": 20,
+            "type": "string",
+            "nullable": true
+          },
+          "minimumSpend": {
+            "type": "number",
+            "format": "double"
+          },
           "isPublished": {
             "type": "boolean"
           },
@@ -14155,6 +14635,27 @@
               "$ref": "#/components/schemas/EventBooking"
             },
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateBusinessFeatureRequest": {
+        "type": "object",
+        "properties": {
+          "hasDigitalMenu": {
+            "type": "boolean"
+          },
+          "hasTableOrdering": {
+            "type": "boolean"
+          },
+          "hasBookings": {
+            "type": "boolean"
+          },
+          "hasEvents": {
+            "type": "boolean"
+          },
+          "hasPulse": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
@@ -14345,9 +14846,23 @@
             "type": "number",
             "format": "double"
           },
+          "minimumSpend": {
+            "type": "number",
+            "format": "double"
+          },
           "maxGuests": {
             "type": "integer",
             "format": "int32"
+          },
+          "vibe": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "entryType": {
+            "maxLength": 20,
+            "type": "string",
+            "nullable": true
           },
           "isPublished": {
             "type": "boolean"
@@ -14909,6 +15424,11 @@
           "allowsDigitalOrdering": {
             "type": "boolean",
             "readOnly": true
+          },
+          "whatsappNumber": {
+            "maxLength": 20,
+            "type": "string",
+            "nullable": true
           },
           "isDeleted": {
             "type": "boolean"
