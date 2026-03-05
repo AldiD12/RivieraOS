@@ -8,6 +8,7 @@ import { CreateBusinessModal, EditBusinessModal } from '../components/dashboard/
 import { CreateCategoryModal, EditCategoryModal } from '../components/dashboard/modals/CategoryModals';
 import { CreateProductModal, EditProductModal } from '../components/dashboard/modals/ProductModals';
 import { CreateEventModal, EditEventModal, DeleteEventModal } from '../components/dashboard/modals/EventModals';
+import { SuperAdminFeaturesPanel } from '../components/SuperAdminFeaturesPanel';
 
 // Utility function to normalize phone numbers (match backend format)
 const normalizePhoneNumber = (phone) => {
@@ -23,6 +24,7 @@ const BusinessTab = ({
   onCreateBusiness, 
   onEditBusiness, 
   onDeleteBusiness,
+  onManageFeatures,
   loading 
 }) => (
   <div className="space-y-6">
@@ -69,7 +71,7 @@ const BusinessTab = ({
               {business.contactEmail}
             </p>
             
-            <div className="flex space-x-2 mt-4">
+            <div className="flex flex-wrap gap-2 mt-4">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -78,6 +80,15 @@ const BusinessTab = ({
                 className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors"
               >
                 Edit
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onManageFeatures(business);
+                }}
+                className="px-3 py-1 bg-amber-600 text-white rounded text-sm hover:bg-amber-700 transition-colors flex items-center gap-1"
+              >
+                ⚡ Features
               </button>
               <button
                 onClick={(e) => {
@@ -876,6 +887,8 @@ export default function SuperAdminDashboard() {
   const [showCreateEventModal, setShowCreateEventModal] = useState(false);
   const [showEditEventModal, setShowEditEventModal] = useState(false);
   const [showDeleteEventModal, setShowDeleteEventModal] = useState(false);
+  const [showFeaturesPanel, setShowFeaturesPanel] = useState(false);
+  const [featuresBusiness, setFeaturesBusiness] = useState(null);
   
   // Form states
   const [staffForm, setStaffForm] = useState({
@@ -1148,6 +1161,18 @@ export default function SuperAdminDashboard() {
       setError('Failed to delete business: ' + (err.response?.data?.message || err.message));
     }
   }, [fetchBusinesses]);
+
+  // Features Management Functions
+  const handleManageFeatures = useCallback((business) => {
+    console.log('🔧 Opening features panel for business:', business.brandName || business.registeredName);
+    setFeaturesBusiness(business);
+    setShowFeaturesPanel(true);
+  }, []);
+
+  const handleCloseFeaturesPanel = useCallback(() => {
+    setShowFeaturesPanel(false);
+    setFeaturesBusiness(null);
+  }, []);
 
   // Staff Management Functions
   const handleCreateStaff = useCallback(async (e) => {
@@ -2114,6 +2139,7 @@ export default function SuperAdminDashboard() {
               setShowEditBusinessModal(true);
             }}
             onDeleteBusiness={handleDeleteBusiness}
+            onManageFeatures={handleManageFeatures}
             loading={loading}
           />
         );
@@ -2972,6 +2998,15 @@ export default function SuperAdminDashboard() {
           }}
           onConfirm={handleDeleteEvent}
           event={deletingEvent}
+        />
+      )}
+
+      {/* SuperAdmin Features Panel - "The Breaker Panel" */}
+      {showFeaturesPanel && featuresBusiness && (
+        <SuperAdminFeaturesPanel
+          businessId={featuresBusiness.id}
+          businessName={featuresBusiness.brandName || featuresBusiness.registeredName}
+          onClose={handleCloseFeaturesPanel}
         />
       )}
     </div>

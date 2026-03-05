@@ -8,6 +8,8 @@ import { CreateStaffModal, EditStaffModal, ResetPasswordModal } from '../compone
 import { CreateCategoryModal, EditCategoryModal } from '../components/dashboard/modals/CategoryModals';
 import { CreateProductModal, EditProductModal } from '../components/dashboard/modals/ProductModals';
 import { CreateEventModal, EditEventModal, DeleteEventModal } from '../components/dashboard/modals/EventModals';
+import { useBusinessFeatures } from '../store/businessStore';
+import { FeatureGuard, UpgradePrompt } from '../components/FeatureGuard';
 
 // Utility function to normalize phone numbers (match backend format)
 const normalizePhoneNumber = (phone) => {
@@ -18,6 +20,7 @@ const normalizePhoneNumber = (phone) => {
 // Business Admin Dashboard - For Manager/Owner role
 export default function BusinessAdminDashboard() {
   const navigate = useNavigate();
+  const { features, fetchFeatures, hasFeature } = useBusinessFeatures();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [error, setError] = useState('');
@@ -186,6 +189,10 @@ export default function BusinessAdminDashboard() {
       if (!businessId) {
         console.warn('⚠️ No businessId found in localStorage - business API calls may fail');
       }
+
+      // Fetch business features first (critical for UI rendering)
+      console.log('🔄 Initializing business features...');
+      await fetchFeatures();
 
       // Fetch business profile and dashboard data
       const [profile, dashboard] = await Promise.all([
@@ -1071,13 +1078,13 @@ export default function BusinessAdminDashboard() {
       }`}>
         <div className="flex px-4 min-w-full">
           {[
-            { id: 'overview', label: 'Overview' },
-            { id: 'staff', label: 'Staff' },
-            { id: 'menu', label: 'Menu' },
-            { id: 'venues', label: 'Venues' },
-            { id: 'events', label: 'Events' },
-            { id: 'qr-generator', label: 'QR Codes' }
-          ].map((tab) => (
+            { id: 'overview', label: 'Overview', feature: null }, // Always available
+            { id: 'staff', label: 'Staff', feature: null }, // Always available
+            { id: 'menu', label: 'Menu', feature: 'hasDigitalMenu' },
+            { id: 'venues', label: 'Venues', feature: 'hasBookings' },
+            { id: 'events', label: 'Events', feature: 'hasEvents' },
+            { id: 'qr-generator', label: 'QR Codes', feature: 'hasDigitalMenu' }
+          ].filter(tab => !tab.feature || hasFeature(tab.feature)).map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
@@ -1579,7 +1586,16 @@ export default function BusinessAdminDashboard() {
 
         {/* Menu Management Tab */}
         {activeTab === 'menu' && (
-          <section>
+          <FeatureGuard 
+            feature="hasDigitalMenu"
+            fallback={
+              <UpgradePrompt 
+                feature="hasDigitalMenu" 
+                featureName="Digital Menu Management" 
+              />
+            }
+          >
+            <section>
             <div className="flex items-baseline justify-between mb-4 pl-1">
               <h2 className={`text-xs font-bold uppercase tracking-widest font-mono ${
                 isDarkMode ? 'text-zinc-500' : 'text-gray-500'
@@ -1842,11 +1858,21 @@ export default function BusinessAdminDashboard() {
               </div>
             </div>
           </section>
+          </FeatureGuard>
         )}
 
         {/* Venues Tab */}
         {activeTab === 'venues' && (
-          <section>
+          <FeatureGuard 
+            feature="hasBookings"
+            fallback={
+              <UpgradePrompt 
+                feature="hasBookings" 
+                featureName="Venues & Bookings Management" 
+              />
+            }
+          >
+            <section>
             <div className="flex items-baseline justify-between mb-4 pl-1">
               <h2 className={`text-xs font-bold uppercase tracking-widest font-mono ${
                 isDarkMode ? 'text-zinc-500' : 'text-gray-500'
@@ -2192,11 +2218,21 @@ export default function BusinessAdminDashboard() {
               </div>
             )}
           </section>
+          </FeatureGuard>
         )}
 
         {/* Events Tab */}
         {activeTab === 'events' && (
-          <section>
+          <FeatureGuard 
+            feature="hasEvents"
+            fallback={
+              <UpgradePrompt 
+                feature="hasEvents" 
+                featureName="Events Management" 
+              />
+            }
+          >
+            <section>
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Events</h2>
@@ -2370,19 +2406,28 @@ export default function BusinessAdminDashboard() {
 
         {/* QR Generator Tab */}
         {activeTab === 'qr-generator' && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold">QR Code Generator</h2>
-                <p className="text-zinc-400 text-sm mt-1">Generate QR codes for sunbeds and tables</p>
+          <FeatureGuard 
+            feature="hasDigitalMenu"
+            fallback={
+              <UpgradePrompt 
+                feature="hasDigitalMenu" 
+                featureName="QR Code Generator" 
+              />
+            }
+          >
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">QR Code Generator</h2>
+                  <p className="text-zinc-400 text-sm mt-1">Generate QR codes for sunbeds and tables</p>
+                </div>
+                <button
+                  onClick={() => navigate('/qr-generator')}
+                  className="px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
+                >
+                  Open QR Generator
+                </button>
               </div>
-              <button
-                onClick={() => navigate('/qr-generator')}
-                className="px-6 py-3 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
-              >
-                Open QR Generator
-              </button>
-            </div>
 
             <div className="bg-zinc-900 rounded-lg p-6">
               <div className="space-y-4">
@@ -2415,7 +2460,7 @@ export default function BusinessAdminDashboard() {
                 </div>
               </div>
             </div>
-          </div>
+          </FeatureGuard>
         )}
       </main>
 
