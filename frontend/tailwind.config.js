@@ -11,7 +11,7 @@ export default {
         serif: ['Cormorant Garamond', 'Georgia', 'serif'],
         mono: ['JetBrains Mono', 'Courier New', 'monospace'],
         // Industrial Luxury fonts
-        'display': ['Playfair Display', 'Georgia', 'serif'],
+        'display': ['Anton', 'Playfair Display', 'Georgia', 'serif'],
         'geist-sans': ['Geist Sans', 'Inter', 'sans-serif'],
         'geist-mono': ['Geist Mono', 'monospace'],
       },

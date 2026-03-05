@@ -2,19 +2,19 @@ import { useState, useMemo } from 'react';
 import EventCard from './EventCard';
 
 const VIBE_FILTERS = [
-  { id: 'all', label: 'ALL', emoji: '🎉' },
-  { id: 'House', label: 'HOUSE', emoji: '🎵' },
-  { id: 'Techno', label: 'TECHNO', emoji: '⚡' },
-  { id: 'Commercial', label: 'COMMERCIAL', emoji: '🎤' },
-  { id: 'Live Music', label: 'LIVE', emoji: '🎸' },
-  { id: 'Hip Hop', label: 'HIP HOP', emoji: '🎧' },
-  { id: 'Chill', label: 'CHILL', emoji: '🌊' }
+  { id: 'all', label: 'ALL EVENTS', code: '[*]' },
+  { id: 'House', label: 'HOUSE', code: '[H]' },
+  { id: 'Techno', label: 'TECHNO', code: '[T]' },
+  { id: 'Commercial', label: 'COMMERCIAL', code: '[C]' },
+  { id: 'Live Music', label: 'LIVE', code: '[L]' },
+  { id: 'Hip Hop', label: 'HIP HOP', code: '[HH]' },
+  { id: 'Chill', label: 'CHILL', code: '[CH]' }
 ];
 
 const DATE_FILTERS = [
-  { id: 'all', label: 'ALL DATES' },
-  { id: 'today', label: 'TODAY' },
-  { id: 'thisWeek', label: 'THIS WEEK' }
+  { id: 'all', label: 'ALL DATES', code: '[∞]' },
+  { id: 'today', label: 'TODAY', code: '[24H]' },
+  { id: 'thisWeek', label: 'THIS WEEK', code: '[7D]' }
 ];
 
 export default function EventsView({ 
@@ -66,124 +66,171 @@ export default function EventsView({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-current" />
+        <div className="relative">
+          <div className="w-12 h-12 border-2 border-zinc-800 border-t-[#10FF88] rounded-none animate-spin" />
+          <div className="absolute inset-0 border border-zinc-700 rounded-none animate-pulse" />
+        </div>
       </div>
     );
   }
   
   return (
-    <div className="space-y-6 pb-32">
-      {/* Header */}
-      <div className="space-y-2">
-        <h2 className={`
-          text-3xl font-light tracking-tight
-          ${isDayMode ? 'text-stone-900' : 'text-white'}
-        `}>
-          Upcoming Events
-        </h2>
-        <p className={`text-sm ${isDayMode ? 'text-stone-600' : 'text-zinc-400'}`}>
-          {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'} found
-        </p>
+    <div className="space-y-8 pb-32">
+      {/* Industrial Header */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/50 to-transparent border-l-2 border-[#10FF88]/30" />
+        <div className="relative p-6 border-2 border-zinc-800 bg-zinc-950/80 backdrop-blur-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="font-display text-3xl text-white uppercase tracking-tighter mb-1">
+                EVENT MATRIX
+              </h2>
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-[#10FF88] animate-pulse" />
+                <p className="text-xs font-mono text-zinc-400 font-bold tracking-widest uppercase">
+                  [ {filteredEvents.length} ACTIVE SIGNALS ]
+                </p>
+              </div>
+            </div>
+            <div className="text-right font-mono text-xs text-zinc-500">
+              <div>STATUS: ONLINE</div>
+              <div>SYNC: {new Date().toLocaleTimeString('en-GB', { hour12: false })}</div>
+            </div>
+          </div>
+        </div>
       </div>
       
-      {/* Date Filter Chips */}
-      <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
-        {DATE_FILTERS.map(filter => (
-          <button
-            key={filter.id}
-            onClick={() => onDateChange(filter.id)}
-            className={`
-              px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase whitespace-nowrap
-              transition-all duration-300
-              ${dateFilter === filter.id
-                ? isDayMode
-                  ? 'bg-stone-900 text-stone-50 shadow-md'
-                  : 'bg-zinc-800 text-white border border-[#10FF88]/30 shadow-[0_0_12px_rgba(16,255,136,0.2)]'
-                : isDayMode
-                ? 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300'
-                : 'bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-zinc-700'
-              }
-            `}
-          >
-            {filter.label}
-          </button>
-        ))}
+      {/* Industrial Date Filter */}
+      <div className="space-y-3">
+        <div className="flex items-center space-x-2">
+          <div className="w-1 h-4 bg-[#10FF88]" />
+          <span className="text-xs font-mono text-zinc-400 font-bold tracking-widest uppercase">
+            TEMPORAL FILTER
+          </span>
+        </div>
+        <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
+          {DATE_FILTERS.map(filter => (
+            <button
+              key={filter.id}
+              onClick={() => onDateChange(filter.id)}
+              className={`
+                px-6 py-3 border-2 text-xs font-bold tracking-widest uppercase whitespace-nowrap
+                transition-all duration-300 font-mono relative group
+                ${dateFilter === filter.id
+                  ? 'bg-zinc-800 text-[#10FF88] border-[#10FF88]/50 shadow-[0_0_12px_rgba(16,255,136,0.3)]'
+                  : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white'
+                }
+              `}
+            >
+              <span className="relative z-10">{filter.code} {filter.label}</span>
+              {dateFilter === filter.id && (
+                <div className="absolute inset-0 border border-[#10FF88]/20 m-1" />
+              )}
+            </button>
+          ))}
+        </div>
       </div>
       
-      {/* Vibe Filter Chips */}
-      <div className="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
-        {VIBE_FILTERS.map(filter => (
-          <button
-            key={filter.id}
-            onClick={() => onVibeChange(filter.id)}
-            className={`
-              px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase whitespace-nowrap
-              transition-all duration-300 flex items-center space-x-1.5
-              ${vibeFilter === filter.id
-                ? isDayMode
-                  ? 'bg-stone-900 text-stone-50 shadow-md'
-                  : 'bg-zinc-800 text-white border border-[#10FF88]/30 shadow-[0_0_12px_rgba(16,255,136,0.2)]'
-                : isDayMode
-                ? 'bg-white border border-stone-200 text-stone-600 hover:border-stone-300'
-                : 'bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-zinc-700'
-              }
-            `}
-          >
-            <span>{filter.emoji}</span>
-            <span>{filter.label}</span>
-          </button>
-        ))}
+      {/* Industrial Vibe Filter */}
+      <div className="space-y-3">
+        <div className="flex items-center space-x-2">
+          <div className="w-1 h-4 bg-[#10FF88]" />
+          <span className="text-xs font-mono text-zinc-400 font-bold tracking-widest uppercase">
+            FREQUENCY SELECTOR
+          </span>
+        </div>
+        <div className="flex space-x-3 overflow-x-auto pb-2 scrollbar-hide">
+          {VIBE_FILTERS.map(filter => (
+            <button
+              key={filter.id}
+              onClick={() => onVibeChange(filter.id)}
+              className={`
+                px-6 py-3 border-2 text-xs font-bold tracking-widest uppercase whitespace-nowrap
+                transition-all duration-300 font-mono relative group
+                ${vibeFilter === filter.id
+                  ? 'bg-zinc-800 text-[#10FF88] border-[#10FF88]/50 shadow-[0_0_12px_rgba(16,255,136,0.3)]'
+                  : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:text-white'
+                }
+              `}
+            >
+              <span className="relative z-10">{filter.code} {filter.label}</span>
+              {vibeFilter === filter.id && (
+                <div className="absolute inset-0 border border-[#10FF88]/20 m-1" />
+              )}
+            </button>
+          ))}
+        </div>
       </div>
       
       {/* Events Grid */}
       {filteredEvents.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEvents.map(event => (
-            <EventCard
-              key={event.id}
-              event={event}
-              venue={getVenueForEvent(event)}
-              isDayMode={isDayMode}
-              onClick={() => onEventClick(event)}
-            />
+        <div className="space-y-8">
+          {filteredEvents.map((event, index) => (
+            <div key={event.id} className="relative">
+              {/* Connection Line */}
+              {index > 0 && (
+                <div className="absolute -top-4 left-6 w-px h-4 bg-gradient-to-b from-zinc-800 to-transparent" />
+              )}
+              
+              {/* Event Node */}
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0 mt-8">
+                  <div className="w-3 h-3 bg-[#10FF88] relative">
+                    <div className="absolute inset-0 bg-[#10FF88] animate-ping opacity-30" />
+                  </div>
+                </div>
+                
+                <div className="flex-1">
+                  <EventCard
+                    event={event}
+                    venue={getVenueForEvent(event)}
+                    isDayMode={isDayMode}
+                    onClick={() => onEventClick(event)}
+                    isIndustrial={true}
+                  />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       ) : (
-        /* Empty State */
-        <div className={`
-          text-center py-16 px-6 rounded-[2rem] border
-          ${isDayMode
-            ? 'bg-white border-stone-200/40'
-            : 'bg-zinc-900/50 border-zinc-800/50'
-          }
-        `}>
-          <div className="text-6xl mb-4 opacity-20">
-            {vibeFilter !== 'all' ? '🎵' : '🎉'}
-          </div>
-          <h3 className={`text-xl font-medium mb-2 ${isDayMode ? 'text-stone-900' : 'text-white'}`}>
-            {vibeFilter !== 'all' ? `No ${vibeFilter} Events` : 'No Events Yet'}
-          </h3>
-          <p className={`text-sm ${isDayMode ? 'text-stone-600' : 'text-zinc-400'}`}>
-            {vibeFilter !== 'all' 
-              ? 'Try a different vibe or check back later.'
-              : 'Check back soon for upcoming events at the hottest venues on the Albanian Riviera.'
-            }
-          </p>
-          {vibeFilter !== 'all' && (
-            <button
-              onClick={() => onVibeChange('all')}
-              className={`
-                mt-4 px-6 py-2 rounded-full text-sm font-medium
-                transition-all duration-300
-                ${isDayMode
-                  ? 'bg-stone-900 text-stone-50 hover:bg-stone-800'
-                  : 'bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-700'
+        /* Industrial Empty State */
+        <div className="relative">
+          <div className="border-2 border-zinc-800 bg-zinc-950/50 p-12 text-center relative overflow-hidden">
+            {/* Grid Pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="w-full h-full" style={{
+                backgroundImage: 'linear-gradient(rgba(16, 255, 136, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(16, 255, 136, 0.1) 1px, transparent 1px)',
+                backgroundSize: '20px 20px'
+              }} />
+            </div>
+            
+            <div className="relative z-10">
+              <div className="w-16 h-16 border-2 border-zinc-800 mx-auto mb-6 flex items-center justify-center">
+                <div className="w-8 h-8 border border-zinc-700" />
+              </div>
+              
+              <h3 className="font-display text-2xl text-white uppercase tracking-tighter mb-2">
+                NO SIGNALS DETECTED
+              </h3>
+              
+              <p className="text-sm font-mono text-zinc-400 mb-6 tracking-wide">
+                {vibeFilter !== 'all' 
+                  ? `[ ${vibeFilter.toUpperCase()} FREQUENCY EMPTY ]`
+                  : '[ SCANNING FOR EVENTS... ]'
                 }
-              `}
-            >
-              Show All Events
-            </button>
-          )}
+              </p>
+              
+              {vibeFilter !== 'all' && (
+                <button
+                  onClick={() => onVibeChange('all')}
+                  className="px-8 py-3 bg-zinc-900 border-2 border-white text-white hover:bg-white hover:text-zinc-900 transition-all font-mono text-xs font-bold tracking-widest uppercase"
+                >
+                  RESET FILTERS
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

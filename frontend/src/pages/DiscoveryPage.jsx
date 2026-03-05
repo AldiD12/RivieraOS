@@ -590,22 +590,27 @@ export default function DiscoveryPage() {
         </div>
       )}
 
-      {/* List View */}
+      {/* List View - Show Businesses Grouped */}
       {viewMode === 'list' && (
         <div className="absolute inset-0 pt-[250px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 space-y-6">
-          {filteredVenues.map((venue) => {
-            // Only show availability for Beach venues
-            const isBeachVenue = venue.type === 'Beach' || venue.type === 'BEACH';
-            const isAvailable = isBeachVenue && venue.availableUnitsCount >= 15;
-            const isFewLeft = isBeachVenue && venue.availableUnitsCount > 0 && venue.availableUnitsCount < 15;
-            const isFull = isBeachVenue && venue.availableUnitsCount === 0;
+          {businessGroups.map((business) => {
+            // Calculate business-level availability (sum of all venues)
+            const isBeachBusiness = business.venues.some(v => v.type === 'Beach' || v.type === 'BEACH');
+            const totalAvailable = business.totalAvailableUnits;
+            const isAvailable = isBeachBusiness && totalAvailable >= 15;
+            const isFewLeft = isBeachBusiness && totalAvailable > 0 && totalAvailable < 15;
+            const isFull = isBeachBusiness && totalAvailable === 0;
+            
+            // Use the first venue's image as business image
+            const businessImage = business.venues[0]?.imageUrl;
             
             return (
-              <div key={venue.id} className={`group relative overflow-hidden rounded-sm ${isDayMode ? 'bg-white border border-zinc-300' : 'bg-zinc-900 border border-zinc-800'}`}>
-                {/* Venue Image */}
+              <div key={business.id} className={`group relative overflow-hidden rounded-sm cursor-pointer ${isDayMode ? 'bg-white border border-zinc-300' : 'bg-zinc-900 border border-zinc-800'}`}
+                   onClick={() => handleBusinessClick(business)}>
+                {/* Business Image */}
                 <div className={`relative h-64 w-full overflow-hidden ${isDayMode ? 'bg-stone-100' : 'bg-zinc-900'}`}>
-                  {/* Status Badge - Only for Beach venues */}
-                  {isBeachVenue && (
+                  {/* Status Badge - Only for Beach businesses */}
+                  {isBeachBusiness && (
                     <div className="absolute top-3 left-3 z-20 flex items-center space-x-2">
                       {isAvailable && (
                         <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm ${isDayMode ? 'bg-emerald-500 border border-emerald-600 text-white' : 'bg-zinc-950 border-r border-b border-zinc-800 text-white'}`}>
@@ -630,20 +635,18 @@ export default function DiscoveryPage() {
                     </div>
                   )}
                   
-                  {/* Favorite Button */}
+                  {/* Venue Count Badge */}
                   <div className="absolute top-3 right-3 z-20">
-                    <button className="w-8 h-8 rounded-sm bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center hover:bg-white/40 transition-colors">
-                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                      </svg>
-                    </button>
+                    <div className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm backdrop-blur-md ${isDayMode ? 'bg-white/90 border border-zinc-200 text-zinc-950' : 'bg-zinc-900/90 border border-zinc-700 text-white'}`}>
+                      {business.venues.length} {business.venues.length === 1 ? 'VENUE' : 'VENUES'}
+                    </div>
                   </div>
                   
-                  {venue.imageUrl ? (
+                  {businessImage ? (
                     <img 
-                      alt={venue.name} 
+                      alt={business.name} 
                       className={`w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out ${isDayMode ? 'grayscale-[10%] group-hover:grayscale-0' : 'grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80'}`}
-                      src={venue.imageUrl}
+                      src={businessImage}
                     />
                   ) : (
                     <div className={`w-full h-full flex items-center justify-center ${isDayMode ? 'text-zinc-300' : 'text-zinc-700'}`}>
@@ -663,15 +666,15 @@ export default function DiscoveryPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      <span>{venue.latitude && venue.longitude ? 'Albanian Riviera' : 'Location TBD'}</span>
+                      <span>Albanian Riviera</span>
                     </div>
                   </div>
                 </div>
                 
-                {/* Venue Info */}
+                {/* Business Info */}
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className={`font-serif text-2xl tracking-tight ${isDayMode ? 'text-zinc-950' : 'text-white'}`}>{venue.name}</h3>
+                    <h3 className={`font-serif text-2xl tracking-tight ${isDayMode ? 'text-zinc-950' : 'text-white'}`}>{business.name}</h3>
                     <div className="flex items-center space-x-0.5">
                       <svg className={`w-3.5 h-3.5 fill-current ${isDayMode ? 'text-zinc-950' : 'text-white'}`} viewBox="0 0 24 24">
                         <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
@@ -682,48 +685,46 @@ export default function DiscoveryPage() {
                   </div>
                   
                   <p className={`text-xs leading-relaxed line-clamp-2 mb-4 font-sans ${isDayMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                    {venue.description || 'Experience world-class service and the most exclusive atmosphere on the Riviera.'}
+                    {business.venues.length === 1 
+                      ? (business.venues[0].description || 'Experience world-class service and the most exclusive atmosphere on the Riviera.')
+                      : `Premium hospitality group with ${business.venues.length} exclusive venues offering diverse experiences from beach clubs to fine dining.`
+                    }
                   </p>
                   
-                  <div className={`grid grid-cols-2 gap-4 mb-5 border-t border-b py-3 ${isDayMode ? 'border-zinc-100' : 'border-zinc-800'}`}>
-                    {isBeachVenue ? (
-                      // Beach venues show availability-based pricing
+                  <div className={`grid grid-cols-2 gap-4 mb-5 border-t pt-4 ${isDayMode ? 'border-zinc-200' : 'border-zinc-800'}`}>
+                    {isBeachBusiness ? (
+                      // Beach businesses show availability-based pricing
                       <div className="flex flex-col">
-                        <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Min. Spend</span>
+                        <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Total Sunbeds</span>
                         <span className={`text-sm font-medium ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>
-                          €{venue.availableUnitsCount >= 15 ? '200' : '150'} / bed
+                          {totalAvailable} available
                         </span>
                       </div>
                     ) : (
-                      // Other venues show simple pricing without availability logic
+                      // Other businesses show venue count
                       <div className="flex flex-col">
-                        <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">
-                          {venue.type === 'Restaurant' || venue.type === 'RESTAURANT' ? 'Avg. Price' : 'Entry'}
-                        </span>
+                        <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Venues</span>
                         <span className={`text-sm font-medium ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>
-                          {venue.type === 'Restaurant' || venue.type === 'RESTAURANT'
-                            ? '€35-50 / person'
-                            : venue.type === 'Bar' || venue.type === 'BAR'
-                            ? '€15-25 / drink'
-                            : 'Free Entry'
-                          }
+                          {business.venues.length} locations
                         </span>
                       </div>
                     )}
                     <div className="flex flex-col">
-                      <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Vibe</span>
+                      <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Experience</span>
                       <span className={`text-sm font-medium ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>
-                        {venue.type === 'Beach' ? 'High Energy' : venue.type === 'Restaurant' ? 'Fine Dining' : 'Chill & Chic'}
+                        {business.venues.length === 1 
+                          ? (business.type === 'Beach' ? 'Beach Club' : business.type === 'Restaurant' ? 'Fine Dining' : 'Premium Venue')
+                          : 'Multi-Venue'
+                        }
                       </span>
                     </div>
                   </div>
                   
                   <div className="flex items-center space-x-3 pt-1">
                     <button 
-                      onClick={() => handleVenueClick(venue)}
                       className={`flex-1 text-xs font-bold uppercase tracking-widest py-3 transition-colors border rounded-sm ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800 border-zinc-950' : 'bg-zinc-950 text-white hover:bg-zinc-800 border-zinc-950'}`}
                     >
-                      Reserve
+                      Explore Venues
                     </button>
                     <button className={`w-10 h-10 flex items-center justify-center border transition-colors rounded-sm ${isDayMode ? 'border-zinc-300 hover:border-zinc-950 bg-white' : 'border-zinc-800 hover:border-zinc-100 bg-transparent'}`}>
                       <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-950' : 'text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -736,9 +737,9 @@ export default function DiscoveryPage() {
             );
           })}
           
-          {filteredVenues.length === 0 && (
+          {businessGroups.length === 0 && (
             <div className="text-center py-20">
-              <p className={`text-lg ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>No venues found</p>
+              <p className={`text-lg ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>No businesses found</p>
             </div>
           )}
         </div>
