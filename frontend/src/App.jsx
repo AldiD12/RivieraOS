@@ -25,7 +25,7 @@ import ZoneUnitsManager from './pages/ZoneUnitsManager';
 import SunbedMapper from './pages/SunbedMapper';
 import ProtectedRoute from './components/ProtectedRoute';
 import ErrorBoundary from './components/ErrorBoundary';
-import ApiStatus from './components/ApiStatus';
+
 import { useAppStore } from './store/appStore';
 
 // Context-Aware Router - Detects QR scans and manages mode
@@ -59,7 +59,6 @@ function App() {
   return (
     <BrowserRouter>
       <ContextAwareRouter />
-      <ApiStatus />
       <Routes>
         {/* Customer-Facing Routes */}
         {/* DISCOVER MODE - Default for tourists (no QR scan) */}
