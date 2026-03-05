@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 
-  'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io';
+const API_URL = import.meta.env.VITE_API_URL || 
+  'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
 const getAuthHeader = () => ({
   Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -17,7 +17,7 @@ const collectorApi = {
    */
   getVenueUnits: async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/collector/units`, {
+      const response = await axios.get(`${API_URL}/collector/units`, {
         headers: getAuthHeader()
       });
       console.log('✅ Collector units fetched successfully');
@@ -54,7 +54,7 @@ const collectorApi = {
       }
 
       const response = await axios.put(
-        `${API_URL}/api/collector/units/${unitId}/status`,
+        `${API_URL}/collector/units/${unitId}/status`,
         payload,
         { headers: getAuthHeader() }
       );
@@ -78,7 +78,7 @@ const collectorApi = {
   getBookingDetails: async (bookingCode) => {
     try {
       const response = await axios.get(
-        `${API_URL}/api/collector/bookings/${bookingCode}`,
+        `${API_URL}/collector/bookings/${bookingCode}`,
         { headers: getAuthHeader() }
       );
       console.log('✅ Booking details fetched successfully');
@@ -100,7 +100,7 @@ const collectorApi = {
   getAvailableUnits: async (bookingCode) => {
     try {
       const response = await axios.get(
-        `${API_URL}/api/collector/bookings/${bookingCode}/available-units`,
+        `${API_URL}/collector/bookings/${bookingCode}/available-units`,
         { headers: getAuthHeader() }
       );
       console.log('✅ Available units fetched successfully');
@@ -128,7 +128,7 @@ const collectorApi = {
         : { unitId: unitIds };  // Single unit: send single ID (legacy)
       
       const response = await axios.put(
-        `${API_URL}/api/collector/bookings/${bookingCode}/approve`,
+        `${API_URL}/collector/bookings/${bookingCode}/approve`,
         payload,
         { headers: getAuthHeader() }
       );
@@ -151,7 +151,7 @@ const collectorApi = {
   rejectBooking: async (bookingCode) => {
     try {
       const response = await axios.put(
-        `${API_URL}/api/collector/bookings/${bookingCode}/reject`,
+        `${API_URL}/collector/bookings/${bookingCode}/reject`,
         {},
         { headers: getAuthHeader() }
       );

@@ -1,6 +1,5 @@
-import { API_CONFIG } from './apiConfig.js';
-
-const API_URL = API_CONFIG.BASE_URL;
+// Use environment variable instead of apiConfig to avoid double /api/
+const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
 export const login = async (type, value) => {
   const response = await fetch(`${API_URL}/auth/login`, {

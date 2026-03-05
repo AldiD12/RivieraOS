@@ -4,7 +4,7 @@
  * Industrial Grade: Caching, error handling
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.riviera-os.com';
+const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
 class ContentApiService {
   constructor() {
@@ -38,7 +38,7 @@ class ContentApiService {
       console.log('🌐 Fetching curated content...');
       
       const response = await fetch(
-        `${API_URL}/api/public/content?${params}`,
+        `${API_URL}/public/content?${params}`,
         {
           method: 'GET',
           headers: {

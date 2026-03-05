@@ -21,8 +21,7 @@ export default function SuperAdminLogin() {
       console.log('🔐 SuperAdmin Login: Attempting authentication...');
       
       // Use the standard backend API endpoint (same as business login)
-      const API_BASE = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io';
-      const API_URL = `${API_BASE}/api`;
+      const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
       
       console.log('🔐 Using API URL:', API_URL);
       
