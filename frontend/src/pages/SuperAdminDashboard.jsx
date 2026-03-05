@@ -451,8 +451,18 @@ const EventsTab = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-white">Events Management</h2>
+      {/* Header with Statistics */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold text-white">Events Management</h2>
+          <div className="flex items-center gap-6 mt-2 text-sm text-zinc-400">
+            <span>📊 {events.length} Total Events</span>
+            <span>✅ {events.filter(e => e.isPublished && !e.isDeleted).length} Published</span>
+            <span>📝 {events.filter(e => !e.isPublished && !e.isDeleted).length} Drafts</span>
+            <span>🗑️ {events.filter(e => e.isDeleted).length} Deleted</span>
+            <span>🏢 {new Set(events.map(e => e.businessId)).size} Businesses</span>
+          </div>
+        </div>
         <button
           onClick={onCreateEvent}
           className="px-4 py-2 bg-white text-black rounded-lg font-medium hover:bg-gray-100 transition-colors"
@@ -460,6 +470,40 @@ const EventsTab = ({
           + Create Event
         </button>
       </div>
+
+      {/* Quick Business Actions */}
+      {filterBusiness !== 'all' && (
+        <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-700">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-blue-400">🏢</span>
+              <div>
+                <h3 className="text-white font-medium">
+                  {businesses.find(b => b.id === parseInt(filterBusiness))?.brandName || 
+                   businesses.find(b => b.id === parseInt(filterBusiness))?.registeredName}
+                </h3>
+                <p className="text-sm text-zinc-400">
+                  {filteredEvents.length} events • {businessVenues.length} venues
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={onCreateEvent}
+                className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+              >
+                + Add Event
+              </button>
+              <button
+                onClick={() => setFilterBusiness('all')}
+                className="px-3 py-1 bg-zinc-700 text-zinc-300 rounded text-sm hover:bg-zinc-600"
+              >
+                View All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex space-x-4">
@@ -524,10 +568,15 @@ const EventsTab = ({
               )}
 
               <div className="p-4 space-y-3">
-                {/* Title & Status */}
+                {/* Title & Status - Enhanced */}
                 <div className="flex justify-between items-start">
-                  <h3 className="text-lg font-semibold text-white">{event.title}</h3>
-                  <div className="flex flex-col items-end space-y-1">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-semibold text-white truncate">{event.name}</h3>
+                    {event.description && (
+                      <p className="text-sm text-zinc-400 mt-1 line-clamp-2">{event.description}</p>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end space-y-1 ml-3">
                     {event.isPublished && (
                       <span className="px-2 py-1 bg-green-900 text-green-300 text-xs rounded">
                         Published
@@ -546,10 +595,27 @@ const EventsTab = ({
                   </div>
                 </div>
 
-                {/* Business & Venue */}
-                <div className="text-sm text-zinc-400 space-y-1">
-                  <div>🏢 {event.businessName}</div>
-                  <div>📍 {event.venueName}</div>
+                {/* Business & Venue - Enhanced */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-zinc-400">
+                      <div className="flex items-center gap-2">
+                        <span className="text-blue-400">🏢</span>
+                        <span className="font-medium text-blue-300">{event.businessName}</span>
+                      </div>
+                    </div>
+                    {filterBusiness === 'all' && (
+                      <span className="px-2 py-1 bg-blue-900/30 text-blue-300 text-xs rounded border border-blue-700/30">
+                        Business {event.businessId}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-zinc-400">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-400">📍</span>
+                      <span className="text-zinc-300">{event.venueName}</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Date & Time */}
