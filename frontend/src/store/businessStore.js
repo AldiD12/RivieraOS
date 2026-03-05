@@ -44,7 +44,7 @@ export const useBusinessStore = create(
           
           console.log('🔄 Fetching business features...');
           
-          const response = await fetch(`${API_BASE_URL}/business/profile/features`, {
+          const response = await fetch(`${API_BASE_URL}/business/Profile/features`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -93,7 +93,7 @@ export const useBusinessStore = create(
           
           console.log('🔄 Updating business features:', { businessId, featureUpdates });
           
-          const response = await fetch(`${API_BASE_URL}/superadmin/Features/${businessId}`, {
+          const response = await fetch(`${API_BASE_URL}/superadmin/Features/business/${businessId}`, {
             method: 'PATCH',
             headers: {
               'Authorization': `Bearer ${token}`,
