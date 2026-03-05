@@ -6,6 +6,7 @@ import { CreateZoneModal, EditZoneModal } from '../components/dashboard/modals/Z
 import { CreateStaffModal, EditStaffModal, ResetPasswordModal } from '../components/dashboard/modals/StaffModals';
 import { CreateBusinessModal, EditBusinessModal } from '../components/dashboard/modals/BusinessModals';
 import { CreateCategoryModal, EditCategoryModal } from '../components/dashboard/modals/CategoryModals';
+import { CreateProductModal, EditProductModal } from '../components/dashboard/modals/ProductModals';
 import { CreateEventModal, EditEventModal, DeleteEventModal } from '../components/dashboard/modals/EventModals';
 
 // Utility function to normalize phone numbers (match backend format)
