@@ -1118,14 +1118,14 @@ export default function DiscoveryPage() {
       )}
 
       {/* Top Header - Fixed Command Center */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-zinc-950/90 backdrop-blur-md pb-4 pointer-events-auto">
+      <div className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md pb-4 pointer-events-auto ${isDayMode ? 'bg-stone-50/90' : 'bg-zinc-950/90'}`}>
         {/* Top Row: Logo, Day/Night, Bell, Search Icon */}
         <div className="flex justify-between items-center px-4 pt-12">
           <div>
-            <h1 className={`font-serif text-4xl tracking-tight drop-shadow-sm ${isDayMode ? 'text-zinc-950' : 'text-white drop-shadow-lg'}`} style={{ fontFamily: 'Playfair Display, serif' }}>XIXA</h1>
+            <h1 className={`tracking-tight drop-shadow-sm ${isDayMode ? 'font-serif text-5xl font-light text-stone-900 tracking-tighter leading-none' : 'font-serif text-4xl text-white drop-shadow-lg'}`} style={isDayMode ? { fontFamily: 'Cormorant Garamond, serif' } : { fontFamily: 'Playfair Display, serif' }}>XIXA</h1>
             <div className="flex items-center space-x-2 mt-1">
               <div className={`w-1.5 h-1.5 rounded-full bg-[#10FF88] animate-pulse ${isDayMode ? 'border border-zinc-950 shadow-[0_0_8px_rgba(16,255,136,0.3)]' : 'shadow-[0_0_12px_rgba(16,255,136,0.4)]'}`}></div>
-              <p className={`text-[10px] font-mono tracking-[0.2em] uppercase ${isDayMode ? 'text-zinc-500' : 'text-zinc-400'}`}>Albanian Riviera</p>
+              <p className={`text-[10px] font-mono tracking-[0.2em] uppercase ${isDayMode ? 'text-stone-500' : 'text-zinc-400'}`}>Albanian Riviera</p>
             </div>
           </div>
           
@@ -1367,7 +1367,7 @@ export default function DiscoveryPage() {
       {/* Custom Styles */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+          @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
           
           .font-display {
             font-family: 'Anton', sans-serif;
