@@ -334,6 +334,7 @@ export default function DiscoveryPage() {
       console.log('🌐 Fetching events from API...');
       const data = await publicEventsApi.getEvents();
       console.log('📦 Raw events API response:', data);
+      console.log('📊 Events data type:', typeof data, 'Array?', Array.isArray(data));
       
       // Public API should only return published events
       // Filter only if fields exist, otherwise trust the API
@@ -342,7 +343,13 @@ export default function DiscoveryPage() {
             // If isPublished field exists, check it. Otherwise assume published.
             const isPublished = e.isPublished !== undefined ? e.isPublished : true;
             const isDeleted = e.isDeleted !== undefined ? e.isDeleted : false;
-            return isPublished && !isDeleted;
+            const result = isPublished && !isDeleted;
+            
+            if (!result) {
+              console.log('🚫 Filtering out event:', e.name, { isPublished, isDeleted });
+            }
+            
+            return result;
           })
         : [];
       
@@ -350,6 +357,7 @@ export default function DiscoveryPage() {
       setEvents(published);
     } catch (err) {
       console.error('❌ Failed to load events:', err);
+      setEvents([]); // Set empty array on error
     } finally {
       setEventsLoading(false);
     }
@@ -524,9 +532,18 @@ export default function DiscoveryPage() {
 
   // Filter events based on night mode filters
   const filteredEvents = useMemo(() => {
-    if (!events || events.length === 0) return [];
+    console.log('🔍 Filtering events:', { 
+      totalEvents: events?.length || 0, 
+      activeEventFilter,
+      events: events?.slice(0, 3) // Show first 3 events for debugging
+    });
     
-    return events.filter(event => {
+    if (!events || events.length === 0) {
+      console.log('❌ No events to filter');
+      return [];
+    }
+    
+    const filtered = events.filter(event => {
       if (activeEventFilter === 'all') return true;
       
       const eventDate = new Date(event.startTime);
@@ -551,6 +568,14 @@ export default function DiscoveryPage() {
           return true;
       }
     });
+    
+    console.log('✅ Filtered events result:', { 
+      filteredCount: filtered.length,
+      activeFilter: activeEventFilter,
+      filteredEvents: filtered.slice(0, 3) // Show first 3 filtered events
+    });
+    
+    return filtered;
   }, [events, activeEventFilter]);
 
   const filteredVenues = useMemo(() => {
@@ -917,9 +942,52 @@ export default function DiscoveryPage() {
           })}
           
           {/* Night Mode: Show filtered events */}
+          {!isDayMode && eventsLoading && (
+            <div className="text-center py-20">
+              <div className="w-16 h-16 mx-auto mb-6 border-2 border-stone-200 border-t-stone-900 rounded-full animate-spin"></div>
+              <p className="text-lg text-stone-500">Loading events...</p>
+            </div>
+          )}
+          
+          {!isDayMode && !eventsLoading && events.length === 0 && (
+            <div className="text-center py-20">
+              <div className="text-stone-400 mb-6">
+                <svg className="w-20 h-20 mx-auto mb-6 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-serif font-light text-stone-700 mb-3">No published events</h3>
+              <div className="text-lg text-stone-500 space-y-2">
+                <p>Events need to be published by SuperAdmin to appear here.</p>
+                <p className="text-sm text-stone-400">
+                  To publish events: Login as SuperAdmin → Events tab → Click "Publish" on events
+                </p>
+                <p className="text-xs text-stone-300 mt-4">
+                  API Response: {events.length} events loaded from /api/public/Events
+                </p>
+              </div>
+            </div>
+          )}
+          
+          {!isDayMode && !eventsLoading && events.length > 0 && filteredEvents.length === 0 && (
+            <div className="text-center py-20">
+              <div className="text-stone-400 mb-6">
+                <svg className="w-20 h-20 mx-auto mb-6 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-serif font-light text-stone-700 mb-3">No events match your filter</h3>
+              <p className="text-lg text-stone-500">Try selecting "ALL EVENTS" or a different filter</p>
+              <p className="text-sm text-stone-400 mt-2">Total events loaded: {events.length}, Active filter: {activeEventFilter}</p>
+            </div>
+          )}
+          
           {!isDayMode && filteredEvents.map((event) => {
             const venue = venues.find(v => v.id === event.venueId);
-            if (!venue) return null;
+            if (!venue) {
+              console.warn('⚠️ Event venue not found:', { eventId: event.id, venueId: event.venueId, eventName: event.name });
+              return null;
+            }
             
             const eventDate = new Date(event.startTime);
             const isToday = eventDate.toDateString() === new Date().toDateString();
@@ -1149,6 +1217,51 @@ export default function DiscoveryPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
               </button>
+              
+              {/* Debug Events Button - Only show in night mode */}
+              {!isDayMode && (
+                <button 
+                  onClick={async () => {
+                    console.log('🔍 DEBUG - Current state:', {
+                      events: events,
+                      eventsCount: events?.length || 0,
+                      filteredEvents: filteredEvents,
+                      filteredCount: filteredEvents?.length || 0,
+                      activeEventFilter,
+                      eventsLoading,
+                      isDayMode,
+                      viewMode
+                    });
+                    
+                    // Test SuperAdmin API to see if there are unpublished events
+                    try {
+                      const token = localStorage.getItem('azure_jwt_token') || localStorage.getItem('token');
+                      if (token) {
+                        console.log('🔍 Testing SuperAdmin Events API...');
+                        const response = await fetch('https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api/superadmin/Events', {
+                          headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (response.ok) {
+                          const superAdminEvents = await response.json();
+                          console.log('📊 SuperAdmin Events:', superAdminEvents);
+                          console.log(`Found ${superAdminEvents?.length || 0} total events (published + unpublished)`);
+                        } else {
+                          console.log('❌ SuperAdmin API failed:', response.status, response.statusText);
+                        }
+                      }
+                    } catch (err) {
+                      console.log('❌ SuperAdmin API error:', err);
+                    }
+                    
+                    // Reload public events
+                    loadEvents();
+                  }}
+                  className="w-10 h-10 flex items-center justify-center rounded-full border backdrop-blur-sm transition-all group shadow-sm border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 hover:border-[#10FF88]/50"
+                  title="Debug Events API"
+                >
+                  <span className="text-xs text-zinc-400 group-hover:text-[#10FF88]">🔍</span>
+                </button>
+              )}
               
               {/* List/Map toggle */}
               <div className={`flex items-center backdrop-blur-md border rounded-lg p-1 shadow-lg ${isDayMode ? 'bg-white/90 border-zinc-200' : 'bg-zinc-900/90 border-zinc-800'}`}>
