@@ -196,7 +196,7 @@ Faleminderit!`;
       >
         {/* Handle Bar */}
         <div className="flex justify-center pt-4 pb-2">
-          <div className={`w-12 h-1 rounded-full ${isDayMode ? 'bg-zinc-300' : 'bg-zinc-700'}`}></div>
+          <div className={`w-12 h-1 rounded-sm ${isDayMode ? 'bg-zinc-300' : 'bg-zinc-700'}`}></div>
         </div>
 
         <div className="p-8">
@@ -226,9 +226,9 @@ Faleminderit!`;
 
           {/* Availability Summary */}
           {hasAvailability ? (
-            <div className={`rounded-xl p-6 mb-8 border ${isDayMode ? 'bg-emerald-50 border-emerald-200' : 'bg-zinc-900 border-zinc-800'}`}>
+            <div className={`rounded-sm p-6 mb-8 border ${isDayMode ? 'bg-emerald-50 border-emerald-200' : 'bg-zinc-900 border-zinc-800'}`}>
               <div className="flex items-center gap-3 mb-2">
-                <div className={`w-3 h-3 rounded-full animate-pulse ${isDayMode ? 'bg-emerald-500' : 'bg-[#10FF88]'}`}></div>
+                <div className={`w-3 h-3 rounded-sm animate-pulse ${isDayMode ? 'bg-emerald-500' : 'bg-[#10FF88]'}`}></div>
                 <p className={`text-lg font-medium ${isDayMode ? 'text-emerald-900' : 'text-[#10FF88]'}`}>
                   {isDayMode ? 'Available Now' : 'LIVE NOW'}
                 </p>
@@ -243,7 +243,7 @@ Faleminderit!`;
               )}
             </div>
           ) : (
-            <div className={`rounded-xl p-6 mb-8 border ${isDayMode ? 'bg-stone-50 border-stone-200' : 'bg-zinc-900 border-zinc-800'}`}>
+            <div className={`rounded-sm p-6 mb-8 border ${isDayMode ? 'bg-stone-50 border-stone-200' : 'bg-zinc-900 border-zinc-800'}`}>
               <p className={`text-lg font-medium mb-1 ${isDayMode ? 'text-stone-700' : 'text-zinc-400'}`}>
                 Fully Booked
               </p>
@@ -265,7 +265,7 @@ Faleminderit!`;
                   onClick={() => handleZoneSelect(zone)}
                   disabled={zone.availableUnits === 0}
                   className={`
-                    w-full rounded-xl p-6 border text-left
+                    w-full rounded-sm p-6 border text-left
                     transition-all duration-300 ease-out
                     ${zone.availableUnits > 0 
                       ? isDayMode
@@ -346,7 +346,7 @@ Faleminderit!`;
                   haptics.light();
                 }
               }}
-              className={`w-full mb-6 px-6 py-4 rounded-xl border flex items-center justify-center gap-3 transition-all duration-300 ${isDayMode ? 'bg-white border-zinc-300 text-zinc-700 hover:border-zinc-950 hover:bg-stone-50 shadow-sm' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-[#10FF88] hover:text-[#10FF88]'}`}
+              className={`w-full mb-6 px-6 py-4 rounded-sm border flex items-center justify-center gap-3 transition-all duration-300 ${isDayMode ? 'bg-white border-zinc-300 text-zinc-700 hover:border-zinc-950 hover:bg-stone-50 shadow-sm' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-[#10FF88] hover:text-[#10FF88]'}`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -366,21 +366,21 @@ Faleminderit!`;
                     alert('Please select a zone above');
                   }
                 }}
-                className={`flex-1 px-8 py-4 rounded-full text-sm tracking-widest uppercase transition-all duration-300 ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800 shadow-lg' : 'bg-zinc-950 text-[#10FF88] border border-zinc-800 hover:shadow-[0_0_20px_rgba(16,255,136,0.4)]'}`}
+                className={`flex-1 px-8 py-4 rounded-sm text-sm tracking-widest uppercase transition-all duration-300 ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800 shadow-lg' : 'bg-zinc-950 text-[#10FF88] border border-zinc-800 hover:shadow-[0_0_20px_rgba(16,255,136,0.4)]'}`}
               >
                 Book Now
               </button>
             ) : (
               <button
                 disabled
-                className={`flex-1 px-8 py-4 rounded-full text-sm tracking-widest uppercase cursor-not-allowed ${isDayMode ? 'bg-zinc-200 text-zinc-400' : 'bg-zinc-900 text-zinc-600 border border-zinc-800'}`}
+                className={`flex-1 px-8 py-4 rounded-sm text-sm tracking-widest uppercase cursor-not-allowed ${isDayMode ? 'bg-zinc-200 text-zinc-400' : 'bg-zinc-900 text-zinc-600 border border-zinc-800'}`}
               >
                 Fully Booked
               </button>
             )}
             <button
               onClick={onClose}
-              className={`flex-1 border px-8 py-4 rounded-full transition-all duration-300 ${isDayMode ? 'border-zinc-300 text-zinc-700 hover:border-zinc-400 hover:bg-stone-50' : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-900'}`}
+              className={`flex-1 border px-8 py-4 rounded-sm transition-all duration-300 ${isDayMode ? 'border-zinc-300 text-zinc-700 hover:border-zinc-400 hover:bg-stone-50' : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-900'}`}
             >
               Close
             </button>
@@ -390,14 +390,14 @@ Faleminderit!`;
 
       {/* Booking Form Modal */}
       {showBookingForm && selectedZone && (
-        <div className={`fixed inset-0 backdrop-blur-sm flex items-center justify-center z-[60] p-4 ${isDayMode ? 'bg-black/30' : 'bg-black/60'}`}>
+        <div className={`fixed inset-0 backdrop-blur-lg flex items-center justify-center z-[60] p-4 ${isDayMode ? 'bg-black/30' : 'bg-black/60'}`}>
           <div 
-            className={`rounded-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto ${isDayMode ? 'bg-white' : 'bg-zinc-950 border border-zinc-800'}`}
+            className={`rounded-sm p-8 max-w-md w-full max-h-[90vh] overflow-y-auto ${isDayMode ? 'bg-white' : 'bg-zinc-950 border border-zinc-800'}`}
             style={{ animation: 'fadeIn 0.3s ease-out' }}
           >
             <h3 
               className={`text-3xl font-light mb-2 ${isDayMode ? 'text-zinc-950' : 'text-white'}`}
-              style={{ fontFamily: 'Playfair Display, serif' }}
+              style={{ fontFamily: 'Cormorant Garamond, serif' }}
             >
               Rezervo Tani
             </h3>
@@ -416,7 +416,7 @@ Faleminderit!`;
                   required
                   value={bookingData.guestName}
                   onChange={(e) => setBookingData({ ...bookingData, guestName: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950 focus:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88] focus:border-[#10FF88]'}`}
+                  className={`w-full px-4 py-3 rounded-sm focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950 focus:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88] focus:border-[#10FF88]'}`}
                   placeholder="John Doe"
                 />
               </div>
@@ -431,7 +431,7 @@ Faleminderit!`;
                   required
                   value={bookingData.guestPhone}
                   onChange={(e) => setBookingData({ ...bookingData, guestPhone: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950 focus:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88] focus:border-[#10FF88]'}`}
+                  className={`w-full px-4 py-3 rounded-sm focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950 focus:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88] focus:border-[#10FF88]'}`}
                   placeholder="+355 69 123 4567"
                 />
               </div>
@@ -455,7 +455,7 @@ Faleminderit!`;
                         type="button"
                         onClick={() => setBookingData({ ...bookingData, guestCount: option.value })}
                         className={`
-                          px-3 py-2 rounded-lg text-sm font-medium transition-all
+                          px-3 py-2 rounded-sm text-sm font-medium transition-all
                           ${bookingData.guestCount === option.value
                             ? isDayMode
                               ? 'bg-zinc-950 text-white'
@@ -486,7 +486,7 @@ Faleminderit!`;
                         type="button"
                         onClick={() => setBookingData({ ...bookingData, sunbedCount: count })}
                         className={`
-                          px-3 py-2 rounded-lg text-sm font-medium transition-all
+                          px-3 py-2 rounded-sm text-sm font-medium transition-all
                           ${bookingData.sunbedCount === count
                             ? isDayMode
                               ? 'bg-zinc-950 text-white'
@@ -511,15 +511,28 @@ Faleminderit!`;
                 <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
                   Ora e Arritjes
                 </label>
-                <select
-                  value={bookingData.arrivalTime}
-                  onChange={(e) => setBookingData({ ...bookingData, arrivalTime: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950 focus:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88] focus:border-[#10FF88]'}`}
-                >
+                <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
                   {timeSlots.map(time => (
-                    <option key={time} value={time}>{time}</option>
+                    <button
+                      key={time}
+                      type="button"
+                      onClick={() => setBookingData({ ...bookingData, arrivalTime: time })}
+                      className={`
+                        px-3 py-2 rounded-sm text-sm font-medium transition-all
+                        ${bookingData.arrivalTime === time
+                          ? isDayMode
+                            ? 'bg-zinc-950 text-white'
+                            : 'bg-[#10FF88] text-zinc-950'
+                          : isDayMode
+                          ? 'border border-zinc-300 text-zinc-700 hover:border-zinc-950'
+                          : 'border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
+                        }
+                      `}
+                    >
+                      {time}
+                    </button>
                   ))}
-                </select>
+                </div>
                 {(venue.type || '').toLowerCase().includes('beach') && (
                   <p className={`text-xs mt-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
                     ⏰ Rezervimi skadon 15 minuta pas orës së arritjes
@@ -528,7 +541,7 @@ Faleminderit!`;
               </div>
 
               {/* Summary */}
-              <div className={`rounded-lg p-4 border ${isDayMode ? 'bg-stone-50 border-zinc-300' : 'bg-zinc-900 border-zinc-800'}`}>
+              <div className={`rounded-sm p-4 border ${isDayMode ? 'bg-stone-50 border-zinc-300' : 'bg-zinc-900 border-zinc-800'}`}>
                 <p className={`text-xs uppercase tracking-wider mb-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
                   Përmbledhje
                 </p>
@@ -538,7 +551,7 @@ Faleminderit!`;
                       ✅ Do të rezervojmë {bookingData.sunbedCount} shtretër{bookingData.sunbedCount > 1 ? '' : ''} pranë njëri-tjetrit
                     </p>
                     <p className={`text-2xl font-light ${isDayMode ? 'text-zinc-950' : 'text-[#10FF88]'}`}>
-                      €{(selectedZone.basePrice * bookingData.sunbedCount).toFixed(2)}
+                      €{Math.round(selectedZone.basePrice * bookingData.sunbedCount)}
                     </p>
                     <p className={`text-xs ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
                       {bookingData.sunbedCount} shtretër × €{selectedZone.basePrice}
@@ -561,7 +574,7 @@ Faleminderit!`;
                 type="submit"
                 disabled={submitting}
                 className={`
-                  w-full px-8 py-4 rounded-full text-sm tracking-widest uppercase
+                  w-full px-8 py-4 rounded-sm text-sm tracking-widest uppercase
                   transition-all duration-300 font-medium
                   ${submitting ? 'opacity-50 cursor-not-allowed' : ''}
                   ${isDayMode
