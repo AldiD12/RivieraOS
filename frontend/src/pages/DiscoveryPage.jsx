@@ -795,7 +795,7 @@ export default function DiscoveryPage() {
 
       {/* List View - Show Businesses Grouped (Day Mode) or Events (Night Mode) */}
       {viewMode === 'list' && (
-        <div className="absolute inset-0 pt-[250px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 space-y-6">
+        <div className="absolute inset-0 pt-[320px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 space-y-6">
           {/* Day Mode: Show business groups */}
           {isDayMode && businessGroups.map((business) => {
             // Calculate business-level availability (sum of all venues)
@@ -1102,7 +1102,7 @@ export default function DiscoveryPage() {
       
       {/* Events View */}
       {viewMode === 'events' && (
-        <div className={`absolute inset-0 pt-[250px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
+        <div className={`absolute inset-0 pt-[320px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
           <EventsView
             events={filteredEvents}
             venues={venues}
@@ -1119,10 +1119,10 @@ export default function DiscoveryPage() {
 
       {/* Top Header */}
       <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none">
-        <div className={`pointer-events-auto pt-14 px-6 flex flex-col items-start space-y-4 pb-12 relative bg-gradient-to-b ${isDayMode ? 'from-stone-50 via-stone-50/90 to-transparent' : 'from-zinc-950 via-zinc-950/80 to-transparent'}`}>
+        <div className={`pointer-events-auto pt-16 px-6 flex flex-col items-start space-y-6 pb-16 relative bg-gradient-to-b ${isDayMode ? 'from-stone-50 via-stone-50/90 to-transparent' : 'from-zinc-950 via-zinc-950/80 to-transparent'}`}>
           
           {/* Day/Night Toggle (centered at top) */}
-          <div className="absolute top-14 left-0 right-0 flex justify-center z-30 pointer-events-none">
+          <div className="absolute top-16 left-0 right-0 flex justify-center z-30 pointer-events-none">
             <div className={`backdrop-blur-md border p-1 rounded-full flex shadow-lg pointer-events-auto ${isDayMode ? 'bg-white/80 border-zinc-200' : 'bg-zinc-900/80 border-zinc-800'}`}>
               <button 
                 onClick={() => {
@@ -1153,7 +1153,7 @@ export default function DiscoveryPage() {
             </div>
           </div>
           
-          <div className="flex justify-between items-start w-full relative z-20 pt-8">
+          <div className="flex justify-between items-start w-full relative z-20 pt-10">
             <div>
               <h1 className={`font-serif text-4xl tracking-tight drop-shadow-sm ${isDayMode ? 'text-zinc-950' : 'text-white drop-shadow-lg'}`} style={{ fontFamily: 'Playfair Display, serif' }}>XIXA</h1>
               <div className="flex items-center space-x-2 mt-1">
@@ -1241,7 +1241,7 @@ export default function DiscoveryPage() {
 
           {/* Filter Pills - Show venue filters for day mode, event filters for night mode */}
           {viewMode !== 'events' && (
-            <div className="flex space-x-3 overflow-x-auto no-scrollbar w-full pb-2 pt-4 pl-0.5">
+            <div className="flex space-x-3 overflow-x-auto no-scrollbar w-full pb-4 pt-6 pl-0.5">
               {/* Day Mode: Show venue filters */}
               {isDayMode && VENUE_FILTERS.map(filter => (
                 <button
