@@ -22,7 +22,7 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
       guestPhone: savedPhone,
       guestCount: 2,
       sunbedCount: 1, // NEW: Default 1 sunbed
-      arrivalTime: defaultArrivalTime, // NEW: Arrival time
+      arrivalTime: defaultArrivalTime, // Use calculated default time
       date: new Date().toISOString().split('T')[0]
     };
   });
@@ -72,7 +72,17 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
         booking: bookingData,
         venueType: venue.type,
         venueName: venue.name,
-        fullVenue: venue
+        fullVenue: venue,
+        apiPayload: {
+          venueId: venue.id,
+          zoneId: selectedZone.id,
+          guestName: bookingData.guestName,
+          guestPhone: bookingData.guestPhone,
+          sunbedCount: bookingData.sunbedCount,
+          arrivalTime: bookingData.arrivalTime,
+          reservationDate: bookingData.date,
+          notes: 'Booked via XIXA Discovery'
+        }
       });
       
       // Save guest info to localStorage
@@ -166,8 +176,14 @@ Faleminderit!`;
       } else if (error.response?.status === 404) {
         alert('Vendi ose zona nuk u gjet. Ju lutem provoni përsëri.');
       } else if (error.response?.status === 400) {
-        const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Të dhënat janë të pavlefshme';
-        alert(`Gabim: ${errorMsg}`);
+        console.error('❌ 400 Bad Request Details:', {
+          data: error.response?.data,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          headers: error.response?.headers
+        });
+        const errorMsg = error.response?.data?.message || error.response?.data?.error || error.response?.data || 'Invalid request data';
+        alert(`Bad Request: ${JSON.stringify(errorMsg)}\n\nPlease check the console for details.`);
       } else {
         alert(`Rezervimi dështoi: ${error.message}\n\nJu lutem provoni përsëri ose kontaktoni stafin.`);
       }
