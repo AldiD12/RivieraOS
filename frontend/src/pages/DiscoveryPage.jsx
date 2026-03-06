@@ -29,11 +29,13 @@ const RIVIERA_CENTER = {
 };
 
 // Venue filters (for day mode)
-const VENUE_FILTERS = [
-  { id: 'all', label: 'ALL VENUES' },
-  { id: 'Beach', label: 'BEACH CLUBS' },
-  { id: 'Boat', label: 'BOATS' },
-  { id: 'Restaurant', label: 'DINING' }
+// Stone Standard - Industrial Luxury Filter System for Day Mode
+const DAY_FILTERS = [
+  { id: 'all', label: 'ALL', icon: '🌏' },
+  { id: 'Beach', label: 'BEACH', icon: '⛱️' },
+  { id: 'Restaurant', label: 'DINE', icon: '🍴' },
+  { id: 'Yacht', label: 'YACHT', icon: '⚓' },
+  { id: 'Beach Club', label: 'VIBE', icon: '🥂' }
 ];
 
 // Event filters (for night mode)
@@ -46,12 +48,15 @@ const EVENT_FILTERS = [
 ];
 
 // 🎯 XIXA Atmospheric Marker with pulsing ring (theme-aware)
-function VenueMarker({ venue, isSelected, onClick, isDayMode }) {
+function VenueMarker({ venue, isSelected, onClick, isDayMode, activeFilter }) {
   // Only show availability for Beach venues (sunbeds)
   const isBeachVenue = venue.type === 'Beach' || venue.type === 'BEACH';
   const isFull = isBeachVenue && venue.availableUnitsCount === 0;
   const isHighlight = isBeachVenue && venue.availableUnitsCount >= 15;
   const hasAvailability = isBeachVenue && venue.availableUnitsCount > 0;
+  
+  // Show inventory labels when BEACH filter is active
+  const showInventoryLabel = activeFilter === 'Beach' && isBeachVenue;
   
   return (
     <div 
@@ -70,29 +75,55 @@ function VenueMarker({ venue, isSelected, onClick, isDayMode }) {
       {/* Main marker */}
       <div 
         className={`
-          relative flex items-center justify-center rounded-full z-10
+          relative flex items-center justify-center z-10
           transition-all duration-300
-          ${isBeachVenue
-            ? isHighlight && !isFull 
-              ? isDayMode
-                ? 'w-10 h-10 bg-stone-50 border border-zinc-950 shadow-lg'
-                : 'w-10 h-10 bg-zinc-950 border border-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
-              : isFull
-              ? isDayMode
-                ? 'w-5 h-5 bg-white border border-zinc-400 shadow-sm'
-                : 'w-5 h-5 bg-zinc-900 border border-zinc-600 shadow-lg'
+          ${showInventoryLabel
+            ? // Inventory Label Mode - Rectangular badges
+              hasAvailability
+                ? isDayMode
+                  ? 'px-2 py-1 bg-emerald-50 border border-emerald-200 rounded-sm'
+                  : 'px-2 py-1 bg-zinc-950 border border-[#10FF88] rounded-sm shadow-[0_0_8px_rgba(16,255,136,0.3)]'
+                : isDayMode
+                ? 'px-2 py-1 bg-stone-100 border border-stone-300 rounded-sm'
+                : 'px-2 py-1 bg-zinc-900 border border-zinc-600 rounded-sm'
+            : // Regular Mode - Circular markers
+              isBeachVenue
+              ? isHighlight && !isFull 
+                ? isDayMode
+                  ? 'w-10 h-10 bg-stone-50 border border-zinc-950 shadow-lg rounded-full'
+                  : 'w-10 h-10 bg-zinc-950 border border-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)] rounded-full'
+                : isFull
+                ? isDayMode
+                  ? 'w-5 h-5 bg-white border border-zinc-400 shadow-sm rounded-full'
+                  : 'w-5 h-5 bg-zinc-900 border border-zinc-600 shadow-lg rounded-full'
+                : isDayMode
+                ? 'w-8 h-8 bg-stone-50 border border-zinc-950 shadow-lg rounded-full'
+                : 'w-8 h-8 bg-zinc-950 border border-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)] rounded-full'
               : isDayMode
-              ? 'w-8 h-8 bg-stone-50 border border-zinc-950 shadow-lg'
-              : 'w-8 h-8 bg-zinc-950 border border-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
-            : isDayMode
-            ? 'w-8 h-8 bg-stone-50 border border-zinc-950 shadow-lg'
-            : 'w-8 h-8 bg-zinc-950 border border-zinc-700 shadow-lg'
+              ? 'w-8 h-8 bg-stone-50 border border-zinc-950 shadow-lg rounded-full'
+              : 'w-8 h-8 bg-zinc-950 border border-zinc-700 shadow-lg rounded-full'
           }
           ${isSelected ? 'scale-110' : 'group-hover:scale-110'}
         `}
       >
-        {isBeachVenue ? (
-          // Show availability count for beach venues
+        {showInventoryLabel ? (
+          // Inventory Label Mode - Show availability with green dot
+          <div className="flex items-center gap-1">
+            <div className={`w-2 h-2 rounded-full ${hasAvailability ? 'bg-emerald-500' : 'bg-stone-400'}`}></div>
+            <span 
+              className={`
+                font-bold font-mono text-xs
+                ${hasAvailability 
+                  ? isDayMode ? 'text-emerald-800' : 'text-[#10FF88]'
+                  : isDayMode ? 'text-stone-500' : 'text-zinc-400'
+                }
+              `}
+            >
+              {venue.availableUnitsCount || 0}
+            </span>
+          </div>
+        ) : isBeachVenue ? (
+          // Regular Mode - Show availability count for beach venues
           <span 
             className={`
               font-bold font-mono
@@ -126,7 +157,7 @@ function VenueMarker({ venue, isSelected, onClick, isDayMode }) {
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M21 5V3H3v2l8 9v5H6v2h12v-2h-5v-5l8-9zM7.43 7L5.66 5h12.69l-1.78 2H7.43z"/>
               </svg>
-            ) : venue.type === 'Boat' || venue.type === 'BOAT' ? (
+            ) : venue.type === 'Yacht' || venue.type === 'YACHT' || venue.type === 'Boat' || venue.type === 'BOAT' ? (
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
               </svg>
@@ -584,15 +615,40 @@ export default function DiscoveryPage() {
   const filteredVenues = useMemo(() => {
     return venues.filter(v => {
       if (activeFilter === 'all') return true;
-      return v.type === activeFilter;
+      
+      // Map the new filter IDs to venue types
+      switch (activeFilter) {
+        case 'Beach':
+          return v.type === 'Beach' || v.type === 'BEACH';
+        case 'Restaurant':
+          return v.type === 'Restaurant' || v.type === 'RESTAURANT';
+        case 'Yacht':
+          return v.type === 'Yacht' || v.type === 'YACHT' || v.type === 'Boat' || v.type === 'BOAT';
+        case 'Beach Club':
+          // VIBE filter - Beach clubs with DJs/Lounge (sort by popularity)
+          return (v.type === 'Beach' || v.type === 'BEACH') && v.hasEvents;
+        default:
+          return v.type === activeFilter;
+      }
     });
   }, [venues, activeFilter]);
 
   // Group filtered venues by business for map display
   const businessGroups = useMemo(() => {
     if (!filteredVenues || filteredVenues.length === 0) return [];
-    return groupVenuesByBusiness(filteredVenues);
-  }, [filteredVenues]);
+    let groups = groupVenuesByBusiness(filteredVenues);
+    
+    // VIBE filter: Sort by popularity (most live orders from Meridian system)
+    if (activeFilter === 'Beach Club') {
+      groups = groups.sort((a, b) => {
+        // Sort by total available units (proxy for popularity/activity)
+        // In a real system, this would be live order count
+        return b.totalAvailableUnits - a.totalAvailableUnits;
+      });
+    }
+    
+    return groups;
+  }, [filteredVenues, activeFilter, groupVenuesByBusiness]);
 
   if (loading) {
     return (
@@ -623,7 +679,7 @@ export default function DiscoveryPage() {
   }
 
   return (
-    <div className={`h-screen w-full overflow-hidden relative font-sans antialiased ${isDayMode ? 'bg-stone-50 text-zinc-950' : 'bg-zinc-950 text-white'}`}>
+    <div className={`h-screen w-full overflow-hidden relative font-sans antialiased ${isDayMode ? 'bg-[#FAFAF9] text-stone-900' : 'bg-zinc-950 text-white'}`}>
       {/* Grid Background Pattern */}
       <div className="absolute inset-0 z-0" style={{
         backgroundImage: isDayMode 
@@ -745,6 +801,7 @@ export default function DiscoveryPage() {
                         isSelected={selectedBusiness?.id === business.id}
                         onClick={() => handleBusinessClick(business)}
                         isDayMode={isDayMode}
+                        activeFilter={activeFilter}
                       />
                     </Marker>
                   )
@@ -1203,44 +1260,45 @@ export default function DiscoveryPage() {
           </div>
         </div>
         
-        {/* Third Row: The Filter Pills (Scrollable horizontally) */}
+        {/* Stone Standard - Industrial Luxury Utility Bar */}
         {viewMode !== 'events' && (
-          <div className="flex overflow-x-auto px-4 mt-3 gap-2 no-scrollbar">
-            {/* Day Mode: Show venue filters */}
-            {isDayMode && VENUE_FILTERS.map(filter => (
-              <button
-                key={filter.id}
-                onClick={() => setActiveFilter(filter.id)}
-                className={`
-                  whitespace-nowrap px-5 py-2 rounded-full text-xs font-medium tracking-wide
-                  transform active:scale-95 transition-all
-                  ${activeFilter === filter.id
-                    ? 'bg-zinc-950 border border-zinc-950 text-[#10FF88] shadow-md'
-                    : 'bg-white/80 backdrop-blur-md border border-zinc-200 text-zinc-500 hover:text-zinc-950 hover:border-zinc-400 shadow-sm'
-                  }
-                `}
-              >
-                {filter.label}
-              </button>
-            ))}
-            
-            {/* Night Mode: Show event filters */}
-            {!isDayMode && EVENT_FILTERS.map(filter => (
-              <button
-                key={filter.id}
-                onClick={() => setActiveEventFilter(filter.id)}
-                className={`
-                  whitespace-nowrap px-5 py-2 rounded-full text-xs font-medium tracking-wide
-                  transform active:scale-95 transition-all
-                  ${activeEventFilter === filter.id
-                    ? 'bg-zinc-950 border border-[#10FF88] text-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
-                    : 'bg-zinc-900/60 backdrop-blur-md border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
-                  }
-                `}
-              >
-                {filter.label}
-              </button>
-            ))}
+          <div className={`px-4 mt-4 ${isDayMode ? 'bg-[#F6F5F2] border-b border-stone-200/40' : ''}`}>
+            <div className="flex gap-2 pb-2">
+              {/* Day Mode: Stone Standard Utility Bar */}
+              {isDayMode && DAY_FILTERS.map(filter => (
+                <button
+                  key={filter.id}
+                  onClick={() => setActiveFilter(filter.id)}
+                  className={`
+                    px-4 py-2 border text-xs font-mono uppercase tracking-widest transition-all duration-300
+                    ${activeFilter === filter.id
+                      ? 'bg-[#111111] text-white border-[#111111]'
+                      : 'bg-transparent text-stone-500 border-stone-300 hover:border-stone-500'
+                    }
+                  `}
+                >
+                  {filter.icon} {filter.label}
+                </button>
+              ))}
+              
+              {/* Night Mode: Event filters */}
+              {!isDayMode && EVENT_FILTERS.map(filter => (
+                <button
+                  key={filter.id}
+                  onClick={() => setActiveEventFilter(filter.id)}
+                  className={`
+                    whitespace-nowrap px-5 py-2 rounded-full text-xs font-medium tracking-wide
+                    transform active:scale-95 transition-all
+                    ${activeEventFilter === filter.id
+                      ? 'bg-zinc-950 border border-[#10FF88] text-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
+                      : 'bg-zinc-900/60 backdrop-blur-md border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
+                    }
+                  `}
+                >
+                  {filter.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
