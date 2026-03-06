@@ -9,7 +9,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 {
     [Route("api/business/[controller]")]
     [ApiController]
-    [Authorize(Policy = "BusinessOwner")]
+    [Authorize(Policy = "Manager")]
     public class ProfileController : ControllerBase
     {
         private readonly BlackBearDbContext _context;
@@ -23,7 +23,6 @@ namespace BlackBear.Services.Core.Controllers.Business
 
         // GET: api/business/profile
         [HttpGet]
-        [Authorize(Policy = "Manager")]
         public async Task<ActionResult<BusinessProfileDto>> GetProfile()
         {
             var businessId = _currentUserService.BusinessId;
@@ -56,7 +55,6 @@ namespace BlackBear.Services.Core.Controllers.Business
 
         // GET: api/business/profile/features
         [HttpGet("features")]
-        [Authorize(Policy = "Manager")]
         public async Task<ActionResult<BizBusinessFeatureDto>> GetMyFeatures()
         {
             var businessId = _currentUserService.BusinessId;
@@ -85,6 +83,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 
         // PUT: api/business/profile
         [HttpPut]
+        [Authorize(Policy = "BusinessOwner")]
         public async Task<IActionResult> UpdateProfile(UpdateBusinessProfileRequest request)
         {
             var businessId = _currentUserService.BusinessId;
