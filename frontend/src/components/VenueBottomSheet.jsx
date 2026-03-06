@@ -165,6 +165,9 @@ Faleminderit!`;
         stack: error.stack
       });
       
+      // TEMPORARY: Show exact error for debugging
+      alert(`DEBUG INFO:\nError: ${error.message}\nStatus: ${error.response?.status}\nData: ${JSON.stringify(error.response?.data, null, 2)}`);
+      
       if (haptics.isSupported()) {
         haptics.error();
       }
