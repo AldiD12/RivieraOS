@@ -123,44 +123,41 @@ Faleminderit!`;
         
       } else if (isBeach) {
         // BEACH: Real instant booking API
-        console.log('🏖️ Creating beach reservation...', {
-          venueId: venue.id,
-          zoneId: selectedZone.id,
-          guestName: bookingData.guestName,
-          guestPhone: bookingData.guestPhone,
-          guestCount: bookingData.guestCount,
-          sunbedCount: bookingData.sunbedCount,
-          arrivalTime: bookingData.arrivalTime,
-          reservationDate: bookingData.date,
-          apiPayload
-        });
+        console.log('🏖️ Creating beach reservation...');
         
-        // Convert to backend expected format (camelCase as per swagger.json)
-        const reservationDate = new Date(bookingData.date);
-        const [hours, minutes] = bookingData.arrivalTime.split(':');
-        const startTime = new Date(reservationDate);
-        startTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-        
-        const apiPayload = {
-          venueId: venue.id,
-          zoneId: selectedZone.id,
-          guestName: bookingData.guestName,
-          guestPhone: bookingData.guestPhone,
-          guestCount: bookingData.guestCount || 2,
-          sunbedCount: bookingData.sunbedCount,
-          arrivalTime: bookingData.arrivalTime,
-          reservationDate: reservationDate.toISOString(),
-          startTime: startTime.toISOString(),
-          notes: 'Booked via XIXA Discovery'
-        };
+        try {
+          // Convert to backend expected format (camelCase as per swagger.json)
+          const reservationDate = new Date(bookingData.date);
+          const [hours, minutes] = bookingData.arrivalTime.split(':');
+          const startTime = new Date(reservationDate);
+          startTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+          
+          const apiPayload = {
+            venueId: venue.id,
+            zoneId: selectedZone.id,
+            guestName: bookingData.guestName,
+            guestPhone: bookingData.guestPhone,
+            guestCount: bookingData.guestCount || 2,
+            sunbedCount: bookingData.sunbedCount,
+            arrivalTime: bookingData.arrivalTime,
+            reservationDate: reservationDate.toISOString(),
+            startTime: startTime.toISOString(),
+            notes: 'Booked via XIXA Discovery'
+          };
 
-        // TEMPORARY: Show exact payload being sent
-        console.log('📤 Final API Payload:', JSON.stringify(apiPayload, null, 2));
+          console.log('📤 Final API Payload:', JSON.stringify(apiPayload, null, 2));
+          console.log('🔍 Booking data state:', bookingData);
+          console.log('🔍 Selected zone:', selectedZone);
+          console.log('🔍 Venue data:', venue);
 
-        const result = await reservationApi.createReservation(apiPayload);
-        
-        console.log('✅ Booking successful:', result);
-        navigate(`/success/${result.bookingCode}`);
+          const result = await reservationApi.createReservation(apiPayload);
+          
+          console.log('✅ Booking successful:', result);
+          navigate(`/success/${result.bookingCode}`);
+        } catch (apiError) {
+          console.error('🚨 API Error caught:', apiError);
+          throw apiError; // Re-throw to be caught by outer catch
+        }
       } else {
         console.warn('⚠️ Unknown venue type:', venueType);
         alert('Lloji i vendit nuk është i njohur. Ju lutem kontaktoni stafin.');
