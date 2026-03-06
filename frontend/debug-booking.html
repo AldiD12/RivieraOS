@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Booking Status</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #000; color: #0f0; }
+        .result { background: #111; padding: 15px; margin: 10px 0; border: 1px solid #333; }
+        button { background: #333; color: #0f0; border: 1px solid #555; padding: 10px 20px; margin: 5px; cursor: pointer; }
+        button:hover { background: #555; }
+        input { background: #111; color: #0f0; border: 1px solid #333; padding: 8px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 BOOKING STATUS DEBUGGER</h1>
+    
+    <div>
+        <input type="text" id="bookingCode" placeholder="Enter booking code" value="RTV-16-XFC6P">
+        <button onclick="checkBookingStatus()">Check Status</button>
+        <button onclick="checkCollectorUnits()">Check Collector Units</button>
+        <button onclick="makeTestBooking()">Make Test Booking (NOW)</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const API_URL = 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+        
+        async function checkBookingStatus() {
+            const bookingCode = document.getElementById('bookingCode').value;
+            const results = document.getElementById('results');
+            
+            try {
+                const response = await fetch(`${API_URL}/public/Reservations/${bookingCode}`);
+                const data = await response.json();
+                
+                results.innerHTML += `
+                    <div class="result">
+                        <h3>📊 BOOKING STATUS: ${bookingCode}</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                results.innerHTML += `
+                    <div class="result">
+                        <h3>❌ ERROR checking booking</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function checkCollectorUnits() {
+            const results = document.getElementById('results');
+            
+            try {
+                // This will fail without auth, but we can see the error
+                const response = await fetch(`${API_URL}/collector/units`);
+                const data = await response.json();
+                
+                results.innerHTML += `
+                    <div class="result">
+                        <h3>🏖️ COLLECTOR UNITS</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                results.innerHTML += `
+                    <div class="result">
+                        <h3>⚠️ COLLECTOR UNITS (Auth Required)</h3>
+                        <pre>Expected: 403 Unauthorized (this is normal)</pre>
+                    </div>
+                `;
+            }
+        }
+
+        async function makeTestBooking() {
+            const results = document.getElementById('results');
+            
+            // Create a booking for RIGHT NOW
+            const now = new Date();
+            const arrivalTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            const today = now.toISOString().split('T')[0];
+            
+            const payload = {
+                venueId: 18,
+                zoneId: 16, // vipi zone
+                guestName: "Test User",
+                guestPhone: "+355691234567",
+                guestCount: 2,
+                sunbedCount: 1,
+                arrivalTime: arrivalTime,
+                reservationDate: today,
+                notes: 'DEBUG TEST BOOKING'
+            };
+            
+            try {
+                const response = await fetch(`${API_URL}/public/Reservations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const data = await response.json();
+                
+                results.innerHTML += `
+                    <div class="result">
+                        <h3>🎯 TEST BOOKING CREATED</h3>
+                        <p><strong>Booking Code:</strong> ${data.bookingCode}</p>
+                        <p><strong>Status:</strong> ${data.status}</p>
+                        <p><strong>Arrival:</strong> ${arrivalTime}</p>
+                        <p><strong>Expiration:</strong> ${data.expirationTime}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+                
+                // Auto-fill the booking code for status check
+                document.getElementById('bookingCode').value = data.bookingCode;
+                
+            } catch (error) {
+                results.innerHTML += `
+                    <div class="result">
+                        <h3>❌ ERROR creating test booking</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

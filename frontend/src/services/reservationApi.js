@@ -96,5 +96,18 @@ export const reservationApi = {
   async getRestaurantVenues() {
     const venues = await apiRequest(`${API_URL}/venues`);
     return venues.filter(v => v.type?.toLowerCase() === 'restaurant' && v.isActive);
+  },
+
+  // 🔍 DEBUG: Check specific booking status
+  async debugBookingStatus(bookingCode) {
+    console.log(`🔍 Checking booking status for: ${bookingCode}`);
+    try {
+      const result = await this.getReservationStatus(bookingCode);
+      console.log('📊 Booking Status Result:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to get booking status:', error);
+      throw error;
+    }
   }
 };
