@@ -200,17 +200,9 @@ Faleminderit!`;
           // Convert to backend expected format (camelCase as per swagger.json)
           console.log("🔧 Starting payload construction...");
           
-          const reservationDate = new Date(bookingData.date);
-          console.log("✅ reservationDate created:", reservationDate);
-          
-          const [hours, minutes] = bookingData.arrivalTime.split(':');
-          console.log("✅ time split:", { hours, minutes });
-          
-          const startTime = new Date(reservationDate);
-          startTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-          console.log("✅ startTime created:", startTime);
-          
           console.log("🔧 Building API payload...");
+          
+          // 🕵️‍♂️ THE INVESTIGATION: Payload debugging
           const apiPayload = {
             venueId: venue.id,
             zoneId: selectedZone.id,
@@ -219,10 +211,30 @@ Faleminderit!`;
             guestCount: bookingData.guestCount || 2,
             sunbedCount: bookingData.sunbedCount,
             arrivalTime: bookingData.arrivalTime,
-            reservationDate: reservationDate.toISOString(),
-            startTime: startTime.toISOString(),
+            reservationDate: bookingData.date, // Just send 'YYYY-MM-DD' string
+            startTime: bookingData.date + "T" + bookingData.arrivalTime + ":00", // Fixed format
             notes: 'Booked via XIXA Discovery'
           };
+          
+          // 🔥 PAYLOAD INSPECTION: The Truth
+          console.log("PAYLOAD INSPECTION:", JSON.stringify(apiPayload, null, 2));
+          
+          // Check specifically for nulls, undefined, or empty strings
+          Object.entries(apiPayload).forEach(([key, value]) => {
+            if (value === null || value === undefined || value === "") {
+              console.warn(`🔥 PAYLOAD FIELD ERROR: ${key} is ${value}`);
+            }
+            // Check data types
+            console.log(`📊 ${key}: ${typeof value} = ${value}`);
+          });
+          
+          // Verify critical fields
+          console.log("🔍 CRITICAL FIELD VERIFICATION:");
+          console.log(`venue.id type: ${typeof venue.id}, value: ${venue.id}`);
+          console.log(`selectedZone.id type: ${typeof selectedZone.id}, value: ${selectedZone.id}`);
+          console.log(`guestCount type: ${typeof apiPayload.guestCount}, value: ${apiPayload.guestCount}`);
+          console.log(`sunbedCount type: ${typeof apiPayload.sunbedCount}, value: ${apiPayload.sunbedCount}`);
+          
           console.log("✅ API payload constructed successfully");
 
           console.log('📤 Final API Payload:', JSON.stringify(apiPayload, null, 2));
@@ -265,10 +277,28 @@ Faleminderit!`;
         stack: error.stack
       });
       
-      // TEMPORARY: Show exact error for debugging
+      // ENHANCED ERROR DISPLAY: Show exact backend response
       const errorStatus = error.response?.status || 'undefined';
       const errorData = error.response?.data || 'undefined';
-      alert(`DEBUG INFO:\nError: ${error.message}\nStatus: ${errorStatus}\nData: ${JSON.stringify(errorData, null, 2)}`);
+      const contentType = error.response?.contentType || 'unknown';
+      const statusText = error.response?.statusText || 'unknown';
+      
+      console.error('🔥 COMPLETE ERROR BREAKDOWN:', {
+        message: error.message,
+        status: errorStatus,
+        statusText,
+        contentType,
+        data: errorData,
+        fullError: error
+      });
+      
+      alert(`🔥 BACKEND ERROR DETAILS:
+Error: ${error.message}
+Status: ${errorStatus} ${statusText}
+Content-Type: ${contentType}
+Response: ${JSON.stringify(errorData, null, 2)}
+
+Check console for full details.`);
       
       try {
         const haptics = await getHaptics();

@@ -4,6 +4,13 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-
 
 // REPLACED THE "secureFetch" HACK WITH A CLEAN HELPER
 const apiRequest = async (url, options = {}) => {
+  console.log('🌐 API Request Details:', {
+    url,
+    method: options.method || 'GET',
+    headers: options.headers,
+    body: options.body
+  });
+
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -12,13 +19,52 @@ const apiRequest = async (url, options = {}) => {
     }
   });
 
+  console.log('🌐 Raw Response:', {
+    status: response.status,
+    statusText: response.statusText,
+    ok: response.ok,
+    headers: Object.fromEntries(response.headers.entries())
+  });
+
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const error = new Error(errorData.message || 'API Request Failed');
-    error.response = { status: response.status, data: errorData };
+    // 🕵️‍♂️ CAPTURE THE EXACT RESPONSE BODY
+    let errorData;
+    const contentType = response.headers.get('content-type') || '';
+    
+    try {
+      if (contentType.includes('application/json')) {
+        errorData = await response.json();
+      } else {
+        // If it's text/plain or other format
+        const textResponse = await response.text();
+        console.error('🔥 NON-JSON ERROR RESPONSE:', textResponse);
+        errorData = { message: textResponse, rawResponse: textResponse };
+      }
+    } catch (parseError) {
+      console.error('🔥 FAILED TO PARSE ERROR RESPONSE:', parseError);
+      errorData = { message: 'Failed to parse error response', parseError: parseError.message };
+    }
+    
+    console.error('🔥 DETAILED ERROR RESPONSE:', {
+      status: response.status,
+      statusText: response.statusText,
+      contentType,
+      errorData
+    });
+    
+    const error = new Error(errorData.message || errorData.title || 'API Request Failed');
+    error.response = { 
+      status: response.status, 
+      statusText: response.statusText,
+      data: errorData,
+      contentType 
+    };
     throw error;
   }
-  return response.json();
+  
+  const result = await response.json();
+  console.log('✅ API Success Response:', result);
+  return result;
 };
 
 export const reservationApi = {
