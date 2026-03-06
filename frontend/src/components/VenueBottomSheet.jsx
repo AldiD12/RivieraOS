@@ -30,12 +30,10 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
 
 
 
-  // Time slots (09:00 - 18:00, 30-min intervals)
-  const timeSlots = [
-    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
-    '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'
-  ];
+  // Get current hour + 1 for default arrival time
+  const now = new Date();
+  const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
+  const defaultArrivalTime = `${nextHour.getHours().toString().padStart(2, '0')}:00`;
 
   const availability = venue.availability;
   const hasAvailability = availability && availability.availableUnits > 0;
@@ -507,89 +505,83 @@ Faleminderit!`;
 
 
               {/* Arrival Time */}
+              {/* Arrival Time - Simple 4-Button Grid (CONCIERGE UX) */}
               <div>
-                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                  Ora e Arritjes
+                <label className={`block text-sm font-medium mb-3 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                  When will you arrive?
                 </label>
-                <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
-                  {timeSlots.map(time => (
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { time: '09:00', label: 'MORNING', desc: '9:00 AM' },
+                    { time: '12:00', label: 'NOON', desc: '12:00 PM' },
+                    { time: '15:00', label: 'AFTERNOON', desc: '3:00 PM' },
+                    { time: '17:00', label: 'LATE', desc: '5:00 PM' }
+                  ].map(slot => (
                     <button
-                      key={time}
+                      key={slot.time}
                       type="button"
-                      onClick={() => setBookingData({ ...bookingData, arrivalTime: time })}
+                      onClick={() => setBookingData({ ...bookingData, arrivalTime: slot.time })}
                       className={`
-                        px-3 py-2 rounded-sm text-sm font-medium transition-all
-                        ${bookingData.arrivalTime === time
+                        py-4 px-3 rounded-sm border text-center transition-all duration-300
+                        ${bookingData.arrivalTime === slot.time
                           ? isDayMode
-                            ? 'bg-zinc-950 text-white'
-                            : 'bg-[#10FF88] text-zinc-950'
+                            ? 'border-zinc-950 bg-zinc-950 text-white'
+                            : 'border-[#10FF88] bg-[#10FF88]/10 text-[#10FF88]'
                           : isDayMode
-                          ? 'border border-zinc-300 text-zinc-700 hover:border-zinc-950'
-                          : 'border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
+                          ? 'border-zinc-300 text-zinc-700 hover:border-zinc-950'
+                          : 'border-zinc-700 text-zinc-400 hover:border-[#10FF88]'
                         }
                       `}
                     >
-                      {time}
+                      <div className="font-medium text-sm tracking-widest">{slot.label}</div>
+                      <div className="text-xs opacity-70 mt-1">{slot.desc}</div>
                     </button>
                   ))}
                 </div>
                 {(venue.type || '').toLowerCase().includes('beach') && (
-                  <p className={`text-xs mt-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                    ⏰ Rezervimi skadon 15 minuta pas orës së arritjes
+                  <p className={`text-xs mt-3 text-center ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                    ⏰ Reservation expires 15 minutes after arrival time
                   </p>
                 )}
               </div>
 
-              {/* Summary */}
-              <div className={`rounded-sm p-4 border ${isDayMode ? 'bg-stone-50 border-zinc-300' : 'bg-zinc-900 border-zinc-800'}`}>
-                <p className={`text-xs uppercase tracking-wider mb-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                  Përmbledhje
+              {/* Summary - CASH IS KING Psychology */}
+              <div className="text-center py-6 border-t border-zinc-200">
+                <p className={`text-xs uppercase tracking-widest mb-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                  TOTAL TO PAY IN CASH
                 </p>
-                {(venue.type || '').toLowerCase().includes('beach') ? (
-                  <>
-                    <p className={`text-sm mb-1 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                      ✅ Do të rezervojmë {bookingData.sunbedCount} shtretër{bookingData.sunbedCount > 1 ? '' : ''} pranë njëri-tjetrit
-                    </p>
-                    <p className={`text-2xl font-light ${isDayMode ? 'text-zinc-950' : 'text-[#10FF88]'}`}>
-                      €{Math.round(selectedZone.basePrice * bookingData.sunbedCount)}
-                    </p>
-                    <p className={`text-xs ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                      {bookingData.sunbedCount} shtretër × €{selectedZone.basePrice}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className={`text-sm mb-1 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                      📱 Do të dërgoni mesazh në WhatsApp për të konfirmuar rezervimin
-                    </p>
-                    <p className={`text-sm ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                      {bookingData.guestCount} persona • {bookingData.arrivalTime}
-                    </p>
-                  </>
-                )}
+                <h2 className={`text-5xl font-serif mb-2 ${isDayMode ? 'text-zinc-950' : 'text-[#10FF88]'}`} style={{ fontFamily: 'Cormorant Garamond, serif' }}>
+                  €{Math.round(selectedZone.basePrice * bookingData.sunbedCount)}
+                </h2>
+                <p className={`text-xs ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                  Pay at entrance • No prepayment required
+                </p>
               </div>
 
               {/* Submit Button */}
+              {/* Submit Button - VIP GLOW EFFECT */}
               <button
                 type="submit"
                 disabled={submitting}
                 className={`
-                  w-full px-8 py-4 rounded-sm text-sm tracking-widest uppercase
-                  transition-all duration-300 font-medium
+                  w-full px-8 py-6 rounded-sm text-sm tracking-widest uppercase
+                  transition-all duration-300 font-bold
                   ${submitting ? 'opacity-50 cursor-not-allowed' : ''}
                   ${isDayMode
-                    ? 'bg-zinc-950 text-white hover:bg-zinc-800 shadow-lg'
-                    : 'bg-zinc-950 text-[#10FF88] border border-zinc-800 hover:shadow-[0_0_20px_rgba(16,255,136,0.4)]'
+                    ? 'bg-zinc-950 text-white hover:bg-zinc-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
+                    : 'bg-zinc-950 text-[#10FF88] border border-zinc-800 hover:shadow-[0_0_30px_rgba(16,255,136,0.6)] shadow-[0_0_20px_rgba(16,255,136,0.3)]'
                   }
                 `}
               >
                 {submitting 
-                  ? 'Duke procesuar...' 
-                  : (venue.type || '').toLowerCase().includes('beach')
-                    ? 'REZERVO TANI' 
-                    : 'DËRGO MESAZH'
+                  ? 'SECURING ACCESS...' 
+                  : 'CONFIRM ACCESS'
                 }
               </button>
+              
+              <p className={`text-center text-xs mt-3 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                Pay €{Math.round(selectedZone.basePrice * bookingData.sunbedCount)} cash at the entrance
+              </p>
             </form>
           </div>
         </div>
