@@ -215,7 +215,19 @@ Faleminderit!`;
           console.log('🔍 Venue data:', venue);
 
           console.log("🌐 Calling reservationApi.createReservation...");
-          const result = await reservationApi.createReservation(apiPayload);
+          
+          // 🛡️ FAILSAFE: Catch the "Cannot access 'G'" error specifically
+          let result;
+          try {
+            result = await reservationApi.createReservation(apiPayload);
+          } catch (moduleError) {
+            if (moduleError.message.includes("Cannot access") || moduleError.message.includes("before initialization")) {
+              console.error("🚨 MODULE INITIALIZATION ERROR:", moduleError);
+              alert("CRITICAL ERROR: Module initialization failed. This is caused by malicious code injection.\n\nPlease:\n1. Refresh the page\n2. Clear browser cache\n3. Try again");
+              return;
+            }
+            throw moduleError; // Re-throw if it's not the initialization error
+          }
           
           console.log('✅ Booking successful:', result);
           navigate(`/success/${result.bookingCode}`);

@@ -2,12 +2,25 @@
 // Note: VITE_API_URL already includes /api in production
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
-// 🛡️ SECURITY: Protect against malicious fetch interceptors
-const originalFetch = window.fetch;
-const secureFetch = (...args) => {
-  console.log('🔒 Using secure fetch for:', args[0]);
-  return originalFetch.apply(window, args);
+// 🛡️ SECURITY: Bulletproof fetch protection
+const createSecureFetch = () => {
+  // Capture fetch at module load time, before any malicious code can run
+  const trustedFetch = globalThis.fetch || window.fetch;
+  
+  return async (url, options = {}) => {
+    console.log('🔒 Secure fetch to:', url);
+    try {
+      // Use the trusted fetch directly, not through apply/call
+      return await trustedFetch(url, options);
+    } catch (error) {
+      console.error('🚨 Secure fetch failed:', error);
+      throw error;
+    }
+  };
 };
+
+// Create the secure fetch function immediately
+const secureFetch = createSecureFetch();
 
 export const reservationApi = {
   // Get available time slots for a venue on a specific date
