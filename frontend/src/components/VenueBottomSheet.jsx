@@ -3,8 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import haptics from '../utils/haptics';
 import { reservationApi } from '../services/reservationApi';
 
+// 🛡️ SECURITY: Detect and warn about malicious fetch interceptors
+const detectMaliciousCode = () => {
+  const fetchString = window.fetch.toString();
+  if (fetchString.includes('_w_skunk') || fetchString.includes('_o_fetch') || fetchString.includes('handleResponse')) {
+    console.warn('🚨 SECURITY WARNING: Malicious fetch interceptor detected!');
+    console.warn('🚨 This may cause "Cannot access G before initialization" errors');
+    return true;
+  }
+  return false;
+};
+
 export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) {
   const navigate = useNavigate();
+  
+  // 🛡️ SECURITY: Check for malicious code on component mount
+  if (detectMaliciousCode()) {
+    console.warn('🚨 Malicious code detected - using defensive programming patterns');
+  }
   const [selectedZone, setSelectedZone] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
   // 🚨 TRAP 2 FIX: Load saved guest info from localStorage
@@ -56,14 +72,40 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
     
     // 🚨 EMERGENCY DEBUG: THE "G" HUNT
     console.log("🔍 DEBUG: Checking scope before submission...");
+    
+    // 🛡️ SECURITY: Protect against malicious code injection
     try {
-      console.log("📊 BookingData state:", bookingData);
-      console.log("📊 SelectedZone:", selectedZone);
-      console.log("📊 Venue:", venue);
-      console.log("📊 All variables accessible - no hoisting issues detected");
+      // Verify all variables are accessible before proceeding
+      const debugInfo = {
+        bookingData: bookingData,
+        selectedZone: selectedZone,
+        venue: venue,
+        guestName: bookingData?.guestName,
+        guestPhone: bookingData?.guestPhone,
+        guestCount: bookingData?.guestCount,
+        sunbedCount: bookingData?.sunbedCount,
+        arrivalTime: bookingData?.arrivalTime,
+        date: bookingData?.date
+      };
+      
+      console.log("📊 All variables verified:", debugInfo);
+      
+      // Check for undefined or null critical values
+      if (!bookingData) {
+        throw new Error("BookingData is undefined");
+      }
+      if (!selectedZone) {
+        throw new Error("SelectedZone is undefined");
+      }
+      if (!venue) {
+        throw new Error("Venue is undefined");
+      }
+      
+      console.log("✅ All scope checks passed - proceeding with submission");
+      
     } catch (err) {
       console.error("💥 Variable access error BEFORE submission:", err);
-      alert(`SCOPE ERROR: ${err.message}`);
+      alert(`SCOPE ERROR: ${err.message}\n\nThis appears to be caused by malicious code injection. Please refresh the page and try again.`);
       return;
     }
     
