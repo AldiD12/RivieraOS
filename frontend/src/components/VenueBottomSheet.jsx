@@ -191,7 +191,7 @@ Faleminderit!`;
       if (error.response?.data?.error === 'INSUFFICIENT_CAPACITY') {
         const available = error.response.data.availableUnits;
         alert(`Na vjen keq, vetëm ${available} shtretër të lirë në këtë zonë. Ju lutem zgjidhni më pak shtretër ose provoni zonë tjetër.`);
-      } else if (error.message.includes('Invalid arrivalTime')) {
+      } else if (error.message && error.message.includes('Invalid arrivalTime')) {
         alert('Ora e arritjes është e pavlefshme. Ju lutem provoni përsëri.');
       } else if (error.response?.status === 404) {
         alert('Vendi ose zona nuk u gjet. Ju lutem provoni përsëri.');
@@ -205,7 +205,7 @@ Faleminderit!`;
         const errorMsg = error.response?.data?.message || error.response?.data?.error || error.response?.data || 'Invalid request data';
         alert(`Bad Request: ${JSON.stringify(errorMsg)}\n\nPlease check the console for details.`);
       } else {
-        alert(`Rezervimi dështoi: ${error.message}\n\nJu lutem provoni përsëri ose kontaktoni stafin.`);
+        alert(`Rezervimi dështoi: ${error.message || 'Unknown error'}\n\nJu lutem provoni përsëri ose kontaktoni stafin.`);
       }
     } finally {
       setSubmitting(false);
