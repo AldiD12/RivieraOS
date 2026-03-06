@@ -29,6 +29,12 @@ export function SuperAdminFeaturesPanel({ businessId, businessName, onClose }) {
     const fetchCurrentFeatures = async () => {
       try {
         setLoadingFeatures(true);
+        
+        // Validate business ID
+        if (!businessId || businessId <= 0) {
+          throw new Error('Invalid business ID provided');
+        }
+        
         console.log(`📡 Loading features for business ${businessId}`);
         
         // Fetch current business features from the API
@@ -45,6 +51,19 @@ export function SuperAdminFeaturesPanel({ businessId, businessName, onClose }) {
             'Content-Type': 'application/json'
           }
         });
+        
+        if (response.status === 404) {
+          console.warn(`⚠️ Business ID ${businessId} not found - using default features`);
+          // Use default features for non-existent business
+          setFeatures({
+            hasDigitalMenu: false,
+            hasTableOrdering: false,
+            hasBookings: false,
+            hasEvents: false,
+            hasPulse: false
+          });
+          return;
+        }
         
         if (!response.ok) {
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -70,11 +89,28 @@ export function SuperAdminFeaturesPanel({ businessId, businessName, onClose }) {
             hasEvents: data.hasEvents || false,
             hasPulse: data.hasPulse || false
           });
+        } else {
+          // Fallback to defaults if no data
+          console.warn('⚠️ No feature data received - using defaults');
+          setFeatures({
+            hasDigitalMenu: false,
+            hasTableOrdering: false,
+            hasBookings: false,
+            hasEvents: false,
+            hasPulse: false
+          });
         }
         
       } catch (err) {
         console.error('Failed to load current features:', err);
-        // Keep default values if loading fails
+        // Use default features on any error
+        setFeatures({
+          hasDigitalMenu: false,
+          hasTableOrdering: false,
+          hasBookings: false,
+          hasEvents: false,
+          hasPulse: false
+        });
       } finally {
         setLoadingFeatures(false);
       }
@@ -101,6 +137,11 @@ export function SuperAdminFeaturesPanel({ businessId, businessName, onClose }) {
       setSaving(true);
       setSaveError(null);
       
+      // Validate business ID
+      if (!businessId || businessId <= 0) {
+        throw new Error('Invalid business ID provided');
+      }
+      
       console.log('💾 Saving features:', { businessId, features });
       
       await updateFeatures(businessId, features);
@@ -110,7 +151,17 @@ export function SuperAdminFeaturesPanel({ businessId, businessName, onClose }) {
       
     } catch (err) {
       console.error('Failed to save features:', err);
-      setSaveError(err.message);
+      
+      // Provide specific error messages
+      if (err.message.includes('404')) {
+        setSaveError(`Business ID ${businessId} not found. Please verify this business exists in the system.`);
+      } else if (err.message.includes('403')) {
+        setSaveError('Permission denied. You may not have access to modify this business\'s features.');
+      } else if (err.message.includes('401')) {
+        setSaveError('Authentication failed. Please login again as SuperAdmin.');
+      } else {
+        setSaveError(err.message || 'Failed to save features. Please try again.');
+      }
     } finally {
       setSaving(false);
     }

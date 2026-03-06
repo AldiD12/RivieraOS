@@ -162,11 +162,12 @@ export default function DiscoveryPage() {
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('Beach'); // Default to Beach only
   const [isDayMode, setIsDayMode] = useState(false); // false = night mode (default)
-  const [viewMode, setViewMode] = useState('map'); // 'map', 'list', or 'events'
+  const [viewMode, setViewMode] = useState('events'); // Start with events for night mode
   const [userLocation, setUserLocation] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [initialViewState, setInitialViewState] = useState(RIVIERA_CENTER);
   const [viewState, setViewState] = useState(RIVIERA_CENTER);
+  const [modeInitialized, setModeInitialized] = useState(false); // Track if mode is properly initialized
   
   // Events state
   const [events, setEvents] = useState([]);
@@ -214,6 +215,35 @@ export default function DiscoveryPage() {
     loadVenues();
     loadEvents();
   }, []);
+
+  // Initialize day/night mode properly on mount
+  useEffect(() => {
+    // Small delay to ensure proper mobile initialization
+    const initializeMode = () => {
+      console.log('🔄 Initializing day/night mode...');
+      console.log('📱 Current state:', { isDayMode, viewMode });
+      
+      // Ensure view mode matches day/night mode on first load
+      if (isDayMode && viewMode === 'events') {
+        console.log('🌅 Day mode detected, switching to map view');
+        setViewMode('map'); // Day mode should show map
+      } else if (!isDayMode && (viewMode === 'map' || viewMode === 'list')) {
+        console.log('🌙 Night mode detected, switching to events view');
+        setViewMode('events'); // Night mode should show events
+      }
+      
+      // Mark as initialized
+      setModeInitialized(true);
+    };
+    
+    // Run immediately
+    initializeMode();
+    
+    // Also run after a small delay for mobile devices
+    const timeoutId = setTimeout(initializeMode, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, []); // Run only once on mount
 
   const loadVenues = async () => {
     try {
@@ -790,20 +820,26 @@ export default function DiscoveryPage() {
             <div className={`backdrop-blur-md border p-1 rounded-full flex shadow-lg pointer-events-auto ${isDayMode ? 'bg-white/80 border-zinc-200' : 'bg-zinc-900/80 border-zinc-800'}`}>
               <button 
                 onClick={() => {
+                  if (!modeInitialized) return; // Prevent clicks before initialization
+                  console.log('🌅 Switching to DAY mode');
                   setIsDayMode(true);
                   setViewMode('map'); // Day = Beach clubs on map
                 }}
-                className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${isDayMode ? 'bg-zinc-950 text-white border border-zinc-950 shadow-sm' : 'bg-transparent text-zinc-500 border border-transparent hover:bg-zinc-800'}`}
+                disabled={!modeInitialized}
+                className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!modeInitialized ? 'opacity-50 cursor-not-allowed' : ''} ${isDayMode ? 'bg-zinc-950 text-white border border-zinc-950 shadow-sm' : 'bg-transparent text-zinc-500 border border-transparent hover:bg-zinc-800'}`}
               >
                 <span>⛱️</span>
                 <span>DAY</span>
               </button>
               <button 
                 onClick={() => {
+                  if (!modeInitialized) return; // Prevent clicks before initialization
+                  console.log('🌙 Switching to NIGHT mode');
                   setIsDayMode(false);
                   setViewMode('events'); // Night = Events/nightlife
                 }}
-                className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!isDayMode ? 'bg-zinc-950 text-[#10FF88] border border-zinc-800 shadow-[0_0_12px_rgba(16,255,136,0.4)]' : 'bg-transparent text-zinc-500 border border-transparent hover:bg-stone-100'}`}
+                disabled={!modeInitialized}
+                className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!modeInitialized ? 'opacity-50 cursor-not-allowed' : ''} ${!isDayMode ? 'bg-zinc-950 text-[#10FF88] border border-zinc-800 shadow-[0_0_12px_rgba(16,255,136,0.4)]' : 'bg-transparent text-zinc-500 border border-transparent hover:bg-stone-100'}`}
               >
                 <span className={!isDayMode ? '' : 'opacity-70'} style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>🪩</span>
                 <span style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>NIGHT</span>
