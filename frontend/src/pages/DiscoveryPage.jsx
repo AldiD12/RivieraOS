@@ -795,7 +795,7 @@ export default function DiscoveryPage() {
 
       {/* List View - Show Businesses Grouped (Day Mode) or Events (Night Mode) */}
       {viewMode === 'list' && (
-        <div className="pt-[200px] pb-[60px] overflow-y-auto no-scrollbar px-6 space-y-6">
+        <div className="pt-[160px] pb-[60px] overflow-y-auto no-scrollbar px-6 space-y-6">
           {/* Day Mode: Show business groups */}
           {isDayMode && businessGroups.map((business) => {
             // Calculate business-level availability (sum of all venues)
@@ -1102,7 +1102,7 @@ export default function DiscoveryPage() {
       
       {/* Events View */}
       {viewMode === 'events' && (
-        <div className={`pt-[200px] pb-[60px] overflow-y-auto no-scrollbar px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
+        <div className={`pt-[160px] pb-[60px] overflow-y-auto no-scrollbar px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
           <EventsView
             events={filteredEvents}
             venues={venues}
@@ -1118,9 +1118,9 @@ export default function DiscoveryPage() {
       )}
 
       {/* Top Header - Fixed Command Center */}
-      <div className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md pb-4 pointer-events-auto ${isDayMode ? 'bg-stone-50/90' : 'bg-zinc-950/90'}`}>
+      <div className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md pb-2 pointer-events-auto ${isDayMode ? 'bg-stone-50/90' : 'bg-zinc-950/90'}`}>
         {/* Top Row: Logo, Day/Night, Bell, Search Icon */}
-        <div className="flex justify-between items-center px-4 pt-12">
+        <div className="flex justify-between items-center px-4 pt-6">
           <div>
             <h1 className={`tracking-tight drop-shadow-sm ${isDayMode ? 'font-serif text-5xl font-light text-stone-900 tracking-tighter leading-none' : 'font-serif text-4xl text-white drop-shadow-lg'}`} style={isDayMode ? { fontFamily: 'Cormorant Garamond, serif' } : { fontFamily: 'Playfair Display, serif' }}>XIXA</h1>
             <div className="flex items-center space-x-2 mt-1">
@@ -1177,7 +1177,7 @@ export default function DiscoveryPage() {
         </div>
         
         {/* Second Row: List/Map Toggle (Move it here, to the right) */}
-        <div className="flex justify-end px-4 mt-4">
+        <div className="flex justify-end px-4 mt-3">
           <div className={`flex items-center backdrop-blur-md border rounded-lg p-1 shadow-lg ${isDayMode ? 'bg-white/90 border-zinc-200' : 'bg-zinc-900/90 border-zinc-800'}`}>
             <button 
               onClick={() => setViewMode('list')}
@@ -1202,7 +1202,7 @@ export default function DiscoveryPage() {
         
         {/* Third Row: The Filter Pills (Scrollable horizontally) */}
         {viewMode !== 'events' && (
-          <div className="flex overflow-x-auto px-4 mt-4 gap-2 no-scrollbar">
+          <div className="flex overflow-x-auto px-4 mt-3 gap-2 no-scrollbar">
             {/* Day Mode: Show venue filters */}
             {isDayMode && VENUE_FILTERS.map(filter => (
               <button
