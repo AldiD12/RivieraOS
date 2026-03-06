@@ -21,6 +21,7 @@ import QRCodeGenerator from './pages/QRCodeGenerator';
 import TestCronBookings from './pages/TestCronBookings';
 import SpotPage from './pages/SpotPage';
 import DiscoveryPage from './pages/DiscoveryPage';
+import EventsPage from './pages/EventsPage';
 import BookingStatusPage from './pages/BookingStatusPage';
 import BookingSuccessPage from './pages/BookingSuccessPage';
 import BookingActionPage from './pages/BookingActionPage';
@@ -66,6 +67,9 @@ function App() {
         {/* Customer-Facing Routes */}
         {/* DISCOVER MODE - Default for tourists (no QR scan) */}
         <Route path="/" element={<DiscoveryPage />} />
+        
+        {/* EVENTS PAGE - Standalone events view with exact HTML mockup design */}
+        <Route path="/events" element={<EventsPage />} />
         
         {/* Booking Status Page - Shows booking confirmation status */}
         <Route path="/booking/:bookingCode" element={<BookingStatusPage />} />
