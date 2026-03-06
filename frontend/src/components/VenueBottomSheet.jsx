@@ -54,6 +54,19 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     
+    // 🚨 EMERGENCY DEBUG: THE "G" HUNT
+    console.log("🔍 DEBUG: Checking scope before submission...");
+    try {
+      console.log("📊 BookingData state:", bookingData);
+      console.log("📊 SelectedZone:", selectedZone);
+      console.log("📊 Venue:", venue);
+      console.log("📊 All variables accessible - no hoisting issues detected");
+    } catch (err) {
+      console.error("💥 Variable access error BEFORE submission:", err);
+      alert(`SCOPE ERROR: ${err.message}`);
+      return;
+    }
+    
     if (!selectedZone) return;
     
     try {
@@ -127,11 +140,19 @@ Faleminderit!`;
         
         try {
           // Convert to backend expected format (camelCase as per swagger.json)
+          console.log("🔧 Starting payload construction...");
+          
           const reservationDate = new Date(bookingData.date);
+          console.log("✅ reservationDate created:", reservationDate);
+          
           const [hours, minutes] = bookingData.arrivalTime.split(':');
+          console.log("✅ time split:", { hours, minutes });
+          
           const startTime = new Date(reservationDate);
           startTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+          console.log("✅ startTime created:", startTime);
           
+          console.log("🔧 Building API payload...");
           const apiPayload = {
             venueId: venue.id,
             zoneId: selectedZone.id,
@@ -144,12 +165,14 @@ Faleminderit!`;
             startTime: startTime.toISOString(),
             notes: 'Booked via XIXA Discovery'
           };
+          console.log("✅ API payload constructed successfully");
 
           console.log('📤 Final API Payload:', JSON.stringify(apiPayload, null, 2));
           console.log('🔍 Booking data state:', bookingData);
           console.log('🔍 Selected zone:', selectedZone);
           console.log('🔍 Venue data:', venue);
 
+          console.log("🌐 Calling reservationApi.createReservation...");
           const result = await reservationApi.createReservation(apiPayload);
           
           console.log('✅ Booking successful:', result);
