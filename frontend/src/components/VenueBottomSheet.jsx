@@ -143,7 +143,7 @@ Faleminderit!`;
           guestName: bookingData.guestName,
           guestPhone: bookingData.guestPhone,
           sunbedCount: bookingData.sunbedCount,
-          arrivalTime: bookingData.arrivalTime,
+          arrivalTime: bookingData.arrivalTime + ":00", // Add seconds format
           reservationDate: bookingData.date,
           notes: 'Booked via XIXA Discovery'
         });
