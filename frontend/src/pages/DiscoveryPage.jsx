@@ -28,12 +28,21 @@ const RIVIERA_CENTER = {
   bearing: -10
 };
 
-// Venue filters
+// Venue filters (for day mode)
 const VENUE_FILTERS = [
   { id: 'all', label: 'ALL VENUES' },
   { id: 'Beach', label: 'BEACH CLUBS' },
   { id: 'Boat', label: 'BOATS' },
   { id: 'Restaurant', label: 'DINING' }
+];
+
+// Event filters (for night mode)
+const EVENT_FILTERS = [
+  { id: 'all', label: 'ALL EVENTS' },
+  { id: 'today', label: 'TODAY' },
+  { id: 'weekend', label: 'WEEKEND' },
+  { id: 'vip', label: 'VIP TABLES' },
+  { id: 'free', label: 'FREE ENTRY' }
 ];
 
 // 🎯 XIXA Atmospheric Marker with pulsing ring (theme-aware)
@@ -234,6 +243,7 @@ export default function DiscoveryPage() {
   const [eventsLoading, setEventsLoading] = useState(false);
   const [eventVibeFilter, setEventVibeFilter] = useState('all');
   const [eventDateFilter, setEventDateFilter] = useState('all');
+  const [activeEventFilter, setActiveEventFilter] = useState('all'); // For night mode event filtering
 
   // Get user location IMMEDIATELY on mount (before anything else)
   useEffect(() => {
@@ -512,6 +522,37 @@ export default function DiscoveryPage() {
     window.open(whatsappUrl, '_blank');
   };
 
+  // Filter events based on night mode filters
+  const filteredEvents = useMemo(() => {
+    if (!events || events.length === 0) return [];
+    
+    return events.filter(event => {
+      if (activeEventFilter === 'all') return true;
+      
+      const eventDate = new Date(event.startTime);
+      const today = new Date();
+      const isToday = eventDate.toDateString() === today.toDateString();
+      
+      // Weekend check (Friday, Saturday, Sunday)
+      const isWeekend = [5, 6, 0].includes(eventDate.getDay());
+      
+      switch (activeEventFilter) {
+        case 'today':
+          return isToday;
+        case 'weekend':
+          return isWeekend;
+        case 'vip':
+          // VIP events have minimum spend or VIP tables
+          return event.minimumSpend > 0 || (event.vibes && event.vibes.includes('VIP'));
+        case 'free':
+          // Free entry events
+          return !event.isTicketed || event.ticketPrice === 0;
+        default:
+          return true;
+      }
+    });
+  }, [events, activeEventFilter]);
+
   const filteredVenues = useMemo(() => {
     return venues.filter(v => {
       if (activeFilter === 'all') return true;
@@ -682,7 +723,7 @@ export default function DiscoveryPage() {
                 ))}
                 
                 {/* NIGHT MODE: Show events on map */}
-                {!isDayMode && events.map(event => {
+                {!isDayMode && filteredEvents.map(event => {
                   const venue = venues.find(v => v.id === event.venueId);
                   if (!venue || !venue.latitude || !venue.longitude) return null;
                   
@@ -727,10 +768,11 @@ export default function DiscoveryPage() {
         </div>
       )}
 
-      {/* List View - Show Businesses Grouped */}
+      {/* List View - Show Businesses Grouped (Day Mode) or Events (Night Mode) */}
       {viewMode === 'list' && (
         <div className="absolute inset-0 pt-[250px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 space-y-6">
-          {businessGroups.map((business) => {
+          {/* Day Mode: Show business groups */}
+          {isDayMode && businessGroups.map((business) => {
             // Calculate business-level availability (sum of all venues)
             const isBeachBusiness = business.venues.some(v => v.type === 'Beach' || v.type === 'BEACH');
             const totalAvailable = business.totalAvailableUnits;
@@ -874,9 +916,165 @@ export default function DiscoveryPage() {
             );
           })}
           
-          {businessGroups.length === 0 && (
+          {/* Night Mode: Show filtered events */}
+          {!isDayMode && filteredEvents.map((event) => {
+            const venue = venues.find(v => v.id === event.venueId);
+            if (!venue) return null;
+            
+            const eventDate = new Date(event.startTime);
+            const isToday = eventDate.toDateString() === new Date().toDateString();
+            const isUpcoming = eventDate > new Date();
+            
+            return (
+              <div 
+                key={event.id} 
+                className="group relative overflow-hidden rounded-[2rem] cursor-pointer bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-2xl border border-stone-200/40 hover:shadow-[0_30px_70px_-15px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out hover:-translate-y-2"
+                onClick={() => handleEventClick(event)}
+              >
+                {/* Event Image */}
+                <div className="relative h-64 w-full overflow-hidden bg-stone-100 rounded-t-[2rem]">
+                  {/* Status Badge */}
+                  <div className="absolute top-6 left-6 z-20 flex items-center space-x-3">
+                    {isToday && isUpcoming && (
+                      <span className="px-4 py-2 text-xs font-medium uppercase tracking-widest rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <span className="w-2 h-2 bg-emerald-500 inline-block mr-2 rounded-full animate-pulse"></span>
+                        TODAY
+                      </span>
+                    )}
+                    {isUpcoming && !isToday && (
+                      <span className="px-4 py-2 text-xs font-medium uppercase tracking-widest rounded-full bg-stone-50 text-stone-700 border border-stone-200">
+                        <span className="w-2 h-2 bg-stone-500 inline-block mr-2 rounded-full"></span>
+                        UPCOMING
+                      </span>
+                    )}
+                    {event.minimumSpend > 0 && (
+                      <span className="px-4 py-2 text-xs font-medium uppercase tracking-widest rounded-full bg-amber-50 text-amber-800 border border-amber-200">
+                        VIP TABLES
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Event Image or Placeholder */}
+                  {event.imageUrl ? (
+                    <img 
+                      alt={event.name} 
+                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                      src={event.imageUrl}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-stone-300">
+                      <svg className="w-20 h-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                      </svg>
+                    </div>
+                  )}
+                  
+                  {/* Gradient Overlay */}
+                  <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/40 to-transparent"></div>
+                  
+                  {/* Venue Badge */}
+                  <div className="absolute bottom-6 left-6 text-white">
+                    <div className="flex items-center space-x-2 text-sm uppercase tracking-widest font-medium opacity-90">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span>{venue.name}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Event Info */}
+                <div className="p-8 md:p-12">
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="font-serif text-4xl font-light tracking-tighter text-stone-900 leading-none">{event.name}</h3>
+                    <div className="text-right">
+                      <div className="text-sm text-stone-500 uppercase tracking-widest font-medium">
+                        {eventDate.toLocaleDateString('en-GB', { 
+                          weekday: 'short', 
+                          day: 'numeric', 
+                          month: 'short' 
+                        })}
+                      </div>
+                      <div className="text-2xl font-serif text-stone-900 mt-1">
+                        {eventDate.toLocaleTimeString('en-GB', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-lg leading-relaxed mb-8 font-sans text-stone-600">
+                    {event.description || 'An exclusive nightlife experience awaits you at one of the Riviera\'s most prestigious venues.'}
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-8 mb-8 border-t border-stone-200/40 pt-8">
+                    <div className="flex flex-col">
+                      <span className="text-sm uppercase text-stone-500 tracking-widest font-medium mb-2">Entry</span>
+                      <span className="text-4xl font-serif text-amber-900">
+                        {event.isTicketed && event.ticketPrice > 0 
+                          ? `€${event.ticketPrice}` 
+                          : 'Free Entry'
+                        }
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm uppercase text-stone-500 tracking-widest font-medium mb-2">Min Spend</span>
+                      <span className="text-4xl font-serif text-amber-900">
+                        {event.minimumSpend > 0 
+                          ? `€${event.minimumSpend}` 
+                          : 'No Minimum'
+                        }
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Vibe Tags */}
+                  {event.vibes && event.vibes.length > 0 && (
+                    <div className="flex flex-wrap gap-3 mb-8">
+                      {event.vibes.slice(0, 3).map((vibe, index) => (
+                        <span 
+                          key={index}
+                          className="px-4 py-2 text-sm font-medium uppercase tracking-widest rounded-full bg-stone-50 border border-stone-200 text-stone-700"
+                        >
+                          {vibe}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center space-x-4 pt-4">
+                    <button className="flex-1 bg-stone-900 text-stone-50 px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]">
+                      Book via WhatsApp
+                    </button>
+                    <button className="w-14 h-14 flex items-center justify-center border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-stone-50 transition-all duration-300 rounded-full">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          
+          {/* Empty States */}
+          {isDayMode && businessGroups.length === 0 && (
             <div className="text-center py-20">
-              <p className={`text-lg ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>No businesses found</p>
+              <p className="text-lg text-stone-500">No businesses found</p>
+            </div>
+          )}
+          
+          {!isDayMode && filteredEvents.length === 0 && (
+            <div className="text-center py-20">
+              <div className="text-stone-400 mb-6">
+                <svg className="w-20 h-20 mx-auto mb-6 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-serif font-light text-stone-700 mb-3">No events found</h3>
+              <p className="text-lg text-stone-500">Try adjusting your filters or check back later for new events</p>
             </div>
           )}
         </div>
@@ -886,7 +1084,7 @@ export default function DiscoveryPage() {
       {viewMode === 'events' && (
         <div className={`absolute inset-0 pt-[250px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
           <EventsView
-            events={events}
+            events={filteredEvents}
             venues={venues}
             loading={eventsLoading}
             vibeFilter={eventVibeFilter}
@@ -976,10 +1174,11 @@ export default function DiscoveryPage() {
             </div>
           </div>
 
-          {/* Filter Pills - Only show for map/list views, not events */}
+          {/* Filter Pills - Show venue filters for day mode, event filters for night mode */}
           {viewMode !== 'events' && (
             <div className="flex space-x-3 overflow-x-auto no-scrollbar w-full pb-2 pt-4 pl-0.5">
-              {VENUE_FILTERS.map(filter => (
+              {/* Day Mode: Show venue filters */}
+              {isDayMode && VENUE_FILTERS.map(filter => (
                 <button
                   key={filter.id}
                   onClick={() => setActiveFilter(filter.id)}
@@ -987,11 +1186,25 @@ export default function DiscoveryPage() {
                     whitespace-nowrap px-5 py-2 rounded-full text-xs font-medium tracking-wide
                     transform active:scale-95 transition-all
                     ${activeFilter === filter.id
-                      ? isDayMode
-                        ? 'bg-zinc-950 border border-zinc-950 text-[#10FF88] shadow-md'
-                        : 'bg-zinc-950 border border-[#10FF88] text-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
-                      : isDayMode
-                      ? 'bg-white/80 backdrop-blur-md border border-zinc-200 text-zinc-500 hover:text-zinc-950 hover:border-zinc-400 shadow-sm'
+                      ? 'bg-zinc-950 border border-zinc-950 text-[#10FF88] shadow-md'
+                      : 'bg-white/80 backdrop-blur-md border border-zinc-200 text-zinc-500 hover:text-zinc-950 hover:border-zinc-400 shadow-sm'
+                    }
+                  `}
+                >
+                  {filter.label}
+                </button>
+              ))}
+              
+              {/* Night Mode: Show event filters */}
+              {!isDayMode && EVENT_FILTERS.map(filter => (
+                <button
+                  key={filter.id}
+                  onClick={() => setActiveEventFilter(filter.id)}
+                  className={`
+                    whitespace-nowrap px-5 py-2 rounded-full text-xs font-medium tracking-wide
+                    transform active:scale-95 transition-all
+                    ${activeEventFilter === filter.id
+                      ? 'bg-zinc-950 border border-[#10FF88] text-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
                       : 'bg-zinc-900/60 backdrop-blur-md border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
                     }
                   `}
