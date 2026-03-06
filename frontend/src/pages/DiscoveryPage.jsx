@@ -152,6 +152,66 @@ function VenueMarker({ venue, isSelected, onClick, isDayMode }) {
   );
 }
 
+// 🌙 Night Mode Event Marker - Shows events on map
+function EventMarker({ event, venue, isSelected, onClick, isDayMode }) {
+  const eventDate = new Date(event.startTime);
+  const isToday = eventDate.toDateString() === new Date().toDateString();
+  const isUpcoming = eventDate > new Date();
+  
+  return (
+    <div 
+      className="relative flex flex-col items-center cursor-pointer group"
+      onClick={onClick}
+    >
+      {/* Pulsing ring for today's events */}
+      {isToday && isUpcoming && (
+        <div className="absolute w-12 h-12 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
+          <div className="absolute inset-0 rounded-full border border-[#10FF88] opacity-50"
+               style={{ animation: 'pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1)' }}></div>
+          <div className="absolute inset-0 rounded-full bg-[#10FF88]/20 animate-pulse"></div>
+        </div>
+      )}
+      
+      {/* Main event marker */}
+      <div 
+        className={`
+          relative flex items-center justify-center rounded-full z-10
+          transition-all duration-300
+          ${isToday && isUpcoming
+            ? 'w-10 h-10 bg-zinc-950 border border-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
+            : isUpcoming
+            ? 'w-8 h-8 bg-zinc-950 border border-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.4)]'
+            : 'w-6 h-6 bg-zinc-900 border border-zinc-600 shadow-lg opacity-60'
+          }
+          ${isSelected ? 'scale-110' : 'group-hover:scale-110'}
+        `}
+      >
+        {/* Event icon */}
+        <div className={`${isToday && isUpcoming ? 'text-[#10FF88]' : isUpcoming ? 'text-purple-400' : 'text-zinc-500'}`}>
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+          </svg>
+        </div>
+      </div>
+      
+      {/* Event label */}
+      {(isSelected || (isToday && isUpcoming)) && (
+        <div 
+          className={`
+            mt-2 px-2 py-1 rounded-sm text-[10px] font-medium tracking-widest uppercase
+            backdrop-blur-md 
+            transition-opacity duration-300
+            bg-zinc-950/90 border border-zinc-800 text-zinc-400
+            ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
+          `}
+        >
+          {event.name}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function DiscoveryPage() {
   // Force rebuild timestamp: 2026-03-05 15:30
   const mapRef = useRef();
@@ -162,7 +222,7 @@ export default function DiscoveryPage() {
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('Beach'); // Default to Beach only
   const [isDayMode, setIsDayMode] = useState(false); // false = night mode (default)
-  const [viewMode, setViewMode] = useState('events'); // Start with events for night mode
+  const [viewMode, setViewMode] = useState('list'); // Start with list for night mode
   const [userLocation, setUserLocation] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [initialViewState, setInitialViewState] = useState(RIVIERA_CENTER);
@@ -224,12 +284,12 @@ export default function DiscoveryPage() {
       console.log('📱 Current state:', { isDayMode, viewMode });
       
       // Ensure view mode matches day/night mode on first load
-      if (isDayMode && viewMode === 'events') {
+      if (isDayMode && (viewMode === 'events' || viewMode === 'list')) {
         console.log('🌅 Day mode detected, switching to map view');
         setViewMode('map'); // Day mode should show map
-      } else if (!isDayMode && (viewMode === 'map' || viewMode === 'list')) {
-        console.log('🌙 Night mode detected, switching to events view');
-        setViewMode('events'); // Night mode should show events
+      } else if (!isDayMode && viewMode === 'map') {
+        console.log('🌙 Night mode detected, switching to list view');
+        setViewMode('list'); // Night mode should show list by default
       }
       
       // Mark as initialized
@@ -596,27 +656,55 @@ export default function DiscoveryPage() {
           >
             <NavigationControl position="bottom-right" showCompass={false} />
             
-            {/* Only render markers after map loads - GROUP BY BUSINESS */}
-            {mapLoaded && businessGroups.map(business => (
-              business.latitude && business.longitude && (
-                <Marker
-                  key={business.id}
-                  longitude={business.longitude}
-                  latitude={business.latitude}
-                  anchor="center"
-                >
-                  <VenueMarker
-                    venue={{
-                      ...business,
-                      availableUnitsCount: business.totalAvailableUnits
-                    }}
-                    isSelected={selectedBusiness?.id === business.id}
-                    onClick={() => handleBusinessClick(business)}
-                    isDayMode={isDayMode}
-                  />
-                </Marker>
-              )
-            ))}
+            {/* Only render markers after map loads */}
+            {mapLoaded && (
+              <>
+                {/* DAY MODE: Show business groups (venues) */}
+                {isDayMode && businessGroups.map(business => (
+                  business.latitude && business.longitude && (
+                    <Marker
+                      key={business.id}
+                      longitude={business.longitude}
+                      latitude={business.latitude}
+                      anchor="center"
+                    >
+                      <VenueMarker
+                        venue={{
+                          ...business,
+                          availableUnitsCount: business.totalAvailableUnits
+                        }}
+                        isSelected={selectedBusiness?.id === business.id}
+                        onClick={() => handleBusinessClick(business)}
+                        isDayMode={isDayMode}
+                      />
+                    </Marker>
+                  )
+                ))}
+                
+                {/* NIGHT MODE: Show events on map */}
+                {!isDayMode && events.map(event => {
+                  const venue = venues.find(v => v.id === event.venueId);
+                  if (!venue || !venue.latitude || !venue.longitude) return null;
+                  
+                  return (
+                    <Marker
+                      key={event.id}
+                      longitude={venue.longitude}
+                      latitude={venue.latitude}
+                      anchor="center"
+                    >
+                      <EventMarker
+                        event={event}
+                        venue={venue}
+                        isSelected={false}
+                        onClick={() => handleEventClick(event)}
+                        isDayMode={isDayMode}
+                      />
+                    </Marker>
+                  );
+                })}
+              </>
+            )}
             
             {/* User location marker */}
             {userLocation && (
@@ -836,7 +924,7 @@ export default function DiscoveryPage() {
                   if (!modeInitialized) return; // Prevent clicks before initialization
                   console.log('🌙 Switching to NIGHT mode');
                   setIsDayMode(false);
-                  setViewMode('events'); // Night = Events/nightlife
+                  setViewMode('list'); // Night = List view by default (can switch to events or map)
                 }}
                 disabled={!modeInitialized}
                 className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!modeInitialized ? 'opacity-50 cursor-not-allowed' : ''} ${!isDayMode ? 'bg-zinc-950 text-[#10FF88] border border-zinc-800 shadow-[0_0_12px_rgba(16,255,136,0.4)]' : 'bg-transparent text-zinc-500 border border-transparent hover:bg-stone-100'}`}
