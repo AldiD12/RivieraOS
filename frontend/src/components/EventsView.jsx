@@ -1,19 +1,13 @@
 import { useState, useMemo } from 'react';
 
 const VIBE_FILTERS = [
-  { id: 'all', label: 'ALL EVENTS', code: '[*]' },
-  { id: 'House', label: 'HOUSE', code: '[H]' },
-  { id: 'Techno', label: 'TECHNO', code: '[T]' },
-  { id: 'Commercial', label: 'COMMERCIAL', code: '[C]' },
-  { id: 'Live Music', label: 'LIVE', code: '[L]' },
-  { id: 'Hip Hop', label: 'HIP HOP', code: '[HH]' },
-  { id: 'Chill', label: 'CHILL', code: '[CH]' }
-];
-
-const DATE_FILTERS = [
-  { id: 'all', label: 'ALL DATES', code: '[∞]' },
-  { id: 'today', label: 'TODAY', code: '[24H]' },
-  { id: 'thisWeek', label: 'THIS WEEK', code: '[7D]' }
+  { id: 'all', label: 'ALL EVENTS' },
+  { id: 'Techno', label: 'TECHNO' },
+  { id: 'House', label: 'HOUSE' },
+  { id: 'Live Music', label: 'LIVE' },
+  { id: 'Commercial', label: 'COMMERCIAL' },
+  { id: 'Hip Hop', label: 'HIP HOP' },
+  { id: 'Chill', label: 'CHILL' }
 ];
 
 export default function EventsView({ 
@@ -75,11 +69,11 @@ export default function EventsView({
   
   return (
     <div className="bg-zinc-950 text-white h-screen w-full overflow-hidden relative font-sans antialiased bg-grain">
-      {/* Industrial Header */}
+      {/* Top Header - Exact from HTML */}
       <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none">
         <div className="pointer-events-auto pt-14 px-6 flex flex-col items-start space-y-4 bg-zinc-950/90 backdrop-blur-xl border-b-2 border-zinc-800 pb-4 relative">
           
-          {/* Day/Night Toggle (centered at top) */}
+          {/* Day/Night Toggle */}
           <div className="absolute top-14 left-0 right-0 flex justify-center z-30 pointer-events-none">
             <div className="bg-zinc-900 border-2 border-zinc-800 p-0.5 rounded-sm flex pointer-events-auto shadow-xl">
               <button className="flex items-center space-x-1.5 px-6 py-2 rounded-sm text-[10px] font-bold tracking-widest uppercase transition-all bg-zinc-900 text-zinc-500 hover:text-zinc-300 industrial-switch">
@@ -94,14 +88,10 @@ export default function EventsView({
           {/* Main Header */}
           <div className="flex justify-between items-start w-full relative z-20 pt-8">
             <div>
-              <h1 className="font-display text-4xl text-white tracking-tighter uppercase drop-shadow-sm" style={{ fontFamily: 'Anton, sans-serif' }}>
-                XIXA
-              </h1>
+              <h1 className="font-display text-4xl text-white tracking-tighter uppercase drop-shadow-sm">XIXA</h1>
               <div className="flex items-center space-x-2 mt-1">
                 <div className="w-1.5 h-1.5 rounded-none bg-[#10FF88] shadow-[0_0_8px_rgba(16,255,136,0.8)] animate-pulse"></div>
-                <p className="text-[10px] font-mono tracking-[0.2em] text-zinc-400 uppercase">
-                  [ ALBANIAN RIVIERA ]
-                </p>
+                <p className="text-[10px] font-mono tracking-[0.2em] text-zinc-400 uppercase">[ ALBANIAN RIVIERA ]</p>
               </div>
             </div>
             
@@ -119,7 +109,7 @@ export default function EventsView({
                 </button>
               </div>
               
-              {/* View Mode Toggle */}
+              {/* List/Map Toggle */}
               <div className="flex items-center bg-zinc-900 border-2 border-zinc-800 rounded-sm p-0.5 shadow-lg">
                 <button className="px-4 py-2 flex items-center space-x-2 text-[10px] uppercase font-black tracking-widest text-[#10FF88] bg-zinc-800 rounded-none border border-zinc-700 mr-0.5 shadow-[0_0_12px_rgba(16,255,136,0.15)]">
                   <span>[ LIST ]</span>
@@ -131,38 +121,27 @@ export default function EventsView({
             </div>
           </div>
           
-          {/* Industrial Filter Tabs */}
+          {/* Filter Buttons - Exact from HTML */}
           <div className="flex space-x-3 overflow-x-auto no-scrollbar w-full pt-4 pl-0.5 border-t border-zinc-800 mt-4 pt-4">
-            {DATE_FILTERS.map(filter => (
-              <button
-                key={filter.id}
-                onClick={() => onDateChange(filter.id)}
-                className={`
-                  whitespace-nowrap px-6 py-2 rounded-sm border-2 text-[10px] font-black tracking-widest uppercase transition-all transform active:scale-95
-                  ${dateFilter === filter.id
-                    ? 'bg-zinc-800 border-zinc-700 text-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.15)]'
-                    : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
-                  }
-                `}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
-          
-          {/* Vibe Filters */}
-          <div className="flex space-x-3 overflow-x-auto no-scrollbar w-full">
-            {VIBE_FILTERS.map(filter => (
+            <button 
+              onClick={() => onVibeChange('all')}
+              className={`whitespace-nowrap px-6 py-2 rounded-sm border-2 text-[10px] font-black tracking-widest uppercase transform active:scale-95 transition-all ${
+                vibeFilter === 'all' 
+                  ? 'bg-zinc-800 border-zinc-700 text-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.15)]'
+                  : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
+              }`}
+            >
+              [ ALL EVENTS ]
+            </button>
+            {VIBE_FILTERS.slice(1).map(filter => (
               <button
                 key={filter.id}
                 onClick={() => onVibeChange(filter.id)}
-                className={`
-                  whitespace-nowrap px-6 py-2 rounded-sm border-2 text-[10px] font-black tracking-widest uppercase transition-all transform active:scale-95
-                  ${vibeFilter === filter.id
+                className={`whitespace-nowrap px-6 py-2 rounded-sm border-2 text-[10px] font-bold tracking-widest uppercase transition-all ${
+                  vibeFilter === filter.id
                     ? 'bg-zinc-800 border-zinc-700 text-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.15)]'
                     : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
-                  }
-                `}
+                }`}
               >
                 {filter.label}
               </button>
@@ -171,26 +150,24 @@ export default function EventsView({
         </div>
       </div>
       
-      {/* Events List - Industrial Cards */}
-      <div className="absolute inset-0 pt-[280px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 space-y-8">
+      {/* Events List - Exact from HTML */}
+      <div className="absolute inset-0 pt-[250px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 space-y-8">
         {filteredEvents.length > 0 ? (
           filteredEvents.map((event) => {
             const venue = getVenueForEvent(event);
             const eventDate = new Date(event.startTime);
-            const isToday = eventDate.toDateString() === new Date().toDateString();
-            const isUpcoming = eventDate > new Date();
             
             return (
               <div 
                 key={event.id} 
-                className="group relative w-full aspect-[4/5] bg-zinc-900 border-2 border-zinc-800 rounded-sm overflow-hidden hover:border-zinc-600 transition-all duration-300 shadow-lg cursor-pointer"
+                className="relative w-full aspect-[4/5] bg-zinc-900 border-2 border-zinc-800 rounded-sm overflow-hidden group hover:border-zinc-600 transition-all duration-300 shadow-lg cursor-pointer"
                 onClick={() => onEventClick(event)}
               >
                 {/* Event Image */}
                 <div className="absolute inset-0 z-0">
                   {event.flyerImageUrl ? (
                     <img 
-                      alt={event.name} 
+                      alt="Event" 
                       className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700 contrast-[1.4] saturate-50"
                       src={event.flyerImageUrl}
                     />
@@ -201,12 +178,12 @@ export default function EventsView({
                   )}
                 </div>
                 
-                {/* Industrial Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent z-10 pointer-events-none" />
-                <div className="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-2 rounded-sm" />
-                <div className="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-4 rounded-sm" />
+                {/* Overlays - Exact from HTML */}
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent z-10 pointer-events-none"></div>
+                <div className="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-2 rounded-sm"></div>
+                <div className="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-4 rounded-sm"></div>
                 
-                {/* Top Bar */}
+                {/* Top Bar - Exact from HTML */}
                 <div className="absolute top-0 left-0 z-20 w-full flex justify-between p-4 border-b border-zinc-800/50">
                   <div className="bg-zinc-900 px-4 py-2 rounded-none border border-zinc-800 flex flex-col items-center justify-center font-mono">
                     <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none">
@@ -217,36 +194,18 @@ export default function EventsView({
                     </span>
                   </div>
                   
-                  {/* Entry Type Badge */}
+                  {/* Entry Badge - Only show if free entry */}
                   {(!event.isTicketed || event.ticketPrice === 0) && event.minimumSpend === 0 && (
                     <div className="bg-zinc-900 px-4 py-2 border border-zinc-800 rounded-none flex items-center">
-                      <span className="text-[10px] font-mono text-zinc-300 font-black tracking-widest uppercase">
-                        [ FREE ENTRY ]
-                      </span>
-                    </div>
-                  )}
-                  
-                  {event.minimumSpend > 0 && (
-                    <div className="bg-zinc-900 px-4 py-2 border border-zinc-800 rounded-none flex items-center">
-                      <span className="text-[10px] font-mono text-[#10FF88] font-black tracking-widest uppercase">
-                        [ €{event.minimumSpend} MIN ]
-                      </span>
-                    </div>
-                  )}
-                  
-                  {event.isTicketed && event.ticketPrice > 0 && (
-                    <div className="bg-zinc-900 px-4 py-2 border border-zinc-800 rounded-none flex items-center">
-                      <span className="text-[10px] font-mono text-blue-400 font-black tracking-widest uppercase">
-                        [ €{event.ticketPrice} ]
-                      </span>
+                      <span className="text-[10px] font-mono text-zinc-300 font-black tracking-widest uppercase">[ FREE ENTRY ]</span>
                     </div>
                   )}
                 </div>
                 
-                {/* Bottom Content */}
+                {/* Bottom Content - Exact from HTML */}
                 <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-col justify-end">
                   <div className="p-6 pb-4 border-b border-zinc-800">
-                    <h2 className="text-4xl font-display font-normal text-white uppercase tracking-tighter mb-1 leading-none" style={{ fontFamily: 'Anton, sans-serif' }}>
+                    <h2 className="text-4xl font-display font-normal text-white uppercase tracking-tighter mb-1 leading-none">
                       {event.name}
                     </h2>
                     {event.description && (
@@ -284,14 +243,14 @@ export default function EventsView({
             );
           })
         ) : (
-          /* Industrial Empty State */
+          /* Empty State */
           <div className="text-center py-32">
             <div className="text-zinc-400 mb-12">
               <svg className="w-24 h-24 mx-auto mb-8 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
               </svg>
             </div>
-            <h3 className="text-4xl font-display font-normal text-white uppercase tracking-tighter mb-6" style={{ fontFamily: 'Anton, sans-serif' }}>
+            <h3 className="text-4xl font-display font-normal text-white uppercase tracking-tighter mb-6">
               NO EVENTS FOUND
             </h3>
             <p className="text-lg text-zinc-400 mb-12 max-w-md mx-auto leading-relaxed font-mono">
@@ -313,7 +272,7 @@ export default function EventsView({
         )}
       </div>
       
-      {/* Industrial Bottom Navigation */}
+      {/* Bottom Navigation - Exact from HTML */}
       <div className="absolute bottom-0 left-0 right-0 z-40 bg-zinc-950 border-t-2 border-zinc-800">
         <div className="flex items-center justify-around py-4 pb-8 px-6">
           <button className="flex flex-col items-center space-y-1 group">
