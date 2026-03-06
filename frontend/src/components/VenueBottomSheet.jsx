@@ -21,8 +21,8 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
       guestName: savedName,
       guestPhone: savedPhone,
       guestCount: 2,
-      sunbedCount: 1, // NEW: Default 1 sunbed
-      arrivalTime: defaultArrivalTime, // Use calculated default time
+      sunbedCount: 1,
+      arrivalTime: '10:00', // Default to 10:00 AM
       date: new Date().toISOString().split('T')[0]
     };
   });
@@ -30,10 +30,12 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
 
 
 
-  // Get current hour + 1 for default arrival time
-  const now = new Date();
-  const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
-  const defaultArrivalTime = `${nextHour.getHours().toString().padStart(2, '0')}:00`;
+  // Time slots (09:00 - 18:00, 30-min intervals)
+  const timeSlots = [
+    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+    '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'
+  ];
 
   const availability = venue.availability;
   const hasAvailability = availability && availability.availableUnits > 0;
@@ -521,36 +523,30 @@ Faleminderit!`;
 
 
               {/* Arrival Time */}
-              {/* Arrival Time - Simple 4-Button Grid (CONCIERGE UX) */}
+              {/* Arrival Time - Sharp Design Time Grid */}
               <div>
                 <label className={`block text-sm font-medium mb-3 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                  When will you arrive?
+                  Arrival Time
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { time: '09:00', label: 'MORNING', desc: '9:00 AM' },
-                    { time: '12:00', label: 'NOON', desc: '12:00 PM' },
-                    { time: '15:00', label: 'AFTERNOON', desc: '3:00 PM' },
-                    { time: '17:00', label: 'LATE', desc: '5:00 PM' }
-                  ].map(slot => (
+                <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
+                  {timeSlots.map(time => (
                     <button
-                      key={slot.time}
+                      key={time}
                       type="button"
-                      onClick={() => setBookingData({ ...bookingData, arrivalTime: slot.time })}
+                      onClick={() => setBookingData({ ...bookingData, arrivalTime: time })}
                       className={`
-                        py-4 px-3 rounded-sm border text-center transition-all duration-300
-                        ${bookingData.arrivalTime === slot.time
+                        px-3 py-2 rounded-sm text-sm font-medium transition-all
+                        ${bookingData.arrivalTime === time
                           ? isDayMode
-                            ? 'border-zinc-950 bg-zinc-950 text-white'
-                            : 'border-[#10FF88] bg-[#10FF88]/10 text-[#10FF88]'
+                            ? 'bg-zinc-950 text-white'
+                            : 'bg-[#10FF88] text-zinc-950'
                           : isDayMode
-                          ? 'border-zinc-300 text-zinc-700 hover:border-zinc-950'
-                          : 'border-zinc-700 text-zinc-400 hover:border-[#10FF88]'
+                          ? 'border border-zinc-300 text-zinc-700 hover:border-zinc-950'
+                          : 'border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
                         }
                       `}
                     >
-                      <div className="font-medium text-sm tracking-widest">{slot.label}</div>
-                      <div className="text-xs opacity-70 mt-1">{slot.desc}</div>
+                      {time}
                     </button>
                   ))}
                 </div>
