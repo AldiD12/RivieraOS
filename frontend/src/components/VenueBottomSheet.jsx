@@ -135,23 +135,23 @@ Faleminderit!`;
           apiPayload
         });
         
-        // Convert to backend expected format (PascalCase + proper data types)
+        // Convert to backend expected format (camelCase as per swagger.json)
         const reservationDate = new Date(bookingData.date);
         const [hours, minutes] = bookingData.arrivalTime.split(':');
         const startTime = new Date(reservationDate);
         startTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
         
         const apiPayload = {
-          VenueId: venue.id,
-          ZoneId: selectedZone.id,
-          GuestName: bookingData.guestName,
-          GuestPhone: bookingData.guestPhone,
-          GuestCount: bookingData.guestCount || 2,
-          SunbedCount: bookingData.sunbedCount,
-          ArrivalTime: bookingData.arrivalTime,
-          ReservationDate: reservationDate.toISOString(),
-          StartTime: startTime.toISOString(),
-          Notes: 'Booked via XIXA Discovery'
+          venueId: venue.id,
+          zoneId: selectedZone.id,
+          guestName: bookingData.guestName,
+          guestPhone: bookingData.guestPhone,
+          guestCount: bookingData.guestCount || 2,
+          sunbedCount: bookingData.sunbedCount,
+          arrivalTime: bookingData.arrivalTime,
+          reservationDate: reservationDate.toISOString(),
+          startTime: startTime.toISOString(),
+          notes: 'Booked via XIXA Discovery'
         };
 
         // TEMPORARY: Show exact payload being sent
