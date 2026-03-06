@@ -19,7 +19,8 @@ export default function EventsView({
   onVibeChange, 
   onDateChange,
   onEventClick,
-  isDayMode 
+  isDayMode,
+  standalone = false // New prop to determine if this is standalone or embedded
 }) {
   // Filter events by vibe
   const vibeFilteredEvents = useMemo(() => {

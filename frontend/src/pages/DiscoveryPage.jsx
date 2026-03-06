@@ -996,134 +996,82 @@ export default function DiscoveryPage() {
             return (
               <div 
                 key={event.id} 
-                className="group relative overflow-hidden rounded-[2rem] cursor-pointer bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-2xl border border-stone-200/40 hover:shadow-[0_30px_70px_-15px_rgba(0,0,0,0.12)] transition-all duration-500 ease-out hover:-translate-y-2 mb-12"
+                className="relative w-full aspect-[4/5] bg-zinc-900 border-2 border-zinc-800 rounded-sm overflow-hidden group hover:border-zinc-600 transition-all duration-300 shadow-lg cursor-pointer mb-8"
                 onClick={() => handleEventClick(event)}
               >
                 {/* Event Image */}
-                <div className="relative h-80 w-full overflow-hidden bg-stone-100 rounded-t-[2rem]">
-                  {/* Status Badge - Simplified */}
-                  <div className="absolute top-8 left-8 z-20">
-                    {isToday && isUpcoming && (
-                      <span className="px-6 py-3 text-xs font-medium uppercase tracking-widest rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 backdrop-blur-md">
-                        <span className="w-2 h-2 bg-emerald-500 inline-block mr-3 rounded-full animate-pulse"></span>
-                        TODAY
-                      </span>
-                    )}
-                    {isUpcoming && !isToday && (
-                      <span className="px-6 py-3 text-xs font-medium uppercase tracking-widest rounded-full bg-white/90 text-stone-700 border border-stone-200 backdrop-blur-md">
-                        UPCOMING
-                      </span>
-                    )}
-                  </div>
-                  
-                  {/* VIP Badge - Top Right */}
-                  {event.minimumSpend > 0 && (
-                    <div className="absolute top-8 right-8 z-20">
-                      <span className="px-6 py-3 text-xs font-medium uppercase tracking-widest rounded-full bg-amber-50 text-amber-800 border border-amber-200 backdrop-blur-md">
-                        VIP TABLES
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* Event Image or Placeholder */}
-                  {event.imageUrl ? (
+                <div className="absolute inset-0 z-0">
+                  {event.flyerImageUrl || event.imageUrl ? (
                     <img 
-                      alt={event.name} 
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
-                      src={event.imageUrl}
+                      alt="Event" 
+                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700 contrast-[1.4] saturate-50"
+                      src={event.flyerImageUrl || event.imageUrl}
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-stone-300 bg-gradient-to-br from-stone-100 to-stone-200">
-                      <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                      </svg>
+                    <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+                      <div className="w-16 h-16 border-2 border-zinc-700" />
                     </div>
                   )}
-                  
-                  {/* Subtle Gradient Overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-black/30 to-transparent"></div>
-                  
-                  {/* Venue Badge - Bottom */}
-                  <div className="absolute bottom-8 left-8 text-white">
-                    <div className="flex items-center space-x-3 text-sm uppercase tracking-widest font-medium">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span>{venue.name}</span>
-                    </div>
-                  </div>
                 </div>
                 
-                {/* Event Info - More Spacious */}
-                <div className="p-12 md:p-16">
-                  {/* Header with massive whitespace */}
-                  <div className="mb-12">
-                    <h3 className="font-serif text-5xl md:text-6xl font-light tracking-tighter text-stone-900 leading-none mb-6">
-                      {event.name}
-                    </h3>
-                    <div className="flex items-center space-x-6 text-stone-500">
-                      <div className="text-sm uppercase tracking-widest font-medium">
-                        {eventDate.toLocaleDateString('en-GB', { 
-                          weekday: 'long', 
-                          day: 'numeric', 
-                          month: 'long' 
-                        })}
-                      </div>
-                      <div className="w-1 h-1 bg-stone-400 rounded-full"></div>
-                      <div className="text-2xl font-serif text-stone-900">
-                        {eventDate.toLocaleTimeString('en-GB', { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </div>
-                    </div>
+                {/* Overlays - Exact from HTML */}
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent z-10 pointer-events-none"></div>
+                <div className="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-2 rounded-sm"></div>
+                <div className="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-4 rounded-sm"></div>
+                
+                {/* Top Bar - Exact from HTML */}
+                <div className="absolute top-0 left-0 z-20 w-full flex justify-between p-4 border-b border-zinc-800/50">
+                  <div className="bg-zinc-900 px-4 py-2 rounded-none border border-zinc-800 flex flex-col items-center justify-center font-mono">
+                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none">
+                      {eventDate.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase()}
+                    </span>
+                    <span className="text-xl font-black text-white leading-none mt-1">
+                      {eventDate.getDate()}
+                    </span>
                   </div>
                   
-                  {/* Description with generous spacing */}
-                  <p className="text-xl leading-relaxed mb-16 font-sans text-stone-600 max-w-3xl">
-                    {event.description || 'An exclusive nightlife experience awaits you at one of the Riviera\'s most prestigious venues.'}
-                  </p>
-                  
-                  {/* Pricing Grid - Cleaner */}
-                  <div className="grid grid-cols-2 gap-16 mb-16">
-                    <div className="flex flex-col space-y-3">
-                      <span className="text-sm uppercase text-stone-500 tracking-widest font-medium">Entry Fee</span>
-                      <span className="text-5xl font-serif font-light text-amber-900">
-                        {event.isTicketed && event.ticketPrice > 0 
-                          ? `€${event.ticketPrice}` 
-                          : 'Free'
-                        }
-                      </span>
+                  {/* Entry Badge - Only show if free entry */}
+                  {(!event.isTicketed || event.ticketPrice === 0) && event.minimumSpend === 0 && (
+                    <div className="bg-zinc-900 px-4 py-2 border border-zinc-800 rounded-none flex items-center">
+                      <span className="text-[10px] font-mono text-zinc-300 font-black tracking-widest uppercase">[ FREE ENTRY ]</span>
                     </div>
-                    {event.minimumSpend > 0 && (
-                      <div className="flex flex-col space-y-3">
-                        <span className="text-sm uppercase text-stone-500 tracking-widest font-medium">Table Minimum</span>
-                        <span className="text-5xl font-serif font-light text-amber-900">
-                          €{event.minimumSpend}
-                        </span>
-                      </div>
+                  )}
+                </div>
+                
+                {/* Bottom Content - Exact from HTML */}
+                <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-col justify-end">
+                  <div className="p-6 pb-4 border-b border-zinc-800">
+                    <h2 className="text-4xl font-display font-normal text-white uppercase tracking-tighter mb-1 leading-none">
+                      {event.name}
+                    </h2>
+                    {event.description && (
+                      <p className="text-xs font-mono text-zinc-400 font-bold tracking-widest uppercase">
+                        {event.description.substring(0, 30)}...
+                      </p>
                     )}
                   </div>
                   
-                  {/* Vibe Tags - Minimal */}
-                  {event.vibes && event.vibes.length > 0 && (
-                    <div className="flex flex-wrap gap-4 mb-16">
-                      {event.vibes.slice(0, 3).map((vibe, index) => (
-                        <span 
-                          key={index}
-                          className="px-6 py-3 text-sm font-medium uppercase tracking-widest rounded-full bg-stone-50 border border-stone-200/60 text-stone-700"
-                        >
-                          {vibe}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  <div className="px-6 py-4 flex items-center justify-between text-xs text-zinc-400 font-mono border-b border-zinc-800 bg-zinc-950/50">
+                    <span className="uppercase font-bold tracking-widest text-[10px]">
+                      [ {venue?.name || 'TBA'} ]
+                    </span>
+                    <span className="uppercase font-bold tracking-widest text-[10px] text-[#10FF88]">
+                      [ {eventDate.toLocaleTimeString('en-GB', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })} - LATE ]
+                    </span>
+                  </div>
                   
-                  {/* Action Button - Single, Prominent */}
-                  <div className="pt-8">
-                    <button className="bg-stone-900 text-stone-50 px-12 py-5 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)] font-medium">
-                      Reserve via WhatsApp
+                  <div className="p-6">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEventClick(event);
+                      }}
+                      className="w-full py-4 bg-zinc-900 border-2 border-white rounded-none text-[12px] font-black text-white hover:bg-white hover:text-black transition-all uppercase tracking-[0.2em]"
+                    >
+                      CONFIRM ACCESS
                     </button>
                   </div>
                 </div>
@@ -1483,6 +1431,12 @@ export default function DiscoveryPage() {
       {/* Custom Styles */}
       <style dangerouslySetInnerHTML={{
         __html: `
+          @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+          
+          .font-display {
+            font-family: 'Anton', sans-serif;
+          }
+          
           @keyframes pulse-ring {
             0% { 
               transform: scale(0.8); 
