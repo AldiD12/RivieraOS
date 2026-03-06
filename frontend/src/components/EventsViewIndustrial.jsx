@@ -16,7 +16,7 @@ const DATE_FILTERS = [
   { id: 'thisWeek', label: 'THIS WEEK', code: '[7D]' }
 ];
 
-export default function EventsView({ 
+export default function EventsViewIndustrial({ 
   events, 
   venues,
   loading, 
@@ -24,8 +24,7 @@ export default function EventsView({
   dateFilter,
   onVibeChange, 
   onDateChange,
-  onEventClick,
-  isDayMode 
+  onEventClick 
 }) {
   // Filter events by vibe
   const vibeFilteredEvents = useMemo(() => {
@@ -64,7 +63,7 @@ export default function EventsView({
   
   if (loading) {
     return (
-      <div className="bg-zinc-950 text-white h-screen w-full overflow-hidden relative font-sans antialiased bg-grain">
+      <div className="bg-zinc-950 text-white h-screen w-full overflow-hidden relative font-sans antialiased">
         <div className="flex items-center justify-center h-64">
           <div className="w-16 h-16 mx-auto mb-6 border-2 border-zinc-800 border-t-[#10FF88] rounded-full animate-spin"></div>
           <p className="text-lg text-zinc-400">Loading events...</p>
@@ -74,33 +73,21 @@ export default function EventsView({
   }
   
   return (
-    <div className="bg-zinc-950 text-white h-screen w-full overflow-hidden relative font-sans antialiased bg-grain">
+    <div className="bg-zinc-950 text-white h-screen w-full overflow-hidden relative font-sans antialiased">
       {/* Industrial Header */}
       <div className="absolute top-0 left-0 right-0 z-30 pointer-events-none">
         <div className="pointer-events-auto pt-14 px-6 flex flex-col items-start space-y-4 bg-zinc-950/90 backdrop-blur-xl border-b-2 border-zinc-800 pb-4 relative">
-          
-          {/* Day/Night Toggle (centered at top) */}
-          <div className="absolute top-14 left-0 right-0 flex justify-center z-30 pointer-events-none">
-            <div className="bg-zinc-900 border-2 border-zinc-800 p-0.5 rounded-sm flex pointer-events-auto shadow-xl">
-              <button className="flex items-center space-x-1.5 px-6 py-2 rounded-sm text-[10px] font-bold tracking-widest uppercase transition-all bg-zinc-900 text-zinc-500 hover:text-zinc-300 industrial-switch">
-                <span>DAY</span>
-              </button>
-              <button className="flex items-center space-x-1.5 px-6 py-2 rounded-sm text-[10px] font-bold tracking-widest uppercase transition-all text-white industrial-switch-active">
-                <span>NIGHT</span>
-              </button>
-            </div>
-          </div>
           
           {/* Main Header */}
           <div className="flex justify-between items-start w-full relative z-20 pt-8">
             <div>
               <h1 className="font-display text-4xl text-white tracking-tighter uppercase drop-shadow-sm" style={{ fontFamily: 'Anton, sans-serif' }}>
-                XIXA
+                EVENTS CONTROL
               </h1>
               <div className="flex items-center space-x-2 mt-1">
                 <div className="w-1.5 h-1.5 rounded-none bg-[#10FF88] shadow-[0_0_8px_rgba(16,255,136,0.8)] animate-pulse"></div>
                 <p className="text-[10px] font-mono tracking-[0.2em] text-zinc-400 uppercase">
-                  [ ALBANIAN RIVIERA ]
+                  [ STAFF INTERFACE ]
                 </p>
               </div>
             </div>
@@ -116,16 +103,6 @@ export default function EventsView({
                   <svg className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
-                </button>
-              </div>
-              
-              {/* View Mode Toggle */}
-              <div className="flex items-center bg-zinc-900 border-2 border-zinc-800 rounded-sm p-0.5 shadow-lg">
-                <button className="px-4 py-2 flex items-center space-x-2 text-[10px] uppercase font-black tracking-widest text-[#10FF88] bg-zinc-800 rounded-none border border-zinc-700 mr-0.5 shadow-[0_0_12px_rgba(16,255,136,0.15)]">
-                  <span>[ LIST ]</span>
-                </button>
-                <button className="px-4 py-2 flex items-center space-x-2 text-[10px] uppercase font-bold tracking-widest text-zinc-500 hover:text-zinc-300 transition-colors border-l border-zinc-800 bg-zinc-900">
-                  <span>[ MAP ]</span>
                 </button>
               </div>
             </div>
