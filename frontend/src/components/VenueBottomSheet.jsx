@@ -139,7 +139,7 @@ Faleminderit!`;
           reservationDate: bookingData.date
         });
         
-        const result = await reservationApi.createReservation({
+        const apiPayload = {
           venueId: venue.id,
           zoneId: selectedZone.id,
           guestName: bookingData.guestName,
@@ -148,7 +148,12 @@ Faleminderit!`;
           arrivalTime: bookingData.arrivalTime + ":00", // Add seconds format
           reservationDate: bookingData.date,
           notes: 'Booked via XIXA Discovery'
-        });
+        };
+
+        // TEMPORARY: Show exact payload being sent
+        alert(`PAYLOAD BEING SENT:\n${JSON.stringify(apiPayload, null, 2)}`);
+
+        const result = await reservationApi.createReservation(apiPayload);
         
         console.log('✅ Booking successful:', result);
         navigate(`/success/${result.bookingCode}`);
