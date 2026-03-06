@@ -12,11 +12,6 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
     const savedName = localStorage.getItem('riviera_guestName') || '';
     const savedPhone = localStorage.getItem('riviera_guestPhone') || '';
     
-    // Get current hour + 1 for default arrival time
-    const now = new Date();
-    const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
-    const defaultArrivalTime = `${nextHour.getHours().toString().padStart(2, '0')}:00`;
-    
     return {
       guestName: savedName,
       guestPhone: savedPhone,
@@ -136,22 +131,31 @@ Faleminderit!`;
           guestCount: bookingData.guestCount,
           sunbedCount: bookingData.sunbedCount,
           arrivalTime: bookingData.arrivalTime,
-          reservationDate: bookingData.date
+          reservationDate: bookingData.date,
+          apiPayload
         });
         
+        // Convert to backend expected format (PascalCase + proper data types)
+        const reservationDate = new Date(bookingData.date);
+        const [hours, minutes] = bookingData.arrivalTime.split(':');
+        const startTime = new Date(reservationDate);
+        startTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        
         const apiPayload = {
-          venueId: venue.id,
-          zoneId: selectedZone.id,
-          guestName: bookingData.guestName,
-          guestPhone: bookingData.guestPhone,
-          sunbedCount: bookingData.sunbedCount,
-          arrivalTime: bookingData.arrivalTime + ":00", // Add seconds format
-          reservationDate: bookingData.date,
-          notes: 'Booked via XIXA Discovery'
+          VenueId: venue.id,
+          ZoneId: selectedZone.id,
+          GuestName: bookingData.guestName,
+          GuestPhone: bookingData.guestPhone,
+          GuestCount: bookingData.guestCount || 2,
+          SunbedCount: bookingData.sunbedCount,
+          ArrivalTime: bookingData.arrivalTime,
+          ReservationDate: reservationDate.toISOString(),
+          StartTime: startTime.toISOString(),
+          Notes: 'Booked via XIXA Discovery'
         };
 
         // TEMPORARY: Show exact payload being sent
-        alert(`PAYLOAD BEING SENT:\n${JSON.stringify(apiPayload, null, 2)}`);
+        console.log('📤 Final API Payload:', JSON.stringify(apiPayload, null, 2));
 
         const result = await reservationApi.createReservation(apiPayload);
         
