@@ -41,7 +41,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
     
     // Add amenities based on other venue types
     amenityVenues.forEach(venue => {
-      switch(venue.type.toLowerCase()) {
+      switch(getSafeType(venue)) {
         case 'bar':
           amenities.push({ icon: '🍸', name: 'Cocktail Bar' });
           break;
@@ -122,8 +122,9 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
             <div className="bg-white border border-zinc-300 p-4 rounded-sm flex justify-between items-center">
               <div>
                 <h3 className="font-sans font-bold text-lg">THE BEACH</h3>
-                <p className="text-[#10B981] font-mono text-xs mt-1">
-                  🟢 {beachVenue.availableUnitsCount || 0} BEDS AVAILABLE
+                <p className="flex items-center gap-2 text-[#10B981] font-mono text-xs mt-1">
+                  <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"></span>
+                  {beachVenue.availableUnitsCount || 0} BEDS AVAILABLE
                 </p>
               </div>
               <button 
