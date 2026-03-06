@@ -109,5 +109,28 @@ export const reservationApi = {
       console.error('❌ Failed to get booking status:', error);
       throw error;
     }
+  },
+
+  // 🧪 DEBUG: Create test booking for immediate testing
+  async createTestBooking(venueId = 18, zoneId = 16) {
+    const now = new Date();
+    const futureTime = new Date(now.getTime() + 5 * 60000); // +5 minutes
+    const arrivalTime = futureTime.getHours().toString().padStart(2, '0') + ':' + futureTime.getMinutes().toString().padStart(2, '0');
+    const today = now.toISOString().split('T')[0];
+    
+    const payload = {
+      venueId,
+      zoneId,
+      guestName: `Test User - ${now.getHours()}:${now.getMinutes()}`,
+      guestPhone: "+355691234567",
+      guestCount: 2,
+      sunbedCount: 1,
+      arrivalTime: arrivalTime,
+      reservationDate: today,
+      notes: `DEBUG TEST BOOKING - Created at ${now.toLocaleTimeString()}`
+    };
+    
+    console.log('🧪 Creating test booking with future arrival time:', payload);
+    return await this.createReservation(payload);
   }
 };

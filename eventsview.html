@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>XIXA: Night Mode Venue List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Inter:wght@300;400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        zinc: {
+                            400: "#A1A1AA",
+                            500: "#71717A",
+                            800: "#27272A",
+                            850: "#1f1f22",
+                            900: "#18181B",
+                            950: "#09090B",
+                        },
+                        stone: {
+                            50: "#FAFAF9",
+                            100: "#F5F5F4",
+                            200: "#E7E5E4",
+                            300: "#D6D3D1",
+                        },
+                        xixa: {
+                            green: "#10FF88",
+                        },
+                    },
+                    fontFamily: {
+                        sans: ["Inter", "sans-serif"],
+                        serif: ["Inter", "sans-serif"],
+                        display: ["Anton", "sans-serif"],
+                        mono: ["JetBrains Mono", "monospace"],
+                    },
+                    boxShadow: {
+                        "bio-glow": "0 0 12px rgba(16, 255, 136, 0.15)",
+                        "bio-glow-hover": "0 0 20px rgba(16, 255, 136, 0.3)",
+                        "bio-glow-intense": "0 0 20px rgba(16, 255, 136, 0.6)",
+                        "day-shadow": "0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)",
+                    }
+                }
+            }
+        };
+    </script>
+<style>
+        .map-bg {
+            background-color: #FAFAF9;
+            background-image: 
+                linear-gradient(rgba(231, 229, 228, 0.6) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(231, 229, 228, 0.6) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); opacity: 0.5; border-color: #10FF88; }
+            100% { transform: scale(2.5); opacity: 0; border-color: transparent; }
+        }
+        .pulse-marker::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            border: 1px solid #09090B;
+            box-shadow: 0 0 8px rgba(16, 255, 136, 0.3);
+            animation: pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+        }
+        .xixa-outline-text {
+             text-shadow: 
+                -0.5px -0.5px 0 #000,  
+                 0.5px -0.5px 0 #000,
+                -0.5px  0.5px 0 #000,
+                 0.5px  0.5px 0 #000;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .bg-grain {
+            position: relative;
+        }
+        .bg-grain::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: -1;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+        .industrial-switch {
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .industrial-switch-active {
+            box-shadow: inset 0 -2px 4px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.1);
+            background: #18181B;
+            border-bottom: 2px solid #10FF88;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-zinc-950 text-white h-screen w-full overflow-hidden relative font-sans antialiased bg-grain">
+<div class="absolute top-0 left-0 right-0 z-30 pointer-events-none">
+<div class="pointer-events-auto pt-14 px-6 flex flex-col items-start space-y-4 bg-zinc-950/90 backdrop-blur-xl border-b-2 border-zinc-800 pb-4 relative">
+<div class="absolute top-14 left-0 right-0 flex justify-center z-30 pointer-events-none">
+<div class="bg-zinc-900 border-2 border-zinc-800 p-0.5 rounded-sm flex pointer-events-auto shadow-xl">
+<button class="flex items-center space-x-1.5 px-6 py-2 rounded-sm text-[10px] font-bold tracking-widest uppercase transition-all bg-zinc-900 text-zinc-500 hover:text-zinc-300 industrial-switch">
+<span>DAY</span>
+</button>
+<button class="flex items-center space-x-1.5 px-6 py-2 rounded-sm text-[10px] font-bold tracking-widest uppercase transition-all text-white industrial-switch-active">
+<span>NIGHT</span>
+</button>
+</div>
+</div>
+<div class="flex justify-between items-start w-full relative z-20 pt-8">
+<div>
+<h1 class="font-display text-4xl text-white tracking-tighter uppercase drop-shadow-sm">XIXA</h1>
+<div class="flex items-center space-x-2 mt-1">
+<div class="w-1.5 h-1.5 rounded-none bg-xixa-green shadow-[0_0_8px_rgba(16,255,136,0.8)] animate-pulse"></div>
+<p class="text-[10px] font-mono tracking-[0.2em] text-zinc-400 uppercase">[ ALBANIAN RIVIERA ]</p>
+</div>
+</div>
+<div class="flex flex-col items-end space-y-3 pt-0">
+<div class="flex space-x-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-sm border-2 border-zinc-800 bg-zinc-900 hover:bg-zinc-800 transition-all group shadow-sm">
+<span class="material-symbols-outlined text-zinc-400 group-hover:text-white text-xl transition-colors">search</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-sm border-2 border-zinc-800 bg-zinc-900 hover:bg-zinc-800 transition-all group shadow-sm">
+<span class="material-symbols-outlined text-zinc-400 group-hover:text-white text-xl transition-colors">notifications</span>
+</button>
+</div>
+<div class="flex items-center bg-zinc-900 border-2 border-zinc-800 rounded-sm p-0.5 shadow-lg">
+<button class="px-4 py-2 flex items-center space-x-2 text-[10px] uppercase font-black tracking-widest text-xixa-green bg-zinc-800 rounded-none border border-zinc-700 mr-0.5 shadow-bio-glow">
+<span>[ LIST ]</span>
+</button>
+<button class="px-4 py-2 flex items-center space-x-2 text-[10px] uppercase font-bold tracking-widest text-zinc-500 hover:text-zinc-300 transition-colors border-l border-zinc-800 bg-zinc-900">
+<span>[ MAP ]</span>
+</button>
+</div>
+</div>
+</div>
+<div class="flex space-x-3 overflow-x-auto no-scrollbar w-full pt-4 pl-0.5 border-t border-zinc-800 mt-4 pt-4">
+<button class="whitespace-nowrap px-6 py-2 rounded-sm bg-zinc-800 border-2 border-zinc-700 text-xixa-green text-[10px] font-black tracking-widest uppercase shadow-bio-glow transform active:scale-95 transition-all">
+                    [ ALL EVENTS ]
+                </button>
+<button class="whitespace-nowrap px-6 py-2 rounded-sm bg-zinc-900 border-2 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 text-[10px] font-bold tracking-widest uppercase transition-all">
+                    TECHNO
+                </button>
+<button class="whitespace-nowrap px-6 py-2 rounded-sm bg-zinc-900 border-2 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 text-[10px] font-bold tracking-widest uppercase transition-all">
+                    HOUSE
+                </button>
+<button class="whitespace-nowrap px-6 py-2 rounded-sm bg-zinc-900 border-2 border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600 text-[10px] font-bold tracking-widest uppercase transition-all">
+                    LIVE
+                </button>
+</div>
+</div>
+</div>
+<div class="absolute inset-0 pt-[250px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 space-y-8">
+<div class="relative w-full aspect-[4/5] bg-zinc-900 border-2 border-zinc-800 rounded-sm overflow-hidden group hover:border-zinc-600 transition-all duration-300 shadow-lg">
+<div class="absolute inset-0 z-0">
+<img alt="Event" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700 contrast-[1.4] saturate-50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAgMp-t7iCPzoCbhWYEGlSIPw3btakAXq--JpFUwzEjIb9WqgP25EtCB1dbB1QM06N-kyBAfXFQF70zlAHznXzMmYbnquDbYhSTfJecsS4qG-kO6Sex6r-LQiNH9LOmzD3jaVNWIRM6IPpmhzvlDt7rmNiiaXIsbpEvmQGcecwSUzA71yGGuY1OW1_UEqkKd7HgJ6_ueA7_JKxWYjyYfaAdlW-cpSOBdEHHeTxs0s3EflypYDeJLpLm-orfEu2D76_KtM4JXgJt0TWz"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent z-10 pointer-events-none"></div>
+<div class="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-2 rounded-sm"></div>
+<div class="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-4 rounded-sm"></div>
+<div class="absolute top-0 left-0 z-20 w-full flex justify-between p-4 border-b border-zinc-800/50">
+<div class="bg-zinc-900 px-4 py-2 rounded-none border border-zinc-800 flex flex-col items-center justify-center font-mono">
+<span class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none">AUG</span>
+<span class="text-xl font-black text-white leading-none mt-1">12</span>
+</div>
+<div class="bg-zinc-900 px-4 py-2 border border-zinc-800 rounded-none flex items-center">
+<span class="text-[10px] font-mono text-zinc-300 font-black tracking-widest uppercase">[ FREE ENTRY ]</span>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 z-20 flex flex-col justify-end">
+<div class="p-6 pb-4 border-b border-zinc-800">
+<h2 class="text-4xl font-display font-normal text-white uppercase tracking-tighter mb-1 leading-none">MIDNIGHT RITUAL</h2>
+<p class="text-xs font-mono text-zinc-400 font-bold tracking-widest uppercase">FT. DJ TIESTO</p>
+</div>
+<div class="px-6 py-4 flex items-center justify-between text-xs text-zinc-400 font-mono border-b border-zinc-800 bg-zinc-950/50">
+<span class="uppercase font-bold tracking-widest text-[10px]">[ HAVANA BEACH CLUB ]</span>
+<span class="uppercase font-bold tracking-widest text-[10px] text-xixa-green">[ 23:00 - LATE ]</span>
+</div>
+<div class="p-6">
+<button class="w-full py-4 bg-zinc-900 border-2 border-white rounded-none text-[12px] font-black text-white hover:bg-white hover:text-black transition-all uppercase tracking-[0.2em]">
+                    CONFIRM ACCESS
+                </button>
+</div>
+</div>
+</div>
+<div class="relative w-full aspect-[4/5] bg-zinc-900 border-2 border-zinc-800 rounded-sm overflow-hidden group hover:border-zinc-600 transition-all duration-300 shadow-lg mb-10">
+<div class="absolute inset-0 z-0">
+<img alt="Event" class="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700 contrast-[1.4] saturate-50" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUZ9pCfVM5hKbpcLTGFMOF2w2ujsJsuC-J4YS8qPLlMvgD1u4Q4H7EuCMW3ZgAcvigHZ-r_m6-XvpmFcFEqU64p_rjW5b5Dj5ChTO8wGwhEYY9iKh5_GMUiLDI9dQNjWcaQBCaRtJfkg8vDgKIDrHJYd8VZY-5AbDO4wQjvgLl7FPINc-Dm1EaN5v8BUPoZ361tyr8WZzkiaaetHLCSnMVxqr1673j7TVFSe7xDjkzqgqXluEwXjtc9XLa92HRwuGgvtWdENn4CpKn"/>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent z-10 pointer-events-none"></div>
+<div class="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-2 rounded-sm"></div>
+<div class="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-4 rounded-sm"></div>
+<div class="absolute top-0 left-0 z-20 w-full flex justify-between p-4 border-b border-zinc-800/50">
+<div class="bg-zinc-900 px-4 py-2 rounded-none border border-zinc-800 flex flex-col items-center justify-center font-mono">
+<span class="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none">AUG</span>
+<span class="text-xl font-black text-white leading-none mt-1">14</span>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 z-20 flex flex-col justify-end">
+<div class="p-6 pb-4 border-b border-zinc-800">
+<h2 class="text-4xl font-display font-normal text-white uppercase tracking-tighter mb-1 leading-none">NEON DREAMS</h2>
+<p class="text-xs font-mono text-zinc-400 font-bold tracking-widest uppercase">FT. PEGGY GOU</p>
+</div>
+<div class="px-6 py-4 flex items-center justify-between text-xs text-zinc-400 font-mono border-b border-zinc-800 bg-zinc-950/50">
+<span class="uppercase font-bold tracking-widest text-[10px]">[ FOLIE MARINE ]</span>
+<span class="uppercase font-bold tracking-widest text-[10px] text-xixa-green">[ 22:00 - 05:00 ]</span>
+</div>
+<div class="p-6">
+<button class="w-full py-4 bg-zinc-900 border-2 border-white rounded-none text-[12px] font-black text-white hover:bg-white hover:text-black transition-all uppercase tracking-[0.2em]">
+                    CONFIRM ACCESS
+                </button>
+</div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 right-0 z-40 bg-zinc-950 border-t-2 border-zinc-800">
+<div class="flex items-center justify-around py-4 pb-8 px-6">
+<button class="flex flex-col items-center space-y-1 group">
+<span class="material-symbols-outlined text-white text-[28px]">explore</span>
+</button>
+<button class="flex flex-col items-center space-y-1 group opacity-40 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white text-[28px]">favorite</span>
+</button>
+<button class="flex flex-col items-center space-y-1 group opacity-40 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white text-[28px]">confirmation_number</span>
+</button>
+<button class="flex flex-col items-center space-y-1 group opacity-40 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white text-[28px]">person</span>
+</button>
+</div>
+</div>
+</body></html>

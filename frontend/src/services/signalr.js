@@ -8,9 +8,21 @@ const HUB_URL = import.meta.env.PROD
   : API_CONFIG.BASE_URL.replace('/api', '') + '/hubs/beach';
 
 export const createConnection = () => {
+  // Get auth token from localStorage
+  const token = localStorage.getItem('authToken');
+  
   const connection = new signalR.HubConnectionBuilder()
-    .withUrl(HUB_URL)
-    .withAutomaticReconnect()
+    .withUrl(HUB_URL, {
+      accessTokenFactory: () => token || '',
+      // Add query string token as fallback (as configured in backend)
+      ...(token && { 
+        headers: { 'Authorization': `Bearer ${token}` },
+        // Also send via query string as backend expects
+        transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling
+      })
+    })
+    .withAutomaticReconnect([0, 2000, 10000, 30000]) // Retry intervals
+    .configureLogging(signalR.LogLevel.Information)
     .build();
 
   return connection;
@@ -18,11 +30,17 @@ export const createConnection = () => {
 
 export const startConnection = async (connection) => {
   try {
+    console.log('🔄 Starting SignalR connection to:', HUB_URL);
     await connection.start();
-    console.log('SignalR Connected');
+    console.log('✅ SignalR Connected successfully');
     return true;
   } catch (err) {
-    console.error('SignalR Connection Error: ', err);
+    console.error('❌ SignalR Connection Error:', err);
+    console.error('🔍 Connection details:', {
+      url: HUB_URL,
+      state: connection.state,
+      error: err.message
+    });
     return false;
   }
 };

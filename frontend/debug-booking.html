@@ -19,7 +19,8 @@
         <input type="text" id="bookingCode" placeholder="Enter booking code" value="RTV-16-XFC6P">
         <button onclick="checkBookingStatus()">Check Status</button>
         <button onclick="checkCollectorUnits()">Check Collector Units</button>
-        <button onclick="makeTestBooking()">Make Test Booking (NOW)</button>
+        <button onclick="makeTestBooking()">Make Test Booking (FUTURE)</button>
+        <button onclick="checkOriginalBooking()">Check Original Booking (RTV-16-XFC6P)</button>
     </div>
 
     <div id="results"></div>
@@ -75,24 +76,51 @@
             }
         }
 
+        async function checkOriginalBooking() {
+            const results = document.getElementById('results');
+            
+            try {
+                const response = await fetch(`${API_URL}/public/Reservations/RTV-16-XFC6P`);
+                const data = await response.json();
+                
+                results.innerHTML += `
+                    <div class="result">
+                        <h3>📊 ORIGINAL BOOKING STATUS: RTV-16-XFC6P</h3>
+                        <p><strong>Status:</strong> ${data.status}</p>
+                        <p><strong>Expiration:</strong> ${data.expirationTime || 'Not set'}</p>
+                        <p><strong>Analysis:</strong> ${data.status === 'Expired' ? '✅ CONFIRMED - Booking expired (this explains why it doesn\'t show in collector dashboard)' : '⚠️ Booking is still active'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+            } catch (error) {
+                results.innerHTML += `
+                    <div class="result">
+                        <h3>❌ ERROR checking original booking</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
         async function makeTestBooking() {
             const results = document.getElementById('results');
             
-            // Create a booking for RIGHT NOW
+            // Create a booking for 5 MINUTES FROM NOW (to avoid immediate expiration)
             const now = new Date();
-            const arrivalTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            const futureTime = new Date(now.getTime() + 5 * 60000); // +5 minutes
+            const arrivalTime = futureTime.getHours().toString().padStart(2, '0') + ':' + futureTime.getMinutes().toString().padStart(2, '0');
             const today = now.toISOString().split('T')[0];
             
             const payload = {
                 venueId: 18,
                 zoneId: 16, // vipi zone
-                guestName: "Test User",
+                guestName: "Test User - " + now.getHours() + ":" + now.getMinutes(),
                 guestPhone: "+355691234567",
                 guestCount: 2,
                 sunbedCount: 1,
                 arrivalTime: arrivalTime,
                 reservationDate: today,
-                notes: 'DEBUG TEST BOOKING'
+                notes: 'DEBUG TEST BOOKING - Created at ' + now.toLocaleTimeString()
             };
             
             try {
@@ -106,11 +134,13 @@
                 
                 results.innerHTML += `
                     <div class="result">
-                        <h3>🎯 TEST BOOKING CREATED</h3>
+                        <h3>🎯 TEST BOOKING CREATED (FUTURE ARRIVAL)</h3>
                         <p><strong>Booking Code:</strong> ${data.bookingCode}</p>
                         <p><strong>Status:</strong> ${data.status}</p>
-                        <p><strong>Arrival:</strong> ${arrivalTime}</p>
-                        <p><strong>Expiration:</strong> ${data.expirationTime}</p>
+                        <p><strong>Arrival:</strong> ${arrivalTime} (5 minutes from now)</p>
+                        <p><strong>Expiration:</strong> ${data.expirationTime || 'Not set'}</p>
+                        <p><strong>⚠️ IMPORTANT:</strong> This booking will expire 15 minutes after arrival time</p>
+                        <p><strong>🔍 Check collector dashboard NOW</strong> - booking should be visible</p>
                         <pre>${JSON.stringify(data, null, 2)}</pre>
                     </div>
                 `;

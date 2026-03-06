@@ -34,13 +34,20 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
     const savedName = localStorage.getItem('riviera_guestName') || '';
     const savedPhone = localStorage.getItem('riviera_guestPhone') || '';
     
+    // Smart date defaulting: if it's after 6 PM, default to tomorrow
+    const now = new Date();
+    const currentHour = now.getHours();
+    const defaultDate = currentHour >= 18 // After 6 PM
+      ? new Date(now.getTime() + 24 * 60 * 60 * 1000) // Tomorrow
+      : now; // Today
+    
     return {
       guestName: savedName,
       guestPhone: savedPhone,
       guestCount: 2,
       sunbedCount: 1,
       arrivalTime: '10:00', // Default to 10:00 AM
-      date: new Date().toISOString().split('T')[0]
+      date: defaultDate.toISOString().split('T')[0]
     };
   });
   const [submitting, setSubmitting] = useState(false);
@@ -667,6 +674,26 @@ Check console for full details.`);
 
 
 
+              {/* Date Selection */}
+              <div>
+                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
+                  Data e Rezervimit
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={bookingData.date}
+                  min={new Date().toISOString().split('T')[0]} // Can't book in the past
+                  onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })}
+                  className={`w-full px-4 py-3 rounded-sm focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950 focus:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88] focus:border-[#10FF88]'}`}
+                />
+                {bookingData.date === new Date().toISOString().split('T')[0] && (
+                  <p className={`text-xs mt-1 ${isDayMode ? 'text-amber-600' : 'text-amber-400'}`}>
+                    ⚠️ Booking for today - make sure arrival time is in the future
+                  </p>
+                )}
+              </div>
+
               {/* Arrival Time */}
               {/* Arrival Time - Sharp Design Time Grid */}
               <div>
@@ -674,31 +701,58 @@ Check console for full details.`);
                   Arrival Time
                 </label>
                 <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
-                  {timeSlots.map(time => (
-                    <button
-                      key={time}
-                      type="button"
-                      onClick={() => setBookingData({ ...bookingData, arrivalTime: time })}
-                      className={`
-                        px-3 py-2 rounded-sm text-sm font-medium transition-all
-                        ${bookingData.arrivalTime === time
-                          ? isDayMode
-                            ? 'bg-zinc-950 text-white'
-                            : 'bg-[#10FF88] text-zinc-950'
-                          : isDayMode
-                          ? 'border border-zinc-300 text-zinc-700 hover:border-zinc-950'
-                          : 'border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
-                        }
-                      `}
-                    >
-                      {time}
-                    </button>
-                  ))}
+                  {timeSlots.map(time => {
+                    // Check if this time slot is in the past for today's bookings
+                    const isToday = bookingData.date === new Date().toISOString().split('T')[0];
+                    const now = new Date();
+                    const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+                    const isPastTime = isToday && time <= currentTime;
+                    
+                    return (
+                      <button
+                        key={time}
+                        type="button"
+                        disabled={isPastTime}
+                        onClick={() => setBookingData({ ...bookingData, arrivalTime: time })}
+                        className={`
+                          px-3 py-2 rounded-sm text-sm font-medium transition-all
+                          ${isPastTime 
+                            ? 'opacity-50 cursor-not-allowed bg-zinc-200 text-zinc-400'
+                            : bookingData.arrivalTime === time
+                              ? isDayMode
+                                ? 'bg-zinc-950 text-white'
+                                : 'bg-[#10FF88] text-zinc-950'
+                              : isDayMode
+                              ? 'border border-zinc-300 text-zinc-700 hover:border-zinc-950'
+                              : 'border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
+                          }
+                        `}
+                      >
+                        {time}
+                      </button>
+                    );
+                  })}
                 </div>
                 {(venue.type || '').toLowerCase().includes('beach') && (
-                  <p className={`text-xs mt-3 text-center ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                    ⏰ Reservation expires 15 minutes after arrival time
-                  </p>
+                  <div className={`mt-4 p-4 rounded-lg border-2 ${isDayMode ? 'bg-amber-50 border-amber-200' : 'bg-amber-900/20 border-amber-700'}`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                      <p className={`text-sm font-medium ${isDayMode ? 'text-amber-800' : 'text-amber-400'}`}>
+                        IMPORTANT: Reservation Expiration
+                      </p>
+                    </div>
+                    <p className={`text-sm ${isDayMode ? 'text-amber-700' : 'text-amber-300'}`}>
+                      Your reservation will automatically expire <strong>15 minutes after your arrival time</strong>. 
+                      Please arrive on time or your sunbeds will be released to other guests.
+                    </p>
+                    {bookingData.date === new Date().toISOString().split('T')[0] && (
+                      <p className={`text-sm mt-2 font-medium ${isDayMode ? 'text-amber-800' : 'text-amber-200'}`}>
+                        📅 Booking for TODAY - Expired time slots are disabled
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
 
