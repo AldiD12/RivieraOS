@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import haptics from '../utils/haptics';
-import { reservationApi } from '../services/reservationApi';
+
+// 🔧 DYNAMIC IMPORTS: Fix "Cannot access 'G' before initialization" error
+// DELETE: import haptics from '../utils/haptics';
+// DELETE: import { reservationApi } from '../services/reservationApi';
+
+// ADD THESE INSTEAD: Dynamic lazy loading to prevent circular dependency crash
+const getHaptics = () => import('../utils/haptics').then(m => m.default);
+const getReservationApi = () => import('../services/reservationApi').then(m => m.reservationApi);
 
 // 🛡️ SECURITY: Detect and warn about malicious fetch interceptors
 const detectMaliciousCode = () => {
@@ -51,13 +57,18 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
   const availability = venue.availability;
   const hasAvailability = availability && availability.availableUnits > 0;
 
-  const handleZoneSelect = (zone) => {
+  const handleZoneSelect = async (zone) => {
       setSelectedZone(zone);
       setShowBookingForm(true);
 
-      // Haptic feedback
-      if (haptics.isSupported()) {
-        haptics.light();
+      // Haptic feedback - DYNAMIC IMPORT FIX
+      try {
+        const haptics = await getHaptics();
+        if (haptics.isSupported()) {
+          haptics.light();
+        }
+      } catch (err) {
+        console.warn('Haptics not available:', err);
       }
     };
 
@@ -114,9 +125,14 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
     try {
       setSubmitting(true);
       
-      // Haptic feedback
-      if (haptics.isSupported()) {
-        haptics.medium();
+      // Haptic feedback - DYNAMIC IMPORT FIX
+      try {
+        const haptics = await getHaptics();
+        if (haptics.isSupported()) {
+          haptics.medium();
+        }
+      } catch (err) {
+        console.warn('Haptics not available:', err);
       }
       
       console.log('📝 Submitting booking...', {
@@ -216,10 +232,11 @@ Faleminderit!`;
 
           console.log("🌐 Calling reservationApi.createReservation...");
           
-          // 🛡️ FAILSAFE: Catch the "Cannot access 'G'" error specifically
+          // 🛡️ FAILSAFE: Dynamic import to prevent "Cannot access 'G'" error
           let result;
           try {
-            result = await reservationApi.createReservation(apiPayload);
+            const resApi = await getReservationApi();
+            result = await resApi.createReservation(apiPayload);
           } catch (moduleError) {
             if (moduleError.message.includes("Cannot access") || moduleError.message.includes("before initialization")) {
               console.error("🚨 MODULE INITIALIZATION ERROR:", moduleError);
@@ -254,6 +271,7 @@ Faleminderit!`;
       alert(`DEBUG INFO:\nError: ${error.message}\nStatus: ${errorStatus}\nData: ${JSON.stringify(errorData, null, 2)}`);
       
       try {
+        const haptics = await getHaptics();
         if (haptics.isSupported()) {
           haptics.error();
         }
@@ -426,7 +444,7 @@ Faleminderit!`;
           {/* Get Directions Button */}
           {venue.latitude && venue.longitude && (
             <button
-              onClick={() => {
+              onClick={async () => {
                 // Open native maps app with directions
                 const destination = `${venue.latitude},${venue.longitude}`;
                 const label = encodeURIComponent(venue.name);
@@ -449,9 +467,14 @@ Faleminderit!`;
                 
                 window.open(mapsUrl, '_blank');
                 
-                // Haptic feedback
-                if (haptics.isSupported()) {
-                  haptics.light();
+                // Haptic feedback - DYNAMIC IMPORT FIX
+                try {
+                  const haptics = await getHaptics();
+                  if (haptics.isSupported()) {
+                    haptics.light();
+                  }
+                } catch (err) {
+                  console.warn('Haptics not available:', err);
                 }
               }}
               className={`w-full mb-6 px-6 py-4 rounded-sm border flex items-center justify-center gap-3 transition-all duration-300 ${isDayMode ? 'bg-white border-zinc-300 text-zinc-700 hover:border-zinc-950 hover:bg-stone-50 shadow-sm' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-[#10FF88] hover:text-[#10FF88]'}`}
