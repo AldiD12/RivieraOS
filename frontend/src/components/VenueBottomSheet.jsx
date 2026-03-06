@@ -175,10 +175,16 @@ Faleminderit!`;
       });
       
       // TEMPORARY: Show exact error for debugging
-      alert(`DEBUG INFO:\nError: ${error.message}\nStatus: ${error.response?.status}\nData: ${JSON.stringify(error.response?.data, null, 2)}`);
+      const errorStatus = error.response?.status || 'undefined';
+      const errorData = error.response?.data || 'undefined';
+      alert(`DEBUG INFO:\nError: ${error.message}\nStatus: ${errorStatus}\nData: ${JSON.stringify(errorData, null, 2)}`);
       
-      if (haptics.isSupported()) {
-        haptics.error();
+      try {
+        if (haptics.isSupported()) {
+          haptics.error();
+        }
+      } catch (hapticsError) {
+        console.error('❌ Haptics error:', hapticsError);
       }
       
       // Better error handling
