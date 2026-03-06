@@ -116,7 +116,7 @@ function VenueMarker({ venue, isSelected, onClick, isDayMode }) {
             {venue.availableUnitsCount || 0}
           </span>
         ) : (
-          // Show venue type icon for non-beach venues
+          // Show venue type icon for non-beach venues (no availability count)
           <div className={`${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
             {venue.type === 'Restaurant' || venue.type === 'RESTAURANT' ? (
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -389,7 +389,10 @@ export default function DiscoveryPage() {
       
       const business = businessMap[businessKey];
       business.venues.push(venue);
-      business.totalAvailableUnits += venue.availableUnitsCount || 0;
+      // Only count availability for beach venues
+      if (venue.type === 'Beach' || venue.type === 'BEACH') {
+        business.totalAvailableUnits += venue.availableUnitsCount || 0;
+      }
     });
     
     // Calculate average coordinates for each business
@@ -905,7 +908,7 @@ export default function DiscoveryPage() {
                         </span>
                       </div>
                     ) : (
-                      // Other businesses show venue count
+                      // Other businesses show venue count (no availability)
                       <div className="flex flex-col">
                         <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Venues</span>
                         <span className={`text-sm font-medium ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>
