@@ -795,7 +795,7 @@ export default function DiscoveryPage() {
 
       {/* List View - Show Businesses Grouped (Day Mode) or Events (Night Mode) */}
       {viewMode === 'list' && (
-        <div className="pt-[160px] pb-[60px] overflow-y-auto no-scrollbar px-6 space-y-6">
+        <div className="pt-[180px] pb-[60px] overflow-y-auto no-scrollbar px-6 space-y-6">
           {/* Day Mode: Show business groups */}
           {isDayMode && businessGroups.map((business) => {
             // Calculate business-level availability (sum of all venues)
@@ -1102,7 +1102,7 @@ export default function DiscoveryPage() {
       
       {/* Events View */}
       {viewMode === 'events' && (
-        <div className={`pt-[160px] pb-[60px] overflow-y-auto no-scrollbar px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
+        <div className={`pt-[180px] pb-[60px] overflow-y-auto no-scrollbar px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
           <EventsView
             events={filteredEvents}
             venues={venues}
