@@ -795,7 +795,7 @@ export default function DiscoveryPage() {
 
       {/* List View - Show Businesses Grouped (Day Mode) or Events (Night Mode) */}
       {viewMode === 'list' && (
-        <div className="absolute inset-0 pt-[320px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 space-y-6">
+        <div className="absolute inset-0 pt-[220px] pb-[80px] overflow-y-auto no-scrollbar z-10 px-6 space-y-6">
           {/* Day Mode: Show business groups */}
           {isDayMode && businessGroups.map((business) => {
             // Calculate business-level availability (sum of all venues)
@@ -1102,7 +1102,7 @@ export default function DiscoveryPage() {
       
       {/* Events View */}
       {viewMode === 'events' && (
-        <div className={`absolute inset-0 pt-[320px] pb-[100px] overflow-y-auto no-scrollbar z-10 px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
+        <div className={`absolute inset-0 pt-[220px] pb-[80px] overflow-y-auto no-scrollbar z-10 px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
           <EventsView
             events={filteredEvents}
             venues={venues}
@@ -1119,10 +1119,10 @@ export default function DiscoveryPage() {
 
       {/* Top Header */}
       <div className="absolute top-0 left-0 right-0 z-20 pointer-events-none">
-        <div className={`pointer-events-auto pt-16 px-6 flex flex-col items-start space-y-6 pb-16 relative bg-gradient-to-b ${isDayMode ? 'from-stone-50 via-stone-50/90 to-transparent' : 'from-zinc-950 via-zinc-950/80 to-transparent'}`}>
+        <div className={`pointer-events-auto pt-12 px-6 flex flex-col items-start space-y-4 pb-8 relative bg-gradient-to-b ${isDayMode ? 'from-stone-50 via-stone-50/90 to-transparent' : 'from-zinc-950 via-zinc-950/80 to-transparent'}`}>
           
           {/* Day/Night Toggle (centered at top) */}
-          <div className="absolute top-16 left-0 right-0 flex justify-center z-30 pointer-events-none">
+          <div className="absolute top-12 left-0 right-0 flex justify-center z-30 pointer-events-none">
             <div className={`backdrop-blur-md border p-1 rounded-full flex shadow-lg pointer-events-auto ${isDayMode ? 'bg-white/80 border-zinc-200' : 'bg-zinc-900/80 border-zinc-800'}`}>
               <button 
                 onClick={() => {
@@ -1153,7 +1153,7 @@ export default function DiscoveryPage() {
             </div>
           </div>
           
-          <div className="flex justify-between items-start w-full relative z-20 pt-10">
+          <div className="flex justify-between items-start w-full relative z-20 pt-6">
             <div>
               <h1 className={`font-serif text-4xl tracking-tight drop-shadow-sm ${isDayMode ? 'text-zinc-950' : 'text-white drop-shadow-lg'}`} style={{ fontFamily: 'Playfair Display, serif' }}>XIXA</h1>
               <div className="flex items-center space-x-2 mt-1">
@@ -1241,7 +1241,7 @@ export default function DiscoveryPage() {
 
           {/* Filter Pills - Show venue filters for day mode, event filters for night mode */}
           {viewMode !== 'events' && (
-            <div className="flex space-x-3 overflow-x-auto no-scrollbar w-full pb-4 pt-6 pl-0.5">
+            <div className="flex space-x-3 overflow-x-auto no-scrollbar w-full pb-2 pt-3 pl-0.5">
               {/* Day Mode: Show venue filters */}
               {isDayMode && VENUE_FILTERS.map(filter => (
                 <button
@@ -1344,22 +1344,22 @@ export default function DiscoveryPage() {
 
       {/* Bottom Navigation */}
       <div className="absolute bottom-0 left-0 right-0 z-30 pointer-events-none">
-        <div className={`pointer-events-auto bg-gradient-to-t pt-12 pb-8 px-6 ${isDayMode ? 'from-stone-50 via-stone-50/95 to-transparent' : 'from-zinc-950 via-zinc-950/95 to-transparent'}`}>
+        <div className={`pointer-events-auto bg-gradient-to-t pt-6 pb-4 px-6 ${isDayMode ? 'from-stone-50 via-stone-50/95 to-transparent' : 'from-zinc-950 via-zinc-950/95 to-transparent'}`}>
           {/* Search Bar */}
-          <div className="relative mb-6 group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg className={`w-5 h-5 transition-colors ${isDayMode ? 'text-zinc-500 group-focus-within:text-zinc-950' : 'text-zinc-500 group-focus-within:text-[#10FF88]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="relative mb-3 group">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className={`w-4 h-4 transition-colors ${isDayMode ? 'text-zinc-500 group-focus-within:text-zinc-950' : 'text-zinc-500 group-focus-within:text-[#10FF88]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
             <input
-              className={`block w-full pl-11 pr-12 py-3.5 backdrop-blur-lg border rounded-xl text-sm transition-all ${isDayMode ? 'bg-white/70 border-zinc-300 text-zinc-900 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-950 focus:border-zinc-950 shadow-sm' : 'bg-zinc-900/50 border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#10FF88] focus:border-[#10FF88] shadow-inner'}`}
+              className={`block w-full pl-10 pr-10 py-2.5 backdrop-blur-lg border rounded-xl text-sm transition-all ${isDayMode ? 'bg-white/70 border-zinc-300 text-zinc-900 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-950 focus:border-zinc-950 shadow-sm' : 'bg-zinc-900/50 border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-[#10FF88] focus:border-[#10FF88] shadow-inner'}`}
               placeholder="Find elite venues, yachts..."
               type="text"
             />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+            <div className="absolute inset-y-0 right-0 pr-2 flex items-center">
               <button className={`p-1 rounded transition-colors ${isDayMode ? 'hover:bg-stone-200' : 'hover:bg-zinc-800'}`}>
-                <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-500 hover:text-zinc-950' : 'text-zinc-500 hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-4 h-4 ${isDayMode ? 'text-zinc-500 hover:text-zinc-950' : 'text-zinc-500 hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                 </svg>
               </button>
@@ -1367,38 +1367,38 @@ export default function DiscoveryPage() {
           </div>
 
           {/* Bottom Nav Bar */}
-          <nav className={`relative rounded-2xl backdrop-blur-xl border shadow-2xl overflow-hidden ${isDayMode ? 'bg-white/60 border-white/20' : 'bg-zinc-900/80 border-zinc-800'}`}>
+          <nav className={`relative rounded-xl backdrop-blur-xl border shadow-2xl overflow-hidden ${isDayMode ? 'bg-white/60 border-white/20' : 'bg-zinc-900/80 border-zinc-800'}`}>
             {isDayMode && (
               <div className="absolute inset-0 bg-gradient-to-t from-white/40 to-transparent pointer-events-none"></div>
             )}
-            <div className="flex items-center justify-around py-4 relative z-10">
-              <button className="flex flex-col items-center space-y-1 group w-1/4">
-                <svg className={`w-7 h-7 ${isDayMode ? 'text-xixa-green drop-shadow-sm' : 'text-[#10FF88]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>
+            <div className="flex items-center justify-around py-2 relative z-10">
+              <button className="flex flex-col items-center space-y-0.5 group w-1/4">
+                <svg className={`w-5 h-5 ${isDayMode ? 'text-xixa-green drop-shadow-sm' : 'text-[#10FF88]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span className={`text-[10px] font-medium tracking-wide ${isDayMode ? 'text-zinc-950 font-bold' : 'text-white'}`} style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>DISCOVER</span>
-                <div className={`w-1 h-1 rounded-full mt-1 ${isDayMode ? 'bg-zinc-950' : 'bg-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'}`}></div>
+                <span className={`text-[9px] font-medium tracking-wide ${isDayMode ? 'text-zinc-950 font-bold' : 'text-white'}`} style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>DISCOVER</span>
+                <div className={`w-1 h-1 rounded-full ${isDayMode ? 'bg-zinc-950' : 'bg-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'}`}></div>
               </button>
               
-              <button className="flex flex-col items-center space-y-1 group w-1/4 hover:opacity-100 opacity-60 transition-opacity">
-                <svg className={`w-6 h-6 ${isDayMode ? 'text-zinc-800 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button className="flex flex-col items-center space-y-0.5 group w-1/4 hover:opacity-100 opacity-60 transition-opacity">
+                <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-800 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                 </svg>
-                <span className={`text-[10px] font-medium tracking-wide ${isDayMode ? 'text-zinc-500 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`}>SAVED</span>
+                <span className={`text-[9px] font-medium tracking-wide ${isDayMode ? 'text-zinc-500 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`}>SAVED</span>
               </button>
               
-              <button className="flex flex-col items-center space-y-1 group w-1/4 hover:opacity-100 opacity-60 transition-opacity">
-                <svg className={`w-6 h-6 ${isDayMode ? 'text-zinc-800 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button className="flex flex-col items-center space-y-0.5 group w-1/4 hover:opacity-100 opacity-60 transition-opacity">
+                <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-800 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                 </svg>
-                <span className={`text-[10px] font-medium tracking-wide ${isDayMode ? 'text-zinc-500 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`}>BOOKINGS</span>
+                <span className={`text-[9px] font-medium tracking-wide ${isDayMode ? 'text-zinc-500 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`}>BOOKINGS</span>
               </button>
               
-              <button className="flex flex-col items-center space-y-1 group w-1/4 hover:opacity-100 opacity-60 transition-opacity">
-                <svg className={`w-6 h-6 ${isDayMode ? 'text-zinc-800 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button className="flex flex-col items-center space-y-0.5 group w-1/4 hover:opacity-100 opacity-60 transition-opacity">
+                <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-800 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <span className={`text-[10px] font-medium tracking-wide ${isDayMode ? 'text-zinc-500 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`}>PROFILE</span>
+                <span className={`text-[9px] font-medium tracking-wide ${isDayMode ? 'text-zinc-500 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`}>PROFILE</span>
               </button>
             </div>
           </nav>
