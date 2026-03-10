@@ -43,6 +43,20 @@ export default function LocationBottomSheet({
     onClose();
   };
 
+  const handleGPSClick = async () => {
+    try {
+      if (onGPSLocationSelect) {
+        await onGPSLocationSelect();
+      }
+      onClose();
+    } catch (error) {
+      console.error('GPS location failed:', error);
+      // Show error message to user
+      setError('Location access denied or unavailable');
+      // Don't close the sheet so user can see the error and try again
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
