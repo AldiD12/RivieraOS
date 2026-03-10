@@ -8,6 +8,7 @@ import VenueBottomSheet from '../components/VenueBottomSheet';
 import BusinessBottomSheet from '../components/BusinessBottomSheet';
 import EventsView from '../components/EventsView';
 import LocationBottomSheet from '../components/LocationBottomSheet';
+import { sortEventsByDistance, sortVenuesByDistance, getCurrentLocation } from '../utils/locationUtils';
 
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -281,6 +282,7 @@ export default function DiscoveryPage() {
   // Location/Zone state
   const [selectedGeographicZone, setSelectedGeographicZone] = useState('EVERYWHERE');
   const [locationBottomSheetOpen, setLocationBottomSheetOpen] = useState(false);
+  const [isUsingGPSLocation, setIsUsingGPSLocation] = useState(false); // Track if using GPS vs manual zone
 
   // Get user location IMMEDIATELY on mount (before anything else)
   useEffect(() => {
@@ -320,7 +322,7 @@ export default function DiscoveryPage() {
 
   useEffect(() => {
     loadVenues();
-    loadEvents();
+    loadEvents(); // Load all events initially
   }, []);
 
   // Initialize day/night mode properly on mount
@@ -365,11 +367,13 @@ export default function DiscoveryPage() {
     }
   };
   
-  const loadEvents = async () => {
+  const loadEvents = async (geographicZone = null) => {
     try {
       setEventsLoading(true);
-      console.log('🌐 Fetching events from API...');
-      const data = await publicEventsApi.getEvents();
+      console.log('🌐 Fetching events from API...', geographicZone ? `for zone: ${geographicZone}` : 'all zones');
+      
+      // Use the updated API with zone filtering
+      const data = await publicEventsApi.getEvents(geographicZone);
       console.log('📦 Raw events API response:', data);
       console.log('📊 Events data type:', typeof data, 'Array?', Array.isArray(data));
       
@@ -391,7 +395,15 @@ export default function DiscoveryPage() {
         : [];
       
       console.log(`✅ Filtered to ${published.length} published events:`, published);
-      setEvents(published);
+      
+      // If using GPS location, sort by distance
+      if (isUsingGPSLocation && userLocation) {
+        const sortedEvents = sortEventsByDistance(published, userLocation);
+        console.log('📍 Sorted events by distance from user location');
+        setEvents(sortedEvents);
+      } else {
+        setEvents(published);
+      }
     } catch (err) {
       console.error('❌ Failed to load events:', err);
       setEvents([]); // Set empty array on error
@@ -519,28 +531,53 @@ export default function DiscoveryPage() {
   const handleZoneSelect = useCallback(async (zone) => {
     console.log('🌍 Selected geographic zone:', zone);
     setSelectedGeographicZone(zone);
+    setIsUsingGPSLocation(false); // Manual zone selection, not GPS
     
-    // TODO: When backend implements geographic zones, uncomment this:
-    /*
     try {
       if (zone === 'EVERYWHERE') {
         // Load all events and venues
-        await loadEvents();
+        console.log('📍 Loading all events and venues');
+        await loadEvents(); // No zone filter
         await loadVenues();
       } else {
-        // Load filtered events and venues for the selected zone
-        const [zoneEvents, zoneVenues] = await Promise.all([
-          geographicZonesApi.getEventsByGeographicZone(zone),
-          geographicZonesApi.getVenuesByGeographicZone(zone)
-        ]);
-        setEvents(zoneEvents);
-        setVenues(zoneVenues);
+        // Load filtered events for the selected zone
+        console.log(`📍 Loading events for zone: ${zone}`);
+        await loadEvents(zone); // Pass zone to filter API call
+        await loadVenues(); // Keep all venues for now (can be filtered later if needed)
       }
     } catch (error) {
       console.error('Failed to load zone data:', error);
     }
-    */
-  }, []);
+  }, [loadEvents, loadVenues]);
+
+  // Handle GPS location selection
+  const handleGPSLocationSelect = useCallback(async () => {
+    console.log('🛰️ Using GPS location for sorting');
+    setSelectedGeographicZone('NEARBY'); // Special indicator for GPS mode
+    setIsUsingGPSLocation(true);
+    
+    try {
+      // Get user's current location
+      const location = await getCurrentLocation();
+      console.log('📍 Got user location:', location);
+      
+      // Load all events and sort by distance
+      await loadEvents(); // Load all events, will be sorted by distance in loadEvents
+      
+      // Sort venues by distance too
+      if (venues.length > 0) {
+        const sortedVenues = sortVenuesByDistance(venues, location);
+        setVenues(sortedVenues);
+      }
+      
+    } catch (error) {
+      console.error('Failed to get GPS location:', error);
+      // Fallback to EVERYWHERE if GPS fails
+      setSelectedGeographicZone('EVERYWHERE');
+      setIsUsingGPSLocation(false);
+      await loadEvents();
+    }
+  }, [loadEvents, venues]);
   
   const handleEventClick = (event) => {
     const venue = venues.find(v => v.id === event.venueId);
@@ -1229,7 +1266,11 @@ export default function DiscoveryPage() {
             >
               <span className={`text-[14px] ${isDayMode ? 'text-amber-900' : 'text-[#10FF88]'}`}>📍</span>
               <span className={`text-[10px] font-mono tracking-widest uppercase ${isDayMode ? 'text-stone-700' : 'text-white'}`}>
-                {selectedGeographicZone === 'EVERYWHERE' ? 'EVERYWHERE' : selectedGeographicZone.toUpperCase()}
+                {selectedGeographicZone === 'EVERYWHERE' 
+                  ? 'EVERYWHERE' 
+                  : selectedGeographicZone === 'NEARBY'
+                  ? 'NEARBY'
+                  : selectedGeographicZone.toUpperCase()}
               </span>
               <svg 
                 className={`w-[14px] h-[14px] transition-transform duration-300 ${locationBottomSheetOpen ? 'translate-y-0.5' : ''} ${isDayMode ? 'text-stone-500' : 'text-white'}`} 
@@ -1483,6 +1524,7 @@ export default function DiscoveryPage() {
         isOpen={locationBottomSheetOpen}
         onClose={() => setLocationBottomSheetOpen(false)}
         onZoneSelect={handleZoneSelect}
+        onGPSLocationSelect={handleGPSLocationSelect}
         selectedZone={selectedGeographicZone}
         isDayMode={isDayMode}
       />

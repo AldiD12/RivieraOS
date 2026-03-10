@@ -131,9 +131,16 @@ export const superAdminEventsApi = {
 // Public APIs (for DiscoveryPage) - No auth needed
 // Use fetch like venueApi to avoid double /api/ issue
 export const publicEventsApi = {
-  getEvents: async () => {
+  getEvents: async (geographicZone = null) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/public/Events`, {
+      let url = `${API_BASE_URL}/public/Events`;
+      
+      // Add geographic zone filter if specified
+      if (geographicZone && geographicZone !== 'EVERYWHERE') {
+        url += `?geographicZone=${encodeURIComponent(geographicZone)}`;
+      }
+      
+      const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
