@@ -35,30 +35,35 @@ function toRadians(degrees) {
 
 /**
  * Sort events by distance from user location
- * @param {Array} events - Array of events with venue coordinates
+ * @param {Array} events - Array of events with venueId
+ * @param {Array} venues - Array of venues with coordinates
  * @param {Object} userLocation - User's current location {latitude, longitude}
  * @returns {Array} Events sorted by distance (nearest first)
  */
-export function sortEventsByDistance(events, userLocation) {
+export function sortEventsByDistance(events, venues, userLocation) {
   if (!userLocation || !userLocation.latitude || !userLocation.longitude) {
     return events;
   }
 
   return events
     .map(event => {
+      // Find the venue for this event
+      const venue = venues.find(v => v.id === event.venueId);
+      
       // Calculate distance to venue
-      const distance = event.venue?.latitude && event.venue?.longitude
+      const distance = venue?.latitude && venue?.longitude
         ? calculateDistance(
             userLocation.latitude,
             userLocation.longitude,
-            event.venue.latitude,
-            event.venue.longitude
+            venue.latitude,
+            venue.longitude
           )
         : Infinity;
       
       return {
         ...event,
-        distanceFromUser: distance
+        distanceFromUser: distance,
+        venue: venue // Include venue data for reference
       };
     })
     .sort((a, b) => a.distanceFromUser - b.distanceFromUser);

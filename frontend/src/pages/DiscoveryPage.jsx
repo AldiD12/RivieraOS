@@ -397,9 +397,13 @@ export default function DiscoveryPage() {
       console.log(`✅ Filtered to ${published.length} published events:`, published);
       
       // If using GPS location, sort by distance
-      if (isUsingGPSLocation && userLocation) {
-        const sortedEvents = sortEventsByDistance(published, userLocation);
-        console.log('📍 Sorted events by distance from user location');
+      if (isUsingGPSLocation && userLocation && venues.length > 0) {
+        const sortedEvents = sortEventsByDistance(published, venues, userLocation);
+        console.log('📍 Sorted events by distance from user location:', sortedEvents.slice(0, 3).map(e => ({
+          name: e.name,
+          distance: e.distanceFromUser,
+          venue: e.venue?.name
+        })));
         setEvents(sortedEvents);
       } else {
         setEvents(published);
@@ -568,10 +572,13 @@ export default function DiscoveryPage() {
       if (venues.length > 0) {
         const sortedVenues = sortVenuesByDistance(venues, location);
         setVenues(sortedVenues);
+        console.log('📍 Sorted venues by distance from user location');
       }
       
     } catch (error) {
       console.error('Failed to get GPS location:', error);
+      // Show user-friendly error message
+      console.log('📍 GPS failed, falling back to EVERYWHERE mode');
       // Fallback to EVERYWHERE if GPS fails
       setSelectedGeographicZone('EVERYWHERE');
       setIsUsingGPSLocation(false);
