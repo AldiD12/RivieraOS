@@ -75,6 +75,10 @@ namespace BlackBear.Services.Core.Entities
             }
         }
 
+        [MaxLength(50)]
+        [Column("geographic_zone")]
+        public string? GeographicZone { get; set; }
+
         [MaxLength(20)]
         [Column("whatsapp_number")]
         public string? WhatsappNumber { get; set; }

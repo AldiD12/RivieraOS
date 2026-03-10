@@ -1,5 +1,11 @@
 namespace BlackBear.Services.Core.DTOs.Public
 {
+    public class PublicGeographicZoneDto
+    {
+        public string Zone { get; set; } = string.Empty;
+        public int EventCount { get; set; }
+    }
+
     public class PublicEventListItemDto
     {
         public int Id { get; set; }
@@ -18,6 +24,7 @@ namespace BlackBear.Services.Core.DTOs.Public
         public int VenueId { get; set; }
         public string? VenueName { get; set; }
         public string? VenueAddress { get; set; }
+        public string? VenueGeographicZone { get; set; }
         public string? VenueWhatsappNumber { get; set; }
         public int? BusinessId { get; set; }
         public string? BusinessName { get; set; }
@@ -43,6 +50,7 @@ namespace BlackBear.Services.Core.DTOs.Public
         public int VenueId { get; set; }
         public string? VenueName { get; set; }
         public string? VenueAddress { get; set; }
+        public string? VenueGeographicZone { get; set; }
         public string? VenueWhatsappNumber { get; set; }
         public double? VenueLatitude { get; set; }
         public double? VenueLongitude { get; set; }

@@ -16,11 +16,35 @@ namespace BlackBear.Services.Core.Controllers.Public
             _context = context;
         }
 
-        // GET: api/public/events?venueId=1&businessId=1
+        // GET: api/public/events/geographic-zones
+        [HttpGet("geographic-zones")]
+        public async Task<ActionResult<List<PublicGeographicZoneDto>>> GetGeographicZones()
+        {
+            var zones = await _context.ScheduledEvents
+                .Include(e => e.Venue)
+                .IgnoreQueryFilters()
+                .Where(e => !e.IsDeleted && e.IsPublished && e.EndTime > DateTime.UtcNow)
+                .Where(e => e.Venue != null && e.Venue.GeographicZone != null)
+                .Where(e => e.Venue != null && _context.BusinessFeatures
+                    .Any(bf => bf.BusinessId == e.Venue.BusinessId && !bf.IsDeleted && bf.HasEvents))
+                .GroupBy(e => e.Venue!.GeographicZone)
+                .Select(g => new PublicGeographicZoneDto
+                {
+                    Zone = g.Key!,
+                    EventCount = g.Count()
+                })
+                .OrderByDescending(z => z.EventCount)
+                .ToListAsync();
+
+            return Ok(zones);
+        }
+
+        // GET: api/public/events?venueId=1&businessId=1&geographicZone=Dhërmi
         [HttpGet]
         public async Task<ActionResult<List<PublicEventListItemDto>>> GetEvents(
             [FromQuery] int? venueId = null,
             [FromQuery] int? businessId = null,
+            [FromQuery] string? geographicZone = null,
             [FromQuery] int limit = 50)
         {
             var query = _context.ScheduledEvents
@@ -44,6 +68,11 @@ namespace BlackBear.Services.Core.Controllers.Public
                 query = query.Where(e => e.Venue != null && e.Venue.BusinessId == businessId.Value);
             }
 
+            if (!string.IsNullOrEmpty(geographicZone))
+            {
+                query = query.Where(e => e.Venue != null && e.Venue.GeographicZone == geographicZone);
+            }
+
             var events = await query
                 .OrderBy(e => e.StartTime)
                 .Take(limit)
@@ -64,6 +93,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                     VenueId = e.VenueId,
                     VenueName = e.Venue != null ? e.Venue.Name : null,
                     VenueAddress = e.Venue != null ? e.Venue.Address : null,
+                    VenueGeographicZone = e.Venue != null ? e.Venue.GeographicZone : null,
                     VenueWhatsappNumber = e.Venue != null ? e.Venue.WhatsappNumber : null,
                     BusinessId = e.Venue != null ? e.Venue.BusinessId : null,
                     BusinessName = e.Venue != null && e.Venue.Business != null ? e.Venue.Business.BrandName ?? e.Venue.Business.RegisteredName : null,
@@ -114,6 +144,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                 VenueId = evt.VenueId,
                 VenueName = evt.Venue?.Name,
                 VenueAddress = evt.Venue?.Address,
+                VenueGeographicZone = evt.Venue?.GeographicZone,
                 VenueWhatsappNumber = evt.Venue?.WhatsappNumber,
                 VenueLatitude = evt.Venue?.Latitude,
                 VenueLongitude = evt.Venue?.Longitude,
@@ -156,6 +187,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                     VenueId = e.VenueId,
                     VenueName = e.Venue != null ? e.Venue.Name : null,
                     VenueAddress = e.Venue != null ? e.Venue.Address : null,
+                    VenueGeographicZone = e.Venue != null ? e.Venue.GeographicZone : null,
                     VenueWhatsappNumber = e.Venue != null ? e.Venue.WhatsappNumber : null,
                     BusinessId = e.Venue != null ? e.Venue.BusinessId : null,
                     BusinessName = e.Venue != null && e.Venue.Business != null ? e.Venue.Business.BrandName ?? e.Venue.Business.RegisteredName : null,
@@ -199,6 +231,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                     VenueId = e.VenueId,
                     VenueName = e.Venue != null ? e.Venue.Name : null,
                     VenueAddress = e.Venue != null ? e.Venue.Address : null,
+                    VenueGeographicZone = e.Venue != null ? e.Venue.GeographicZone : null,
                     VenueWhatsappNumber = e.Venue != null ? e.Venue.WhatsappNumber : null,
                     BusinessId = e.Venue != null ? e.Venue.BusinessId : null,
                     BusinessName = e.Venue != null && e.Venue.Business != null ? e.Venue.Business.BrandName ?? e.Venue.Business.RegisteredName : null,

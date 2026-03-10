@@ -53,7 +53,8 @@
       "Bash(dotnet ef:*)",
       "Bash(export:*)",
       "Bash(dotnet run:*)",
-      "Bash(powershell.exe:*)"
+      "Bash(powershell.exe:*)",
+      "Bash(taskkill //PID 21748 //F 2>&1)"
     ]
   }
 }
