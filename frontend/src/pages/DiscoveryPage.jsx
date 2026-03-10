@@ -3,9 +3,11 @@ import Map, { Marker, NavigationControl } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { venueApi } from '../services/venueApi';
 import { publicEventsApi } from '../services/eventsApi';
+import { geographicZonesApi } from '../services/geographicZonesApi';
 import VenueBottomSheet from '../components/VenueBottomSheet';
 import BusinessBottomSheet from '../components/BusinessBottomSheet';
 import EventsView from '../components/EventsView';
+import LocationBottomSheet from '../components/LocationBottomSheet';
 
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -276,6 +278,10 @@ export default function DiscoveryPage() {
   const [eventDateFilter, setEventDateFilter] = useState('all');
   const [activeEventFilter, setActiveEventFilter] = useState('all'); // For night mode event filtering
 
+  // Location/Zone state
+  const [selectedGeographicZone, setSelectedGeographicZone] = useState('EVERYWHERE');
+  const [locationBottomSheetOpen, setLocationBottomSheetOpen] = useState(false);
+
   // Get user location IMMEDIATELY on mount (before anything else)
   useEffect(() => {
     if ('geolocation' in navigator) {
@@ -508,6 +514,32 @@ export default function DiscoveryPage() {
         essential: true
       });
     }
+  }, []);
+
+  const handleZoneSelect = useCallback(async (zone) => {
+    console.log('🌍 Selected geographic zone:', zone);
+    setSelectedGeographicZone(zone);
+    
+    // TODO: When backend implements geographic zones, uncomment this:
+    /*
+    try {
+      if (zone === 'EVERYWHERE') {
+        // Load all events and venues
+        await loadEvents();
+        await loadVenues();
+      } else {
+        // Load filtered events and venues for the selected zone
+        const [zoneEvents, zoneVenues] = await Promise.all([
+          geographicZonesApi.getEventsByGeographicZone(zone),
+          geographicZonesApi.getVenuesByGeographicZone(zone)
+        ]);
+        setEvents(zoneEvents);
+        setVenues(zoneVenues);
+      }
+    } catch (error) {
+      console.error('Failed to load zone data:', error);
+    }
+    */
   }, []);
   
   const handleEventClick = (event) => {
@@ -1187,6 +1219,27 @@ export default function DiscoveryPage() {
               <div className={`w-1.5 h-1.5 rounded-full bg-[#10FF88] animate-pulse ${isDayMode ? 'border border-zinc-950 shadow-[0_0_8px_rgba(16,255,136,0.3)]' : 'shadow-[0_0_12px_rgba(16,255,136,0.4)]'}`}></div>
               <p className={`text-[10px] font-mono tracking-[0.2em] uppercase ${isDayMode ? 'text-stone-500' : 'text-zinc-400'}`}>Albanian Riviera</p>
             </div>
+            
+            {/* Location Trigger - Industrial Style matching HTML */}
+            <button
+              onClick={() => setLocationBottomSheetOpen(true)}
+              className={`
+                mt-1 flex items-center gap-1 transition-all duration-300 group
+              `}
+            >
+              <span className={`text-[14px] ${isDayMode ? 'text-amber-900' : 'text-[#10FF88]'}`}>📍</span>
+              <span className={`text-[10px] font-mono tracking-widest uppercase ${isDayMode ? 'text-stone-700' : 'text-white'}`}>
+                {selectedGeographicZone === 'EVERYWHERE' ? 'EVERYWHERE' : selectedGeographicZone.toUpperCase()}
+              </span>
+              <svg 
+                className={`w-[14px] h-[14px] transition-transform duration-300 ${locationBottomSheetOpen ? 'translate-y-0.5' : ''} ${isDayMode ? 'text-stone-500' : 'text-white'}`} 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
           </div>
           
           {/* Day/Night Toggle */}
@@ -1424,6 +1477,15 @@ export default function DiscoveryPage() {
           />
         </div>
       )}
+
+      {/* Location Bottom Sheet */}
+      <LocationBottomSheet
+        isOpen={locationBottomSheetOpen}
+        onClose={() => setLocationBottomSheetOpen(false)}
+        onZoneSelect={handleZoneSelect}
+        selectedZone={selectedGeographicZone}
+        isDayMode={isDayMode}
+      />
 
       {/* Custom Styles */}
       <style dangerouslySetInnerHTML={{

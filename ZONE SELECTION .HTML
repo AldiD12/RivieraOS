@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>XIXA - Location Selector</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700&amp;family=JetBrains+Mono:wght@400;700&amp;family=Playfair+Display:wght@700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#10FF88",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#09090b", // Zinc-950
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"],
+                        "serif": ["Playfair Display", "serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "2px",
+                        "lg": "2px",
+                        "xl": "2px",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .glow-text {
+            text-shadow: 0 0 10px rgba(16, 255, 136, 0.4);
+        }
+        .glow-border {
+            box-shadow: 0 0 15px rgba(16, 255, 136, 0.15);
+        }
+        .blur-bg-map {
+            filter: brightness(0.3) blur(4px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-slate-100 font-display selection:bg-primary/30">
+<div class="relative flex h-screen w-full flex-col overflow-hidden">
+<!-- Background Map Layer -->
+<div class="absolute inset-0 z-0 blur-bg-map bg-cover bg-center" data-alt="Blurred satellite view of the Albanian Riviera coastline and mountains" data-location="Albanian Riviera" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAu70dQ3zordArgu9y8yLxSFymU7nBOdcr9i7Dnuoh7Y2Ib_Q51spQ-Q0S56bN6EQwIf1E8sLSVXB7FvW_NqyCMmAG3HMFbfGxaHZBXd6gjTP0x9OsipjFJehFcDFinS9IdrpnRMQtcfexn4PZVmHbyeKtnlapJ2r4tsB8eF4p9GucAYlfqmbt5h3xfJgt82RdrXjH35D0f7DzUowjfYSrMYc1vXJ1MuCXsmnZDSHjhGvRYXZQ5u1r3yJGsIdFISry7HK4PGSwbji8F');">
+</div>
+<!-- Header Section -->
+<header class="relative z-20 flex flex-col pt-8 px-6 pb-4 bg-gradient-to-b from-background-dark/80 to-transparent sticky top-0">
+<h1 class="font-serif text-3xl tracking-tighter text-white">XIXA</h1>
+<button class="flex items-center gap-1 mt-1 text-[10px] font-mono tracking-widest text-white uppercase group">
+<span class="material-symbols-outlined text-[14px] text-primary">location_on</span>
+                EVERYWHERE
+                <span class="material-symbols-outlined text-[14px] transition-transform group-hover:translate-y-0.5">expand_more</span>
+</button>
+</header>
+<!-- Main Content Area (Scrollable Behind Bottom Sheet) -->
+<main class="flex-1 px-6 pt-12">
+<!-- Content would go here in the actual app -->
+</main>
+<!-- Bottom Sheet Overlay -->
+<div class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm flex flex-col justify-end">
+<!-- Bottom Sheet Content -->
+<div class="bg-background-dark border-t border-zinc-800 w-full max-h-[85vh] flex flex-col shadow-2xl">
+<!-- Handle Bar -->
+<div class="flex justify-center py-3">
+<div class="h-1 w-12 bg-zinc-800 rounded-full"></div>
+</div>
+<!-- Sheet Title -->
+<div class="px-6 pb-6">
+<h2 class="font-mono text-xs text-zinc-500 tracking-[0.2em] uppercase">[ SELECT ZONE ]</h2>
+</div>
+<!-- Zone List -->
+<div class="flex flex-col px-6 gap-3 pb-8 overflow-y-auto">
+<!-- Active Zone -->
+<button class="w-full text-left py-4 px-5 border border-primary bg-primary/5 rounded-sm glow-border flex justify-between items-center group">
+<span class="font-mono text-sm text-primary glow-text uppercase tracking-wide">EVERYWHERE (15)</span>
+<span class="material-symbols-outlined text-primary text-lg">check</span>
+</button>
+<!-- Inactive Zones -->
+<button class="w-full text-left py-4 px-5 border border-zinc-800 bg-transparent rounded-sm hover:border-zinc-700 transition-colors">
+<span class="font-mono text-sm text-zinc-400 uppercase tracking-wide">DHËRMI &amp; PALASË (8)</span>
+</button>
+<button class="w-full text-left py-4 px-5 border border-zinc-800 bg-transparent rounded-sm hover:border-zinc-700 transition-colors">
+<span class="font-mono text-sm text-zinc-400 uppercase tracking-wide">JALË &amp; HIMARË (4)</span>
+</button>
+<button class="w-full text-left py-4 px-5 border border-zinc-800 bg-transparent rounded-sm hover:border-zinc-700 transition-colors">
+<span class="font-mono text-sm text-zinc-400 uppercase tracking-wide">TIRANA (3)</span>
+</button>
+<!-- GPS Action -->
+<div class="mt-4 pt-6 border-t border-zinc-800">
+<button class="w-full py-4 px-5 border border-white bg-white/5 rounded-sm flex items-center justify-center gap-3 hover:bg-white/10 transition-all">
+<span class="material-symbols-outlined text-white text-lg">my_location</span>
+<span class="font-mono text-sm text-white uppercase tracking-widest">[ USE CURRENT LOCATION ]</span>
+</button>
+</div>
+</div>
+<!-- Bottom Safe Area Spacer -->
+<div class="h-8"></div>
+</div>
+</div>
+<!-- Bottom Navigation Bar (Visual Only) -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 flex border-t border-zinc-900 bg-background-dark/95 backdrop-blur-md px-6 pb-8 pt-4">
+<a class="flex flex-1 flex-col items-center justify-center text-primary" href="#">
+<span class="material-symbols-outlined">home</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center text-zinc-600" href="#">
+<span class="material-symbols-outlined">search</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center text-zinc-600" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+</a>
+<a class="flex flex-1 flex-col items-center justify-center text-zinc-600" href="#">
+<span class="material-symbols-outlined">person</span>
+</a>
+</nav>
+</div>
+</body></html>
