@@ -295,7 +295,7 @@ export default function DiscoveryPage() {
     { id: 'YACHTS', label: 'YACHTS', icon: '🛥️', isDayMode: true, filter: 'Yacht' }
   ];
 
-  // Handle category click - Theme Trigger Magic
+  // Handle category click - Theme Trigger Magic with Smart Defaults
   const handleCategoryClick = (category) => {
     const categoryData = THEME_CATEGORIES.find(c => c.id === category);
     if (!categoryData) return;
@@ -309,12 +309,12 @@ export default function DiscoveryPage() {
     // Set appropriate filter
     setActiveFilter(categoryData.filter);
     
-    // Set appropriate view mode
-    if (category === 'EVENTS') {
-      setViewMode('list'); // Events show in list/feed view
+    // SMART DEFAULTS - Intent-based view selection
+    if (category === 'BEACHES' || category === 'DINING' || category === 'YACHTS') {
+      setViewMode('map'); // Spatial problems need map view
+    } else if (category === 'EVENTS' || category === 'CLUBS') {
+      setViewMode('list'); // Vibe decisions need list view
       setActiveEventFilter('all');
-    } else {
-      setViewMode('map'); // Everything else shows on map
     }
   };
 
@@ -1492,6 +1492,33 @@ export default function DiscoveryPage() {
           />
         </div>
       )}
+
+      {/* Smart Floating Switcher - XIXA Sharp Standard */}
+      <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-40">
+        <button
+          onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+          className={`
+            px-6 py-3 rounded-sm font-mono text-xs uppercase tracking-widest
+            transition-all duration-300 shadow-lg hover:scale-105 active:scale-95
+            ${isDayMode 
+              ? 'bg-zinc-950 text-white shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
+              : 'bg-white text-zinc-950 shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_30px_rgba(0,0,0,0.7)]'
+            }
+          `}
+        >
+          {viewMode === 'map' ? (
+            <>
+              <span className="mr-2">📄</span>
+              LIST
+            </>
+          ) : (
+            <>
+              <span className="mr-2">🗺️</span>
+              MAP
+            </>
+          )}
+        </button>
+      </div>
 
       {/* Location Bottom Sheet */}
       <LocationBottomSheet
