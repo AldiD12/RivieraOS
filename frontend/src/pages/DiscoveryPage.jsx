@@ -6,6 +6,7 @@ import { publicEventsApi } from '../services/eventsApi';
 import { geographicZonesApi } from '../services/geographicZonesApi';
 import VenueBottomSheet from '../components/VenueBottomSheet';
 import BusinessBottomSheet from '../components/BusinessBottomSheet';
+import AssetBottomSheet from '../components/AssetBottomSheet';
 import EventsView from '../components/EventsView';
 import LocationBottomSheet from '../components/LocationBottomSheet';
 import { sortEventsByDistance, sortVenuesByDistance, getCurrentLocation } from '../utils/locationUtils';
@@ -589,7 +590,21 @@ export default function DiscoveryPage() {
         });
       }
       
-      // Load availability for all venues in this business
+      // Check if this is a yacht/boat asset (Phantom Profile)
+      const isAsset = business.type === 'Yacht' || business.type === 'YACHT' || 
+                     business.type === 'Boat' || business.type === 'BOAT';
+      
+      if (isAsset) {
+        // Render Asset Sheet for yachts/boats
+        setSelectedVenue({
+          ...business,
+          isAsset: true,
+          location: business.location || 'Port of Orikum, Albanian Riviera'
+        });
+        return;
+      }
+      
+      // Load availability for regular business venues
       const venuesWithAvailability = await Promise.all(
         business.venues.map(async (venue) => {
           try {
@@ -628,6 +643,21 @@ export default function DiscoveryPage() {
         });
       }
       
+      // Check if this is a yacht/boat asset (Phantom Profile)
+      const isAsset = venue.type === 'Yacht' || venue.type === 'YACHT' || 
+                     venue.type === 'Boat' || venue.type === 'BOAT';
+      
+      if (isAsset) {
+        // Render Asset Sheet for yachts/boats
+        setSelectedVenue({
+          ...venue,
+          isAsset: true,
+          location: venue.location || 'Port of Orikum, Albanian Riviera'
+        });
+        return;
+      }
+      
+      // Load availability for regular venues
       const availability = await venueApi.getVenueAvailability(venue.id);
       setSelectedVenue({ ...venue, availability });
     } catch (err) {
@@ -1576,10 +1606,22 @@ export default function DiscoveryPage() {
       )}
 
       {/* Venue Bottom Sheet (shows single venue details) */}
-      {selectedVenue && (
+      {selectedVenue && !selectedVenue.isAsset && (
         <div className="absolute bottom-0 left-0 right-0 z-[1001]">
           <VenueBottomSheet
             venue={selectedVenue}
+            onClose={handleCloseBottomSheet}
+            isDayMode={isDayMode}
+          />
+        </div>
+      )}
+
+      {/* Asset Bottom Sheet (shows yacht/boat charter details) */}
+      {selectedVenue && selectedVenue.isAsset && (
+        <div className="absolute bottom-0 left-0 right-0 z-[1001]">
+          <AssetBottomSheet
+            asset={selectedVenue}
+            isOpen={true}
             onClose={handleCloseBottomSheet}
             isDayMode={isDayMode}
           />
