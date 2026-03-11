@@ -1309,16 +1309,6 @@ export default function DiscoveryPage() {
               DAY
             </button>
           </div>
-        </div> 
-              onClick={() => setViewMode('map')}
-              className={`px-3 py-1.5 flex items-center space-x-2 text-[10px] uppercase rounded ml-1 shadow-sm transition-colors ${viewMode === 'map' ? (isDayMode ? 'text-[#10FF88] bg-zinc-950 border border-zinc-950 font-bold' : 'text-[#10FF88] bg-zinc-950 border border-zinc-800 shadow-[0_0_12px_rgba(16,255,136,0.4)] font-bold') : (isDayMode ? 'text-zinc-500 hover:text-zinc-900' : 'text-zinc-500 hover:text-white')}`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={viewMode === 'map' && !isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-              </svg>
-              <span style={viewMode === 'map' && !isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : viewMode === 'map' && isDayMode ? { textShadow: '-0.5px -0.5px 0 #000, 0.5px -0.5px 0 #000, -0.5px 0.5px 0 #000, 0.5px 0.5px 0 #000' } : {}}>MAP</span>
-            </button>
-          </div>
         </div>
         
         {/* Stone Standard - Industrial Luxury Utility Bar */}
