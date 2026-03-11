@@ -1256,28 +1256,18 @@ export default function DiscoveryPage() {
       {/* Top Header - Fixed Command Center */}
       <div className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md pb-2 pointer-events-auto ${isDayMode ? 'bg-stone-50/90' : 'bg-zinc-950/90'}`}>
         {/* Top Row: Logo, Day/Night, Bell, Search Icon */}
-        {/* Clean Header Layout: Notification (left), Location (center), Day/Night (right) */}
-        <div className="absolute top-0 left-0 right-0 z-20 flex justify-between items-center px-4 pt-6">
-          {/* Notification Icon - Left */}
-          <button
-            className={`w-10 h-10 rounded-full backdrop-blur-md border flex items-center justify-center shadow-lg transition-all ${isDayMode ? 'bg-white/80 border-zinc-200 hover:border-zinc-400' : 'bg-zinc-900/80 border-zinc-800 hover:border-[#10FF88]/30'}`}
-          >
-            <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM10.07 2.82l3.12 3.12M7.05 5.84l3.12 3.12M4.03 8.86l3.12 3.12M1.01 11.88l3.12 3.12" />
-            </svg>
-          </button>
-
-          {/* Location Trigger - Centered */}
+        {/* Minimal Header - Quiet Luxury */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex justify-center items-center px-4 pt-8">
+          {/* Location Trigger - Centered, Minimal */}
           <button
             onClick={() => setLocationBottomSheetOpen(true)}
             className={`
-              flex items-center gap-1 transition-all duration-300 group
-              backdrop-blur-md border px-4 py-2 rounded-full shadow-lg
-              ${isDayMode ? 'bg-white/80 border-zinc-200 hover:border-zinc-400' : 'bg-zinc-900/80 border-zinc-800 hover:border-[#10FF88]/30'}
+              flex items-center gap-2 transition-all duration-500 group
+              ${isDayMode ? 'text-stone-700 hover:text-stone-900' : 'text-zinc-400 hover:text-white'}
             `}
           >
-            <span className={`text-[14px] ${isDayMode ? 'text-amber-900' : 'text-[#10FF88]'}`}>📍</span>
-            <span className={`text-[10px] font-mono tracking-widest uppercase ${isDayMode ? 'text-stone-700' : 'text-white'}`}>
+            <span className={`text-[12px] ${isDayMode ? 'text-amber-900' : 'text-[#10FF88]'}`}>📍</span>
+            <span className={`text-[11px] font-mono tracking-[0.2em] uppercase font-medium`}>
               {selectedGeographicZone === 'EVERYWHERE' 
                 ? 'EVERYWHERE' 
                 : selectedGeographicZone === 'NEARBY'
@@ -1285,7 +1275,7 @@ export default function DiscoveryPage() {
                 : selectedGeographicZone.toUpperCase()}
             </span>
             <svg 
-              className={`w-[14px] h-[14px] transition-transform duration-300 ${locationBottomSheetOpen ? 'translate-y-0.5' : ''} ${isDayMode ? 'text-stone-500' : 'text-white'}`} 
+              className={`w-3 h-3 transition-transform duration-300 ${locationBottomSheetOpen ? 'rotate-180' : ''}`} 
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -1293,18 +1283,20 @@ export default function DiscoveryPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-          
-          {/* Day/Night Toggle - Right */}
-          <div className={`backdrop-blur-md border p-1 rounded-full flex shadow-lg ${isDayMode ? 'bg-white/80 border-zinc-200' : 'bg-zinc-900/80 border-zinc-800'}`}>
+        </div>
+
+        {/* Day/Night Toggle - Floating Bottom Right */}
+        <div className="absolute bottom-20 right-4 z-30">
+          <div className={`backdrop-blur-xl border rounded-full flex shadow-2xl ${isDayMode ? 'bg-white/90 border-stone-200/60' : 'bg-zinc-900/90 border-zinc-800/60'}`}>
             <button
               onClick={() => setIsDayMode(false)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${!isDayMode ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-600 hover:text-zinc-800'}`}
+              className={`px-4 py-2 rounded-full text-[10px] font-medium tracking-widest uppercase transition-all duration-500 ${!isDayMode ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-700'}`}
             >
               NIGHT
             </button>
             <button
               onClick={() => setIsDayMode(true)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${isDayMode ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-400 hover:text-zinc-200'}`}
+              className={`px-4 py-2 rounded-full text-[10px] font-medium tracking-widest uppercase transition-all duration-500 ${isDayMode ? 'bg-stone-900 text-white shadow-lg' : 'text-zinc-400 hover:text-zinc-200'}`}
             >
               DAY
             </button>
