@@ -264,8 +264,8 @@ export default function DiscoveryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('Beach'); // Default to Beach only
-  const [isDayMode, setIsDayMode] = useState(false); // false = night mode (default)
-  const [viewMode, setViewMode] = useState('list'); // Start with list for night mode
+  const [isDayMode, setIsDayMode] = useState(true); // Start with day mode (beaches)
+  const [viewMode, setViewMode] = useState('map'); // Start with map for day mode
   const [userLocation, setUserLocation] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [initialViewState, setInitialViewState] = useState(RIVIERA_CENTER);
@@ -283,6 +283,40 @@ export default function DiscoveryPage() {
   const [selectedGeographicZone, setSelectedGeographicZone] = useState('EVERYWHERE');
   const [locationBottomSheetOpen, setLocationBottomSheetOpen] = useState(false);
   const [isUsingGPSLocation, setIsUsingGPSLocation] = useState(false); // Track if using GPS vs manual zone
+
+  // Theme Trigger Categories - Airbnb Style
+  const [activeCategory, setActiveCategory] = useState('BEACHES');
+  
+  const THEME_CATEGORIES = [
+    { id: 'BEACHES', label: 'BEACHES', icon: '⛱️', isDayMode: true, filter: 'Beach' },
+    { id: 'EVENTS', label: 'EVENTS', icon: '🪩', isDayMode: false, filter: 'all' },
+    { id: 'CLUBS', label: 'CLUBS', icon: '🍸', isDayMode: false, filter: 'Beach Club' },
+    { id: 'DINING', label: 'DINING', icon: '🍴', isDayMode: true, filter: 'Restaurant' },
+    { id: 'YACHTS', label: 'YACHTS', icon: '🛥️', isDayMode: true, filter: 'Yacht' }
+  ];
+
+  // Handle category click - Theme Trigger Magic
+  const handleCategoryClick = (category) => {
+    const categoryData = THEME_CATEGORIES.find(c => c.id === category);
+    if (!categoryData) return;
+    
+    setActiveCategory(category);
+    
+    // THE THEME TRIGGER - Smooth transition between Day/Night modes
+    const newIsDayMode = categoryData.isDayMode;
+    setIsDayMode(newIsDayMode);
+    
+    // Set appropriate filter
+    setActiveFilter(categoryData.filter);
+    
+    // Set appropriate view mode
+    if (category === 'EVENTS') {
+      setViewMode('list'); // Events show in list/feed view
+      setActiveEventFilter('all');
+    } else {
+      setViewMode('map'); // Everything else shows on map
+    }
+  };
 
   // Get user location IMMEDIATELY on mount (before anything else)
   useEffect(() => {
@@ -755,7 +789,7 @@ export default function DiscoveryPage() {
   }
 
   return (
-    <div className={`h-screen w-full overflow-hidden relative font-sans antialiased ${isDayMode ? 'bg-[#FAFAF9] text-stone-900' : 'bg-zinc-950 text-white'}`}>
+    <div className={`h-screen w-full overflow-hidden relative font-sans antialiased transition-all duration-500 ${isDayMode ? 'bg-[#FAFAF9] text-stone-900' : 'bg-zinc-950 text-white'}`}>
       {/* Grid Background Pattern - Only below header */}
       <div className="absolute inset-0 z-0 mt-32" style={{
         backgroundImage: isDayMode 
@@ -931,7 +965,7 @@ export default function DiscoveryPage() {
 
       {/* List View - Show Businesses Grouped (Day Mode) or Events (Night Mode) */}
       {viewMode === 'list' && (
-        <div className="absolute inset-0 pt-32 pb-[60px] overflow-y-auto no-scrollbar px-6 space-y-6">
+        <div className="absolute inset-0 pt-40 pb-[60px] overflow-y-auto no-scrollbar px-6 space-y-6">
           {/* Day Mode: Show business groups */}
           {isDayMode && businessGroups.map((business) => {
             // Calculate business-level availability (sum of all venues)
@@ -1254,18 +1288,18 @@ export default function DiscoveryPage() {
       )}
 
       {/* Quiet Luxury Header - Single Axis Architecture */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-zinc-950 via-zinc-950/90 to-transparent">
+      <div className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isDayMode ? 'bg-gradient-to-b from-stone-50 via-stone-50/90 to-transparent' : 'bg-gradient-to-b from-zinc-950 via-zinc-950/90 to-transparent'}`}>
         {/* Single Horizontal Line - Logo, Location, Icons */}
-        <div className="flex items-center justify-between px-6 pt-8 pb-6">
+        <div className="flex items-center justify-between px-6 pt-8 pb-4">
           {/* Left: XIXA Logo */}
           <div className="flex items-center">
-            <span className="text-white font-serif text-xl tracking-tight">XIXA</span>
+            <span className={`font-serif text-xl tracking-tight transition-colors duration-500 ${isDayMode ? 'text-stone-900' : 'text-white'}`}>XIXA</span>
           </div>
 
           {/* Center: Location Trigger */}
           <button
             onClick={() => setLocationBottomSheetOpen(true)}
-            className="flex items-center gap-2 text-white hover:text-zinc-300 transition-colors duration-300"
+            className={`flex items-center gap-2 transition-colors duration-300 ${isDayMode ? 'text-stone-700 hover:text-stone-900' : 'text-white hover:text-zinc-300'}`}
           >
             <span className="text-[#10FF88]">📍</span>
             <span className="font-mono text-xs uppercase tracking-widest">
@@ -1288,24 +1322,21 @@ export default function DiscoveryPage() {
           {/* Right: Clean Action Icons */}
           <div className="flex items-center gap-4">
             {/* Search Icon */}
-            <button className="text-white hover:text-zinc-300 transition-colors duration-300">
+            <button className={`transition-colors duration-300 ${isDayMode ? 'text-stone-700 hover:text-stone-900' : 'text-white hover:text-zinc-300'}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
             
             {/* Bell Icon */}
-            <button className="text-white hover:text-zinc-300 transition-colors duration-300">
+            <button className={`transition-colors duration-300 ${isDayMode ? 'text-stone-700 hover:text-stone-900' : 'text-white hover:text-zinc-300'}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-5 5v-5zM10.07 2.82l3.12 3.12M7.05 5.84l3.12 3.12M4.03 8.86l3.12 3.12M1.01 11.88l3.12 3.12" />
               </svg>
             </button>
             
-            {/* Profile Icon with Day/Night Toggle */}
-            <button 
-              onClick={() => setIsDayMode(!isDayMode)}
-              className="text-white hover:text-zinc-300 transition-colors duration-300"
-            >
+            {/* Profile Icon */}
+            <button className={`transition-colors duration-300 ${isDayMode ? 'text-stone-700 hover:text-stone-900' : 'text-white hover:text-zinc-300'}`}>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
@@ -1313,52 +1344,31 @@ export default function DiscoveryPage() {
           </div>
         </div>
 
-        {/* Airbnb-Style Filter Row */}
-        {viewMode !== 'events' && (
-          <div className="px-6 pb-4">
-            <div className="flex gap-8">
-              {/* Day Mode: Clean Text Filters */}
-              {isDayMode && DAY_FILTERS.map(filter => (
-                <button
-                  key={filter.id}
-                  onClick={() => setActiveFilter(filter.id)}
-                  className={`
-                    flex flex-col items-center gap-1 transition-all duration-300
-                    ${activeFilter === filter.id
-                      ? 'text-white'
-                      : 'text-zinc-500 hover:text-zinc-300'
-                    }
-                  `}
-                >
-                  <span className="text-lg">{filter.icon}</span>
-                  <span className="font-mono text-xs uppercase tracking-widest">
-                    {filter.label}
-                  </span>
-                  {activeFilter === filter.id && (
-                    <div className="w-full h-0.5 bg-[#10FF88] mt-1"></div>
-                  )}
-                </button>
-              ))}
-              
-              {/* Night Mode: Clean Text Filters */}
-              {!isDayMode && EVENT_FILTERS.map(filter => (
-                <button
-                  key={filter.id}
-                  onClick={() => setActiveEventFilter(filter.id)}
-                  className={`
-                    font-mono text-xs uppercase tracking-widest transition-all duration-300
-                    ${activeEventFilter === filter.id
-                      ? 'text-white border-b-2 border-[#10FF88] pb-1'
-                      : 'text-zinc-500 hover:text-zinc-300'
-                    }
-                  `}
-                >
-                  {filter.label}
-                </button>
-              ))}
-            </div>
+        {/* Airbnb-Style Theme Trigger Category Bar */}
+        <div className="px-6 pb-6">
+          <div className="flex gap-8 overflow-x-auto no-scrollbar">
+            {THEME_CATEGORIES.map(category => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryClick(category.id)}
+                className={`
+                  flex flex-col items-center gap-2 transition-all duration-500 whitespace-nowrap
+                  ${activeCategory === category.id
+                    ? isDayMode 
+                      ? 'text-stone-900 border-b-2 border-stone-900 pb-2'
+                      : 'text-white border-b-2 border-[#10FF88] pb-2'
+                    : 'text-zinc-500 border-b-2 border-transparent pb-2 hover:text-zinc-300'
+                  }
+                `}
+              >
+                <span className="text-lg">{category.icon}</span>
+                <span className="font-mono text-[10px] uppercase tracking-widest">
+                  {category.label}
+                </span>
+              </button>
+            ))}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Right Side Controls (Map only) */}
