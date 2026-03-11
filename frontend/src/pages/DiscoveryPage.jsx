@@ -931,7 +931,7 @@ export default function DiscoveryPage() {
 
       {/* List View - Show Businesses Grouped (Day Mode) or Events (Night Mode) */}
       {viewMode === 'list' && (
-        <div className="absolute inset-0 pt-[180px] pb-[60px] overflow-y-auto no-scrollbar px-6 space-y-6">
+        <div className="absolute inset-0 pt-[80px] pb-[60px] overflow-y-auto no-scrollbar px-6 space-y-6">
           {/* Day Mode: Show business groups */}
           {isDayMode && businessGroups.map((business) => {
             // Calculate business-level availability (sum of all venues)
@@ -1006,7 +1006,7 @@ export default function DiscoveryPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      <span>Albanian Riviera</span>
+                      <span>RIVIERA</span>
                     </div>
                   </div>
                 </div>
@@ -1238,7 +1238,7 @@ export default function DiscoveryPage() {
       
       {/* Events View */}
       {viewMode === 'events' && (
-        <div className={`absolute inset-0 pt-[180px] pb-[60px] overflow-y-auto no-scrollbar px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
+        <div className={`absolute inset-0 pt-[80px] pb-[60px] overflow-y-auto no-scrollbar px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
           <EventsView
             events={filteredEvents}
             venues={venues}
@@ -1256,100 +1256,60 @@ export default function DiscoveryPage() {
       {/* Top Header - Fixed Command Center */}
       <div className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md pb-2 pointer-events-auto ${isDayMode ? 'bg-stone-50/90' : 'bg-zinc-950/90'}`}>
         {/* Top Row: Logo, Day/Night, Bell, Search Icon */}
-        <div className="flex justify-between items-center px-4 pt-6">
-          <div>
-            <h1 className={`tracking-tight drop-shadow-sm ${isDayMode ? 'font-serif text-5xl font-light text-stone-900 tracking-tighter leading-none' : 'font-serif text-4xl text-white drop-shadow-lg'}`} style={isDayMode ? { fontFamily: 'Cormorant Garamond, serif' } : { fontFamily: 'Playfair Display, serif' }}>XIXA</h1>
-            <div className="flex items-center space-x-2 mt-1">
-              <div className={`w-1.5 h-1.5 rounded-full bg-[#10FF88] animate-pulse ${isDayMode ? 'border border-zinc-950 shadow-[0_0_8px_rgba(16,255,136,0.3)]' : 'shadow-[0_0_12px_rgba(16,255,136,0.4)]'}`}></div>
-              <p className={`text-[10px] font-mono tracking-[0.2em] uppercase ${isDayMode ? 'text-stone-500' : 'text-zinc-400'}`}>Albanian Riviera</p>
-            </div>
-            
-            {/* Location Trigger - Industrial Style matching HTML */}
-            <button
-              onClick={() => setLocationBottomSheetOpen(true)}
-              className={`
-                mt-1 flex items-center gap-1 transition-all duration-300 group
-              `}
+        {/* Clean Header Layout: Notification (left), Location (center), Day/Night (right) */}
+        <div className="absolute top-0 left-0 right-0 z-20 flex justify-between items-center px-4 pt-6">
+          {/* Notification Icon - Left */}
+          <button
+            className={`w-10 h-10 rounded-full backdrop-blur-md border flex items-center justify-center shadow-lg transition-all ${isDayMode ? 'bg-white/80 border-zinc-200 hover:border-zinc-400' : 'bg-zinc-900/80 border-zinc-800 hover:border-[#10FF88]/30'}`}
+          >
+            <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM10.07 2.82l3.12 3.12M7.05 5.84l3.12 3.12M4.03 8.86l3.12 3.12M1.01 11.88l3.12 3.12" />
+            </svg>
+          </button>
+
+          {/* Location Trigger - Centered */}
+          <button
+            onClick={() => setLocationBottomSheetOpen(true)}
+            className={`
+              flex items-center gap-1 transition-all duration-300 group
+              backdrop-blur-md border px-4 py-2 rounded-full shadow-lg
+              ${isDayMode ? 'bg-white/80 border-zinc-200 hover:border-zinc-400' : 'bg-zinc-900/80 border-zinc-800 hover:border-[#10FF88]/30'}
+            `}
+          >
+            <span className={`text-[14px] ${isDayMode ? 'text-amber-900' : 'text-[#10FF88]'}`}>📍</span>
+            <span className={`text-[10px] font-mono tracking-widest uppercase ${isDayMode ? 'text-stone-700' : 'text-white'}`}>
+              {selectedGeographicZone === 'EVERYWHERE' 
+                ? 'EVERYWHERE' 
+                : selectedGeographicZone === 'NEARBY'
+                ? 'NEARBY'
+                : selectedGeographicZone.toUpperCase()}
+            </span>
+            <svg 
+              className={`w-[14px] h-[14px] transition-transform duration-300 ${locationBottomSheetOpen ? 'translate-y-0.5' : ''} ${isDayMode ? 'text-stone-500' : 'text-white'}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
             >
-              <span className={`text-[14px] ${isDayMode ? 'text-amber-900' : 'text-[#10FF88]'}`}>📍</span>
-              <span className={`text-[10px] font-mono tracking-widest uppercase ${isDayMode ? 'text-stone-700' : 'text-white'}`}>
-                {selectedGeographicZone === 'EVERYWHERE' 
-                  ? 'EVERYWHERE' 
-                  : selectedGeographicZone === 'NEARBY'
-                  ? 'NEARBY'
-                  : selectedGeographicZone.toUpperCase()}
-              </span>
-              <svg 
-                className={`w-[14px] h-[14px] transition-transform duration-300 ${locationBottomSheetOpen ? 'translate-y-0.5' : ''} ${isDayMode ? 'text-stone-500' : 'text-white'}`} 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
           
-          {/* Day/Night Toggle */}
+          {/* Day/Night Toggle - Right */}
           <div className={`backdrop-blur-md border p-1 rounded-full flex shadow-lg ${isDayMode ? 'bg-white/80 border-zinc-200' : 'bg-zinc-900/80 border-zinc-800'}`}>
-            <button 
-              onClick={() => {
-                if (!modeInitialized) return;
-                console.log('🌅 Switching to DAY mode');
-                setIsDayMode(true);
-                setViewMode('map');
-              }}
-              disabled={!modeInitialized}
-              className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!modeInitialized ? 'opacity-50 cursor-not-allowed' : ''} ${isDayMode ? 'bg-zinc-950 text-white border border-zinc-950 shadow-sm' : 'bg-transparent text-zinc-500 border border-transparent hover:bg-zinc-800'}`}
+            <button
+              onClick={() => setIsDayMode(false)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${!isDayMode ? 'bg-zinc-800 text-white shadow-sm' : 'text-zinc-600 hover:text-zinc-800'}`}
             >
-              <span>⛱️</span>
-              <span>DAY</span>
+              NIGHT
             </button>
-            <button 
-              onClick={() => {
-                if (!modeInitialized) return;
-                console.log('🌙 Switching to NIGHT mode');
-                setIsDayMode(false);
-                setViewMode('list');
-              }}
-              disabled={!modeInitialized}
-              className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-medium transition-all ${!modeInitialized ? 'opacity-50 cursor-not-allowed' : ''} ${!isDayMode ? 'bg-zinc-950 text-[#10FF88] border border-zinc-800 shadow-[0_0_12px_rgba(16,255,136,0.4)]' : 'bg-transparent text-zinc-500 border border-transparent hover:bg-stone-100'}`}
+            <button
+              onClick={() => setIsDayMode(true)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${isDayMode ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-400 hover:text-zinc-200'}`}
             >
-              <span className={!isDayMode ? '' : 'opacity-70'} style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>🪩</span>
-              <span style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>NIGHT</span>
+              DAY
             </button>
           </div>
-          
-          <div className="flex items-center space-x-3">
-            {/* Notification button */}
-            <button className={`w-10 h-10 flex items-center justify-center rounded-full border backdrop-blur-sm transition-all group shadow-sm ${isDayMode ? 'border-zinc-200 bg-white/80 hover:bg-stone-100 hover:border-zinc-300' : 'border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 hover:border-[#10FF88]/50'}`}>
-              <svg className={`w-5 h-5 transition-colors ${isDayMode ? 'text-zinc-500 group-hover:text-zinc-950' : 'text-zinc-400 group-hover:text-[#10FF88]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </button>
-            
-            {/* Search Icon */}
-            <button className={`w-10 h-10 flex items-center justify-center rounded-full border backdrop-blur-sm transition-all group shadow-sm ${isDayMode ? 'border-zinc-200 bg-white/80 hover:bg-stone-100 hover:border-zinc-300' : 'border-zinc-800 bg-zinc-900/50 hover:bg-zinc-800 hover:border-[#10FF88]/50'}`}>
-              <svg className={`w-5 h-5 transition-colors ${isDayMode ? 'text-zinc-500 group-hover:text-zinc-950' : 'text-zinc-400 group-hover:text-[#10FF88]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        
-        {/* Second Row: List/Map Toggle (Move it here, to the right) */}
-        <div className="flex justify-end px-4 mt-3">
-          <div className={`flex items-center backdrop-blur-md border rounded-lg p-1 shadow-lg ${isDayMode ? 'bg-white/90 border-zinc-200' : 'bg-zinc-900/90 border-zinc-800'}`}>
-            <button 
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-1.5 flex items-center space-x-2 text-[10px] uppercase font-medium transition-colors border-r pr-3 ${viewMode === 'list' ? (isDayMode ? 'text-black bg-zinc-100 rounded-sm font-bold' : 'text-black bg-zinc-100 rounded-sm font-bold') : (isDayMode ? 'text-zinc-500 hover:text-zinc-900 border-zinc-200' : 'text-zinc-500 hover:text-white border-zinc-800')}`}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-              <span>LIST</span>
-            </button>
-            <button 
+        </div> 
               onClick={() => setViewMode('map')}
               className={`px-3 py-1.5 flex items-center space-x-2 text-[10px] uppercase rounded ml-1 shadow-sm transition-colors ${viewMode === 'map' ? (isDayMode ? 'text-[#10FF88] bg-zinc-950 border border-zinc-950 font-bold' : 'text-[#10FF88] bg-zinc-950 border border-zinc-800 shadow-[0_0_12px_rgba(16,255,136,0.4)] font-bold') : (isDayMode ? 'text-zinc-500 hover:text-zinc-900' : 'text-zinc-500 hover:text-white')}`}
             >
