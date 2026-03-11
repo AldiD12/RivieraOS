@@ -1,7 +1,7 @@
 // Geographic Zones API Service
 // Ready for backend implementation - will work automatically when Kristi adds the endpoints
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 class GeographicZonesApi {
   /**
@@ -11,7 +11,7 @@ class GeographicZonesApi {
    */
   async getGeographicZones() {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/public/Events/geographic-zones`);
+      const response = await fetch(`${API_BASE_URL}/public/Events/geographic-zones`);
       
       if (!response.ok) {
         // If endpoint doesn't exist yet, return mock data for development
@@ -38,7 +38,7 @@ class GeographicZonesApi {
    */
   async getEventsByGeographicZone(zone) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/public/Events?geographicZone=${encodeURIComponent(zone)}`);
+      const response = await fetch(`${API_BASE_URL}/public/Events?geographicZone=${encodeURIComponent(zone)}`);
       
       if (!response.ok) {
         // If filtering not implemented yet, fetch all events and filter client-side
@@ -124,7 +124,7 @@ class GeographicZonesApi {
    */
   async getVenuesByGeographicZone(zone) {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/public/Venues?geographicZone=${encodeURIComponent(zone)}`);
+      const response = await fetch(`${API_BASE_URL}/public/Venues?geographicZone=${encodeURIComponent(zone)}`);
       
       if (!response.ok) {
         // If filtering not implemented yet, fetch all venues and filter client-side
