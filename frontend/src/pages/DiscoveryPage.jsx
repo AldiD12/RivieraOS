@@ -284,20 +284,102 @@ export default function DiscoveryPage() {
   const [locationBottomSheetOpen, setLocationBottomSheetOpen] = useState(false);
   const [isUsingGPSLocation, setIsUsingGPSLocation] = useState(false); // Track if using GPS vs manual zone
 
-  // Theme Trigger Categories - Airbnb Style
-  const [activeCategory, setActiveCategory] = useState('BEACHES');
-  
-  const THEME_CATEGORIES = [
-    { id: 'BEACHES', label: 'BEACHES', icon: '⛱️', isDayMode: true, filter: 'Beach' },
-    { id: 'EVENTS', label: 'EVENTS', icon: '🪩', isDayMode: false, filter: 'all' },
-    { id: 'CLUBS', label: 'CLUBS', icon: '🍸', isDayMode: false, filter: 'Beach Club' },
-    { id: 'DINING', label: 'DINING', icon: '🍴', isDayMode: true, filter: 'Restaurant' },
-    { id: 'YACHTS', label: 'YACHTS', icon: '🛥️', isDayMode: true, filter: 'Yacht' }
-  ];
+  // Theme Trigger Categories - Dynamic based on available data
+  const [activeCategory, setActiveCategory] = useState(null);
+
+  // Dynamic Theme Categories - Based on Available Data
+  const generateThemeCategories = useMemo(() => {
+    const categories = [];
+    
+    // Check what venue types we actually have
+    const venueTypes = [...new Set(venues.map(v => v.type).filter(Boolean))];
+    const hasEvents = events.length > 0;
+    
+    // Always show BEACHES if we have Beach venues
+    if (venueTypes.includes('Beach') || venueTypes.includes('BEACH')) {
+      categories.push({ 
+        id: 'BEACHES', 
+        label: 'BEACHES', 
+        icon: '⛱️', 
+        isDayMode: true, 
+        filter: 'Beach',
+        count: venues.filter(v => v.type === 'Beach' || v.type === 'BEACH').length
+      });
+    }
+    
+    // Show EVENTS if we have events
+    if (hasEvents) {
+      categories.push({ 
+        id: 'EVENTS', 
+        label: 'EVENTS', 
+        icon: '🪩', 
+        isDayMode: false, 
+        filter: 'all',
+        count: events.length
+      });
+    }
+    
+    // Show CLUBS if we have Beach Club venues or events at beach venues
+    const beachClubs = venues.filter(v => 
+      (v.type === 'Beach Club' || v.type === 'BEACH_CLUB') || 
+      ((v.type === 'Beach' || v.type === 'BEACH') && v.hasEvents)
+    );
+    if (beachClubs.length > 0) {
+      categories.push({ 
+        id: 'CLUBS', 
+        label: 'CLUBS', 
+        icon: '🍸', 
+        isDayMode: false, 
+        filter: 'Beach Club',
+        count: beachClubs.length
+      });
+    }
+    
+    // Show DINING if we have Restaurant venues
+    if (venueTypes.includes('Restaurant') || venueTypes.includes('RESTAURANT')) {
+      categories.push({ 
+        id: 'DINING', 
+        label: 'DINING', 
+        icon: '🍴', 
+        isDayMode: true, 
+        filter: 'Restaurant',
+        count: venues.filter(v => v.type === 'Restaurant' || v.type === 'RESTAURANT').length
+      });
+    }
+    
+    // Show YACHTS if we have Yacht/Boat venues
+    const yachtVenues = venues.filter(v => 
+      v.type === 'Yacht' || v.type === 'YACHT' || 
+      v.type === 'Boat' || v.type === 'BOAT'
+    );
+    if (yachtVenues.length > 0) {
+      categories.push({ 
+        id: 'YACHTS', 
+        label: 'YACHTS', 
+        icon: '🛥️', 
+        isDayMode: true, 
+        filter: 'Yacht',
+        count: yachtVenues.length
+      });
+    }
+    
+    return categories;
+  }, [venues, events]);
+
+  // Set default category based on what's available
+  useEffect(() => {
+    if (generateThemeCategories.length > 0 && !activeCategory) {
+      const defaultCategory = generateThemeCategories[0];
+      setActiveCategory(defaultCategory.id);
+      setIsDayMode(defaultCategory.isDayMode);
+      setActiveFilter(defaultCategory.filter);
+      setViewMode(defaultCategory.isDayMode ? 'map' : 'list');
+    }
+  }, [generateThemeCategories, activeCategory]);
 
   // Handle category click - Theme Trigger Magic with Smart Defaults
   const handleCategoryClick = (category) => {
-    const categoryData = THEME_CATEGORIES.find(c => c.id === category);
+    const categoryData = generateThemeCategories.find(c => c.id === category);
     if (!categoryData) return;
     
     setActiveCategory(category);
@@ -1347,7 +1429,7 @@ export default function DiscoveryPage() {
         {/* Airbnb-Style Theme Trigger Category Bar */}
         <div className="px-6 pb-6">
           <div className="flex gap-8 overflow-x-auto no-scrollbar">
-            {THEME_CATEGORIES.map(category => (
+            {generateThemeCategories.map(category => (
               <button
                 key={category.id}
                 onClick={() => handleCategoryClick(category.id)}
@@ -1362,9 +1444,20 @@ export default function DiscoveryPage() {
                 `}
               >
                 <span className="text-lg">{category.icon}</span>
-                <span className="font-mono text-[10px] uppercase tracking-widest">
-                  {category.label}
-                </span>
+                <div className="flex flex-col items-center">
+                  <span className="font-mono text-[10px] uppercase tracking-widest">
+                    {category.label}
+                  </span>
+                  {category.count > 0 && (
+                    <span className={`font-mono text-[8px] mt-0.5 ${
+                      activeCategory === category.id
+                        ? isDayMode ? 'text-stone-600' : 'text-zinc-300'
+                        : 'text-zinc-600'
+                    }`}>
+                      {category.count}
+                    </span>
+                  )}
+                </div>
               </button>
             ))}
           </div>
