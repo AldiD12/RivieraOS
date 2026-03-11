@@ -756,8 +756,8 @@ export default function DiscoveryPage() {
 
   return (
     <div className={`h-screen w-full overflow-hidden relative font-sans antialiased ${isDayMode ? 'bg-[#FAFAF9] text-stone-900' : 'bg-zinc-950 text-white'}`}>
-      {/* Grid Background Pattern */}
-      <div className="absolute inset-0 z-0" style={{
+      {/* Grid Background Pattern - Only below header */}
+      <div className="absolute inset-0 z-0 mt-32" style={{
         backgroundImage: isDayMode 
           ? 'linear-gradient(rgba(231, 229, 228, 0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(231, 229, 228, 0.6) 1px, transparent 1px)'
           : 'linear-gradient(rgba(39, 39, 42, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(39, 39, 42, 0.3) 1px, transparent 1px)',
@@ -931,7 +931,7 @@ export default function DiscoveryPage() {
 
       {/* List View - Show Businesses Grouped (Day Mode) or Events (Night Mode) */}
       {viewMode === 'list' && (
-        <div className="absolute inset-0 pt-[80px] pb-[60px] overflow-y-auto no-scrollbar px-6 space-y-6">
+        <div className="absolute inset-0 pt-32 pb-[60px] overflow-y-auto no-scrollbar px-6 space-y-6">
           {/* Day Mode: Show business groups */}
           {isDayMode && businessGroups.map((business) => {
             // Calculate business-level availability (sum of all venues)
@@ -1253,21 +1253,22 @@ export default function DiscoveryPage() {
         </div>
       )}
 
-      {/* Top Header - Fixed Command Center */}
-      <div className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md pb-2 pointer-events-auto ${isDayMode ? 'bg-stone-50/90' : 'bg-zinc-950/90'}`}>
-        {/* Top Row: Logo, Day/Night, Bell, Search Icon */}
-        {/* Minimal Header - Quiet Luxury */}
-        <div className="absolute top-0 left-0 right-0 z-20 flex justify-center items-center px-4 pt-8">
-          {/* Location Trigger - Centered, Minimal */}
+      {/* Quiet Luxury Header - Single Axis Architecture */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-zinc-950 via-zinc-950/90 to-transparent">
+        {/* Single Horizontal Line - Logo, Location, Icons */}
+        <div className="flex items-center justify-between px-6 pt-8 pb-6">
+          {/* Left: XIXA Logo */}
+          <div className="flex items-center">
+            <span className="text-white font-serif text-xl tracking-tight">XIXA</span>
+          </div>
+
+          {/* Center: Location Trigger */}
           <button
             onClick={() => setLocationBottomSheetOpen(true)}
-            className={`
-              flex items-center gap-2 transition-all duration-500 group
-              ${isDayMode ? 'text-stone-700 hover:text-stone-900' : 'text-zinc-400 hover:text-white'}
-            `}
+            className="flex items-center gap-2 text-white hover:text-zinc-300 transition-colors duration-300"
           >
-            <span className={`text-[12px] ${isDayMode ? 'text-amber-900' : 'text-[#10FF88]'}`}>📍</span>
-            <span className={`text-[11px] font-mono tracking-[0.2em] uppercase font-medium`}>
+            <span className="text-[#10FF88]">📍</span>
+            <span className="font-mono text-xs uppercase tracking-widest">
               {selectedGeographicZone === 'EVERYWHERE' 
                 ? 'EVERYWHERE' 
                 : selectedGeographicZone === 'NEARBY'
@@ -1280,61 +1281,75 @@ export default function DiscoveryPage() {
               stroke="currentColor" 
               viewBox="0 0 24 24"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-        </div>
 
-        {/* Day/Night Toggle - Floating Bottom Right */}
-        <div className="absolute bottom-20 right-4 z-30">
-          <div className={`backdrop-blur-xl border rounded-full flex shadow-2xl ${isDayMode ? 'bg-white/90 border-stone-200/60' : 'bg-zinc-900/90 border-zinc-800/60'}`}>
-            <button
-              onClick={() => setIsDayMode(false)}
-              className={`px-4 py-2 rounded-full text-[10px] font-medium tracking-widest uppercase transition-all duration-500 ${!isDayMode ? 'bg-zinc-900 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-700'}`}
-            >
-              NIGHT
+          {/* Right: Clean Action Icons */}
+          <div className="flex items-center gap-4">
+            {/* Search Icon */}
+            <button className="text-white hover:text-zinc-300 transition-colors duration-300">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </button>
-            <button
-              onClick={() => setIsDayMode(true)}
-              className={`px-4 py-2 rounded-full text-[10px] font-medium tracking-widest uppercase transition-all duration-500 ${isDayMode ? 'bg-stone-900 text-white shadow-lg' : 'text-zinc-400 hover:text-zinc-200'}`}
+            
+            {/* Bell Icon */}
+            <button className="text-white hover:text-zinc-300 transition-colors duration-300">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-5 5v-5zM10.07 2.82l3.12 3.12M7.05 5.84l3.12 3.12M4.03 8.86l3.12 3.12M1.01 11.88l3.12 3.12" />
+              </svg>
+            </button>
+            
+            {/* Profile Icon with Day/Night Toggle */}
+            <button 
+              onClick={() => setIsDayMode(!isDayMode)}
+              className="text-white hover:text-zinc-300 transition-colors duration-300"
             >
-              DAY
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
             </button>
           </div>
         </div>
-        
-        {/* Stone Standard - Industrial Luxury Utility Bar */}
+
+        {/* Airbnb-Style Filter Row */}
         {viewMode !== 'events' && (
-          <div className={`px-4 mt-4 ${isDayMode ? 'bg-[#F6F5F2] border-b border-stone-200/40' : ''}`}>
-            <div className="flex gap-2 pb-2">
-              {/* Day Mode: Stone Standard Utility Bar */}
+          <div className="px-6 pb-4">
+            <div className="flex gap-8">
+              {/* Day Mode: Clean Text Filters */}
               {isDayMode && DAY_FILTERS.map(filter => (
                 <button
                   key={filter.id}
                   onClick={() => setActiveFilter(filter.id)}
                   className={`
-                    px-4 py-2 border text-xs font-mono uppercase tracking-widest transition-all duration-300
+                    flex flex-col items-center gap-1 transition-all duration-300
                     ${activeFilter === filter.id
-                      ? 'bg-[#111111] text-white border-[#111111]'
-                      : 'bg-transparent text-stone-500 border-stone-300 hover:border-stone-500'
+                      ? 'text-white'
+                      : 'text-zinc-500 hover:text-zinc-300'
                     }
                   `}
                 >
-                  {filter.icon} {filter.label}
+                  <span className="text-lg">{filter.icon}</span>
+                  <span className="font-mono text-xs uppercase tracking-widest">
+                    {filter.label}
+                  </span>
+                  {activeFilter === filter.id && (
+                    <div className="w-full h-0.5 bg-[#10FF88] mt-1"></div>
+                  )}
                 </button>
               ))}
               
-              {/* Night Mode: Event filters */}
+              {/* Night Mode: Clean Text Filters */}
               {!isDayMode && EVENT_FILTERS.map(filter => (
                 <button
                   key={filter.id}
                   onClick={() => setActiveEventFilter(filter.id)}
                   className={`
-                    whitespace-nowrap px-5 py-2 rounded-full text-xs font-medium tracking-wide
-                    transform active:scale-95 transition-all
+                    font-mono text-xs uppercase tracking-widest transition-all duration-300
                     ${activeEventFilter === filter.id
-                      ? 'bg-zinc-950 border border-[#10FF88] text-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
-                      : 'bg-zinc-900/60 backdrop-blur-md border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-600'
+                      ? 'text-white border-b-2 border-[#10FF88] pb-1'
+                      : 'text-zinc-500 hover:text-zinc-300'
                     }
                   `}
                 >
