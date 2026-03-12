@@ -14,6 +14,9 @@ const VIBE_CONFIG = {
   pollDelayMs: 3000 // 3-second psychological ambush window
 };
 
+// Define primary color for industrial theme
+const primaryColor = '#10FF88';
+
 // Premium menu items - Only 4 signature drinks with luxury images
 const PREMIUM_MENU_ITEMS = [
   {
@@ -519,30 +522,79 @@ export default function MenuPage() {
   // MENU SCREEN
   if (currentScreen === 'menu') {
     return (
-      <div className="bg-[#FDFBF7] text-black min-h-screen font-sans antialiased selection:bg-black selection:text-white pb-32">
-        {/* Header */}
-        <header className="pt-20 pb-12 px-6 text-center">
-          <h1 className="font-serif text-4xl md:text-5xl text-black tracking-tight leading-none">
-            Riviera Beach<br/>
-            <span className="italic font-normal text-3xl md:text-4xl text-black/85 mt-2 block">Club</span>
+      <div className="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased selection:bg-primary selection:text-black pb-32">
+        {/* Header with Hero Image */}
+        <header className="relative w-full h-64 md:h-80">
+          <img 
+            alt="Riviera Beach Club luxury atmosphere" 
+            className="w-full h-full object-cover" 
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8WwQlTWCp-ILL2b_lkfUnaiP9s_hGxRZsn-2CAzXztNWkQieRJmoqS9akLFXLBRdX9c-jJQvaQuspeWk-ZnDGKwbZd7oXDHdUC3Xc8brjUZUdR8EBjcl4JbBvFNaV_FOvpawMlgzQ3ltJuJMqHjuTtHWlJLb5BlcrqOBl6LifJGu4Gu1VrjRpVC9Cwy5i5-cQIPBxiikNRKM23KeJIhy24G1nxGJS9ap35lyt4gXPVxgbu8fU8m3QxqQeB93tuvMcrHvuAGIa_I5r"
+          />
+          <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-10 bg-gradient-to-b from-black/80 to-transparent">
+            <button className="w-10 h-10 bg-zinc-900/90 border border-zinc-800 flex items-center justify-center text-white">
+              <MaterialIcon name="arrow_back" className="text-xl" />
+            </button>
+            <div className="flex-1 mx-3 relative">
+              <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+                <MaterialIcon name="search" className="text-zinc-400 text-lg" />
+              </div>
+              <input 
+                className="w-full bg-zinc-900/90 border border-zinc-800 text-zinc-100 py-2 pl-10 pr-4 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm font-mono" 
+                placeholder="SEARCH MENU" 
+                type="text"
+              />
+            </div>
+            <button className="w-10 h-10 bg-zinc-900/90 border border-zinc-800 flex items-center justify-center text-white">
+              <MaterialIcon name="favorite_border" className="text-xl" />
+            </button>
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-zinc-950 to-transparent"></div>
+          <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-24 h-16 bg-zinc-900 border border-zinc-800 flex items-center justify-center z-20">
+            <span className="font-display font-bold text-2xl tracking-widest text-white">XIXA</span>
+          </div>
+        </header>
+
+        {/* Venue Info Section */}
+        <section className="px-4 pt-14 pb-6 text-center border-b border-zinc-800">
+          <h1 className="font-display text-3xl font-bold mb-2 tracking-tight text-white uppercase">
+            Riviera Beach Club
           </h1>
-          {sunbedName && (
-            <p className="text-center text-sm font-sans text-stone-500 uppercase tracking-widest mt-4">
-              Sunbed {sunbedName}
-            </p>
-          )}
+          <div className="flex flex-wrap items-center justify-center text-xs text-zinc-400 gap-x-3 gap-y-1 mb-4 font-mono uppercase tracking-wider">
+            <span className="flex items-center">
+              <MaterialIcon name="star" className="text-sm mr-1 text-primary" filled />
+              9.8
+            </span>
+            <span>•</span>
+            <span>Open until 23:00</span>
+            <span>•</span>
+            <span>Min. <span className="text-primary">€15.00</span></span>
+          </div>
           
-          {/* Live Vibe Widget */}
-          <div className="mt-8 max-w-xs mx-auto">
-            <div className="bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-2xl rounded-[2rem] p-4 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-stone-200/40">
-              <div className="flex items-center justify-center gap-3">
-                <span className="text-2xl">🔥</span>
-                <div className="text-center">
-                  <p className="font-serif text-lg text-stone-900 leading-tight">
+          {sunbedName && (
+            <div className="flex items-center gap-2 mt-4">
+              <div className="flex-1 bg-zinc-900 border border-zinc-800 flex items-center justify-between px-4 py-3">
+                <div className="flex items-center text-sm font-medium text-zinc-200 uppercase tracking-wide">
+                  <MaterialIcon name="bed" className="text-primary mr-2 text-lg" />
+                  Sunbed {sunbedName}
+                </div>
+                <MaterialIcon name="expand_more" className="text-zinc-500 text-lg" />
+              </div>
+            </div>
+          )}
+
+          {/* Live Vibe Widget - Industrial Style */}
+          <div className="mt-6 max-w-xs mx-auto">
+            <div className="bg-zinc-900 border border-zinc-800 p-4 relative overflow-hidden">
+              <div className="w-12 h-12 bg-zinc-950 border border-zinc-800 flex items-center justify-center shrink-0 z-10" style={{filter: 'drop-shadow(0 0 12px rgba(16, 255, 136, 0.4))'}}>
+                <MaterialIcon name="local_fire_department" className="text-primary text-2xl" style={{textShadow: '0 0 12px rgba(16, 255, 136, 0.4)'}} />
+              </div>
+              <div className="absolute top-4 right-4 z-10">
+                <div className="text-right">
+                  <p className="text-white text-sm font-bold uppercase tracking-wide mb-1">
                     Riviera Vibe Tonight
                   </p>
-                  <p className="font-sans text-sm text-stone-600 mt-1">
-                    <span className="font-medium text-amber-900">{liveVibeScore}%</span> Positive
+                  <p className="text-primary font-mono text-lg font-bold" style={{textShadow: '0 0 12px rgba(16, 255, 136, 0.4)'}}>
+                    {liveVibeScore}% Positive
                   </p>
                 </div>
               </div>
@@ -551,28 +603,29 @@ export default function MenuPage() {
           
           {!isDigitalOrderingEnabled && (
             <div className="mt-6 max-w-sm mx-auto">
-              <div className="bg-stone-50/80 border border-stone-200/60 rounded-2xl p-4">
-                <p className="text-stone-600 font-sans text-sm leading-relaxed">
-                  <span className="font-medium">Menu Catalog</span><br/>
+              <div className="bg-zinc-900 border border-zinc-800 p-4">
+                <p className="text-zinc-400 font-mono text-sm leading-relaxed">
+                  <span className="font-medium text-white">Menu Catalog</span><br/>
                   Please order with your waiter
                 </p>
               </div>
             </div>
           )}
-        </header>
+        </section>
 
-        {/* Category Navigation */}
-        <div className="sticky top-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-sm py-6 border-b border-black/5">
+        {/* Category Navigation - Industrial Style */}
+        <div className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-sm py-6 border-b border-zinc-800">
           <div className="flex gap-8 overflow-x-auto hide-scrollbar px-6 w-full items-center justify-start md:justify-center">
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setActiveCategory(category)}
-                className={`flex-shrink-0 font-serif text-lg transition-colors ${
+                className={`flex-shrink-0 font-mono text-sm uppercase tracking-widest transition-colors ${
                   activeCategory === category
-                    ? 'text-black italic border-b border-black pb-1 hover:opacity-70'
-                    : 'text-black/50 hover:text-black'
+                    ? 'text-primary border-b-2 border-primary pb-1 hover:opacity-70'
+                    : 'text-zinc-400 hover:text-white'
                 }`}
+                style={activeCategory === category ? {textShadow: '0 0 12px rgba(16, 255, 136, 0.4)'} : {}}
               >
                 {category}
               </button>
@@ -580,64 +633,128 @@ export default function MenuPage() {
           </div>
         </div>
 
-        {/* Menu Items */}
+        {/* Menu Items - Industrial Cards */}
         <main className="max-w-md mx-auto px-6 pt-12">
           <div className="flex flex-col gap-24">
             {filteredItems.map((item) => (
-              <MenuItem
-                key={item.id}
-                item={item}
-                addToCart={addToCart}
-                cart={cart}
-                updateQuantity={updateQuantity}
-                isDigitalOrderingEnabled={isDigitalOrderingEnabled}
-              />
+              <article key={item.id} className="group flex flex-col items-center text-center">
+                <div className="relative w-full aspect-[4/5] mb-8">
+                  {cart.find(cartItem => cartItem.id === item.id) && isDigitalOrderingEnabled && (
+                    <div className="absolute top-4 right-4 z-10 bg-zinc-950 text-primary border border-zinc-800 p-1 opacity-100 transition-opacity duration-300" style={{filter: 'drop-shadow(0 0 12px rgba(16, 255, 136, 0.4))'}}>
+                      <MaterialIcon name="check" className="text-base" />
+                    </div>
+                  )}
+                  <div className="w-full h-full overflow-hidden border border-zinc-800 transition-all duration-300 bg-zinc-900">
+                    <img
+                      alt={item.name}
+                      className="h-full w-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-105 contrast-125 saturate-150"
+                      src={item.imageUrl}
+                    />
+                  </div>
+                </div>
+                <div className="w-full px-2">
+                  <div className="flex flex-col items-center gap-2 mb-4">
+                    <h3 className="font-display text-3xl text-white leading-tight uppercase tracking-wide">{item.name}</h3>
+                    <span className="font-mono text-xl text-primary font-bold" style={{textShadow: '0 0 12px rgba(16, 255, 136, 0.4)'}}>€{item.basePrice.toFixed(2)}</span>
+                  </div>
+                  <p className="font-mono text-sm text-zinc-400 leading-relaxed font-light max-w-[90%] mx-auto mb-8">
+                    {item.description}
+                  </p>
+                  
+                  {/* Conditional rendering based on digital ordering enabled */}
+                  {isDigitalOrderingEnabled ? (
+                    <div className="flex items-center justify-center gap-4 w-full max-w-[280px] mx-auto">
+                      {cart.find(cartItem => cartItem.id === item.id) ? (
+                        <>
+                          <div className="flex items-center gap-3 border border-zinc-800 px-3 py-2 bg-zinc-900">
+                            <button 
+                              onClick={() => updateQuantity(item.id, 'decrease')}
+                              className="text-white hover:text-primary transition-colors flex items-center"
+                            >
+                              <MaterialIcon name="remove" className="text-base" />
+                            </button>
+                            <span className="font-mono text-base min-w-[1ch] text-center w-4 text-white">{cart.find(cartItem => cartItem.id === item.id).quantity}</span>
+                            <button 
+                              onClick={() => updateQuantity(item.id, 'increase')}
+                              className="text-white hover:text-primary transition-colors flex items-center"
+                            >
+                              <MaterialIcon name="add" className="text-base" />
+                            </button>
+                          </div>
+                          <button 
+                            onClick={() => addToCart(item)}
+                            className="flex-1 bg-zinc-950 text-white font-mono text-sm uppercase tracking-widest py-3 px-4 hover:bg-zinc-900 hover:text-primary transition-colors duration-300 border border-zinc-800"
+                          >
+                            Add
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => addToCart(item)}
+                          className="flex-1 bg-zinc-950 text-white font-mono text-sm uppercase tracking-widest py-3 px-8 hover:bg-zinc-900 hover:text-primary transition-colors duration-300 flex items-center justify-center gap-2 border border-zinc-800"
+                        >
+                          <MaterialIcon name="add" className="text-base" />
+                          <span>Add to Order</span>
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    // View-only mode - no ordering controls
+                    <div className="flex items-center justify-center w-full max-w-[280px] mx-auto">
+                      <div className="text-center py-3 px-8 border border-zinc-800 bg-zinc-900 text-zinc-400 font-mono text-sm uppercase tracking-widest">
+                        View Only
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </article>
             ))}
           </div>
         </main>
 
-        {/* Floating Cart Button - Only show if digital ordering is enabled */}
+        {/* Floating Cart Button - Industrial Style */}
         {cart.length > 0 && isDigitalOrderingEnabled && (
           <motion.div
             initial={{ y: 100 }}
             animate={{ y: 0 }}
-            className="fixed bottom-0 left-0 w-full z-50 px-6 pb-8 pt-4 bg-gradient-to-t from-[#FDFBF7] via-[#FDFBF7] to-transparent"
+            className="fixed bottom-0 left-0 w-full z-50 px-6 pb-8 pt-4 bg-gradient-to-t from-zinc-950 via-zinc-950 to-transparent"
           >
             <div className="max-w-md mx-auto">
               <button
                 onClick={() => setCurrentScreen('checkout')}
-                className="w-full bg-black text-white font-serif text-lg py-4 px-6 flex items-center justify-between shadow-lg hover:bg-black/90 transition-colors"
+                className="w-full bg-zinc-950 text-white font-mono text-lg py-4 px-6 flex items-center justify-between border border-zinc-800 hover:bg-zinc-900 hover:text-primary transition-colors"
+                style={{filter: 'drop-shadow(0 0 12px rgba(16, 255, 136, 0.2))'}}
               >
-                <span className="font-medium">View Order</span>
+                <span className="font-medium uppercase tracking-wide">View Order</span>
                 <span className="text-sm uppercase tracking-widest opacity-80">
                   {getTotalItems()} Item{getTotalItems() !== 1 ? 's' : ''}
                 </span>
-                <span className="font-medium">€{getCartTotal().toFixed(2)}</span>
+                <span className="font-bold text-primary" style={{textShadow: '0 0 12px rgba(16, 255, 136, 0.4)'}}>€{getCartTotal().toFixed(2)}</span>
               </button>
             </div>
           </motion.div>
         )}
 
-        {/* Bottom Navigation Tabs */}
-        <div className={`fixed ${cart.length > 0 && isDigitalOrderingEnabled ? 'bottom-28' : 'bottom-0'} left-0 w-full z-40 bg-white/80 backdrop-blur-sm border-t border-stone-200/40`}>
+        {/* Bottom Navigation Tabs - Industrial Style */}
+        <div className={`fixed ${cart.length > 0 && isDigitalOrderingEnabled ? 'bottom-28' : 'bottom-0'} left-0 w-full z-40 bg-zinc-900/80 backdrop-blur-sm border-t border-zinc-800`}>
           <div className="max-w-md mx-auto flex items-center justify-around py-3">
-            <button className="flex flex-col items-center gap-1 text-black">
+            <button className="flex flex-col items-center gap-1 text-primary" style={{textShadow: '0 0 12px rgba(16, 255, 136, 0.4)'}}>
               <MaterialIcon name="restaurant_menu" className="text-2xl" filled />
-              <span className="text-xs uppercase tracking-wider">Menu</span>
+              <span className="text-xs uppercase tracking-wider font-mono">Menu</span>
             </button>
             <button 
               onClick={() => setShowReservationModal(true)}
-              className="flex flex-col items-center gap-1 text-stone-600 hover:text-black transition-colors"
+              className="flex flex-col items-center gap-1 text-zinc-400 hover:text-primary transition-colors"
             >
               <MaterialIcon name="event" className="text-2xl" />
-              <span className="text-xs uppercase tracking-wider">Book Table</span>
+              <span className="text-xs uppercase tracking-wider font-mono">Book Table</span>
             </button>
             <button 
               onClick={() => setCurrentScreen('feedback')}
-              className="flex flex-col items-center gap-1 text-stone-600 hover:text-black transition-colors"
+              className="flex flex-col items-center gap-1 text-zinc-400 hover:text-primary transition-colors"
             >
               <MaterialIcon name="star" className="text-2xl" />
-              <span className="text-xs uppercase tracking-wider">Review</span>
+              <span className="text-xs uppercase tracking-wider font-mono">Review</span>
             </button>
           </div>
         </div>
@@ -794,21 +911,25 @@ export default function MenuPage() {
   // CHECKOUT SCREEN
   if (currentScreen === 'checkout') {
     return (
-      <div className="bg-[#FDFBF7] text-black min-h-screen font-sans antialiased overflow-hidden">
+      <div className="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased overflow-hidden">
         {/* Background blur */}
         <div className="opacity-30 pointer-events-none filter blur-[2px] transition-all duration-500">
-          <header className="pt-20 pb-12 px-6 text-center">
-            <h1 className="font-serif text-4xl md:text-5xl text-black tracking-tight leading-none">
-              Riviera Beach<br/>
-              <span className="italic font-normal text-3xl md:text-4xl text-black/85 mt-2 block">Club</span>
-            </h1>
+          <header className="relative w-full h-64 md:h-80">
+            <img 
+              alt="Riviera Beach Club luxury atmosphere" 
+              className="w-full h-full object-cover" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8WwQlTWCp-ILL2b_lkfUnaiP9s_hGxRZsn-2CAzXztNWkQieRJmoqS9akLFXLBRdX9c-jJQvaQuspeWk-ZnDGKwbZd7oXDHdUC3Xc8brjUZUdR8EBjcl4JbBvFNaV_FOvpawMlgzQ3ltJuJMqHjuTtHWlJLb5BlcrqOBl6LifJGu4Gu1VrjRpVC9Cwy5i5-cQIPBxiikNRKM23KeJIhy24G1nxGJS9ap35lyt4gXPVxgbu8fU8m3QxqQeB93tuvMcrHvuAGIa_I5r"
+            />
+            <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-24 h-16 bg-zinc-900 border border-zinc-800 flex items-center justify-center z-20">
+              <span className="font-display font-bold text-2xl tracking-widest text-white">XIXA</span>
+            </div>
           </header>
-          <div className="sticky top-0 z-40 bg-[#FDFBF7]/95 backdrop-blur-sm py-6 border-b border-black/5">
+          <div className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-sm py-6 border-b border-zinc-800">
             <div className="flex gap-8 overflow-x-auto hide-scrollbar px-6 w-full items-center justify-start md:justify-center">
-              <button className="flex-shrink-0 text-black font-serif text-lg italic border-b border-black pb-1">All Items</button>
-              <button className="flex-shrink-0 text-black/50 font-serif text-lg">Cocktails</button>
-              <button className="flex-shrink-0 text-black/50 font-serif text-lg">Food</button>
-              <button className="flex-shrink-0 text-black/50 font-serif text-lg">Wine</button>
+              <button className="flex-shrink-0 text-primary font-mono text-sm uppercase tracking-widest border-b-2 border-primary pb-1" style={{textShadow: '0 0 12px rgba(16, 255, 136, 0.4)'}}>All Items</button>
+              <button className="flex-shrink-0 text-zinc-400 font-mono text-sm uppercase tracking-widest">Cocktails</button>
+              <button className="flex-shrink-0 text-zinc-400 font-mono text-sm uppercase tracking-widest">Food</button>
+              <button className="flex-shrink-0 text-zinc-400 font-mono text-sm uppercase tracking-widest">Wine</button>
             </div>
           </div>
         </div>
@@ -822,18 +943,18 @@ export default function MenuPage() {
           <motion.div 
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
-            className="relative w-full max-w-[480px] h-[92vh] bg-[#FDFBF7] rounded-t-[32px] shadow-[0_-10px_60px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden"
+            className="relative w-full max-w-[480px] h-[92vh] bg-zinc-950 border-t border-zinc-800 flex flex-col overflow-hidden"
           >
             
             {/* Modal Header */}
-            <div className="w-full flex justify-center pt-4 pb-2 bg-[#FDFBF7]">
-              <div className="w-12 h-1 bg-black/10 rounded-full"></div>
+            <div className="w-full flex justify-center pt-4 pb-2 bg-zinc-950">
+              <div className="w-12 h-1 bg-zinc-700 rounded-full"></div>
             </div>
-            <div className="flex items-center justify-between px-8 pt-2 pb-6 border-b border-black/5 bg-[#FDFBF7]">
-              <h2 className="font-serif text-3xl text-black tracking-tight">Your Order</h2>
+            <div className="flex items-center justify-between px-8 pt-2 pb-6 border-b border-zinc-800 bg-zinc-950">
+              <h2 className="font-display text-3xl text-white tracking-tight uppercase">Your Order</h2>
               <button 
                 onClick={() => setCurrentScreen('menu')}
-                className="w-10 h-10 -mr-2 flex items-center justify-center rounded-full hover:bg-black/5 transition-colors text-black"
+                className="w-10 h-10 -mr-2 flex items-center justify-center hover:bg-zinc-900 transition-colors text-white border border-zinc-800"
               >
                 <MaterialIcon name="close" className="text-2xl font-light" />
               </button>
