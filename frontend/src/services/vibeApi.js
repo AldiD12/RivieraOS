@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:5171/api';
+import { API_CONFIG } from './apiConfig';
+
+const API_URL = API_CONFIG.BASE_URL;
 
 /**
  * Vibe Poll API Service
