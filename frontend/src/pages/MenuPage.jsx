@@ -5,57 +5,14 @@ import { vibeApi } from '../services/vibeApi';
 import { API_CONFIG } from '../services/apiConfig';
 
 const API_URL = API_CONFIG.BASE_URL;
-const VENUE_ID = 1;
 
-// Configuration for vibe poll system
-const VIBE_CONFIG = {
-  whatsappNumber: '355691234567', // Replace with actual WhatsApp business number
-  googleBusinessId: 'YOUR_GOOGLE_BUSINESS_ID', // Replace with actual Google Business Profile ID
-  pollDelayMs: 3000 // 3-second psychological ambush window
+// Get venue ID from URL params or default to 1
+const getVenueId = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  return parseInt(urlParams.get('venueId')) || 1;
 };
 
-// Define primary color for industrial theme
-const primaryColor = '#10FF88';
-
-// Premium menu items - Only 4 signature drinks with luxury images
-const PREMIUM_MENU_ITEMS = [
-  {
-    id: 1,
-    name: 'Mojito',
-    description: 'Classic Cuban blend with fresh mint, white rum, sugar, lime juice, and soda water.',
-    basePrice: 9.00,
-    categoryName: 'Cocktails',
-    category: 'cocktails',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAFdm7_G0c1UeKqRpXKkXoWg73ALLgGr4dx1FO03ocBUPQ5iVG7Vguku0-8Xy36X7HNxraRM2IZ7poH50OE_1aU_wNP-v20gz2cNIf0b5ulg9JbE0O0JP-XSmM3qYHyStrkC6jCvgI48u2G3os4bP4YazzaEzXVea2p5LGssPUmE_GzC5EvAjjYmqD0nvTiQhbptA1Ct-hDSdX3KeGii7V0xcmYi9WdBQasuEP3dsVhHqWysRB-3RqVkoe4ZWiCNDyVwMMxgF5hw_5P'
-  },
-  {
-    id: 2,
-    name: 'French Fries',
-    description: 'Crispy golden house fries served with truffle mayo.',
-    basePrice: 5.00,
-    categoryName: 'Food',
-    category: 'food',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDv7Yz3S7RFqVP1byv6OpuFQGD04xCR5qdQCCKObK7e46r93cA0Rb1CEDteunmUwwY9JPBOk9DD8ifSNRlkYbvfSq8UCqT8p0AEyxAN2HEbaKbM7IxQt-XKSJY0YhAhhcN6yBhoJy2p2cjfnDIIKk9HAs0BMCkMj8HGyn9zg5mrD-x5tVs9MMXXg8iLeg-BTmrx3QzZMPnRnm9dshQd_DEDotSNSKbJMpiEGlpPB40qD5xO_BUebNA7oMEztOTtvSIQH4JEG6JaxYa9'
-  },
-  {
-    id: 3,
-    name: 'Aperol Spritz',
-    description: 'Italian aperitif with prosecco, Aperol and a splash of soda.',
-    basePrice: 8.50,
-    categoryName: 'Cocktails',
-    category: 'cocktails',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAe_mKdCvfNtNkvgzoNDG_wZFSg_OtAR5tn30feZAxzc_2aqC977zOcifY8bgb7kTwo5o8ENbl0hSVm0auzARYFYvArRKlBHxKK_DM5uAOfzUcxhxqe0W1G1TAj9MhTEo4IHCu7ZQihXDsBPsw9rGhjN9FJM52zQbRtuFU4azr3O9nra1euwMhbrJI3aXjAjry9D7zEyCANOsC6vst9x8UGxH9xaNtxVgv5LIr0Mnvg2wTcMHDYz1jAXu0opkkKIgI9u6_MSLMdYV6j'
-  },
-  {
-    id: 4,
-    name: 'Club Sandwich',
-    description: 'Triple-decker with grilled chicken breast, bacon, lettuce, and tomato.',
-    basePrice: 12.00,
-    categoryName: 'Food',
-    category: 'food',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAdNil-FB8Ww7LMHPK41MBZSoYYiQiM3jc7jIhQjg4BBrhPomNS7jZc4NP63-2moJdsjqHrArY0QWZn4C2WrfRO0T1ZLLRwFYGPiaiwEK8wKOma3JuEbjSh39TebBwfwu0Qdmsbu73AcTXlnaBvX2lJWKA0b4s5qCx_LXgPGxuwMsQD4HWy4xmSDuoxzcBYYVXYWPxQtjUAHCxeGvNFGYWJCdd61pzTfYhJwpEeFZRw6NoybDFsdcgJ9IRMnoN5wnOHFPe0dIGtgoZ2'
-  }
-];
+const VENUE_ID = getVenueId();
 
 // Material Icons Component
 const MaterialIcon = ({ name, className = "", filled = false }) => (
@@ -151,7 +108,7 @@ export default function MenuPage() {
   const [sunbedName, setSunbedName] = useState('');
   const [menuItems, setMenuItems] = useState([]);
   const [cart, setCart] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Start with false for instant load
   const [activeCategory, setActiveCategory] = useState('All Items');
   const [currentScreen, setCurrentScreen] = useState('menu');
   const [sunbedNumber, setSunbedNumber] = useState('24');
@@ -160,6 +117,15 @@ export default function MenuPage() {
   const [feedbackNote, setFeedbackNote] = useState('');
   const [venueData, setVenueData] = useState(null);
   const [isDigitalOrderingEnabled, setIsDigitalOrderingEnabled] = useState(true);
+  
+  // Dynamic configuration from venue data
+  const [vibeConfig, setVibeConfig] = useState({
+    whatsappNumber: '355691234567',
+    googleBusinessId: 'YOUR_GOOGLE_BUSINESS_ID',
+    pollDelayMs: 3000
+  });
+  const [primaryColor, setPrimaryColor] = useState('#10FF88');
+  const [categories, setCategories] = useState(['All Items', 'Cocktails', 'Food', 'Wine']);
   
   // Vibe Poll System State
   const [liveVibeScore, setLiveVibeScore] = useState(92); // Live vibe percentage
@@ -198,9 +164,6 @@ export default function MenuPage() {
     // Set loading to false immediately and load data in background
     setLoading(false);
     
-    // Use static premium menu items (4 items only) - load immediately
-    setMenuItems(PREMIUM_MENU_ITEMS);
-    
     // Set bedId immediately if provided
     if (bedId) {
       setSunbedName(bedId);
@@ -213,7 +176,7 @@ export default function MenuPage() {
     try {
       // Fetch venue details with timeout for better UX
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
       
       try {
         const venueResponse = await fetch(`${API_URL}/public/Venues/${VENUE_ID}`, {
@@ -225,6 +188,21 @@ export default function MenuPage() {
           const venue = await venueResponse.json();
           setVenueData(venue);
           setIsDigitalOrderingEnabled(venue.isDigitalOrderingEnabled ?? true);
+          
+          // Update dynamic configuration from venue data
+          if (venue.vibeConfig) {
+            setVibeConfig({
+              whatsappNumber: venue.vibeConfig.whatsappNumber || '355691234567',
+              googleBusinessId: venue.vibeConfig.googleBusinessId || 'YOUR_GOOGLE_BUSINESS_ID',
+              pollDelayMs: venue.vibeConfig.pollDelayMs || 3000
+            });
+          }
+          
+          // Update primary color from venue branding
+          if (venue.branding?.primaryColor) {
+            setPrimaryColor(venue.branding.primaryColor);
+          }
+          
           console.log('🏨 Venue data loaded:', venue);
         } else {
           console.log('Venue endpoint returned:', venueResponse.status);
@@ -236,15 +214,67 @@ export default function MenuPage() {
         } else {
           console.error('Error fetching venue details:', err);
         }
-        // Keep defaults - already set above
       }
+
+      // Fetch menu items from API
+      try {
+        const menuController = new AbortController();
+        const menuTimeoutId = setTimeout(() => menuController.abort(), 5000);
+        
+        const menuResponse = await fetch(`${API_URL}/public/Venues/${VENUE_ID}/menu`, {
+          signal: menuController.signal
+        });
+        clearTimeout(menuTimeoutId);
+        
+        if (menuResponse.ok) {
+          const menuData = await menuResponse.json();
+          setMenuItems(menuData.items || []);
+          
+          // Extract categories from menu items
+          const uniqueCategories = ['All Items', ...new Set(menuData.items?.map(item => item.categoryName) || [])];
+          setCategories(uniqueCategories);
+          
+          console.log('🍽️ Menu data loaded:', menuData);
+        } else {
+          console.log('Menu endpoint returned:', menuResponse.status, '- using fallback menu');
+          // Fallback menu items
+          setMenuItems([
+            {
+              id: 1,
+              name: 'House Special',
+              description: 'Chef\'s signature dish',
+              basePrice: 15.00,
+              categoryName: 'Food',
+              category: 'food',
+              imageUrl: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400'
+            }
+          ]);
+        }
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          console.log('Menu API call timed out - using fallback');
+        } else {
+          console.error('Error fetching menu:', err);
+        }
+        // Fallback menu items
+        setMenuItems([
+          {
+            id: 1,
+            name: 'House Special',
+            description: 'Chef\'s signature dish',
+            basePrice: 15.00,
+            categoryName: 'Food',
+            category: 'food',
+            imageUrl: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400'
+          }
+        ]);
+      }
+      
     } catch (error) {
       console.error('Error in fetchVenueData:', error);
-      // Keep defaults - already set above
     }
   };
 
-  const categories = ['All Items', 'Cocktails', 'Food', 'Wine'];
   const filteredItems = activeCategory === 'All Items' 
     ? menuItems 
     : menuItems.filter(item => item.categoryName === activeCategory);
@@ -346,17 +376,17 @@ export default function MenuPage() {
 
       if (response.ok) {
         setCurrentScreen('confirmation');
-        // Show vibe poll after 3 seconds (the psychological ambush window)
+        // Show vibe poll after configured delay (the psychological ambush window)
         setTimeout(() => {
           setShowVibePoll(true);
-        }, VIBE_CONFIG.pollDelayMs);
+        }, vibeConfig.pollDelayMs);
       } else {
         console.error('Order failed:', response.status, response.statusText);
         // For demo purposes, still show confirmation even if order fails
         setCurrentScreen('confirmation');
         setTimeout(() => {
           setShowVibePoll(true);
-        }, VIBE_CONFIG.pollDelayMs);
+        }, vibeConfig.pollDelayMs);
       }
     } catch (error) {
       console.error('Error placing order:', error);
@@ -364,7 +394,7 @@ export default function MenuPage() {
       setCurrentScreen('confirmation');
       setTimeout(() => {
         setShowVibePoll(true);
-      }, VIBE_CONFIG.pollDelayMs);
+      }, vibeConfig.pollDelayMs);
     }
   };
 
@@ -429,7 +459,7 @@ export default function MenuPage() {
 
       // Generate WhatsApp URL and open
       const whatsappUrl = vibeApi.generateWhatsAppUrl(
-        VIBE_CONFIG.whatsappNumber,
+        vibeConfig.whatsappNumber,
         complaintText,
         sunbedNumber
       );
@@ -449,7 +479,7 @@ export default function MenuPage() {
 
   const redirectToGoogleReviews = () => {
     // Generate Google Reviews URL
-    const googleReviewsUrl = vibeApi.generateGoogleReviewsUrl(VIBE_CONFIG.googleBusinessId);
+    const googleReviewsUrl = vibeApi.generateGoogleReviewsUrl(vibeConfig.googleBusinessId);
     window.open(googleReviewsUrl, '_blank');
     setShowGoogleReview(false);
     setShowVibePoll(false);
@@ -508,7 +538,14 @@ export default function MenuPage() {
   // MENU SCREEN
   if (currentScreen === 'menu') {
     return (
-      <div className="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased selection:bg-primary selection:text-black pb-32">
+      <div 
+        className="bg-zinc-950 text-zinc-100 min-h-screen font-sans antialiased pb-32"
+        style={{
+          '--primary-color': primaryColor,
+          '--primary-glow': `0 0 12px ${primaryColor}40`,
+          '--primary-shadow': `0 0 12px ${primaryColor}40`
+        }}
+      >
         {/* Header with Hero Image */}
         <header className="relative w-full h-64 md:h-80">
           <img 
@@ -880,7 +917,7 @@ export default function MenuPage() {
           </div>
         )}
 
-        {/* Custom CSS for hiding scrollbar */}
+        {/* Custom CSS for dynamic primary color and hiding scrollbar */}
         <style dangerouslySetInnerHTML={{
           __html: `
             .hide-scrollbar::-webkit-scrollbar {
@@ -889,6 +926,27 @@ export default function MenuPage() {
             .hide-scrollbar {
               -ms-overflow-style: none;
               scrollbar-width: none;
+            }
+            .text-primary {
+              color: ${primaryColor} !important;
+            }
+            .border-primary {
+              border-color: ${primaryColor} !important;
+            }
+            .bg-primary {
+              background-color: ${primaryColor} !important;
+            }
+            .focus\\:ring-primary:focus {
+              --tw-ring-color: ${primaryColor} !important;
+            }
+            .focus\\:border-primary:focus {
+              border-color: ${primaryColor} !important;
+            }
+            .hover\\:text-primary:hover {
+              color: ${primaryColor} !important;
+            }
+            .selection\\:bg-primary::selection {
+              background-color: ${primaryColor} !important;
             }
           `
         }} />
