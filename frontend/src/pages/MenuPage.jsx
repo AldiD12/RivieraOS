@@ -195,66 +195,52 @@ export default function MenuPage() {
   }, []);
 
   const fetchVenueData = async () => {
+    // Set loading to false immediately and load data in background
+    setLoading(false);
+    
+    // Use static premium menu items (4 items only) - load immediately
+    setMenuItems(PREMIUM_MENU_ITEMS);
+    
+    // Set bedId immediately if provided
+    if (bedId) {
+      setSunbedName(bedId);
+      setSunbedNumber(bedId);
+    }
+    
+    // Default to enabled for fast loading
+    setIsDigitalOrderingEnabled(true);
+    
     try {
-      // Fetch venue details to get isDigitalOrderingEnabled flag
+      // Fetch venue details with timeout for better UX
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+      
       try {
-        const venueResponse = await fetch(`${API_URL}/public/Venues/${VENUE_ID}`);
+        const venueResponse = await fetch(`${API_URL}/public/Venues/${VENUE_ID}`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
         if (venueResponse.ok) {
           const venue = await venueResponse.json();
           setVenueData(venue);
           setIsDigitalOrderingEnabled(venue.isDigitalOrderingEnabled ?? true);
-          console.log('🏨 Venue digital ordering enabled:', venue.isDigitalOrderingEnabled);
+          console.log('🏨 Venue data loaded:', venue);
+        } else {
+          console.log('Venue endpoint returned:', venueResponse.status);
         }
       } catch (err) {
-        console.error('Error fetching venue details:', err);
-        // Default to enabled if API fails
-        setIsDigitalOrderingEnabled(true);
-      }
-
-      // If bedId is provided, try to fetch unit info from venue availability endpoint
-      if (bedId) {
-        try {
-          // Use the correct public venue availability endpoint
-          const availabilityResponse = await fetch(`${API_URL}/public/Venues/${VENUE_ID}/availability`);
-          if (availabilityResponse.ok) {
-            const availabilityData = await availabilityResponse.json();
-            console.log('🏖️ Venue availability data:', availabilityData);
-            
-            // Search through zones to find the unit with matching unitCode
-            if (availabilityData.zones) {
-              for (const zone of availabilityData.zones) {
-                // Note: The availability endpoint might not have individual units
-                // For now, just use the bedId as the sunbed name
-                setSunbedName(bedId);
-                setSunbedNumber(bedId);
-                break;
-              }
-            }
-            
-            // If no specific unit found, still use the bedId
-            if (!sunbedName) {
-              setSunbedName(bedId);
-              setSunbedNumber(bedId);
-            }
-          } else {
-            console.log('Venue availability endpoint not available, using bedId directly');
-            setSunbedName(bedId);
-            setSunbedNumber(bedId);
-          }
-        } catch (err) {
-          console.error('Error fetching venue availability:', err);
-          // Fallback: use bedId directly
-          setSunbedName(bedId);
-          setSunbedNumber(bedId);
+        clearTimeout(timeoutId);
+        if (err.name === 'AbortError') {
+          console.log('Venue API call timed out - using defaults');
+        } else {
+          console.error('Error fetching venue details:', err);
         }
+        // Keep defaults - already set above
       }
-      
-      // Use static premium menu items (4 items only)
-      setMenuItems(PREMIUM_MENU_ITEMS);
-      setLoading(false);
     } catch (error) {
-      console.error('Error fetching venue data:', error);
-      setLoading(false);
+      console.error('Error in fetchVenueData:', error);
+      // Keep defaults - already set above
     }
   };
 
