@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { API_CONFIG } from '../services/apiConfig';
 
-const API_URL = 'http://localhost:5171/api';
+const API_URL = API_CONFIG.BASE_URL;
 
 // Material Icons Component
 const MaterialIcon = ({ name, className = "" }) => (

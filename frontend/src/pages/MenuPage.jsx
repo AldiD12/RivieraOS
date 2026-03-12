@@ -198,7 +198,7 @@ export default function MenuPage() {
     try {
       // Fetch venue details to get isDigitalOrderingEnabled flag
       try {
-        const venueResponse = await fetch(`${API_URL}/venues/${VENUE_ID}`);
+        const venueResponse = await fetch(`${API_URL}/public/Venues/${VENUE_ID}`);
         if (venueResponse.ok) {
           const venue = await venueResponse.json();
           setVenueData(venue);
@@ -512,7 +512,7 @@ export default function MenuPage() {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 bg-[#FDFBF7]">
         <div className="text-center max-w-md">
-          <h1 className="font-serif text-4xl text-black mb-4 leading-tight">Welcome to Riviera</h1>
+          <h1 className="font-serif text-4xl text-black mb-4 leading-tight">Welcome to {venueData?.name || 'Beach Club'}</h1>
           <p className="text-stone-600 text-lg font-light">Please scan your sunbed QR code to order</p>
         </div>
       </div>
@@ -526,7 +526,7 @@ export default function MenuPage() {
         {/* Header with Hero Image */}
         <header className="relative w-full h-64 md:h-80">
           <img 
-            alt="Riviera Beach Club luxury atmosphere" 
+            alt={`${venueData?.name || 'Beach Club'} luxury atmosphere`} 
             className="w-full h-full object-cover" 
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8WwQlTWCp-ILL2b_lkfUnaiP9s_hGxRZsn-2CAzXztNWkQieRJmoqS9akLFXLBRdX9c-jJQvaQuspeWk-ZnDGKwbZd7oXDHdUC3Xc8brjUZUdR8EBjcl4JbBvFNaV_FOvpawMlgzQ3ltJuJMqHjuTtHWlJLb5BlcrqOBl6LifJGu4Gu1VrjRpVC9Cwy5i5-cQIPBxiikNRKM23KeJIhy24G1nxGJS9ap35lyt4gXPVxgbu8fU8m3QxqQeB93tuvMcrHvuAGIa_I5r"
           />
@@ -550,24 +550,26 @@ export default function MenuPage() {
           </div>
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-zinc-950 to-transparent"></div>
           <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-24 h-16 bg-zinc-900 border border-zinc-800 flex items-center justify-center z-20">
-            <span className="font-display font-bold text-2xl tracking-widest text-white">XIXA</span>
+            <span className="font-display font-bold text-2xl tracking-widest text-white">
+              {venueData?.name?.substring(0, 4).toUpperCase() || 'CLUB'}
+            </span>
           </div>
         </header>
 
         {/* Venue Info Section */}
         <section className="px-4 pt-14 pb-6 text-center border-b border-zinc-800">
           <h1 className="font-display text-3xl font-bold mb-2 tracking-tight text-white uppercase">
-            Riviera Beach Club
+            {venueData?.name || 'Beach Club'}
           </h1>
           <div className="flex flex-wrap items-center justify-center text-xs text-zinc-400 gap-x-3 gap-y-1 mb-4 font-mono uppercase tracking-wider">
             <span className="flex items-center">
               <MaterialIcon name="star" className="text-sm mr-1 text-primary" filled />
-              9.8
+              {venueData?.rating || '4.8'}
             </span>
             <span>•</span>
-            <span>Open until 23:00</span>
+            <span>Open until {venueData?.closingTime || '23:00'}</span>
             <span>•</span>
-            <span>Min. <span className="text-primary">€15.00</span></span>
+            <span>Min. <span className="text-primary">€{venueData?.minimumOrder || '15.00'}</span></span>
           </div>
           
           {sunbedName && (
@@ -591,7 +593,7 @@ export default function MenuPage() {
               <div className="absolute top-4 right-4 z-10">
                 <div className="text-right">
                   <p className="text-white text-sm font-bold uppercase tracking-wide mb-1">
-                    Riviera Vibe Tonight
+                    {venueData?.name || 'Beach Club'} Vibe Tonight
                   </p>
                   <p className="text-primary font-mono text-lg font-bold" style={{textShadow: '0 0 12px rgba(16, 255, 136, 0.4)'}}>
                     {liveVibeScore}% Positive
@@ -916,12 +918,14 @@ export default function MenuPage() {
         <div className="opacity-30 pointer-events-none filter blur-[2px] transition-all duration-500">
           <header className="relative w-full h-64 md:h-80">
             <img 
-              alt="Riviera Beach Club luxury atmosphere" 
+              alt={`${venueData?.name || 'Beach Club'} luxury atmosphere`} 
               className="w-full h-full object-cover" 
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8WwQlTWCp-ILL2b_lkfUnaiP9s_hGxRZsn-2CAzXztNWkQieRJmoqS9akLFXLBRdX9c-jJQvaQuspeWk-ZnDGKwbZd7oXDHdUC3Xc8brjUZUdR8EBjcl4JbBvFNaV_FOvpawMlgzQ3ltJuJMqHjuTtHWlJLb5BlcrqOBl6LifJGu4Gu1VrjRpVC9Cwy5i5-cQIPBxiikNRKM23KeJIhy24G1nxGJS9ap35lyt4gXPVxgbu8fU8m3QxqQeB93tuvMcrHvuAGIa_I5r"
             />
             <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-24 h-16 bg-zinc-900 border border-zinc-800 flex items-center justify-center z-20">
-              <span className="font-display font-bold text-2xl tracking-widest text-white">XIXA</span>
+              <span className="font-display font-bold text-2xl tracking-widest text-white">
+                {venueData?.name?.substring(0, 4).toUpperCase() || 'CLUB'}
+              </span>
             </div>
           </header>
           <div className="sticky top-0 z-40 bg-zinc-950/95 backdrop-blur-sm py-6 border-b border-zinc-800">
@@ -1086,7 +1090,7 @@ export default function MenuPage() {
               Order Sent<br/>to Bar
             </h1>
             <p className="font-sans text-black/60 text-sm leading-7 max-w-[280px] mx-auto font-light">
-              Our team at <span className="italic font-serif">Riviera</span> is preparing your selection. Estimated delivery to <span className="text-black font-medium">Sunbed #{sunbedNumber}</span> in 15 minutes.
+              Our team at <span className="italic font-serif">{venueData?.name || 'Beach Club'}</span> is preparing your selection. Estimated delivery to <span className="text-black font-medium">Sunbed #{sunbedNumber}</span> in 15 minutes.
             </p>
           </div>
 
