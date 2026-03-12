@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { vibeApi } from '../services/vibeApi';
 
 const API_URL = 'http://localhost:5171/api';
 const VENUE_ID = 1;
+
+// Configuration for vibe poll system
+const VIBE_CONFIG = {
+  whatsappNumber: '355691234567', // Replace with actual WhatsApp business number
+  googleBusinessId: 'YOUR_GOOGLE_BUSINESS_ID', // Replace with actual Google Business Profile ID
+  pollDelayMs: 3000 // 3-second psychological ambush window
+};
 
 // Premium menu items - Only 4 signature drinks with luxury images
 const PREMIUM_MENU_ITEMS = [
@@ -148,6 +156,15 @@ export default function MenuPage() {
   const [feedbackNote, setFeedbackNote] = useState('');
   const [venueData, setVenueData] = useState(null);
   const [isDigitalOrderingEnabled, setIsDigitalOrderingEnabled] = useState(true);
+  
+  // Vibe Poll System State
+  const [liveVibeScore, setLiveVibeScore] = useState(92); // Live vibe percentage
+  const [showVibePoll, setShowVibePoll] = useState(false);
+  const [vibeResponse, setVibeResponse] = useState(null); // 'dead', 'okay', 'elite'
+  const [showComplaintBox, setShowComplaintBox] = useState(false);
+  const [showGoogleReview, setShowGoogleReview] = useState(false);
+  const [complaintText, setComplaintText] = useState('');
+  const [vibeSubmitting, setVibeSubmitting] = useState(false);
   
   // Reservation modal state
   const [showReservationModal, setShowReservationModal] = useState(false);
@@ -335,10 +352,10 @@ export default function MenuPage() {
 
       if (response.ok) {
         setCurrentScreen('confirmation');
-        // Auto-advance to feedback after 5 seconds
+        // Show vibe poll after 3 seconds (the psychological ambush window)
         setTimeout(() => {
-          setCurrentScreen('feedback');
-        }, 5000);
+          setShowVibePoll(true);
+        }, VIBE_CONFIG.pollDelayMs);
       }
     } catch (error) {
       console.error('Error placing order:', error);
@@ -351,6 +368,85 @@ export default function MenuPage() {
     setRating(0);
     setFeedbackNote('');
     setSpecialInstructions('');
+    // Reset vibe poll state
+    setShowVibePoll(false);
+    setVibeResponse(null);
+    setShowComplaintBox(false);
+    setShowGoogleReview(false);
+    setComplaintText('');
+    setVibeSubmitting(false);
+  };
+
+  // Vibe Poll Functions
+  const handleVibeResponse = async (response) => {
+    setVibeResponse(response);
+    setVibeSubmitting(true);
+
+    try {
+      if (response === 'elite') {
+        // Positive feedback - route to Google Reviews
+        setShowGoogleReview(true);
+        // Update live vibe score
+        setLiveVibeScore(prev => Math.min(prev + 1, 100));
+        
+        // Submit positive feedback to backend using vibeApi
+        await vibeApi.submitFeedback({
+          venueId: VENUE_ID,
+          rating: vibeApi.mapVibeToRating(response),
+          comment: vibeApi.getVibeComment(response),
+          unitCode: sunbedNumber
+        });
+      } else {
+        // Negative/neutral feedback - show complaint box
+        setShowComplaintBox(true);
+      }
+    } catch (error) {
+      console.error('Error submitting vibe feedback:', error);
+    } finally {
+      setVibeSubmitting(false);
+    }
+  };
+
+  const submitComplaint = async () => {
+    if (!complaintText.trim()) return;
+    
+    setVibeSubmitting(true);
+    
+    try {
+      // Submit negative feedback to backend using vibeApi
+      await vibeApi.submitFeedback({
+        venueId: VENUE_ID,
+        rating: vibeApi.mapVibeToRating(vibeResponse),
+        comment: complaintText,
+        unitCode: sunbedNumber
+      });
+
+      // Generate WhatsApp URL and open
+      const whatsappUrl = vibeApi.generateWhatsAppUrl(
+        VIBE_CONFIG.whatsappNumber,
+        complaintText,
+        sunbedNumber
+      );
+      
+      // Open WhatsApp in new tab
+      window.open(whatsappUrl, '_blank');
+      
+      // Close complaint box
+      setShowComplaintBox(false);
+      setShowVibePoll(false);
+    } catch (error) {
+      console.error('Error submitting complaint:', error);
+    } finally {
+      setVibeSubmitting(false);
+    }
+  };
+
+  const redirectToGoogleReviews = () => {
+    // Generate Google Reviews URL
+    const googleReviewsUrl = vibeApi.generateGoogleReviewsUrl(VIBE_CONFIG.googleBusinessId);
+    window.open(googleReviewsUrl, '_blank');
+    setShowGoogleReview(false);
+    setShowVibePoll(false);
   };
 
   const handleReservationSubmit = async () => {
@@ -418,6 +514,24 @@ export default function MenuPage() {
               Sunbed {sunbedName}
             </p>
           )}
+          
+          {/* Live Vibe Widget */}
+          <div className="mt-8 max-w-xs mx-auto">
+            <div className="bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-2xl rounded-[2rem] p-4 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-stone-200/40">
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-2xl">🔥</span>
+                <div className="text-center">
+                  <p className="font-serif text-lg text-stone-900 leading-tight">
+                    Riviera Vibe Tonight
+                  </p>
+                  <p className="font-sans text-sm text-stone-600 mt-1">
+                    <span className="font-medium text-amber-900">{liveVibeScore}%</span> Positive
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           {!isDigitalOrderingEnabled && (
             <div className="mt-6 max-w-sm mx-auto">
               <div className="bg-stone-50/80 border border-stone-200/60 rounded-2xl p-4">
@@ -831,12 +945,142 @@ export default function MenuPage() {
           </div>
           <div className="space-y-6">
             <h1 className="font-serif text-4xl md:text-5xl text-black leading-[1.15]">
-              Your Order<br/>is on the Way
+              Order Sent<br/>to Bar
             </h1>
             <p className="font-sans text-black/60 text-sm leading-7 max-w-[280px] mx-auto font-light">
-              Our team at <span className="italic font-serif">La Reserve</span> is preparing your selection. Estimated delivery to <span className="text-black font-medium">Sunbed #{sunbedNumber}</span> in 15 minutes.
+              Our team at <span className="italic font-serif">Riviera</span> is preparing your selection. Estimated delivery to <span className="text-black font-medium">Sunbed #{sunbedNumber}</span> in 15 minutes.
             </p>
           </div>
+
+          {/* Vibe Poll - The 3-Second Ambush */}
+          {showVibePoll && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full max-w-sm space-y-6"
+            >
+              {!vibeResponse && !showComplaintBox && !showGoogleReview && (
+                <>
+                  <div className="space-y-4">
+                    <p className="font-serif text-xl text-black/90 leading-tight">
+                      Add to the live vibe.<br/>
+                      How's the energy right now?
+                    </p>
+                  </div>
+                  
+                  <div className="flex justify-center gap-4">
+                    <button
+                      onClick={() => handleVibeResponse('dead')}
+                      disabled={vibeSubmitting}
+                      className="flex-1 bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-2xl rounded-[2rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-stone-200/40 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500 ease-out hover:-translate-y-1 disabled:opacity-50"
+                    >
+                      <div className="text-4xl mb-2">🥶</div>
+                      <div className="font-serif text-lg text-stone-900">Dead</div>
+                    </button>
+                    
+                    <button
+                      onClick={() => handleVibeResponse('okay')}
+                      disabled={vibeSubmitting}
+                      className="flex-1 bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-2xl rounded-[2rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-stone-200/40 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500 ease-out hover:-translate-y-1 disabled:opacity-50"
+                    >
+                      <div className="text-4xl mb-2">🎵</div>
+                      <div className="font-serif text-lg text-stone-900">Okay</div>
+                    </button>
+                    
+                    <button
+                      onClick={() => handleVibeResponse('elite')}
+                      disabled={vibeSubmitting}
+                      className="flex-1 bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-2xl rounded-[2rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-stone-200/40 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] transition-all duration-500 ease-out hover:-translate-y-1 disabled:opacity-50"
+                    >
+                      <div className="text-4xl mb-2">🔥</div>
+                      <div className="font-serif text-lg text-stone-900">Elite</div>
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* Complaint Box for Negative Feedback */}
+              {showComplaintBox && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-6"
+                >
+                  <div className="space-y-4">
+                    <p className="font-serif text-xl text-stone-900 leading-tight">
+                      Damn. What's killing the vibe?
+                    </p>
+                    <p className="font-sans text-sm text-stone-600">
+                      Music? Service? Drinks? Let us know privately.
+                    </p>
+                  </div>
+                  
+                  <textarea
+                    value={complaintText}
+                    onChange={(e) => setComplaintText(e.target.value)}
+                    placeholder="Tell us what's wrong..."
+                    className="w-full bg-white border border-stone-200/40 rounded-2xl p-4 font-sans text-sm text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors resize-none h-24"
+                    disabled={vibeSubmitting}
+                  />
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowComplaintBox(false)}
+                      className="flex-1 border border-stone-300 text-stone-700 px-6 py-3 rounded-full hover:border-stone-400 hover:bg-stone-50 transition-all duration-300 text-sm tracking-widest uppercase"
+                      disabled={vibeSubmitting}
+                    >
+                      Skip
+                    </button>
+                    <button
+                      onClick={submitComplaint}
+                      disabled={!complaintText.trim() || vibeSubmitting}
+                      className="flex-1 bg-stone-900 text-stone-50 px-6 py-3 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 disabled:opacity-50"
+                    >
+                      {vibeSubmitting ? 'Sending...' : 'Send Privately'}
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Google Reviews Request for Positive Feedback */}
+              {showGoogleReview && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="space-y-6"
+                >
+                  <div className="w-16 h-16 mx-auto rounded-full bg-emerald-50 flex items-center justify-center mb-4">
+                    <MaterialIcon name="star" className="text-3xl text-emerald-600" filled />
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <p className="font-serif text-xl text-stone-900 leading-tight">
+                      Glad you're feeling it! 🍻
+                    </p>
+                    <p className="font-sans text-sm text-stone-600 leading-relaxed">
+                      We are trying to hit #1 in Tirana. Can you permanently stamp that vibe on Google for us?
+                    </p>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowGoogleReview(false)}
+                      className="flex-1 border border-stone-300 text-stone-700 px-6 py-3 rounded-full hover:border-stone-400 hover:bg-stone-50 transition-all duration-300 text-sm tracking-widest uppercase"
+                    >
+                      Maybe Later
+                    </button>
+                    <button
+                      onClick={redirectToGoogleReviews}
+                      className="flex-1 bg-stone-900 text-stone-50 px-6 py-3 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300"
+                    >
+                      Drop 5 Stars on Google
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+
           <div className="w-full px-4 pt-4">
             <div className="flex justify-between items-end mb-3 px-1">
               <span className="font-serif text-lg text-black italic">Preparing...</span>

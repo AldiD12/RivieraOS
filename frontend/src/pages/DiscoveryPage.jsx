@@ -1399,15 +1399,10 @@ export default function DiscoveryPage() {
         </div>
       )}
 
-      {/* Quiet Luxury Header - Single Axis Architecture */}
+      {/* Restructured Header - Location Centered, Filters as Dropdowns */}
       <div className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isDayMode ? 'bg-gradient-to-b from-stone-50 via-stone-50/90 to-transparent' : 'bg-gradient-to-b from-zinc-950 via-zinc-950/90 to-transparent'}`}>
-        {/* Single Horizontal Line - Logo, Location, Icons */}
-        <div className="flex items-center justify-between px-6 pt-8 pb-4">
-          {/* Left: XIXA Logo */}
-          <div className="flex items-center">
-            <span className={`font-serif text-xl tracking-tight transition-colors duration-500 ${isDayMode ? 'text-stone-900' : 'text-white'}`}>XIXA</span>
-          </div>
-
+        {/* Top Row: Centered Location */}
+        <div className="flex items-center justify-center px-6 pt-8 pb-4">
           {/* Center: Location Trigger */}
           <button
             onClick={() => setLocationBottomSheetOpen(true)}
@@ -1430,66 +1425,69 @@ export default function DiscoveryPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-
-          {/* Right: Clean Action Icons */}
-          <div className="flex items-center gap-4">
-            {/* Search Icon */}
-            <button className={`transition-colors duration-300 ${isDayMode ? 'text-stone-700 hover:text-stone-900' : 'text-white hover:text-zinc-300'}`}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
-            
-            {/* Bell Icon */}
-            <button className={`transition-colors duration-300 ${isDayMode ? 'text-stone-700 hover:text-stone-900' : 'text-white hover:text-zinc-300'}`}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-5 5v-5zM10.07 2.82l3.12 3.12M7.05 5.84l3.12 3.12M4.03 8.86l3.12 3.12M1.01 11.88l3.12 3.12" />
-              </svg>
-            </button>
-            
-            {/* Profile Icon */}
-            <button className={`transition-colors duration-300 ${isDayMode ? 'text-stone-700 hover:text-stone-900' : 'text-white hover:text-zinc-300'}`}>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </button>
-          </div>
         </div>
 
-        {/* Airbnb-Style Theme Trigger Category Bar */}
+        {/* Filter Dropdowns Row */}
         <div className="px-6 pb-6">
-          <div className="flex gap-8 overflow-x-auto no-scrollbar">
-            {generateThemeCategories.map(category => (
+          <div className="flex gap-4 justify-center">
+            {/* Category Filter Dropdown */}
+            <div className="relative">
               <button
-                key={category.id}
-                onClick={() => handleCategoryClick(category.id)}
-                className={`
-                  flex flex-col items-center gap-2 transition-all duration-500 whitespace-nowrap
-                  ${activeCategory === category.id
-                    ? isDayMode 
-                      ? 'text-stone-900 border-b-2 border-stone-900 pb-2'
-                      : 'text-white border-b-2 border-[#10FF88] pb-2'
-                    : 'text-zinc-500 border-b-2 border-transparent pb-2 hover:text-zinc-300'
-                  }
-                `}
+                className={`flex items-center gap-2 px-4 py-2 rounded-sm border transition-all duration-300 ${
+                  isDayMode 
+                    ? 'bg-white border-stone-300 text-stone-700 hover:border-stone-400'
+                    : 'bg-zinc-900 border-zinc-700 text-white hover:border-zinc-600'
+                }`}
               >
-                <span className="text-lg">{category.icon}</span>
-                <div className="flex flex-col items-center">
-                  <span className="font-mono text-[10px] uppercase tracking-widest">
-                    {category.label}
-                  </span>
-                  {category.count > 0 && (
-                    <span className={`font-mono text-[8px] mt-0.5 ${
-                      activeCategory === category.id
-                        ? isDayMode ? 'text-stone-600' : 'text-zinc-300'
-                        : 'text-zinc-600'
-                    }`}>
-                      {category.count}
-                    </span>
-                  )}
-                </div>
+                <span className="text-sm">
+                  {generateThemeCategories.find(c => c.id === activeCategory)?.icon || '🌏'}
+                </span>
+                <span className="font-mono text-xs uppercase tracking-widest">
+                  {generateThemeCategories.find(c => c.id === activeCategory)?.label || 'ALL'}
+                </span>
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
-            ))}
+            </div>
+
+            {/* Date/Time Filter Dropdown */}
+            <div className="relative">
+              <button
+                className={`flex items-center gap-2 px-4 py-2 rounded-sm border transition-all duration-300 ${
+                  isDayMode 
+                    ? 'bg-white border-stone-300 text-stone-700 hover:border-stone-400'
+                    : 'bg-zinc-900 border-zinc-700 text-white hover:border-zinc-600'
+                }`}
+              >
+                <span className="text-sm">🕐</span>
+                <span className="font-mono text-xs uppercase tracking-widest">
+                  {isDayMode ? 'TODAY' : 'TONIGHT'}
+                </span>
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Vibe Filter Dropdown */}
+            <div className="relative">
+              <button
+                className={`flex items-center gap-2 px-4 py-2 rounded-sm border transition-all duration-300 ${
+                  isDayMode 
+                    ? 'bg-white border-stone-300 text-stone-700 hover:border-stone-400'
+                    : 'bg-zinc-900 border-zinc-700 text-white hover:border-zinc-600'
+                }`}
+              >
+                <span className="text-sm">✨</span>
+                <span className="font-mono text-xs uppercase tracking-widest">
+                  VIBE
+                </span>
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1554,43 +1552,136 @@ export default function DiscoveryPage() {
         </div>
       )}
 
-      {/* Bottom Navigation - Minimal */}
+      {/* Bottom Content Area - Events/Venues replacing traditional nav */}
       <div className="fixed bottom-0 left-0 right-0 z-30">
-        <nav className={`relative rounded-t-xl backdrop-blur-xl border-t shadow-2xl overflow-hidden mx-4 mb-4 ${isDayMode ? 'bg-white/60 border-white/20' : 'bg-zinc-900/80 border-zinc-800'}`}>
+        <div className={`relative rounded-t-xl backdrop-blur-xl border-t shadow-2xl overflow-hidden mx-4 mb-4 ${isDayMode ? 'bg-white/60 border-white/20' : 'bg-zinc-900/80 border-zinc-800'}`}>
           {isDayMode && (
             <div className="absolute inset-0 bg-gradient-to-t from-white/40 to-transparent pointer-events-none"></div>
           )}
-          <div className="flex items-center justify-around py-2 relative z-10">
-            <button className="flex flex-col items-center space-y-0.5 group w-1/4">
-              <svg className={`w-5 h-5 ${isDayMode ? 'text-xixa-green drop-shadow-sm' : 'text-[#10FF88]'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className={`text-[9px] font-medium tracking-wide ${isDayMode ? 'text-zinc-950 font-bold' : 'text-white'}`} style={!isDayMode ? { filter: 'drop-shadow(0 0 4px rgba(16, 255, 136, 0.4))' } : {}}>DISCOVER</span>
-              <div className={`w-1 h-1 rounded-full ${isDayMode ? 'bg-zinc-950' : 'bg-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'}`}></div>
-            </button>
-            
-            <button className="flex flex-col items-center space-y-0.5 group w-1/4 hover:opacity-100 opacity-60 transition-opacity">
-              <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-800 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-              <span className={`text-[9px] font-medium tracking-wide ${isDayMode ? 'text-zinc-500 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`}>SAVED</span>
-            </button>
-            
-            <button className="flex flex-col items-center space-y-0.5 group w-1/4 hover:opacity-100 opacity-60 transition-opacity">
-              <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-800 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-              </svg>
-              <span className={`text-[9px] font-medium tracking-wide ${isDayMode ? 'text-zinc-500 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`}>BOOKINGS</span>
-            </button>
-            
-            <button className="flex flex-col items-center space-y-0.5 group w-1/4 hover:opacity-100 opacity-60 transition-opacity">
-              <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-800 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              <span className={`text-[9px] font-medium tracking-wide ${isDayMode ? 'text-zinc-500 group-hover:text-zinc-950' : 'text-zinc-500 group-hover:text-white'}`}>PROFILE</span>
-            </button>
+          
+          {/* Content Header */}
+          <div className="px-6 py-4 border-b border-stone-200/40">
+            <div className="flex items-center justify-between">
+              <h3 className={`font-mono text-xs uppercase tracking-widest ${isDayMode ? 'text-stone-700' : 'text-zinc-400'}`}>
+                {isDayMode ? 'Available Now' : 'Tonight\'s Events'}
+              </h3>
+              <button className={`text-xs font-mono uppercase tracking-widest ${isDayMode ? 'text-stone-500 hover:text-stone-700' : 'text-zinc-500 hover:text-zinc-300'}`}>
+                View All
+              </button>
+            </div>
           </div>
-        </nav>
+
+          {/* Horizontal Scrolling Content */}
+          <div className="px-6 py-4 overflow-x-auto no-scrollbar">
+            <div className="flex gap-4">
+              {isDayMode ? (
+                // Day Mode: Show available venues
+                businessGroups.slice(0, 5).map((business) => {
+                  const isBeachBusiness = business.venues.some(v => v.type === 'Beach' || v.type === 'BEACH');
+                  const totalAvailable = business.totalAvailableUnits;
+                  const hasAvailability = isBeachBusiness && totalAvailable > 0;
+                  
+                  return (
+                    <div 
+                      key={business.id}
+                      onClick={() => handleBusinessClick(business)}
+                      className="flex-shrink-0 w-32 cursor-pointer group"
+                    >
+                      <div className={`relative h-20 w-full rounded-sm overflow-hidden mb-2 ${isDayMode ? 'bg-stone-100' : 'bg-zinc-800'}`}>
+                        {business.venues[0]?.imageUrl ? (
+                          <img 
+                            src={business.venues[0].imageUrl}
+                            alt={business.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className={`w-full h-full flex items-center justify-center ${isDayMode ? 'text-stone-400' : 'text-zinc-600'}`}>
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        )}
+                        
+                        {/* Availability Badge */}
+                        {isBeachBusiness && (
+                          <div className="absolute top-1 right-1">
+                            <div className={`px-1.5 py-0.5 rounded-sm text-[8px] font-bold ${
+                              hasAvailability 
+                                ? 'bg-emerald-500 text-white' 
+                                : 'bg-stone-400 text-white'
+                            }`}>
+                              {totalAvailable}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <h4 className={`text-xs font-medium truncate ${isDayMode ? 'text-stone-900' : 'text-white'}`}>
+                        {business.name}
+                      </h4>
+                      <p className={`text-[10px] ${isDayMode ? 'text-stone-500' : 'text-zinc-400'}`}>
+                        {isBeachBusiness ? `${totalAvailable} available` : `${business.venues.length} venues`}
+                      </p>
+                    </div>
+                  );
+                })
+              ) : (
+                // Night Mode: Show upcoming events
+                filteredEvents.slice(0, 5).map((event) => {
+                  const venue = venues.find(v => v.id === event.venueId);
+                  const eventDate = new Date(event.startTime);
+                  
+                  return (
+                    <div 
+                      key={event.id}
+                      onClick={() => handleEventClick(event)}
+                      className="flex-shrink-0 w-32 cursor-pointer group"
+                    >
+                      <div className="relative h-20 w-full rounded-sm overflow-hidden mb-2 bg-zinc-800">
+                        {event.flyerImageUrl || event.imageUrl ? (
+                          <img 
+                            src={event.flyerImageUrl || event.imageUrl}
+                            alt={event.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-zinc-600">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                            </svg>
+                          </div>
+                        )}
+                        
+                        {/* Date Badge */}
+                        <div className="absolute top-1 right-1">
+                          <div className="bg-zinc-900 px-1.5 py-0.5 rounded-sm text-[8px] font-bold text-white">
+                            {eventDate.getDate()}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <h4 className="text-xs font-medium truncate text-white">
+                        {event.name}
+                      </h4>
+                      <p className="text-[10px] text-zinc-400">
+                        {venue?.name || 'TBA'}
+                      </p>
+                    </div>
+                  );
+                })
+              )}
+              
+              {/* Show empty state if no content */}
+              {((isDayMode && businessGroups.length === 0) || (!isDayMode && filteredEvents.length === 0)) && (
+                <div className="flex-shrink-0 w-full text-center py-8">
+                  <p className={`text-sm ${isDayMode ? 'text-stone-500' : 'text-zinc-400'}`}>
+                    {isDayMode ? 'No venues available' : 'No events tonight'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Business Bottom Sheet (shows list of venues) */}
