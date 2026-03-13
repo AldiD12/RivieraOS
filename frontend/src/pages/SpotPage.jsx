@@ -34,7 +34,10 @@ const isValidEmail = (email) => {
 export default function SpotPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { session, exitSession } = useAppStore();
+  const { session, exitSession, enrichSession } = useAppStore();
+  
+  // 🪩 TIME-SHIFT: Detect night mode for venue-branded dark theme
+  const isNightTime = new Date().getHours() >= 18 || new Date().getHours() < 6;
   const { setVenue: setCartVenue } = useCartStore();
   
   // URL parameters
@@ -176,6 +179,9 @@ export default function SpotPage() {
         allowsDigitalOrdering: venueData.allowsDigitalOrdering,
         orderingEnabled: venueData.orderingEnabled
       });
+      
+      // 🏖️ VENUE JAIL: Enrich session with venue context for isolation protocols
+      enrichSession(venueData.type, venueData.businessId);
       
       // Update cart store with venue context
       setCartVenue(venueId, unitId, venueData.name);
@@ -456,6 +462,18 @@ export default function SpotPage() {
             >
               Place Another Order
             </button>
+
+            {/* 🪩 CHECKOUT TRIGGER — "The Honorable Upsell" */}
+            <button
+              onClick={() => {
+                exitSession();
+                navigate(`/?mode=night&from=${venueId}`);
+              }}
+              className="px-8 py-4 bg-gradient-to-r from-zinc-900 to-zinc-800 text-white rounded-full text-sm tracking-widest uppercase hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              <span>🪩</span> See Tonight's Events
+            </button>
+
             <button
               onClick={() => navigate(`/review?v=${venueId}`)}
               className="px-8 py-4 border border-stone-300 text-stone-700 rounded-full text-sm tracking-widest uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
@@ -561,6 +579,18 @@ export default function SpotPage() {
             >
               Back to Menu
             </button>
+
+            {/* 🪩 CHECKOUT TRIGGER — "The Honorable Upsell" */}
+            <button
+              onClick={() => {
+                exitSession();
+                navigate(`/?mode=night&from=${venueId}`);
+              }}
+              className="px-8 py-4 bg-gradient-to-r from-zinc-900 to-zinc-800 text-white rounded-full text-sm tracking-widest uppercase hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              <span>🪩</span> See Tonight's Events
+            </button>
+
             <button
               onClick={() => navigate(`/review?v=${venueId}`)}
               className="px-8 py-4 border border-stone-300 text-stone-700 rounded-full text-sm tracking-widest uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
@@ -607,7 +637,7 @@ export default function SpotPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9]">
+    <div className={`min-h-screen transition-colors duration-500 ${isNightTime ? 'bg-zinc-950' : 'bg-[#FAFAF9]'}`}>
       {/* Reservation Modal */}
       {showReserveModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -722,35 +752,51 @@ export default function SpotPage() {
       )}
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-white to-stone-50/50 border-b border-stone-200/40">
+      <div className={`border-b ${isNightTime ? 'bg-gradient-to-br from-zinc-900 to-zinc-950 border-zinc-800' : 'bg-gradient-to-br from-white to-stone-50/50 border-stone-200/40'}`}>
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-4">
-                <MapPin className="w-5 h-5 text-[#92400E]" />
-                <p className="text-sm tracking-widest uppercase text-[#78716C]">
+                <MapPin className={`w-5 h-5 ${isNightTime ? 'text-[#10FF88]' : 'text-[#92400E]'}`} />
+                <p className={`text-sm tracking-widest uppercase ${isNightTime ? 'text-zinc-400' : 'text-[#78716C]'}`}>
                   {unitId ? `Unit ${unitId}` : 'Welcome'}
                 </p>
               </div>
-              <h1 className="font-['Cormorant_Garamond'] text-6xl md:text-7xl font-light tracking-tighter leading-none text-[#1C1917]">
+              <h1 className={`font-['Cormorant_Garamond'] text-6xl md:text-7xl font-light tracking-tighter leading-none ${isNightTime ? 'text-white' : 'text-[#1C1917]'}`}>
                 {venue?.name || 'Riviera'}
               </h1>
             </div>
             
-            {/* Leave Venue Button */}
-            <button
-              onClick={() => {
-                exitSession();
-                navigate('/');
-              }}
-              className="flex items-center gap-2 px-4 py-2 text-sm text-[#78716C] hover:text-[#1C1917] transition-colors group"
-              title="Leave Venue"
-            >
-              <LogOut className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              <span className="hidden sm:inline">Leave</span>
-            </button>
+            {/* Intentionally removed prominent Leave button — "Menu Trap" protocol */}
+            {/* Users exit via "Powered by XIXA" footer at page bottom */}
           </div>
         </div>
+      </div>
+
+      {/* 🪩 "PLAN TONIGHT" BANNER — Time-Shift Upsell */}
+      <div className="max-w-7xl mx-auto px-6 pt-6">
+        <button
+          onClick={() => {
+            exitSession();
+            navigate(`/?mode=night&from=${venueId}`);
+          }}
+          className={`w-full px-6 py-4 rounded-2xl flex items-center justify-between group transition-all duration-300 ${
+            isNightTime
+              ? 'bg-gradient-to-r from-violet-900/40 to-zinc-900 border border-violet-700/30 hover:border-violet-500/50 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]'
+              : 'bg-gradient-to-r from-zinc-900 to-zinc-800 hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)]'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🪩</span>
+            <div className="text-left">
+              <p className="text-sm font-medium tracking-wide text-white">PLAN TONIGHT</p>
+              <p className="text-xs text-zinc-400">See VIP events near you</p>
+            </div>
+          </div>
+          <svg className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
 
       {/* Menu Content */}
@@ -783,13 +829,15 @@ export default function SpotPage() {
         </button>
       )}
 
-      {/* Floating Review Button */}
-      <button
-        onClick={() => navigate(`/review?v=${venueId}`)}
-        className={`fixed ${canOrder && cart.length > 0 ? 'bottom-24' : 'bottom-8'} right-8 bg-white text-stone-900 p-5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.15)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.25)] hover:bg-stone-50 transition-all duration-300 z-40 group border border-stone-200/40`}
-      >
-        <Star className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" />
-      </button>
+      {/* 🦅 "POWERED BY XIXA" FOOTER — The Backdoor */}
+      <div className={`text-center py-12 border-t mt-12 ${isNightTime ? 'border-zinc-800' : 'border-stone-200/20'}`}>
+        <button
+          onClick={() => { exitSession(); navigate('/'); }}
+          className={`text-xs tracking-widest uppercase transition-colors duration-300 ${isNightTime ? 'text-zinc-600 hover:text-zinc-400' : 'text-stone-400 hover:text-stone-600'}`}
+        >
+          🦅 Powered by XIXA — Discover the Riviera
+        </button>
+      </div>
 
       {/* Cart Modal */}
       {showCartModal && canOrder && (

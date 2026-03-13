@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Map, { Marker, NavigationControl } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { venueApi } from '../services/venueApi';
@@ -259,6 +260,11 @@ function EventMarker({ event, venue, isSelected, onClick, isDayMode }) {
 export default function DiscoveryPage() {
   // Force rebuild timestamp: 2026-03-05 15:30
   const mapRef = useRef();
+  const [searchParams] = useSearchParams();
+  
+  // 🏖️ VENUE JAIL: Detect if returning from a QR session
+  const fromVenueId = searchParams.get('from');
+  const forceMode = searchParams.get('mode'); // 'night' = force night mode
   const [venues, setVenues] = useState([]);
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [selectedBusiness, setSelectedBusiness] = useState(null); // For business grouping
@@ -296,16 +302,21 @@ export default function DiscoveryPage() {
     const venueTypes = [...new Set(venues.map(v => v.type).filter(Boolean))];
     const hasEvents = events.length > 0;
     
-    // Always show BEACHES if we have Beach venues
+    // 🏖️ NO-COMPETITOR LOCK: Hide BEACHES when returning from a beach QR session
+    // "They are already at a beach. We do not show them competitors."
     if (venueTypes.includes('Beach') || venueTypes.includes('BEACH')) {
-      categories.push({ 
-        id: 'BEACHES', 
-        label: 'BEACHES', 
-        icon: '⛱️', 
-        isDayMode: true, 
-        filter: 'Beach',
-        count: venues.filter(v => v.type === 'Beach' || v.type === 'BEACH').length
-      });
+      if (!fromVenueId) {
+        categories.push({ 
+          id: 'BEACHES', 
+          label: 'BEACHES', 
+          icon: '⛱️', 
+          isDayMode: true, 
+          filter: 'Beach',
+          count: venues.filter(v => v.type === 'Beach' || v.type === 'BEACH').length
+        });
+      } else {
+        console.log('🏖️ NO-COMPETITOR LOCK: BEACHES category hidden (returning from venue', fromVenueId, ')');
+      }
     }
     
     // Show EVENTS if we have events
@@ -365,18 +376,32 @@ export default function DiscoveryPage() {
     }
     
     return categories;
-  }, [venues, events]);
+  }, [venues, events, fromVenueId]);
 
   // Set default category based on what's available
   useEffect(() => {
     if (generateThemeCategories.length > 0 && !activeCategory) {
+      // 🏖️ VENUE JAIL: If returning from a QR session with mode=night, default to EVENTS
+      if (forceMode === 'night') {
+        const eventsCategory = generateThemeCategories.find(c => c.id === 'EVENTS');
+        if (eventsCategory) {
+          setActiveCategory('EVENTS');
+          setIsDayMode(false);
+          setActiveFilter('all');
+          setViewMode('list');
+          setModeInitialized(true);
+          console.log('🪩 VENUE JAIL: Forced night mode from QR session');
+          return;
+        }
+      }
+      
       const defaultCategory = generateThemeCategories[0];
       setActiveCategory(defaultCategory.id);
       setIsDayMode(defaultCategory.isDayMode);
       setActiveFilter(defaultCategory.filter);
       setViewMode(defaultCategory.isDayMode ? 'map' : 'list');
     }
-  }, [generateThemeCategories, activeCategory]);
+  }, [generateThemeCategories, activeCategory, forceMode]);
 
   // Handle category click - Theme Trigger Magic with Smart Defaults
   const handleCategoryClick = (category) => {
@@ -831,8 +856,19 @@ export default function DiscoveryPage() {
       filteredEvents: filtered.slice(0, 3) // Show first 3 filtered events
     });
     
+    // 🏖️ HOME TEAM ADVANTAGE: Pin host venue's events to top when returning from QR
+    if (fromVenueId) {
+      return [...filtered].sort((a, b) => {
+        const aIsHost = String(a.venueId) === String(fromVenueId);
+        const bIsHost = String(b.venueId) === String(fromVenueId);
+        if (aIsHost && !bIsHost) return -1;
+        if (!aIsHost && bIsHost) return 1;
+        return new Date(a.startTime) - new Date(b.startTime);
+      });
+    }
+    
     return filtered;
-  }, [events, activeEventFilter]);
+  }, [events, activeEventFilter, fromVenueId]);
 
   const filteredVenues = useMemo(() => {
     return venues.filter(v => {

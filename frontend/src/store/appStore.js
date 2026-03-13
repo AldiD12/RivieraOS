@@ -25,21 +25,35 @@ export const useAppStore = create(
       },
       
       /**
+       * Get time context based on current hour
+       * DAY = 6:00 AM to 5:59 PM, NIGHT = 6:00 PM to 5:59 AM
+       * @returns {'DAY' | 'NIGHT'}
+       */
+      getTimeContext: () => {
+        const hour = new Date().getHours();
+        return (hour >= 6 && hour < 18) ? 'DAY' : 'NIGHT';
+      },
+      
+      /**
        * Start new session when QR code is scanned
        * @param {string} venueId - Venue ID from QR
        * @param {string} unitId - Unit ID from QR
        * @param {string} venueName - Venue name for display
        */
       startSession: (venueId, unitId, venueName = '') => {
+        const hour = new Date().getHours();
         const session = {
           venueId,
           unitId,
           venueName,
+          venueType: '',         // Enriched later: 'BEACH' | 'RESTAURANT' | 'BAR' etc.
+          businessId: null,      // Enriched later: for "Home Team Advantage"
+          timeOfDay: (hour >= 6 && hour < 18) ? 'DAY' : 'NIGHT',
           startTime: Date.now(),
           manuallyExited: false
         };
         
-        console.log('✅ Session started:', { venueId, unitId, venueName });
+        console.log('✅ Session started:', { venueId, unitId, venueName, timeOfDay: session.timeOfDay });
         
         set({
           mode: 'SPOT',
@@ -50,7 +64,26 @@ export const useAppStore = create(
       },
       
       /**
-       * Manual exit - user clicks "Leave Venue"
+       * Enrich session with venue details after fetch
+       * Called by SpotPage once venue data is loaded
+       * @param {string} venueType - Venue type (Beach, Restaurant, Bar, etc.)
+       * @param {string|number} businessId - Business ID for Home Team Advantage
+       */
+      enrichSession: (venueType, businessId) => {
+        const { session } = get();
+        if (session) {
+          const enriched = {
+            ...session,
+            venueType: (venueType || '').toUpperCase(),
+            businessId: businessId || null,
+          };
+          console.log('🏖️ Session enriched:', { venueType: enriched.venueType, businessId: enriched.businessId, timeOfDay: enriched.timeOfDay });
+          set({ session: enriched });
+        }
+      },
+      
+      /**
+       * Manual exit - user clicks "Leave Venue" / "Powered by XIXA"
        */
       exitSession: () => {
         const { session } = get();
