@@ -135,4 +135,33 @@
                  -0.5px  0.5px 0 #000,
                  0.5px  0.5px 0 #000;
   }
+
+  /* XIXA Theme Utilities */
+  @keyframes glow {
+    0% { box-shadow: 0 0 10px rgba(16, 255, 136, 0.1); filter: drop-shadow(0 0 2px rgba(16, 255, 136, 0.2)); }
+    50% { box-shadow: 0 0 25px rgba(16, 255, 136, 0.4); filter: drop-shadow(0 0 8px rgba(16, 255, 136, 0.5)); }
+    100% { box-shadow: 0 0 10px rgba(16, 255, 136, 0.1); filter: drop-shadow(0 0 2px rgba(16, 255, 136, 0.2)); }
+  }
+
+  .rating-glow {
+    animation: glow 3s infinite ease-in-out;
+  }
+
+  .brutalist-border {
+    border: 1px solid #27272A;
+  }
+
+  .selected-rating {
+    border-color: #10FF88 !important;
+    color: #10FF88 !important;
+    background: rgba(16, 255, 136, 0.03);
+  }
+
+  .tracking-ultra-wide {
+    letter-spacing: 0.4em;
+  }
+
+  .tracking-extra-wide {
+    letter-spacing: 0.25em;
+  }
 }

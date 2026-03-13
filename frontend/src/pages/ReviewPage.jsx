@@ -24,12 +24,12 @@ export default function ReviewPage() {
   useEffect(() => {
     // Add Google Fonts
     const link1 = document.createElement('link');
-    link1.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@200;300;400;500&display=swap';
+    link1.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap';
     link1.rel = 'stylesheet';
     document.head.appendChild(link1);
 
     const link2 = document.createElement('link');
-    link2.href = 'https://fonts.googleapis.com/icon?family=Material+Icons+Round';
+    link2.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap';
     link2.rel = 'stylesheet';
     document.head.appendChild(link2);
 
@@ -190,10 +190,12 @@ export default function ReviewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-stone-100 dark:bg-stone-950 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="inline-block w-8 h-8 border-2 border-stone-300 border-t-amber-600 rounded-full animate-spin mb-4"></div>
-          <p className="text-stone-600 dark:text-stone-400">Loading...</p>
+          <div className="w-16 h-16 mx-auto mb-8 brutalist-border rounded-none flex items-center justify-center border-xixa-green/20 animate-pulse">
+            <div className="w-8 h-8 brutalist-border rounded-none border-xixa-green animate-spin"></div>
+          </div>
+          <p className="text-xixa-green font-mono text-[10px] tracking-ultra-wide uppercase opacity-60">Loading Experience...</p>
         </div>
       </div>
     );
@@ -201,16 +203,21 @@ export default function ReviewPage() {
 
   if (error || !venue) {
     return (
-      <div className="min-h-screen bg-stone-100 dark:bg-stone-950 flex items-center justify-center p-8">
-        <div className="text-center">
-          <h1 className="text-4xl font-light text-stone-900 dark:text-stone-100 mb-4">
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-8">
+        <div className="text-center max-w-xs">
+          <div className="mb-10 flex justify-center">
+            <div className="border border-zinc-800 px-6 py-2">
+              <span className="font-serif text-xl font-bold tracking-[0.3em] uppercase text-zinc-500">XIXA</span>
+            </div>
+          </div>
+          <h1 className="font-serif text-3xl font-light text-zinc-400 mb-8 italic">
             {error || 'Venue not found'}
           </h1>
           <button 
             onClick={() => navigate('/')}
-            className="text-stone-600 dark:text-stone-400 hover:text-amber-600 underline"
+            className="w-full border border-zinc-800 py-4 px-6 flex items-center justify-center transition-all hover:bg-white hover:text-black group"
           >
-            Return home
+            <span className="font-mono text-[10px] tracking-extra-wide uppercase">Return Home</span>
           </button>
         </div>
       </div>
@@ -218,145 +225,102 @@ export default function ReviewPage() {
   }
 
   return (
-    <div 
-      className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center transition-colors duration-700"
-      style={{ 
-        backgroundColor: '#F5F5F4',
-        fontFamily: 'Montserrat, sans-serif'
-      }}
-    >
-      {/* Background Images */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <img 
-          alt="Bright Riviera Beach" 
-          className="absolute inset-0 w-full h-full object-cover opacity-100 dark:opacity-0 transition-opacity duration-1000 blur-sm" 
-          src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&h=800&fit=crop"
-        />
-        <img 
-          alt="Dark Beach at Dusk" 
-          className="absolute inset-0 w-full h-full object-cover opacity-0 dark:opacity-100 transition-opacity duration-1000 blur-md scale-105" 
-          src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&h=800&fit=crop"
-        />
-        <div className="absolute inset-0 bg-stone-100/70 dark:bg-black/60 backdrop-blur-[2px] transition-colors duration-1000"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-stone-100/50 to-stone-100/90 dark:via-black/20 dark:to-black/80 transition-colors duration-1000"></div>
-      </div>
-
-      {/* Success Animation */}
+    <div className="bg-zinc-950 text-white min-h-screen flex flex-col font-mono selection:bg-xixa-green selection:text-black relative overflow-hidden">
+      {/* Background grain effect if needed, but the design is clean black */}
+      
+      {/* Success Animation / Review Shield Overlay */}
       {showSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-100/90 dark:bg-stone-950/90 backdrop-blur-sm">
-          <div className="text-center animate-pulse">
-            <div className="w-24 h-24 mx-auto mb-8 rounded-full bg-gradient-to-r from-amber-400 to-amber-600 flex items-center justify-center">
-              <span className="material-icons-round text-4xl text-white">favorite</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95 backdrop-blur-md transition-all duration-700">
+          <div className="text-center animate-pulse px-8">
+            <div className="w-20 h-20 mx-auto mb-10 brutalist-border rounded-none flex items-center justify-center border-xixa-green/30">
+              <span className="material-symbols-outlined text-4xl text-xixa-green rating-glow">favorite</span>
             </div>
-            <h2 className="text-4xl font-light text-stone-900 dark:text-stone-100 mb-4" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
+            <h2 className="font-serif text-5xl font-light mb-6 tracking-tight italic">
               Thank You
             </h2>
-            <p className="text-lg text-stone-600 dark:text-stone-400">
-              {rating >= 4 ? "Redirecting you to share your review on Google..." : "We appreciate your feedback"}
+            <p className="text-[10px] text-zinc-500 uppercase tracking-[0.4em] max-w-xs mx-auto leading-loose">
+              {rating >= 4 
+                ? "Connecting you to Google Maps to share your experience with the world..." 
+                : "Your feedback has been received. We are committed to perfecting the Riviera."}
             </p>
           </div>
         </div>
       )}
 
-      {/* Main Content */}
-      <main className="relative z-10 w-full max-w-md px-8 flex flex-col items-center justify-between h-full py-12">
-        {/* Header */}
-        <header className="text-center w-full mt-8" style={{ animation: 'fadeIn 1.2s ease-out forwards' }}>
-          <p 
-            className="text-[10px] tracking-[0.25em] uppercase text-stone-500 dark:text-stone-400 mb-6 font-medium"
-            style={{ fontFamily: 'Montserrat, sans-serif' }}
-          >
-            Your Experience At
-          </p>
-          <h1 
-            className="text-5xl md:text-6xl font-normal text-stone-900 dark:text-stone-100 leading-[0.9] mb-4 tracking-tight"
-            style={{ fontFamily: 'Cormorant Garamond, serif' }}
-          >
-            {venue.name}
-          </h1>
-          <div className="flex items-center justify-center gap-2 opacity-80 mt-2">
-            <span className="material-icons-round text-xs text-stone-600 dark:text-stone-400">place</span>
-            <p className="text-xs tracking-wide text-stone-700 dark:text-stone-300 uppercase">
-              {venue.location}
-            </p>
+      {/* BEGIN: MainHeader */}
+      <header className="pt-16 pb-8 px-6 text-center border-b border-zinc-800/50">
+        <div className="mb-12 flex justify-center">
+          <div className="border border-white px-6 py-2">
+            <span className="font-serif text-2xl font-bold tracking-[0.3em] uppercase">
+              {venue?.name || 'XIXA'}
+            </span>
           </div>
-        </header>
+        </div>
+        <h1 className="font-serif text-5xl md:text-6xl font-light leading-tight mb-4 tracking-tight italic">
+          How was your<br/>experience?
+        </h1>
+        <p className="text-zinc-600 text-[10px] uppercase tracking-[0.4em] mt-6">
+          {venue?.name || 'XIXA'} — GUEST FEEDBACK
+        </p>
+      </header>
+      {/* END: MainHeader */}
 
-        {/* Rating Section */}
-        <section 
-          className="flex flex-col items-center w-full my-12"
-          style={{ animation: 'fadeIn 1.2s ease-out 0.3s forwards', opacity: 0 }}
-        >
-          <h2 
-            className="text-3xl md:text-4xl italic text-stone-800 dark:text-stone-200 mb-10 text-center font-light"
-            style={{ fontFamily: 'Cormorant Garamond, serif' }}
-          >
-            How was your<br/>experience?
-          </h2>
-          
-          {/* Rating Circles */}
-          <div className="flex items-center justify-center gap-4 md:gap-6 mb-8 w-full">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                onClick={() => handleRatingClick(star)}
-                onMouseEnter={() => setHoveredRating(star)}
-                onMouseLeave={() => setHoveredRating(0)}
-                disabled={showSuccess}
-                className={`
-                  w-12 h-12 rounded-full border transition-all duration-500 flex items-center justify-center focus:outline-none relative overflow-hidden
-                  ${star <= (hoveredRating || rating)
-                    ? 'border-amber-500 bg-amber-500/25 shadow-lg shadow-amber-500/40'
-                    : 'border-stone-400 dark:border-stone-600 bg-transparent hover:border-amber-500 hover:bg-amber-500/15 hover:shadow-lg hover:shadow-amber-500/40'
-                  }
-                `}
-                aria-label={`Rate ${star} out of 5`}
-              >
-                <div 
-                  className={`
-                    w-full h-full rounded-full transition-opacity duration-500 blur-md
-                    ${star <= (hoveredRating || rating) ? 'opacity-100 bg-amber-400' : 'opacity-0 bg-amber-400'}
-                  `}
-                ></div>
-              </button>
-            ))}
-          </div>
-          
-          <p className="text-[10px] uppercase tracking-[0.25em] text-stone-500 dark:text-stone-500 opacity-60">
-            Tap a circle to rate
+      {/* BEGIN: RatingSection */}
+      <main className="flex-grow flex flex-col justify-center px-8 py-12">
+        <div className="grid grid-cols-5 gap-3 max-w-sm mx-auto w-full">
+          {[1, 2, 3, 4, 5].map((val) => (
+            <button
+              key={val}
+              className={`brutalist-border aspect-square flex items-center justify-center rounded-none transition-all duration-500 group active:scale-95 ${
+                (hoveredRating || rating) === val ? 'selected-rating rating-glow' : 'hover:border-zinc-500'
+              }`}
+              onMouseEnter={() => setHoveredRating(val)}
+              onMouseLeave={() => setHoveredRating(0)}
+              onClick={() => handleRatingClick(val)}
+              disabled={showSuccess}
+            >
+              <span className={`material-symbols-outlined text-xl transition-all duration-500 ${
+                (hoveredRating || rating) === val ? 'fill-1' : 'group-hover:scale-110 opacity-40'
+              }`}>
+                star
+              </span>
+            </button>
+          ))}
+        </div>
+        <div className="mt-12 text-center h-4">
+          <p className="text-xixa-green font-mono text-[10px] tracking-ultra-wide uppercase opacity-80 transition-opacity duration-300">
+            {ratingLabels[hoveredRating || rating] || ''}
           </p>
-        </section>
-
-        {/* Footer */}
-        <footer 
-          className="text-center w-full mb-6"
-          style={{ animation: 'fadeIn 1.2s ease-out 0.6s forwards', opacity: 0 }}
-        >
-          <div className="w-12 h-[1px] bg-stone-400/30 dark:bg-stone-600/50 mx-auto mb-6"></div>
-          <p 
-            className="italic text-lg text-stone-700 dark:text-stone-300 mb-12 max-w-[260px] mx-auto leading-relaxed"
-            style={{ fontFamily: 'Cormorant Garamond, serif' }}
-          >
-            "Your feedback helps us perfect the Riviera."
-          </p>
-          <button
-            onClick={() => navigate('/')}
-            className="inline-block text-[11px] font-semibold tracking-[0.25em] uppercase text-stone-800 dark:text-stone-300 hover:text-amber-600 dark:hover:text-amber-400 transition-colors duration-300 border-b border-transparent hover:border-amber-600 pb-1"
-          >
-            Return to Home
-          </button>
-        </footer>
+        </div>
       </main>
+      {/* END: RatingSection */}
 
-      {/* Custom Styles */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-        `
-      }} />
+      {/* BEGIN: FooterActions */}
+      <footer className="p-8 pb-12 flex flex-col gap-6 max-w-sm mx-auto w-full">
+        {/* Main Call to Action */}
+        <button 
+          onClick={() => navigate('/')}
+          className="w-full border border-zinc-800 py-6 px-6 flex items-center justify-center transition-all hover:bg-white hover:text-black group active:scale-[0.99]"
+        >
+          <span className="font-mono text-[10px] tracking-extra-wide uppercase">Return to Home</span>
+        </button>
+        
+        {/* Secondary Support Link */}
+        <button 
+          className="text-center text-[10px] text-zinc-600 uppercase tracking-widest hover:text-zinc-400 transition-colors py-2"
+        >
+          Contact Concierge Support
+        </button>
+      </footer>
+      {/* END: FooterActions */}
     </div>
   );
 }
+
+const ratingLabels = {
+  1: 'Poor',
+  2: 'Fair',
+  3: 'Good',
+  4: 'Excellent',
+  5: 'Exceptional'
+};
