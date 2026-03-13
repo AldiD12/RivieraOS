@@ -7,8 +7,8 @@ import whatsappLink from '../utils/whatsappLink';
 import haptics from '../utils/haptics';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
-// Normalize: ensure URL ends with /api (env var already includes it)
-const baseUrl = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
+// Bulletproof: strip trailing slashes + /api suffix, then always re-add /api
+const baseUrl = API_URL.trim().replace(/\/+$/, '').replace(/\/api$/, '') + '/api';
 
 // Input sanitization utility
 const sanitizeInput = (input) => {

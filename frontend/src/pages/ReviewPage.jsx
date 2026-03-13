@@ -5,7 +5,7 @@ import whatsappLink from '../utils/whatsappLink';
 import haptics from '../utils/haptics';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
-const baseUrl = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
+const baseUrl = API_URL.trim().replace(/\/+$/, '').replace(/\/api$/, '') + '/api';
 
 export default function ReviewPage() {
   const { venueId } = useParams();
