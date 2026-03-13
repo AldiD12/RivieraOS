@@ -271,8 +271,13 @@ export default function DiscoveryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('Beach'); // Default to Beach only
-  const [isDayMode, setIsDayMode] = useState(true); // Start with day mode (beaches)
-  const [viewMode, setViewMode] = useState('map'); // Start with map for day mode
+  
+  // 🪩 VENUE JAIL: Synchronously initialize correctly to avoid race conditions
+  const isForcedNightMode = forceMode === 'night';
+  const [isDayMode, setIsDayMode] = useState(!isForcedNightMode); 
+  const [viewMode, setViewMode] = useState(isForcedNightMode ? 'list' : 'map'); 
+  const [activeCategory, setActiveCategory] = useState(isForcedNightMode ? 'EVENTS' : null);
+
   const [userLocation, setUserLocation] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [initialViewState, setInitialViewState] = useState(RIVIERA_CENTER);
@@ -292,7 +297,6 @@ export default function DiscoveryPage() {
   const [isUsingGPSLocation, setIsUsingGPSLocation] = useState(false); // Track if using GPS vs manual zone
 
   // Theme Trigger Categories - Dynamic based on available data
-  const [activeCategory, setActiveCategory] = useState(null);
 
   // Dynamic Theme Categories - Based on Available Data
   const generateThemeCategories = useMemo(() => {
@@ -380,21 +384,8 @@ export default function DiscoveryPage() {
 
   // Set default category based on what's available
   useEffect(() => {
-    if (generateThemeCategories.length > 0 && !activeCategory) {
-      // 🏖️ VENUE JAIL: If returning from a QR session with mode=night, default to EVENTS
-      if (forceMode === 'night') {
-        const eventsCategory = generateThemeCategories.find(c => c.id === 'EVENTS');
-        if (eventsCategory) {
-          setActiveCategory('EVENTS');
-          setIsDayMode(false);
-          setActiveFilter('all');
-          setViewMode('list');
-          setModeInitialized(true);
-          console.log('🪩 VENUE JAIL: Forced night mode from QR session');
-          return;
-        }
-      }
-      
+    // Only run this if we haven't forced night mode and activeCategory is STILL null
+    if (generateThemeCategories.length > 0 && !activeCategory && forceMode !== 'night') {
       const defaultCategory = generateThemeCategories[0];
       setActiveCategory(defaultCategory.id);
       setIsDayMode(defaultCategory.isDayMode);
