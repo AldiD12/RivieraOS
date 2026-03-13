@@ -392,7 +392,8 @@ export default function MenuPage() {
         if (venueResponse.ok) {
           const venue = await venueResponse.json();
           setVenueData(venue);
-          setIsDigitalOrderingEnabled(venue.isDigitalOrderingEnabled ?? true);
+          // Use backend's computed field (factors in venue type for auto mode)
+          setIsDigitalOrderingEnabled(venue.allowsDigitalOrdering ?? venue.isDigitalOrderingEnabled ?? true);
           
           if (venue.vibeConfig) {
             setVibeConfig({
