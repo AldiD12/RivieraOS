@@ -524,7 +524,7 @@ export default function SpotPage() {
   }
 
   return (
-    <div className="min-h-[max(884px,100dvh)] bg-background-dark text-zinc-100 font-sans antialiased pb-24">
+    <div className="min-h-[max(884px,100dvh)] bg-background-dark text-zinc-100 font-sans antialiased pb-32">
       {/* Reservation Modal - Dark Theme Adapted */}
       {showReserveModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -655,7 +655,7 @@ export default function SpotPage() {
       {canOrder && cart.length > 0 && (
         <button
           onClick={() => setShowCartModal(true)}
-          className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-primary text-black p-4 rounded shadow-2xl z-40 group hover:bg-[#0ee57a] transition-colors flex items-center justify-between glow-primary border border-[#0ee57a]"
+          className="fixed bottom-24 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-primary text-black p-4 rounded shadow-2xl z-40 group hover:bg-[#0ee57a] transition-colors flex items-center justify-between glow-primary border border-[#0ee57a]"
         >
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-black/10 rounded flex items-center justify-center font-mono font-bold">
@@ -669,15 +669,45 @@ export default function SpotPage() {
         </button>
       )}
 
-      {/* POWERED BY XIXA FOOTER */}
-      <div className="text-center py-12 border-t border-border-dark mt-12 mb-8">
+      {/* 🦅 POWERED BY XIXA FOOTER */}
+      <div className="text-center py-8 border-t border-border-dark mt-8 mb-4">
         <button
           onClick={() => { exitSession(); navigate('/'); }}
           className="text-xs font-mono tracking-widest uppercase text-zinc-600 hover:text-zinc-400 transition-colors duration-300"
         >
-          🦅 Powered by XIXA — Discover the Riviera
+          🦅 Powered by XIXA
         </button>
       </div>
+
+      {/* 📱 GLASSMORPHIC BOTTOM NAVIGATION BAR */}
+      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-zinc-950/80 backdrop-blur-xl border-t border-border-dark z-50 flex items-center justify-around px-4">
+        <button 
+          onClick={() => { exitSession(); navigate('/'); }}
+          className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-white transition-colors gap-1 group"
+        >
+          <span className="material-symbols-outlined text-[20px] group-hover:-translate-y-0.5 transition-transform duration-300">wb_sunny</span>
+          <span className="text-[10px] uppercase tracking-widest font-mono font-bold">DAY EXP</span>
+        </button>
+        
+        <div className="w-px h-8 bg-zinc-800"></div>
+
+        <button 
+          className="flex flex-col items-center justify-center w-full h-full text-primary glow-primary gap-1 cursor-default pointer-events-none"
+        >
+          <span className="material-symbols-outlined text-[20px]">restaurant_menu</span>
+          <span className="text-[10px] uppercase tracking-widest font-mono font-bold text-glow">MENU</span>
+        </button>
+
+        <div className="w-px h-8 bg-zinc-800"></div>
+
+        <button 
+          onClick={() => { exitSession(); navigate(`/?mode=night&from=${venueId}`); }}
+          className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-white transition-colors gap-1 group"
+        >
+          <span className="material-symbols-outlined text-[20px] group-hover:-translate-y-0.5 transition-transform duration-300">nightlife</span>
+          <span className="text-[10px] uppercase tracking-widest font-mono font-bold">EVENTS</span>
+        </button>
+      </nav>
 
       {/* Dark Theme Cart Modal */}
       {showCartModal && canOrder && (
@@ -828,6 +858,37 @@ function MenuDisplay({ menu, cart, addToCart, updateQuantity, getTotalPrice, han
           </div>
         </section>
       ))}
+
+      {/* ⭐ RATE YOUR EXPERIENCE CARD (Always Available) */}
+      <section className="mt-8 px-4 pb-4 border-t border-border-dark pt-8">
+         <div 
+           onClick={() => { window.location.href = `/review?v=${menu[0]?.products[0]?.venueId || ''}`; }}
+           className="bg-zinc-900 border border-border-dark rounded p-6 flex flex-col items-center text-center cursor-pointer hover:bg-zinc-800 transition-all duration-300 relative overflow-hidden group"
+         >
+           {/* Subtle glow effect behind stars */}
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-12 bg-amber-500/10 blur-xl rounded-full"></div>
+           
+           <h3 className="font-display text-xl text-white font-bold tracking-widest uppercase mb-1 z-10">Rate Your Experience</h3>
+           <p className="text-xs font-mono text-zinc-400 mb-4 z-10 uppercase">Help us improve</p>
+           
+           <div className="flex items-center gap-2 z-10">
+             {[1, 2, 3, 4, 5].map((star) => (
+               <span 
+                 key={star} 
+                 className="material-symbols-outlined text-3xl text-zinc-700 group-hover:text-amber-400 transition-colors duration-300"
+                 style={{ transitionDelay: `${star * 50}ms` }}
+               >
+                 star
+               </span>
+             ))}
+           </div>
+           
+           {/* Pseudo-button for visual affordance */}
+           <div className="mt-6 border border-zinc-700 text-zinc-400 text-[10px] font-mono tracking-widest uppercase px-4 py-2 rounded group-hover:border-amber-500/50 group-hover:text-amber-400 transition-colors z-10">
+              Leave Review
+           </div>
+         </div>
+      </section>
     </div>
   );
 }
