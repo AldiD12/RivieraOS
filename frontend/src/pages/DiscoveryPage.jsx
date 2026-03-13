@@ -816,6 +816,7 @@ export default function DiscoveryPage() {
     console.log('🔍 Filtering events:', { 
       totalEvents: events?.length || 0, 
       activeEventFilter,
+      fromVenueId,
       events: events?.slice(0, 3) // Show first 3 events for debugging
     });
     
@@ -824,7 +825,16 @@ export default function DiscoveryPage() {
       return [];
     }
     
-    const filtered = events.filter(event => {
+    // 🪩 VENUE JAIL: If we have a fromVenueId (meaning they clicked "Business Events" from the QR landing page),
+    // we MUST filter out all other competitor events to keep them locked into this business.
+    let baseEvents = events;
+    if (fromVenueId) {
+      baseEvents = baseEvents.filter(event => 
+        event.venueId === parseInt(fromVenueId) || event.venueId === fromVenueId
+      );
+    }
+    
+    const filtered = baseEvents.filter(event => {
       if (activeEventFilter === 'all') return true;
       
       const eventDate = new Date(event.startTime);
