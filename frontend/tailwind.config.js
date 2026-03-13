@@ -11,11 +11,15 @@ export default {
         serif: ['Cormorant Garamond', 'Georgia', 'serif'],
         mono: ['JetBrains Mono', 'Courier New', 'monospace'],
         // Industrial Luxury fonts
-        'display': ['Anton', 'Playfair Display', 'Georgia', 'serif'],
+        'display': ['Playfair Display', 'Anton', 'Georgia', 'serif'],
         'geist-sans': ['Geist Sans', 'Inter', 'sans-serif'],
         'geist-mono': ['Geist Mono', 'monospace'],
       },
       colors: {
+        primary: "#10FF88",
+        "background-dark": "#09090B", // Zinc-950
+        "surface-dark": "#18181B", // Zinc-900
+        "border-dark": "#27272A", // Zinc-800
         // Industrial palette
         zinc: {
           950: '#09090b',

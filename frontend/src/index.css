@@ -39,6 +39,14 @@
     scrollbar-width: none;
   }
 
+  .glow-primary {
+    filter: drop-shadow(0 0 12px rgba(16, 255, 136, 0.4));
+  }
+
+  .text-glow {
+    text-shadow: 0 0 12px rgba(16, 255, 136, 0.4);
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }

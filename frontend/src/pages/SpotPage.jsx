@@ -398,22 +398,22 @@ export default function SpotPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center">
-        <div className="text-[#57534E] text-lg">Loading...</div>
+      <div className="min-h-screen bg-background-dark flex items-center justify-center">
+        <div className="text-zinc-500 font-mono uppercase tracking-widest text-sm animate-pulse">Loading menu //</div>
       </div>
     );
   }
 
   if (error && !venue) {
     return (
-      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background-dark flex items-center justify-center p-6">
         <div className="text-center">
-          <p className="text-[#57534E] text-lg mb-4">{error}</p>
+          <p className="text-red-500 font-mono text-sm mb-4 glow-primary">ERROR: {error}</p>
           <button
             onClick={() => navigate('/')}
-            className="px-8 py-4 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300"
+            className="px-8 py-4 bg-surface-dark border border-border-dark text-white rounded text-sm font-mono tracking-widest uppercase hover:bg-zinc-800 transition-all duration-300"
           >
-            Go Home
+            RETURN HOME
           </button>
         </div>
       </div>
@@ -422,385 +422,222 @@ export default function SpotPage() {
 
   if (orderSuccess) {
     return (
-      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background-dark flex items-center justify-center p-6 text-zinc-100 font-sans">
         <div className="text-center max-w-md animate-fadeIn">
-          {/* Success Icon with Animation */}
-          <div className="relative mb-8">
-            <div className="w-24 h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-[0_20px_60px_-15px_rgba(16,185,129,0.5)] animate-scaleIn">
-              <Check className="w-12 h-12 text-white animate-checkmark" strokeWidth={3} />
+          <div className="relative mb-8 flex justify-center">
+            <div className="w-24 h-24 bg-surface-dark border border-primary rounded flex items-center justify-center glow-primary z-10">
+              <Check className="w-12 h-12 text-primary text-glow" strokeWidth={2} />
             </div>
-            {/* Ripple effect */}
-            <div className="absolute inset-0 w-24 h-24 mx-auto rounded-full border-4 border-emerald-400 animate-ping opacity-20"></div>
+            <div className="absolute inset-0 w-24 h-24 mx-auto rounded border border-primary animate-ping opacity-20"></div>
           </div>
 
-          {/* Success Message */}
-          <h2 className="font-['Cormorant_Garamond'] text-5xl font-light text-[#1C1917] mb-4 tracking-tight">
-            Order Placed!
+          <h2 className="font-display text-4xl font-bold text-white mb-4 tracking-tight uppercase">
+            Order Placed
           </h2>
           
-          {/* Order Number */}
-          <div className="inline-block bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-xl rounded-2xl px-6 py-3 mb-6 border border-stone-200/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-            <p className="text-sm tracking-widest uppercase text-[#78716C] mb-1">Order Number</p>
-            <p className="font-['Cormorant_Garamond'] text-3xl text-[#92400E] font-medium">
+          <div className="inline-block bg-surface-dark rounded px-6 py-4 mb-6 border border-border-dark">
+            <p className="text-xs tracking-widest uppercase text-zinc-500 mb-2 font-mono">Order Number</p>
+            <p className="font-mono text-3xl text-primary font-bold text-glow">
               #{orderSuccess.orderNumber || orderSuccess.id}
             </p>
           </div>
 
-          {/* Description */}
-          <p className="text-lg text-[#57534E] leading-relaxed mb-8 max-w-sm mx-auto">
+          <p className="text-sm text-zinc-400 leading-relaxed mb-8 max-w-sm mx-auto font-mono">
             Your order has been sent to the kitchen. We'll bring it to your spot shortly.
           </p>
 
-          {/* Action Buttons */}
           <div className="flex flex-col gap-3">
             <button
               onClick={() => {
                 setOrderSuccess(null);
                 setBookingForm({ guestName: '', guestPhone: '', guestEmail: '', guestCount: 2, notes: '' });
               }}
-              className="px-8 py-4 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
+              className="px-8 py-4 bg-surface-dark border border-border-dark text-white rounded text-sm font-bold tracking-widest uppercase hover:bg-zinc-800 transition-all duration-300"
             >
-              Place Another Order
+              ORDER MORE
             </button>
 
-            {/* 🪩 CHECKOUT TRIGGER — "The Honorable Upsell" */}
             <button
               onClick={() => {
                 exitSession();
                 navigate(`/?mode=night&from=${venueId}`);
               }}
-              className="px-8 py-4 bg-gradient-to-r from-zinc-900 to-zinc-800 text-white rounded-full text-sm tracking-widest uppercase hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 flex items-center justify-center gap-2"
+              className="px-8 py-4 bg-primary text-black rounded text-sm font-bold tracking-widest uppercase hover:bg-[#0ee57a] transition-all duration-300 flex items-center justify-center gap-2 glow-primary"
             >
-              <span>🪩</span> See Tonight's Events
-            </button>
-
-            <button
-              onClick={() => navigate(`/review?v=${venueId}`)}
-              className="px-8 py-4 border border-stone-300 text-stone-700 rounded-full text-sm tracking-widest uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
-            >
-              Leave a Review
+              <span>🪩</span> SEE TONIGHT'S EVENTS
             </button>
           </div>
-
-          {/* Auto-redirect notice */}
-          <p className="text-xs text-[#78716C] mt-6 opacity-60">
-            Returning to menu in 5 seconds...
-          </p>
+          <p className="text-xs text-zinc-600 mt-6 font-mono uppercase">Returning in 5s...</p>
         </div>
-
-        {/* Custom animations */}
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            @keyframes fadeIn {
-              from { opacity: 0; transform: translateY(20px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-            @keyframes scaleIn {
-              from { transform: scale(0); }
-              to { transform: scale(1); }
-            }
-            @keyframes checkmark {
-              0% { transform: scale(0) rotate(-45deg); }
-              50% { transform: scale(1.2) rotate(-45deg); }
-              100% { transform: scale(1) rotate(0deg); }
-            }
-            .animate-fadeIn {
-              animation: fadeIn 0.6s ease-out;
-            }
-            .animate-scaleIn {
-              animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-            .animate-checkmark {
-              animation: checkmark 0.6s ease-out 0.3s both;
-            }
-          `
-        }} />
       </div>
     );
   }
 
-  // Reservation Success Screen
   if (reservationSuccess) {
     return (
-      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-background-dark flex items-center justify-center p-6 text-zinc-100 font-sans">
         <div className="text-center max-w-md animate-fadeIn">
-          {/* Success Icon with Animation */}
-          <div className="relative mb-8">
-            <div className="w-24 h-24 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto shadow-[0_20px_60px_-15px_rgba(217,119,6,0.5)] animate-scaleIn">
-              <Check className="w-12 h-12 text-white animate-checkmark" strokeWidth={3} />
+          <div className="relative mb-8 flex justify-center">
+            <div className="w-24 h-24 bg-surface-dark border border-primary rounded flex items-center justify-center glow-primary z-10">
+              <Check className="w-12 h-12 text-primary text-glow" strokeWidth={2} />
             </div>
-            {/* Ripple effect */}
-            <div className="absolute inset-0 w-24 h-24 mx-auto rounded-full border-4 border-amber-400 animate-ping opacity-20"></div>
+            <div className="absolute inset-0 w-24 h-24 mx-auto rounded border border-primary animate-ping opacity-20"></div>
           </div>
 
-          {/* Success Message */}
-          <h2 className="font-['Cormorant_Garamond'] text-5xl font-light text-[#1C1917] mb-4 tracking-tight">
-            Table Reserved!
+          <h2 className="font-display text-4xl font-bold text-white mb-4 tracking-tight uppercase">
+            Table Reserved
           </h2>
           
-          {/* Booking Code */}
-          <div className="inline-block bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-xl rounded-2xl px-8 py-4 mb-6 border border-stone-200/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)]">
-            <p className="text-sm tracking-widest uppercase text-[#78716C] mb-2">Booking Code</p>
-            <p className="font-['Cormorant_Garamond'] text-4xl text-[#92400E] font-medium tracking-wider">
+          <div className="inline-block bg-surface-dark rounded px-8 py-4 mb-6 border border-border-dark">
+            <p className="text-xs tracking-widest uppercase text-zinc-500 mb-2 font-mono">Booking Code</p>
+            <p className="font-mono text-4xl text-primary font-bold tracking-wider text-glow">
               {reservationSuccess.bookingCode}
             </p>
           </div>
 
-          {/* Description */}
-          <p className="text-lg text-[#57534E] leading-relaxed mb-8 max-w-sm mx-auto">
-            Your table has been reserved. Please show this booking code to our staff upon arrival.
+          <p className="text-sm text-zinc-400 leading-relaxed mb-8 max-w-sm mx-auto font-mono">
+            Show this code upon arrival.
           </p>
 
-          {/* Guest Details */}
-          <div className="bg-gradient-to-br from-white to-stone-50/50 backdrop-blur-xl rounded-2xl p-6 mb-8 border border-stone-200/40 shadow-[0_8px_30px_rgba(0,0,0,0.04)] text-left">
-            <p className="text-xs tracking-widest uppercase text-[#78716C] mb-3">Reservation Details</p>
-            {reservationSuccess.guestName && (
-              <p className="text-[#1C1917] mb-2">
-                <span className="text-[#78716C] text-sm">Name:</span> {reservationSuccess.guestName}
-              </p>
-            )}
-            {reservationSuccess.guestPhone && (
-              <p className="text-[#1C1917] mb-2">
-                <span className="text-[#78716C] text-sm">Phone:</span> {reservationSuccess.guestPhone}
-              </p>
-            )}
-            {reservationSuccess.guestCount && (
-              <p className="text-[#1C1917]">
-                <span className="text-[#78716C] text-sm">Guests:</span> {reservationSuccess.guestCount}
-              </p>
-            )}
-          </div>
-
-          {/* Action Buttons */}
           <div className="flex flex-col gap-3">
             <button
               onClick={() => setReservationSuccess(null)}
-              className="px-8 py-4 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
+              className="px-8 py-4 bg-surface-dark border border-border-dark text-white rounded text-sm font-bold tracking-widest uppercase hover:bg-zinc-800 transition-all duration-300"
             >
-              Back to Menu
+              BACK TO MENU
             </button>
 
-            {/* 🪩 CHECKOUT TRIGGER — "The Honorable Upsell" */}
             <button
               onClick={() => {
                 exitSession();
                 navigate(`/?mode=night&from=${venueId}`);
               }}
-              className="px-8 py-4 bg-gradient-to-r from-zinc-900 to-zinc-800 text-white rounded-full text-sm tracking-widest uppercase hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] transition-all duration-300 flex items-center justify-center gap-2"
+              className="px-8 py-4 bg-primary text-black rounded text-sm font-bold tracking-widest uppercase hover:bg-[#0ee57a] transition-all duration-300 flex items-center justify-center gap-2 glow-primary"
             >
-              <span>🪩</span> See Tonight's Events
-            </button>
-
-            <button
-              onClick={() => navigate(`/review?v=${venueId}`)}
-              className="px-8 py-4 border border-stone-300 text-stone-700 rounded-full text-sm tracking-widest uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
-            >
-              Leave a Review
+              <span>🪩</span> SEE TONIGHT'S EVENTS
             </button>
           </div>
-
-          {/* Auto-redirect notice */}
-          <p className="text-xs text-[#78716C] mt-6 opacity-60">
-            Returning to menu in 8 seconds...
-          </p>
+          <p className="text-xs text-zinc-600 mt-6 font-mono uppercase">Returning in 8s...</p>
         </div>
-
-        {/* Custom animations */}
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            @keyframes fadeIn {
-              from { opacity: 0; transform: translateY(20px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-            @keyframes scaleIn {
-              from { transform: scale(0); }
-              to { transform: scale(1); }
-            }
-            @keyframes checkmark {
-              0% { transform: scale(0) rotate(-45deg); }
-              50% { transform: scale(1.2) rotate(-45deg); }
-              100% { transform: scale(1) rotate(0deg); }
-            }
-            .animate-fadeIn {
-              animation: fadeIn 0.6s ease-out;
-            }
-            .animate-scaleIn {
-              animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-            }
-            .animate-checkmark {
-              animation: checkmark 0.6s ease-out 0.3s both;
-            }
-          `
-        }} />
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 ${isNightTime ? 'bg-zinc-950' : 'bg-[#FAFAF9]'}`}>
-      {/* Reservation Modal */}
+    <div className="min-h-[max(884px,100dvh)] bg-background-dark text-zinc-100 font-sans antialiased pb-24">
+      {/* Reservation Modal - Dark Theme Adapted */}
       {showReserveModal && (
         <div className="fixed inset-0 z-50 flex items-end justify-center">
-          <div 
-            className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"
-            onClick={() => {
-              setShowReserveModal(false);
-              setError('');
-            }}
-          ></div>
-          <div 
-            className="relative w-full max-w-[480px] bg-[#FAFAF9] rounded-t-[32px] shadow-[0_-10px_60px_rgba(0,0,0,0.15)] overflow-hidden animate-slideUp"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Handle */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" onClick={() => { setShowReserveModal(false); setError(''); }}></div>
+          <div className="relative w-full max-w-[480px] bg-surface-dark border-t border-border-dark rounded-t-lg shadow-2xl overflow-hidden animate-slideUp" onClick={(e) => e.stopPropagation()}>
             <div className="w-full flex justify-center pt-4 pb-2">
-              <div className="w-12 h-1 bg-stone-300 rounded-full"></div>
+              <div className="w-12 h-1 bg-zinc-800 rounded"></div>
             </div>
-
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 pt-2 pb-6 border-b border-stone-200/40">
-              <h2 className="font-['Cormorant_Garamond'] text-2xl text-stone-900 tracking-tight">Reserve a Table</h2>
-              <button 
-                onClick={() => {
-                  setShowReserveModal(false);
-                  setError('');
-                }}
-                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-stone-100 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+            <div className="flex items-center justify-between px-6 pt-2 pb-6 border-b border-border-dark">
+              <h2 className="font-display text-2xl text-white tracking-wider uppercase font-bold">Reserve a Table</h2>
+              <button onClick={() => { setShowReserveModal(false); setError(''); }} className="text-zinc-500 hover:text-white transition-colors">
+                <span className="material-symbols-outlined">close</span>
               </button>
             </div>
-
-            {/* Content */}
             <form onSubmit={handleReservation} className="px-6 py-6 max-h-[70vh] overflow-y-auto space-y-4">
-              {/* Error Message */}
-              {error && (
-                <div className="bg-red-50 border border-red-200/40 rounded-2xl p-4 mb-4">
-                  <p className="text-red-700 text-sm leading-relaxed">{error}</p>
-                </div>
-              )}
-
+              {error && <div className="bg-red-500/10 border border-red-500/30 rounded p-4 mb-4"><p className="text-red-500 text-sm font-mono">{error}</p></div>}
               <div>
-                <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={bookingForm.guestName}
-                  onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })}
-                  className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
-                  placeholder="Your name"
-                />
+                <label className="block text-xs uppercase font-mono tracking-widest text-zinc-500 mb-2">Name *</label>
+                <input type="text" required value={bookingForm.guestName} onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })} className="w-full bg-background-dark border border-border-dark rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary transition-colors font-mono text-sm" placeholder="YOUR NAME" />
               </div>
-
               <div>
-                <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Phone *</label>
-                <input
-                  type="tel"
-                  required
-                  value={bookingForm.guestPhone}
-                  onChange={(e) => setBookingForm({ ...bookingForm, guestPhone: e.target.value })}
-                  className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
-                  placeholder="+1234567890"
-                />
+                <label className="block text-xs uppercase font-mono tracking-widest text-zinc-500 mb-2">Phone *</label>
+                <input type="tel" required value={bookingForm.guestPhone} onChange={(e) => setBookingForm({ ...bookingForm, guestPhone: e.target.value })} className="w-full bg-background-dark border border-border-dark rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary transition-colors font-mono text-sm" placeholder="+1234567890" />
               </div>
-
               <div>
-                <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Email</label>
-                <input
-                  type="email"
-                  value={bookingForm.guestEmail}
-                  onChange={(e) => setBookingForm({ ...bookingForm, guestEmail: e.target.value })}
-                  className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
-                  placeholder="your@email.com"
-                />
+                <label className="block text-xs uppercase font-mono tracking-widest text-zinc-500 mb-2">Email</label>
+                <input type="email" value={bookingForm.guestEmail} onChange={(e) => setBookingForm({ ...bookingForm, guestEmail: e.target.value })} className="w-full bg-background-dark border border-border-dark rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary transition-colors font-mono text-sm" placeholder="YOUR@EMAIL.COM" />
               </div>
-
               <div>
-                <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Guests</label>
-                <select
-                  value={bookingForm.guestCount}
-                  onChange={(e) => setBookingForm({ ...bookingForm, guestCount: parseInt(e.target.value) })}
-                  className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
-                    <option key={num} value={num}>{num} {num === 1 ? 'Guest' : 'Guests'}</option>
-                  ))}
+                <label className="block text-xs uppercase font-mono tracking-widest text-zinc-500 mb-2">Guests</label>
+                <select value={bookingForm.guestCount} onChange={(e) => setBookingForm({ ...bookingForm, guestCount: parseInt(e.target.value) })} className="w-full bg-background-dark border border-border-dark rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary transition-colors font-mono text-sm">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => <option key={num} value={num}>{num} {num === 1 ? 'GUEST' : 'GUESTS'}</option>)}
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm uppercase tracking-widest text-stone-500 mb-2">Special Requests</label>
-                <textarea
-                  value={bookingForm.notes}
-                  onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
-                  className="w-full bg-white border border-stone-200/40 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-0 transition-colors resize-none h-24"
-                  placeholder="Allergies, preferences, or special occasions..."
-                />
+                <label className="block text-xs uppercase font-mono tracking-widest text-zinc-500 mb-2">Notes</label>
+                <textarea value={bookingForm.notes} onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })} className="w-full bg-background-dark border border-border-dark rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary transition-colors font-mono text-sm resize-none h-24" placeholder="ANY REQUESTS?" />
               </div>
-
-              <button
-                type="submit"
-                className="w-full bg-stone-900 text-stone-50 px-8 py-4 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)] mt-6"
-              >
-                Request Reservation
+              <button type="submit" className="w-full bg-primary text-black px-8 py-4 rounded text-sm font-bold tracking-widest uppercase hover:bg-[#0ee57a] transition-all duration-300 mt-6 glow-primary">
+                REQUEST RESERVATION
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* Header */}
-      <div className={`border-b ${isNightTime ? 'bg-gradient-to-br from-zinc-900 to-zinc-950 border-zinc-800' : 'bg-gradient-to-br from-white to-stone-50/50 border-stone-200/40'}`}>
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-4">
-                <MapPin className={`w-5 h-5 ${isNightTime ? 'text-[#10FF88]' : 'text-[#92400E]'}`} />
-                <p className={`text-sm tracking-widest uppercase ${isNightTime ? 'text-zinc-400' : 'text-[#78716C]'}`}>
-                  {unitId ? `Unit ${unitId}` : 'Welcome'}
-                </p>
-              </div>
-              <h1 className={`font-['Cormorant_Garamond'] text-6xl md:text-7xl font-light tracking-tighter leading-none ${isNightTime ? 'text-white' : 'text-[#1C1917]'}`}>
-                {venue?.name || 'Riviera'}
-              </h1>
+      {/* Hero Header */}
+      <header className="relative w-full h-64 md:h-80">
+        <img 
+          alt={venue?.name || "Venue"} 
+          className="w-full h-full object-cover rounded-none" 
+          src={venue?.imageUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuD8WwQlTWCp-ILL2b_lkfUnaiP9s_hGxRZsn-2CAzXztNWkQieRJmoqS9akLFXLBRdX9c-jJQvaQuspeWk-ZnDGKwbZd7oXDHdUC3Xc8brjUZUdR8EBjcl4JbBvFNaV_FOvpawMlgzQ3ltJuJMqHjuTtHWlJLb5BlcrqOBl6LifJGu4Gu1VrjRpVC9Cwy5i5-cQIPBxiikNRKM23KeJIhy24G1nxGJS9ap35lyt4gXPVxgbu8fU8m3QxqQeB93tuvMcrHvuAGIa_I5r"}
+        />
+        <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-10 bg-gradient-to-b from-black/80 to-transparent">
+          <div className="flex-1 mx-3 relative max-w-md w-full">
+            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <span className="material-symbols-outlined text-zinc-400 text-lg">search</span>
             </div>
-            
-            {/* Intentionally removed prominent Leave button — "Menu Trap" protocol */}
-            {/* Users exit via "Powered by XIXA" footer at page bottom */}
+            <input 
+              readOnly
+              className="w-full bg-surface-dark/90 border border-border-dark text-zinc-100 rounded py-2 pl-10 pr-4 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm font-mono" 
+              placeholder="SEARCH MENU" 
+              type="text"
+            />
+          </div>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background-dark to-transparent"></div>
+        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 min-w-24 px-4 h-16 bg-surface-dark rounded flex flex-col items-center justify-center border border-border-dark z-20">
+          <span className="font-display font-bold text-xl tracking-widest text-white whitespace-nowrap">{venue?.name || 'RIVIERA'}</span>
+          {unitId && <span className="text-primary font-mono text-[10px] uppercase text-glow border-t border-border-dark mt-1 pt-1">UNIT {unitId}</span>}
+        </div>
+      </header>
+
+      {/* Venue Info Section */}
+      <section className="px-4 pt-14 pb-6 text-center border-b border-border-dark">
+        <h1 className="font-display text-3xl font-bold mb-2 tracking-tight text-white uppercase">{venue?.name || 'RIVIERA'}</h1>
+        <div className="flex flex-wrap items-center justify-center text-xs text-zinc-400 gap-x-3 gap-y-1 mb-4 font-mono uppercase tracking-wider">
+          <span className="flex items-center"><span className="material-symbols-outlined text-[14px] mr-1 text-primary text-glow">star</span> 9.8</span>
+          <span>•</span>
+          <span>Open</span>
+          {canOrder && <span>•</span>}
+          {canOrder && <span>Min. <span className="text-primary text-glow">ORDER</span></span>}
+        </div>
+        
+        {/* Reservation Action Button */}
+        {!canOrder && venue?.allowsDigitalOrdering && (
+           <div className="mt-4 flex justify-center">
+             <button onClick={() => setShowReserveModal(true)} className="px-6 py-3 bg-primary text-black rounded font-mono text-sm font-bold tracking-widest uppercase hover:bg-[#0ee57a] transition-all glow-primary">
+               Reserve Table
+             </button>
+           </div>
+        )}
+      </section>
+
+      {/* PLAN TONIGHT BANNER */}
+      <div className="p-4">
+        <div 
+          onClick={() => { exitSession(); navigate(`/?mode=night&from=${venueId}`); }}
+          className="bg-surface-dark border border-border-dark rounded p-4 flex items-center gap-4 relative overflow-hidden cursor-pointer hover:bg-zinc-900 transition-colors group"
+        >
+          <div className="w-12 h-12 bg-background-dark rounded border border-border-dark flex items-center justify-center shrink-0 z-10 glow-primary group-hover:scale-105 transition-transform">
+            <span className="text-2xl">🪩</span>
+          </div>
+          <div className="z-10 flex-1">
+            <h3 className="text-white text-sm font-bold uppercase tracking-wide mb-1">Plan Tonight</h3>
+            <a className="text-primary text-glow text-xs font-mono flex items-center group-hover:underline uppercase pointer-events-none">
+                See VIP events <span className="material-symbols-outlined text-[14px] ml-1">arrow_forward</span>
+            </a>
           </div>
         </div>
       </div>
 
-      {/* 🪩 "PLAN TONIGHT" BANNER — Time-Shift Upsell */}
-      <div className="max-w-7xl mx-auto px-6 pt-6">
-        <button
-          onClick={() => {
-            exitSession();
-            navigate(`/?mode=night&from=${venueId}`);
-          }}
-          className={`w-full px-6 py-4 rounded-2xl flex items-center justify-between group transition-all duration-300 ${
-            isNightTime
-              ? 'bg-gradient-to-r from-violet-900/40 to-zinc-900 border border-violet-700/30 hover:border-violet-500/50 hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]'
-              : 'bg-gradient-to-r from-zinc-900 to-zinc-800 hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)]'
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🪩</span>
-            <div className="text-left">
-              <p className="text-sm font-medium tracking-wide text-white">PLAN TONIGHT</p>
-              <p className="text-xs text-zinc-400">See VIP events near you</p>
-            </div>
-          </div>
-          <svg className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Menu Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12 pb-24">
+      <main className="max-w-3xl mx-auto w-full">
         <MenuDisplay 
           menu={menu} 
           cart={cart}
@@ -812,110 +649,89 @@ export default function SpotPage() {
           setBookingForm={setBookingForm}
           canOrder={canOrder}
         />
-      </div>
+      </main>
 
-      {/* Floating Cart Button (only when canOrder and cart has items) */}
+      {/* Floating Cart Button */}
       {canOrder && cart.length > 0 && (
         <button
           onClick={() => setShowCartModal(true)}
-          className="fixed bottom-8 right-8 bg-stone-900 text-stone-50 p-5 rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:bg-stone-800 transition-all duration-300 z-40 group"
+          className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-primary text-black p-4 rounded shadow-2xl z-40 group hover:bg-[#0ee57a] transition-colors flex items-center justify-between glow-primary border border-[#0ee57a]"
         >
-          <div className="relative">
-            <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" />
-            <span className="absolute -top-2 -right-2 bg-[#92400E] text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-medium">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-black/10 rounded flex items-center justify-center font-mono font-bold">
               {cart.reduce((sum, item) => sum + item.quantity, 0)}
-            </span>
+            </div>
+            <span className="font-bold tracking-widest uppercase text-sm">View Order</span>
           </div>
+          <span className="font-mono font-bold border-l border-black/20 pl-4">
+             €{getTotalPrice().toFixed(2)}
+          </span>
         </button>
       )}
 
-      {/* 🦅 "POWERED BY XIXA" FOOTER — The Backdoor */}
-      <div className={`text-center py-12 border-t mt-12 ${isNightTime ? 'border-zinc-800' : 'border-stone-200/20'}`}>
+      {/* POWERED BY XIXA FOOTER */}
+      <div className="text-center py-12 border-t border-border-dark mt-12 mb-8">
         <button
           onClick={() => { exitSession(); navigate('/'); }}
-          className={`text-xs tracking-widest uppercase transition-colors duration-300 ${isNightTime ? 'text-zinc-600 hover:text-zinc-400' : 'text-stone-400 hover:text-stone-600'}`}
+          className="text-xs font-mono tracking-widest uppercase text-zinc-600 hover:text-zinc-400 transition-colors duration-300"
         >
           🦅 Powered by XIXA — Discover the Riviera
         </button>
       </div>
 
-      {/* Cart Modal */}
+      {/* Dark Theme Cart Modal */}
       {showCartModal && canOrder && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-6" onClick={() => setShowCartModal(false)}>
-          <div className="bg-gradient-to-br from-white to-stone-50/50 rounded-t-[2rem] md:rounded-[2rem] p-8 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-stone-200/40 w-full md:max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <ShoppingCart className="w-5 h-5 text-[#92400E]" />
-                <h3 className="text-sm tracking-widest uppercase text-[#78716C]">Your Order</h3>
-              </div>
-              <button onClick={() => setShowCartModal(false)} className="text-stone-500 hover:text-stone-900 transition-colors">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-end justify-center" onClick={() => setShowCartModal(false)}>
+          <div className="bg-surface-dark rounded-t-lg border-t border-x border-border-dark p-6 w-full max-w-lg max-h-[85vh] flex flex-col animate-slideUp" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-border-dark shrink-0">
+              <h3 className="text-lg font-display tracking-widest uppercase font-bold text-white flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-glow">shopping_cart</span>
+                Your Order
+              </h3>
+              <button onClick={() => setShowCartModal(false)} className="text-zinc-500 hover:text-white transition-colors flex items-center justify-center p-2 rounded hover:bg-zinc-800">
+                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
 
             {cart.length === 0 ? (
-              <p className="text-[#78716C] text-center py-8">Cart is empty</p>
+              <div className="flex-1 flex flex-col items-center justify-center py-12 text-zinc-500 font-mono text-sm uppercase">
+                <span className="material-symbols-outlined text-4xl mb-4 opacity-50">remove_shopping_cart</span>
+                Cart is empty
+              </div>
             ) : (
               <>
-                <div className="space-y-4 mb-6">
+                <div className="flex-1 overflow-y-auto pr-2 space-y-4 mb-6 hide-scrollbar">
                   {cart.map(item => (
-                    <div key={item.id} className="flex items-center justify-between">
+                    <div key={item.id} className="flex items-start justify-between bg-background-dark p-4 rounded border border-border-dark">
                       <div className="flex-1">
-                        <p className="text-[#1C1917] font-medium">{item.name}</p>
-                        <p className="text-sm text-[#78716C]">€{item.price.toFixed(2)}</p>
+                        <p className="text-white font-bold text-sm uppercase tracking-wide">{item.name}</p>
+                        <p className="font-mono text-xs text-zinc-400 mt-1">€{item.price.toFixed(2)} / ea</p>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => updateQuantity(item.id, -1)}
-                          className="w-8 h-8 rounded-full border border-stone-300 text-stone-700 hover:bg-stone-50 transition-colors"
-                        >
-                          −
-                        </button>
-                        <span className="w-8 text-center text-[#1C1917]">{item.quantity}</span>
-                        <button
-                          onClick={() => updateQuantity(item.id, 1)}
-                          className="w-8 h-8 rounded-full border border-stone-300 text-stone-700 hover:bg-stone-50 transition-colors"
-                        >
-                          +
-                        </button>
+                      <div className="flex items-center gap-3 bg-surface-dark rounded border border-border-dark">
+                        <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-white">-</button>
+                        <span className="w-4 text-center text-primary font-mono text-xs font-bold">{item.quantity}</span>
+                        <button onClick={() => updateQuantity(item.id, 1)} className="w-8 h-8 flex items-center justify-center text-primary hover:text-white">+</button>
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="border-t border-stone-200/40 pt-6 mb-6">
+                <div className="border-t border-border-dark pt-6 shrink-0">
                   <div className="flex justify-between items-center mb-6">
-                    <span className="text-sm tracking-widest uppercase text-[#78716C]">Total</span>
-                    <span className="font-['Cormorant_Garamond'] text-4xl text-[#92400E]">
+                    <span className="text-xs font-mono tracking-widest uppercase text-zinc-500">Total</span>
+                    <span className="font-mono text-2xl text-primary font-bold text-glow">
                       €{getTotalPrice().toFixed(2)}
                     </span>
                   </div>
 
-                  <input
-                    type="text"
-                    placeholder="Your name (optional)"
-                    value={bookingForm.guestName}
-                    onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })}
-                    className="w-full px-4 py-3 rounded-full border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] mb-3 focus:outline-none focus:border-stone-400 transition-colors"
-                  />
+                  <input type="text" placeholder="YOUR NAME (OPTIONAL)" value={bookingForm.guestName} onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })} className="w-full bg-background-dark border border-border-dark rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary transition-colors font-mono text-sm mb-3 uppercase" />
 
-                  <textarea
-                    placeholder="Special requests (optional)"
-                    value={bookingForm.notes}
-                    onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
-                    rows={2}
-                    className="w-full px-4 py-3 rounded-2xl border border-stone-300 text-[#1C1917] placeholder:text-[#78716C] mb-4 focus:outline-none focus:border-stone-400 transition-colors resize-none"
-                  />
+                  <textarea placeholder="SPECIAL REQUESTS (OPTIONAL)" value={bookingForm.notes} onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })} rows={2} className="w-full bg-background-dark border border-border-dark rounded px-4 py-3 text-white focus:border-primary focus:ring-1 focus:ring-primary transition-colors font-mono text-sm resize-none mb-4 uppercase" />
+
+                  <button onClick={handlePlaceOrder} className="w-full bg-primary text-black px-8 py-4 rounded text-sm font-bold tracking-widest uppercase hover:bg-[#0ee57a] transition-all duration-300 glow-primary flex items-center justify-center gap-2">
+                    <span className="material-symbols-outlined text-[18px]">send</span> SUBMIT ORDER
+                  </button>
                 </div>
-
-                <button
-                  onClick={handlePlaceOrder}
-                  className="w-full px-8 py-4 bg-stone-900 text-stone-50 rounded-full text-sm tracking-widest uppercase hover:bg-stone-800 transition-all duration-300 shadow-[0_4px_14px_rgba(0,0,0,0.1)]"
-                >
-                  Place Order
-                </button>
               </>
             )}
           </div>
@@ -927,87 +743,91 @@ export default function SpotPage() {
 
 // Menu Display Component
 function MenuDisplay({ menu, cart, addToCart, updateQuantity, getTotalPrice, handlePlaceOrder, bookingForm, setBookingForm, canOrder }) {
-  const [selectedCategory, setSelectedCategory] = useState(null);
-
-  useEffect(() => {
-    if (menu.length > 0 && !selectedCategory) {
-      setSelectedCategory(menu[0].id);
-    }
-  }, [menu]);
-
-  const currentCategory = menu.find(cat => cat.id === selectedCategory);
+  if (!menu || menu.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-12">
-      {/* Menu - Full Width */}
-      <div>
-        {/* Category Tabs */}
-        <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
-          {menu.map(category => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`px-6 py-3 rounded-full text-sm tracking-wider uppercase whitespace-nowrap transition-all duration-300 ${
-                selectedCategory === category.id
-                  ? 'bg-stone-900 text-stone-50'
-                  : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:bg-stone-50'
-              }`}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
-
-        {/* Products Grid */}
-        <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-          {currentCategory?.products?.map(product => (
-            <div
-              key={product.id}
-              className="bg-white/60 backdrop-blur-xl rounded-[2rem] p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-stone-200/40 hover:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 ease-out group"
-            >
-              {product.imageUrl && (
-                <div className="aspect-square rounded-2xl overflow-hidden mb-6">
-                  <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => {
-                      console.error('❌ Failed to load image:', product.imageUrl);
-                      e.target.style.display = 'none';
-                    }}
-                  />
+    <div className="flex flex-col gap-6">
+      {/* Categories */}
+      {menu.map(category => (
+        <section key={category.id} className="mt-6 border-t border-border-dark pt-6 first:border-t-0 first:pt-0">
+          <div className="px-4 flex items-center justify-between mb-4">
+            <h2 className="font-display text-xl font-bold uppercase tracking-wider text-white">{category.name}</h2>
+          </div>
+          <div className="flex flex-col">
+            {category.products?.map(product => {
+              const cartItem = cart.find(item => item.id === product.id);
+              
+              return (
+                <div key={product.id} className="flex items-start p-4 border-b border-border-dark hover:bg-zinc-900/50 cursor-pointer transition-colors">
+                  <div className="flex-1 pr-4">
+                    <h3 className="text-base font-bold text-zinc-100 mb-1 uppercase tracking-wide flex items-center gap-2">
+                      {product.name}
+                      {product.isAlcohol && <span className="text-red-500 text-xs border border-red-500/20 bg-red-500/10 px-1 rounded-sm">18+</span>}
+                    </h3>
+                    {product.description && (
+                      <p className="text-sm text-zinc-400 mb-2 leading-snug font-mono text-xs">{product.description}</p>
+                    )}
+                    <div className="flex items-center gap-3">
+                      <span className="text-primary text-glow font-mono font-bold">€{product.price.toFixed(2)}</span>
+                      {product.oldPrice && (
+                        <span className="text-zinc-600 line-through font-mono text-xs">€{product.oldPrice.toFixed(2)}</span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {product.imageUrl ? (
+                    <div className="w-24 h-24 shrink-0 bg-surface-dark border border-border-dark rounded overflow-hidden relative group">
+                      <img 
+                        src={product.imageUrl} 
+                        alt={product.name} 
+                        className="w-full h-full object-cover contrast-125 saturate-150 group-hover:scale-105 transition-transform duration-500"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                      {canOrder && (
+                        <div className="absolute bottom-1 right-1 flex items-center bg-surface-dark rounded border border-border-dark glow-primary overflow-hidden">
+                           {cartItem ? (
+                             <>
+                              <button onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, -1); }} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">-</button>
+                              <span className="w-4 text-center text-primary font-mono text-xs font-bold">{cartItem.quantity}</span>
+                              <button onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, 1); }} className="w-8 h-8 flex items-center justify-center text-primary hover:text-white transition-colors">+</button>
+                             </>
+                           ) : (
+                             <button 
+                              onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                              className="w-8 h-8 flex items-center justify-center text-primary hover:bg-zinc-800 transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[20px] text-glow">add</span>
+                            </button>
+                           )}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    canOrder && (
+                      <div className="self-center flex items-center bg-surface-dark rounded border border-border-dark glow-primary overflow-hidden ml-2">
+                         {cartItem ? (
+                           <>
+                            <button onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, -1); }} className="w-8 h-8 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">-</button>
+                            <span className="w-4 text-center text-primary font-mono text-xs font-bold">{cartItem.quantity}</span>
+                            <button onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, 1); }} className="w-8 h-8 flex items-center justify-center text-primary hover:text-white transition-colors">+</button>
+                           </>
+                         ) : (
+                           <button 
+                            onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                            className="w-10 h-10 flex items-center justify-center text-primary hover:bg-zinc-800 transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[20px] text-glow">add</span>
+                          </button>
+                         )}
+                      </div>
+                    )
+                  )}
                 </div>
-              )}
-              {!product.imageUrl && (
-                <div className="aspect-square rounded-2xl overflow-hidden mb-6 bg-stone-100 flex items-center justify-center border border-stone-200/40">
-                  <p className="text-stone-400 text-sm">No image</p>
-                </div>
-              )}
-              <h3 className="font-['Cormorant_Garamond'] text-2xl font-light text-[#1C1917] mb-2">
-                {product.name}
-              </h3>
-              {product.description && (
-                <p className="text-[#78716C] text-sm leading-relaxed mb-4">
-                  {product.description}
-                </p>
-              )}
-              <div className="flex items-center justify-between">
-                <span className="font-['Cormorant_Garamond'] text-3xl text-[#92400E]">
-                  €{product.price.toFixed(2)}
-                </span>
-                {canOrder && (
-                  <button
-                    onClick={() => addToCart(product)}
-                    className="px-6 py-3 border border-stone-300 text-stone-700 rounded-full text-sm tracking-wider uppercase hover:border-stone-400 hover:bg-stone-50 transition-all duration-300"
-                  >
-                    Add
-                  </button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+              );
+            })}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
