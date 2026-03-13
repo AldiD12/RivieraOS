@@ -1615,9 +1615,9 @@ export default function DiscoveryPage() {
             </div>
           </div>
 
-          {/* Horizontal Scrolling Content */}
-          <div className="px-6 py-4 overflow-x-auto no-scrollbar">
-            <div className="flex gap-4">
+          {/* Vertically Scrolling Content */}
+          <div className="px-6 py-4 max-h-64 overflow-y-auto no-scrollbar">
+            <div className="flex flex-col gap-4">
               {isDayMode ? (
                 // Day Mode: Show available venues
                 businessGroups.slice(0, 5).map((business) => {
@@ -1629,9 +1629,9 @@ export default function DiscoveryPage() {
                     <div 
                       key={business.id}
                       onClick={() => handleBusinessClick(business)}
-                      className="flex-shrink-0 w-32 cursor-pointer group"
+                      className="flex items-center gap-4 w-full cursor-pointer group"
                     >
-                      <div className={`relative h-20 w-full rounded-sm overflow-hidden mb-2 ${isDayMode ? 'bg-stone-100' : 'bg-zinc-800'}`}>
+                      <div className={`relative h-16 w-16 flex-shrink-0 rounded-sm overflow-hidden ${isDayMode ? 'bg-stone-100' : 'bg-zinc-800'}`}>
                         {business.venues[0]?.imageUrl ? (
                           <img 
                             src={business.venues[0].imageUrl}
@@ -1660,12 +1660,14 @@ export default function DiscoveryPage() {
                         )}
                       </div>
                       
-                      <h4 className={`text-xs font-medium truncate ${isDayMode ? 'text-stone-900' : 'text-white'}`}>
-                        {business.name}
-                      </h4>
-                      <p className={`text-[10px] ${isDayMode ? 'text-stone-500' : 'text-zinc-400'}`}>
-                        {isBeachBusiness ? `${totalAvailable} available` : `${business.venues.length} venues`}
-                      </p>
+                      <div className="flex-grow min-w-0">
+                        <h4 className={`text-sm font-medium truncate ${isDayMode ? 'text-stone-900' : 'text-white'}`}>
+                          {business.name}
+                        </h4>
+                        <p className={`text-xs ${isDayMode ? 'text-stone-500' : 'text-zinc-400'}`}>
+                          {isBeachBusiness ? `${totalAvailable} units available` : `${business.venues.length} venues available`}
+                        </p>
+                      </div>
                     </div>
                   );
                 })
@@ -1679,9 +1681,9 @@ export default function DiscoveryPage() {
                     <div 
                       key={event.id}
                       onClick={() => handleEventClick(event)}
-                      className="flex-shrink-0 w-32 cursor-pointer group"
+                      className="flex items-center gap-4 w-full cursor-pointer group"
                     >
-                      <div className="relative h-20 w-full rounded-sm overflow-hidden mb-2 bg-zinc-800">
+                      <div className="relative h-16 w-16 flex-shrink-0 rounded-sm overflow-hidden bg-zinc-800 border border-zinc-700">
                         {event.flyerImageUrl || event.imageUrl ? (
                           <img 
                             src={event.flyerImageUrl || event.imageUrl}
@@ -1698,18 +1700,27 @@ export default function DiscoveryPage() {
                         
                         {/* Date Badge */}
                         <div className="absolute top-1 right-1">
-                          <div className="bg-zinc-900 px-1.5 py-0.5 rounded-sm text-[8px] font-bold text-white">
+                          <div className="bg-zinc-900 px-1.5 py-0.5 rounded-sm text-[8px] font-bold text-white border border-zinc-700">
                             {eventDate.getDate()}
                           </div>
                         </div>
                       </div>
                       
-                      <h4 className="text-xs font-medium truncate text-white">
-                        {event.name}
-                      </h4>
-                      <p className="text-[10px] text-zinc-400">
-                        {venue?.name || 'TBA'}
-                      </p>
+                      <div className="flex-grow min-w-0">
+                        <h4 className="text-sm font-medium truncate text-white">
+                          {event.name}
+                        </h4>
+                        <p className="text-xs text-zinc-400 truncate">
+                          {venue?.name || 'TBA'}
+                        </p>
+                      </div>
+                      
+                      {/* Optional MAP button or action button could go here on the right */}
+                      <div className="flex-shrink-0">
+                        <div className="text-[10px] font-mono font-bold tracking-widest text-zinc-500 uppercase px-2 py-1 bg-zinc-900 border border-zinc-800 rounded-sm">
+                          MAP
+                        </div>
+                      </div>
                     </div>
                   );
                 })
@@ -1717,7 +1728,7 @@ export default function DiscoveryPage() {
               
               {/* Show empty state if no content */}
               {((isDayMode && businessGroups.length === 0) || (!isDayMode && filteredEvents.length === 0)) && (
-                <div className="flex-shrink-0 w-full text-center py-8">
+                <div className="w-full text-center py-4">
                   <p className={`text-sm ${isDayMode ? 'text-stone-500' : 'text-zinc-400'}`}>
                     {isDayMode ? 'No venues available' : 'No events tonight'}
                   </p>
