@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { ShoppingCart, MapPin, Check, Star, LogOut } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
@@ -57,6 +57,8 @@ export default function SpotPage() {
   const [showReserveModal, setShowReserveModal] = useState(false);
   const [showCartModal, setShowCartModal] = useState(false);
   const [reservationSuccess, setReservationSuccess] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
   // Booking form state
   const [bookingForm, setBookingForm] = useState({
@@ -396,6 +398,30 @@ export default function SpotPage() {
   // Check if venue allows table reservation (Beach/Pool only)
   const canReserve = venue?.type === 'BEACH' || venue?.type === 'POOL';
 
+  const filteredMenu = useMemo(() => {
+    if (!menu) return [];
+    
+    // 1. Filter by category if one is selected
+    let result = menu;
+    if (selectedCategoryId) {
+      result = menu.filter(cat => cat.id === selectedCategoryId);
+    }
+    
+    // 2. Filter by search query within those categories
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      return result.map(cat => ({
+        ...cat,
+        products: cat.products?.filter(product => 
+          product.name.toLowerCase().includes(query) || 
+          product.description?.toLowerCase().includes(query)
+        )
+      })).filter(cat => cat.products && cat.products.length > 0);
+    }
+    
+    return result;
+  }, [menu, selectedCategoryId, searchQuery]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background-dark flex items-center justify-center">
@@ -584,7 +610,8 @@ export default function SpotPage() {
               <span className="material-symbols-outlined text-zinc-400 text-lg">search</span>
             </div>
             <input 
-              readOnly
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-surface-dark/90 border border-border-dark text-zinc-100 rounded py-2 pl-10 pr-4 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm font-mono" 
               placeholder="SEARCH MENU" 
               type="text"
@@ -619,27 +646,39 @@ export default function SpotPage() {
         )}
       </section>
 
-      {/* PLAN TONIGHT BANNER */}
-      <div className="p-4">
-        <div 
-          onClick={() => { exitSession(); navigate(`/?mode=night&from=${venueId}`); }}
-          className="bg-surface-dark border border-border-dark rounded p-4 flex items-center gap-4 relative overflow-hidden cursor-pointer hover:bg-zinc-900 transition-colors group"
-        >
-          <div className="w-12 h-12 bg-background-dark rounded border border-border-dark flex items-center justify-center shrink-0 z-10 glow-primary group-hover:scale-105 transition-transform">
-            <span className="text-2xl">🪩</span>
-          </div>
-          <div className="z-10 flex-1">
-            <h3 className="text-white text-sm font-bold uppercase tracking-wide mb-1">Plan Tonight</h3>
-            <a className="text-primary text-glow text-xs font-mono flex items-center group-hover:underline uppercase pointer-events-none">
-                See VIP events <span className="material-symbols-outlined text-[14px] ml-1">arrow_forward</span>
-            </a>
-          </div>
+      {/* Dynamic Category Filtering ribbon */}
+      <div className="px-4 py-4 border-b border-border-dark sticky top-0 z-30 bg-background-dark/80 backdrop-blur-md">
+        <label className="block text-[10px] font-mono text-zinc-500 uppercase tracking-[0.2em] mb-3 ml-1">Navigate Menu</label>
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+          <button 
+            onClick={() => setSelectedCategoryId(null)}
+            className={`flex-shrink-0 px-5 py-2.5 rounded-sm font-mono text-[11px] uppercase tracking-widest transition-all duration-300 ${
+              !selectedCategoryId 
+                ? 'bg-primary text-black font-black glow-primary shadow-[0_0_15px_rgba(16,255,136,0.3)]' 
+                : 'bg-zinc-900 text-zinc-500 border border-zinc-800 hover:border-zinc-700'
+            }`}
+          >
+            All
+          </button>
+          {menu.map(category => (
+            <button 
+              key={category.id}
+              onClick={() => setSelectedCategoryId(category.id)}
+              className={`flex-shrink-0 px-5 py-2.5 rounded-sm font-mono text-[11px] uppercase tracking-widest transition-all duration-300 ${
+                selectedCategoryId === category.id 
+                  ? 'bg-primary text-black font-black glow-primary shadow-[0_0_15px_rgba(16,255,136,0.3)]' 
+                  : 'bg-zinc-900 text-zinc-500 border border-zinc-800 hover:border-zinc-700'
+              }`}
+            >
+              {category.name}
+            </button>
+          ))}
         </div>
       </div>
 
       <main className="max-w-3xl mx-auto w-full">
         <MenuDisplay 
-          menu={menu} 
+          menu={filteredMenu} 
           cart={cart}
           addToCart={addToCart}
           updateQuantity={updateQuantity}
