@@ -1289,15 +1289,33 @@ export default function DiscoveryPage() {
           )}
           
           {!isDayMode && !eventsLoading && events.length > 0 && filteredEvents.length === 0 && (
-            <div className="text-center py-20">
-              <div className="text-stone-400 mb-6">
-                <svg className="w-20 h-20 mx-auto mb-6 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                </svg>
+            <div className="text-center py-20 flex flex-col items-center justify-center min-h-[50vh]">
+              <div className="text-zinc-600 mb-6">
+                <span className="text-6xl">🪩</span>
               </div>
-              <h3 className="text-2xl font-serif font-light text-stone-700 mb-3">No events match your filter</h3>
-              <p className="text-lg text-stone-500">Try selecting "ALL EVENTS" or a different filter</p>
-              <p className="text-sm text-stone-400 mt-2">Total events loaded: {events.length}, Active filter: {activeEventFilter}</p>
+              
+              {fromVenueId ? (
+                <>
+                  <h3 className="text-2xl font-display font-medium text-white mb-3 tracking-wide uppercase">No Events Scheduled</h3>
+                  <p className="text-sm text-zinc-400 max-w-sm mx-auto mb-8 font-mono uppercase tracking-wider leading-relaxed">
+                    This venue doesn't have any upcoming events listed at the moment.
+                  </p>
+                  <button 
+                    onClick={() => {
+                      window.location.href = '/?mode=night';
+                    }}
+                    className="px-8 py-4 bg-white text-black text-[12px] font-black uppercase tracking-[0.2em] hover:bg-zinc-200 transition-colors duration-300"
+                  >
+                    EXPLORE EVENTS IN OUR RIVIERA
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-2xl font-display font-medium text-white mb-3 tracking-wide uppercase">No events match your filter</h3>
+                  <p className="text-sm text-zinc-400 font-mono uppercase tracking-wider mb-2">Try selecting "ALL EVENTS" or a different filter</p>
+                  <p className="text-xs text-zinc-600 font-mono">Total events loaded: {events.length}, Active filter: {activeEventFilter}</p>
+                </>
+              )}
             </div>
           )}
           
@@ -1405,17 +1423,6 @@ export default function DiscoveryPage() {
             </div>
           )}
           
-          {!isDayMode && filteredEvents.length === 0 && (
-            <div className="text-center py-20">
-              <div className="text-stone-400 mb-6">
-                <svg className="w-20 h-20 mx-auto mb-6 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-serif font-light text-stone-700 mb-3">No events found</h3>
-              <p className="text-lg text-stone-500">Try adjusting your filters or check back later for new events</p>
-            </div>
-          )}
         </div>
       )}
       
