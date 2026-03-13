@@ -672,7 +672,7 @@ export default function SpotPage() {
       {/* 🦅 POWERED BY XIXA FOOTER */}
       <div className="text-center py-8 border-t border-border-dark mt-8 mb-4">
         <button
-          onClick={() => { exitSession(); navigate('/'); }}
+          onClick={() => { navigate(`/spot?v=${venueId}${unitId ? `&u=${unitId}` : ''}`); }}
           className="text-xs font-mono tracking-widest uppercase text-zinc-600 hover:text-zinc-400 transition-colors duration-300"
         >
           🦅 Powered by XIXA
@@ -682,7 +682,7 @@ export default function SpotPage() {
       {/* 📱 GLASSMORPHIC BOTTOM NAVIGATION BAR */}
       <nav className="fixed bottom-0 left-0 right-0 h-16 bg-zinc-950/80 backdrop-blur-xl border-t border-border-dark z-50 flex items-center justify-around px-4">
         <button 
-          onClick={() => { exitSession(); navigate('/'); }}
+          onClick={() => { navigate(`/spot?v=${venueId}${unitId ? `&u=${unitId}` : ''}`); }}
           className="flex flex-col items-center justify-center w-full h-full text-zinc-500 hover:text-white transition-colors gap-1 group"
         >
           <span className="material-symbols-outlined text-[20px] group-hover:-translate-y-0.5 transition-transform duration-300">wb_sunny</span>

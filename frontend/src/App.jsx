@@ -20,6 +20,7 @@ import SuperAdminDashboard from './pages/SuperAdminDashboard';
 import QRCodeGenerator from './pages/QRCodeGenerator';
 import TestCronBookings from './pages/TestCronBookings';
 import SpotPage from './pages/SpotPage';
+import LandingSpotPage from './pages/LandingSpotPage';
 import DiscoveryPage from './pages/DiscoveryPage';
 import EventsPage from './pages/EventsPage';
 import BookingStatusPage from './pages/BookingStatusPage';
@@ -81,7 +82,8 @@ function App() {
         <Route path="/action/:bookingCode" element={<BookingActionPage />} />
         
         {/* SPOT MODE - On-site at venue (QR scanned) */}
-        <Route path="/spot" element={<SpotPage />} />
+        <Route path="/spot" element={<LandingSpotPage />} />
+        <Route path="/spot/menu" element={<SpotPage />} />
         <Route path="/menu" element={<MenuPage />} />
         <Route path="/review/:venueId" element={<ReviewPage />} />
         <Route path="/review" element={<ReviewPage />} />
