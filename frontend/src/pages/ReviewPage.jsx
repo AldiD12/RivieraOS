@@ -5,6 +5,7 @@ import whatsappLink from '../utils/whatsappLink';
 import haptics from '../utils/haptics';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+const baseUrl = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
 
 export default function ReviewPage() {
   const { venueId } = useParams();
@@ -51,7 +52,7 @@ export default function ReviewPage() {
       setLoading(true);
       
       // Fetch menu to get business name (not venue name)
-      const menuResponse = await fetch(`${API_URL}/api/public/Orders/menu?venueId=${actualVenueId}`);
+      const menuResponse = await fetch(`${baseUrl}/public/Orders/menu?venueId=${actualVenueId}`);
       
       if (!menuResponse.ok) {
         throw new Error('Failed to load venue');
@@ -69,7 +70,7 @@ export default function ReviewPage() {
         let longitude = null;
         
         try {
-          const zonesResponse = await fetch(`${API_URL}/api/public/Reservations/zones?venueId=${actualVenueId}`);
+          const zonesResponse = await fetch(`${baseUrl}/public/Reservations/zones?venueId=${actualVenueId}`);
           if (zonesResponse.ok) {
             const zonesData = await zonesResponse.json();
             if (zonesData.length > 0 && zonesData[0].venue) {
@@ -150,7 +151,7 @@ export default function ReviewPage() {
           guestName: 'Anonymous'
         };
 
-        const response = await fetch(`${API_URL}/api/public/venues/${actualVenueId}/reviews`, {
+        const response = await fetch(`${baseUrl}/public/venues/${actualVenueId}/reviews`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(reviewData)

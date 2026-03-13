@@ -7,6 +7,8 @@ import whatsappLink from '../utils/whatsappLink';
 import haptics from '../utils/haptics';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+// Normalize: ensure URL ends with /api (env var already includes it)
+const baseUrl = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
 
 // Input sanitization utility
 const sanitizeInput = (input) => {
@@ -105,8 +107,6 @@ export default function SpotPage() {
       console.log('🔍 Fetching data for venue:', venueId);
       
       // Fetch menu (public endpoint)
-      // Ensure API_URL has /api prefix
-      const baseUrl = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
       const menuUrl = `${baseUrl}/public/Orders/menu?venueId=${venueId}`;
       console.log('📡 Fetching menu from:', menuUrl);
       
@@ -140,7 +140,7 @@ export default function SpotPage() {
       
       try {
         // Fetch full venue details from public endpoint (includes allowsDigitalOrdering)
-        const venueResponse = await fetch(`${API_URL}/api/public/Venues/${venueId}`);
+        const venueResponse = await fetch(`${baseUrl}/public/Venues/${venueId}`);
         if (venueResponse.ok) {
           venueData = await venueResponse.json();
           console.log('✅ Venue details loaded:', {
@@ -252,7 +252,7 @@ export default function SpotPage() {
         }))
       };
 
-      const response = await fetch(`${API_URL}/api/public/Orders`, {
+      const response = await fetch(`${baseUrl}/public/Orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData)
