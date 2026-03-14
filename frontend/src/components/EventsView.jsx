@@ -2,12 +2,10 @@ import { useState, useMemo } from 'react';
 
 const VIBE_FILTERS = [
   { id: 'all', label: 'ALL EVENTS' },
-  { id: 'Techno', label: 'TECHNO' },
-  { id: 'House', label: 'HOUSE' },
-  { id: 'Live Music', label: 'LIVE' },
-  { id: 'Commercial', label: 'COMMERCIAL' },
-  { id: 'Hip Hop', label: 'HIP HOP' },
-  { id: 'Chill', label: 'CHILL' }
+  { id: 'live_dj', label: 'LIVE DJ' },
+  { id: 'fine_dining', label: 'FINE DINING' },
+  { id: 'vip_tables', label: 'VIP TABLES' },
+  { id: 'sunset_drinks', label: 'SUNSET DRINKS' }
 ];
 
 export default function EventsView({ 
@@ -25,8 +23,26 @@ export default function EventsView({
   // Filter events by vibe
   const vibeFilteredEvents = useMemo(() => {
     if (vibeFilter === 'all') return events;
-    return events.filter(event => event.vibe === vibeFilter);
-  }, [events, vibeFilter]);
+    
+    return events.filter(event => {
+      // These rules mirror the ones in DiscoveryPage's generateThemeCategories
+      const venue = getVenueForEvent(event);
+      const vType = venue ? venue.type : '';
+      
+      switch(vibeFilter) {
+        case 'live_dj':
+          return event.vibe === 'Electronic' || event.vibe === 'Acoustic' || vType === 'Beach Club' || vType === 'BEACH_CLUB';
+        case 'fine_dining':
+          return vType === 'Restaurant' || vType === 'RESTAURANT';
+        case 'vip_tables':
+          return event.minimumSpend > 0 || event.vibe === 'VIP' || vType === 'Beach Club' || vType === 'BEACH_CLUB';
+        case 'sunset_drinks':
+          return ['Beach', 'BEACH', 'Beach Club', 'Lounge'].includes(vType);
+        default:
+          return event.vibe === vibeFilter; // Fallback
+      }
+    });
+  }, [events, vibeFilter, venues]);
   
   // Filter events by date
   const filteredEvents = useMemo(() => {

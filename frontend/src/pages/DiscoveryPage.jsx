@@ -305,84 +305,116 @@ export default function DiscoveryPage() {
 
   // Theme Trigger Categories - Dynamic based on available data
 
-  // Dynamic Theme Categories - Based on Available Data
+  // Dynamic Theme Categories - Vibe Based (Intent-driven Experiential Filters)
   const generateThemeCategories = useMemo(() => {
     const categories = [];
     
-    // Check what venue types we actually have
+    // Check what data we actually have to ensure we don't show empty vibes
     const venueTypes = [...new Set(venues.map(v => v.type).filter(Boolean))];
     const hasEvents = events.length > 0;
     
-    // 🏖️ NO-COMPETITOR LOCK: Hide BEACHES when returning from a beach QR session
-    // "They are already at a beach. We do not show them competitors."
-    if (venueTypes.includes('Beach') || venueTypes.includes('BEACH')) {
-      if (!fromVenueId) {
-        categories.push({ 
-          id: 'BEACHES', 
-          label: 'BEACHES', 
-          icon: '⛱️', 
-          isDayMode: true, 
-          filter: 'Beach',
-          count: venues.filter(v => v.type === 'Beach' || v.type === 'BEACH').length
-        });
-      } else {
-        console.log('🏖️ NO-COMPETITOR LOCK: BEACHES category hidden (returning from venue', fromVenueId, ')');
-      }
-    }
+    // ==========================================
+    // ☀️ DAYTIME VIBES (Map Centric)
+    // ==========================================
     
-    // Show EVENTS if we have events
-    if (hasEvents) {
+    // 1. "Chill" - Relaxed beach settings, quieter lounges
+    if (!fromVenueId && (venueTypes.includes('Beach') || venueTypes.includes('BEACH') || venueTypes.includes('Lounge'))) {
       categories.push({ 
-        id: 'EVENTS', 
-        label: 'EVENTS', 
-        icon: '🪩', 
-        isDayMode: false, 
-        filter: 'all',
-        count: events.length
+        id: 'CHILL', 
+        label: 'CHILL', 
+        icon: '🌴', 
+        isDayMode: true, 
+        filter: 'chill', // Custom filter identifier
+        count: venues.filter(v => ['Beach', 'BEACH', 'Lounge', 'Cafe'].includes(v.type)).length
       });
     }
-    
-    // Show CLUBS if we have Beach Club venues or events at beach venues
+
+    // 2. "Family" - Family friendly settings (mostly restaurants for now)
+    if (venueTypes.includes('Restaurant') || venueTypes.includes('RESTAURANT')) {
+      categories.push({ 
+        id: 'FAMILY', 
+        label: 'FAMILY', 
+        icon: '👨‍👩‍👧‍👦', 
+        isDayMode: true, 
+        filter: 'family',
+        count: venues.filter(v => ['Restaurant', 'RESTAURANT'].includes(v.type)).length
+      });
+    }
+
+    // 3. "Party Booking" - High energy day spots (Beach Clubs)
     const beachClubs = venues.filter(v => 
       (v.type === 'Beach Club' || v.type === 'BEACH_CLUB') || 
       ((v.type === 'Beach' || v.type === 'BEACH') && v.hasEvents)
     );
-    if (beachClubs.length > 0) {
+    if (!fromVenueId && beachClubs.length > 0) {
       categories.push({ 
-        id: 'CLUBS', 
-        label: 'CLUBS', 
-        icon: '🍸', 
-        isDayMode: false, 
-        filter: 'Beach Club',
+        id: 'PARTY_BOOKING', 
+        label: 'PARTY BOOKING', 
+        icon: '🥂', 
+        isDayMode: true, 
+        filter: 'party_booking',
         count: beachClubs.length
       });
     }
-    
-    // Show DINING if we have Restaurant venues
-    if (venueTypes.includes('Restaurant') || venueTypes.includes('RESTAURANT')) {
-      categories.push({ 
-        id: 'DINING', 
-        label: 'DINING', 
-        icon: '🍴', 
-        isDayMode: true, 
-        filter: 'Restaurant',
-        count: venues.filter(v => v.type === 'Restaurant' || v.type === 'RESTAURANT').length
-      });
-    }
-    
-    // Show YACHTS if we have Yacht/Boat venues
+
+    // 4. "Water Sports" - Yachts, boats, and specific activities
     const yachtVenues = venues.filter(v => 
-      v.type === 'Yacht' || v.type === 'YACHT' || 
-      v.type === 'Boat' || v.type === 'BOAT'
+      ['Yacht', 'YACHT', 'Boat', 'BOAT', 'Water Sports'].includes(v.type)
     );
     if (yachtVenues.length > 0) {
       categories.push({ 
-        id: 'YACHTS', 
-        label: 'YACHTS', 
+        id: 'WATER_SPORTS', 
+        label: 'WATER SPORTS', 
         icon: '🛥️', 
         isDayMode: true, 
-        filter: 'Yacht',
+        filter: 'water_sports',
         count: yachtVenues.length
+      });
+    }
+
+    // ==========================================
+    // 🪩 NIGHTLIFE VIBES (List Centric)
+    // ==========================================
+    
+    if (hasEvents || beachClubs.length > 0 || venueTypes.includes('Restaurant')) {
+      // 1. "Live DJ" - Electronic vibe events or major clubs
+      categories.push({ 
+        id: 'LIVE_DJ', 
+        label: 'LIVE DJ', 
+        icon: '🎧', 
+        isDayMode: false, 
+        filter: 'live_dj',
+        count: events.filter(e => e.vibe === 'Electronic' || e.vibe === 'Acoustic').length || beachClubs.length
+      });
+
+      // 2. "Fine Dining" - Upscale restaurants open late
+      categories.push({ 
+        id: 'FINE_DINING', 
+        label: 'FINE DINING', 
+        icon: '🍷', 
+        isDayMode: false, 
+        filter: 'fine_dining',
+        count: venues.filter(v => ['Restaurant', 'RESTAURANT'].includes(v.type)).length
+      });
+
+      // 3. "VIP Tables" - High minimum spend events
+      categories.push({ 
+        id: 'VIP_TABLES', 
+        label: 'VIP TABLES', 
+        icon: '💎', 
+        isDayMode: false, 
+        filter: 'vip_tables',
+        count: events.filter(e => e.minimumSpend > 0 || e.vibe === 'VIP').length || beachClubs.length
+      });
+
+      // 4. "Sunset Drinks" - Evening view spots
+      categories.push({ 
+        id: 'SUNSET_DRINKS', 
+        label: 'SUNSET DRINKS', 
+        icon: '🌇', 
+        isDayMode: false, 
+        filter: 'sunset_drinks',
+        count: venues.filter(v => ['Beach', 'BEACH', 'Beach Club', 'Lounge'].includes(v.type)).length
       });
     }
     
@@ -905,35 +937,38 @@ export default function DiscoveryPage() {
 
   const filteredVenues = useMemo(() => {
     return venues.filter(v => {
-      if (activeFilter === 'all') return true;
+      // 🪩 NIGHT MODE (List View)
+      // If we are in night mode (viewMode === 'list' or 'events'), we don't really filter the map pins
+      // because they are hidden anyway, or we just want them all to show if map is forced.
+      if (!isDayMode) return true;
       
-      // Map the new filter IDs to venue types
+      // ☀️ DAY MODE (Map View)
+      // Map the new Vibe filter IDs to venue types
       switch (activeFilter) {
-        case 'Beach':
-          return v.type === 'Beach' || v.type === 'BEACH';
-        case 'Restaurant':
-          return v.type === 'Restaurant' || v.type === 'RESTAURANT';
-        case 'Yacht':
-          return v.type === 'Yacht' || v.type === 'YACHT' || v.type === 'Boat' || v.type === 'BOAT';
-        case 'Beach Club':
-          // VIBE filter - Beach clubs with DJs/Lounge (sort by popularity)
-          return (v.type === 'Beach' || v.type === 'BEACH') && v.hasEvents;
+        case 'chill':
+          return ['Beach', 'BEACH', 'Lounge', 'Cafe'].includes(v.type);
+        case 'family':
+          return ['Restaurant', 'RESTAURANT'].includes(v.type);
+        case 'water_sports':
+          return ['Yacht', 'YACHT', 'Boat', 'BOAT', 'Water Sports'].includes(v.type);
+        case 'party_booking':
+          // Party Booking means Beach Clubs OR Beaches with Events
+          return (v.type === 'Beach Club' || v.type === 'BEACH_CLUB') || 
+                 ((v.type === 'Beach' || v.type === 'BEACH') && v.hasEvents);
         default:
-          return v.type === activeFilter;
+          return true; // Show all if filter not recognized
       }
     });
-  }, [venues, activeFilter]);
+  }, [venues, activeFilter, isDayMode]);
 
   // Group filtered venues by business for map display
   const businessGroups = useMemo(() => {
     if (!filteredVenues || filteredVenues.length === 0) return [];
     let groups = groupVenuesByBusiness(filteredVenues);
     
-    // VIBE filter: Sort by popularity (most live orders from Meridian system)
-    if (activeFilter === 'Beach Club') {
+    // Sort by popularity (total available units) for high-energy vibes
+    if (activeFilter === 'party_booking') {
       groups = groups.sort((a, b) => {
-        // Sort by total available units (proxy for popularity/activity)
-        // In a real system, this would be live order count
         return b.totalAvailableUnits - a.totalAvailableUnits;
       });
     }

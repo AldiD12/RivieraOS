@@ -25,10 +25,14 @@ export default function EventCard({ event, venue, isDayMode, onClick, isIndustri
   
   // Vibe code mapping for industrial mode
   const vibeCodes = {
-    'House': '[H]',
-    'Techno': '[T]',
+    'Electronic': '[DJ]',
+    'Acoustic': '[LIVE]',
+    'VIP': '[VIP]',
+    // Legacy fallbacks
+    'House': '[DJ]',
+    'Techno': '[DJ]',
     'Commercial': '[C]',
-    'Live Music': '[L]',
+    'Live Music': '[LIVE]',
     'Hip Hop': '[HH]',
     'Chill': '[CH]'
   };
