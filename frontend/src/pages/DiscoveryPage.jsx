@@ -436,6 +436,19 @@ export default function DiscoveryPage() {
     }
   };
 
+  // Handle explicit Day/Night mode switch (Experiential Switch)
+  const handleExperienceSwitch = (targetMode) => {
+    if (targetMode === 'day') {
+      // Find default day category (e.g. BEACHES)
+      const defaultDayCategory = generateThemeCategories.find(c => c.isDayMode) || generateThemeCategories[0];
+      if (defaultDayCategory) handleCategoryClick(defaultDayCategory.id);
+    } else {
+      // Find default night category (e.g. EVENTS or CLUBS)
+      const defaultNightCategory = generateThemeCategories.find(c => !c.isDayMode) || generateThemeCategories.find(c => c.id === 'EVENTS') || generateThemeCategories[0];
+      if (defaultNightCategory) handleCategoryClick(defaultNightCategory.id);
+    }
+  };
+
   // Get user location IMMEDIATELY on mount (before anything else)
   useEffect(() => {
     if ('geolocation' in navigator) {
@@ -1499,8 +1512,28 @@ export default function DiscoveryPage() {
           </button>
         </div>
 
+        {/* Experiential Switch (Daytime vs Nightlife) */}
+        <div className="flex justify-center px-6 pb-4">
+          <div className={`flex p-1 rounded-full shadow-lg ${isDayMode ? 'bg-white/90 border border-stone-200 backdrop-blur-md' : 'bg-zinc-900/90 border border-zinc-800 backdrop-blur-md'}`}>
+            <button 
+              onClick={() => handleExperienceSwitch('day')}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${isDayMode ? 'bg-zinc-950 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'}`}
+            >
+              <span className="text-sm">☀️</span>
+              <span>Daytime</span>
+            </button>
+            <button 
+              onClick={() => handleExperienceSwitch('night')}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${!isDayMode ? 'bg-[#10FF88] text-zinc-950 shadow-md' : 'text-stone-500 hover:text-stone-700'}`}
+            >
+              <span className="text-sm">🪩</span>
+              <span>Nightlife</span>
+            </button>
+          </div>
+        </div>
+
         {/* Filter Dropdowns Row */}
-        <div className="px-6 pb-6">
+        <div className="px-6 pb-6 mt-2">
           <div className="flex gap-4 justify-center">
             {/* Category Filter Dropdown */}
             <div className="relative">
