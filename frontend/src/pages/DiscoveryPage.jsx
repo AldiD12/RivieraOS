@@ -300,6 +300,9 @@ export default function DiscoveryPage() {
   const [locationBottomSheetOpen, setLocationBottomSheetOpen] = useState(false);
   const [isUsingGPSLocation, setIsUsingGPSLocation] = useState(false); // Track if using GPS vs manual zone
 
+  // Dropdown states
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+
   // Theme Trigger Categories - Dynamic based on available data
 
   // Dynamic Theme Categories - Based on Available Data
@@ -390,7 +393,19 @@ export default function DiscoveryPage() {
   useEffect(() => {
     // Only run this if we haven't forced night mode and activeCategory is STILL null
     if (generateThemeCategories.length > 0 && !activeCategory && forceMode !== 'night') {
-      const defaultCategory = generateThemeCategories[0];
+      const currentHour = new Date().getHours();
+      // Auto-switch to night mode between 5 PM (17:00) and 4 AM (4:00)
+      const isNightTime = currentHour >= 17 || currentHour < 4;
+      
+      let defaultCategory;
+      if (isNightTime) {
+        // Try to find a night mode category (EVENTS or CLUBS)
+        defaultCategory = generateThemeCategories.find(c => !c.isDayMode) || generateThemeCategories[0];
+      } else {
+        // Try to find a day mode category
+        defaultCategory = generateThemeCategories.find(c => c.isDayMode) || generateThemeCategories[0];
+      }
+      
       setActiveCategory(defaultCategory.id);
       setIsDayMode(defaultCategory.isDayMode);
       setActiveFilter(defaultCategory.filter);
@@ -1490,6 +1505,7 @@ export default function DiscoveryPage() {
             {/* Category Filter Dropdown */}
             <div className="relative">
               <button
+                onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-sm border transition-all duration-300 ${
                   isDayMode 
                     ? 'bg-white border-stone-300 text-stone-700 hover:border-stone-400'
@@ -1502,10 +1518,52 @@ export default function DiscoveryPage() {
                 <span className="font-mono text-xs uppercase tracking-widest">
                   {generateThemeCategories.find(c => c.id === activeCategory)?.label || 'ALL'}
                 </span>
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className={`w-3 h-3 transition-transform duration-300 ${categoryDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
+              
+              {/* Dropdown Menu */}
+              {categoryDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setCategoryDropdownOpen(false)}
+                  ></div>
+                  <div className={`absolute top-full left-0 mt-2 w-48 rounded-sm shadow-xl border overflow-hidden z-50 ${
+                    isDayMode 
+                      ? 'bg-white border-stone-200' 
+                      : 'bg-zinc-900 border-zinc-800'
+                  }`}>
+                    {generateThemeCategories.map(category => (
+                      <button
+                        key={category.id}
+                        onClick={() => {
+                          handleCategoryClick(category.id);
+                          setCategoryDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
+                          activeCategory === category.id
+                            ? (isDayMode ? 'bg-stone-100 text-stone-900' : 'bg-zinc-800 text-white')
+                            : (isDayMode ? 'hover:bg-stone-50 text-stone-600' : 'hover:bg-zinc-800/50 text-zinc-400')
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg">{category.icon}</span>
+                          <span className="font-mono text-xs uppercase tracking-widest">{category.label}</span>
+                        </div>
+                        {activeCategory === category.id && (
+                          <span className="text-[#10FF88]">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Date/Time Filter Dropdown */}
