@@ -1,7 +1,11 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import Map, { Marker, NavigationControl } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+
+// Lazy load heavy mapbox components
+const Map = lazy(() => import('react-map-gl'));
+const Marker = lazy(() => import('react-map-gl').then(mod => ({ default: mod.Marker })));
+const NavigationControl = lazy(() => import('react-map-gl').then(mod => ({ default: mod.NavigationControl })));
 import { venueApi } from '../services/venueApi';
 import { publicEventsApi } from '../services/eventsApi';
 import { geographicZonesApi } from '../services/geographicZonesApi';
@@ -954,161 +958,170 @@ export default function DiscoveryPage() {
       {/* Map Background */}
       {viewMode === 'map' && (
         <div className="absolute inset-0 z-[1]">
-          <Map
-            ref={mapRef}
-            initialViewState={initialViewState}
-            {...viewState}
-            onMove={evt => setViewState(evt.viewState)}
-            onLoad={(e) => {
-              setMapLoaded(true);
-              
-              // Hide ALL Mapbox POI layers aggressively
-              const map = e.target;
-              
-              // Function to hide POI layers
-              const hidePOILayers = () => {
-                const style = map.getStyle();
-                if (!style || !style.layers) return;
+          <Suspense fallback={
+            <div className="flex h-full w-full items-center justify-center bg-[#FAFAF9]">
+              <div className="flex flex-col items-center gap-4 text-stone-500">
+                <div className="w-10 h-10 border-4 border-stone-200 border-t-stone-800 rounded-full animate-spin"></div>
+                <span className="font-mono text-sm tracking-widest uppercase">Loading Base Map...</span>
+              </div>
+            </div>
+          }>
+            <Map
+              ref={mapRef}
+              initialViewState={initialViewState}
+              {...viewState}
+              onMove={evt => setViewState(evt.viewState)}
+              onLoad={(e) => {
+                setMapLoaded(true);
                 
-                const layers = style.layers;
-                let hiddenCount = 0;
+                // Hide ALL Mapbox POI layers aggressively
+                const map = e.target;
                 
-                // Hide ALL POI-related layers
-                layers.forEach(layer => {
-                  const layerId = layer.id.toLowerCase();
+                // Function to hide POI layers
+                const hidePOILayers = () => {
+                  const style = map.getStyle();
+                  if (!style || !style.layers) return;
                   
-                  // Comprehensive list of keywords to hide
-                  const hideKeywords = [
-                    'poi', 'label', 'place', 'transit', 'airport',
-                    'settlement', 'state', 'country', 'marine',
-                    'natural', 'park', 'landuse', 'building-number',
-                    'road-label', 'ferry', 'waterway', 'water-point',
-                    'peak', 'volcano', 'disputed', 'admin', 'boundary',
-                    'poi-label', 'transit-label', 'place-label',
-                    'natural-point', 'natural-line', 'landuse-label',
-                    'water-label', 'marine-label', 'country-label',
-                    'state-label', 'settlement-label', 'settlement-subdivision',
-                    'airport-label', 'poi-parks', 'road-number'
-                  ];
+                  const layers = style.layers;
+                  let hiddenCount = 0;
                   
-                  // Check if layer should be hidden
-                  const shouldHide = hideKeywords.some(keyword => layerId.includes(keyword));
-                  
-                  if (shouldHide) {
-                    try {
-                      map.setLayoutProperty(layer.id, 'visibility', 'none');
-                      hiddenCount++;
-                    } catch (e) {
-                      // Layer might not support visibility, skip
+                  // Hide ALL POI-related layers
+                  layers.forEach(layer => {
+                    const layerId = layer.id.toLowerCase();
+                    
+                    // Comprehensive list of keywords to hide
+                    const hideKeywords = [
+                      'poi', 'label', 'place', 'transit', 'airport',
+                      'settlement', 'state', 'country', 'marine',
+                      'natural', 'park', 'landuse', 'building-number',
+                      'road-label', 'ferry', 'waterway', 'water-point',
+                      'peak', 'volcano', 'disputed', 'admin', 'boundary',
+                      'poi-label', 'transit-label', 'place-label',
+                      'natural-point', 'natural-line', 'landuse-label',
+                      'water-label', 'marine-label', 'country-label',
+                      'state-label', 'settlement-label', 'settlement-subdivision',
+                      'airport-label', 'poi-parks', 'road-number'
+                    ];
+                    
+                    // Check if layer should be hidden
+                    const shouldHide = hideKeywords.some(keyword => layerId.includes(keyword));
+                    
+                    if (shouldHide) {
+                      try {
+                        map.setLayoutProperty(layer.id, 'visibility', 'none');
+                        hiddenCount++;
+                      } catch (e) {
+                        // Layer might not support visibility, skip
+                      }
                     }
-                  }
+                  });
+                  
+                  console.log(`✅ Hidden ${hiddenCount} POI/label layers`);
+                };
+                
+                // Try hiding immediately
+                hidePOILayers();
+                
+                // Also hide after style loads completely
+                map.once('idle', () => {
+                  hidePOILayers();
                 });
                 
-                console.log(`✅ Hidden ${hiddenCount} POI/label layers`);
-              };
+                // And hide again after a short delay (for late-loading layers)
+                setTimeout(() => {
+                  hidePOILayers();
+                }, 1000);
+              }}
+              mapStyle={DARK_STYLE}
+              mapboxAccessToken={MAPBOX_TOKEN}
+              style={{ width: '100%', height: '100%' }}
+              attributionControl={false}
+              cooperativeGestures={selectedVenue !== null}
+              antialias={true}
+              // Performance optimizations
+              maxPitch={60}
+              minZoom={10}
+              maxZoom={18}
+              renderWorldCopies={false}
+              optimizeForTerrain={false}
+              // Lazy load tiles
+              fadeDuration={0}
+              crossSourceCollisions={false}
+              // Prevent default POI interactions
+              interactiveLayerIds={[]}
+            >
+              <NavigationControl position="bottom-right" showCompass={false} />
               
-              // Try hiding immediately
-              hidePOILayers();
-              
-              // Also hide after style loads completely
-              map.once('idle', () => {
-                hidePOILayers();
-              });
-              
-              // And hide again after a short delay (for late-loading layers)
-              setTimeout(() => {
-                hidePOILayers();
-              }, 1000);
-            }}
-            mapStyle={DARK_STYLE}
-            mapboxAccessToken={MAPBOX_TOKEN}
-            style={{ width: '100%', height: '100%' }}
-            attributionControl={false}
-            cooperativeGestures={selectedVenue !== null}
-            antialias={true}
-            // Performance optimizations
-            maxPitch={60}
-            minZoom={10}
-            maxZoom={18}
-            renderWorldCopies={false}
-            optimizeForTerrain={false}
-            // Lazy load tiles
-            fadeDuration={0}
-            crossSourceCollisions={false}
-            // Prevent default POI interactions
-            interactiveLayerIds={[]}
-          >
-            <NavigationControl position="bottom-right" showCompass={false} />
-            
-            {/* Only render markers after map loads */}
-            {mapLoaded && (
-              <>
-                {/* DAY MODE: Show business groups (venues) */}
-                {isDayMode && businessGroups.map(business => (
-                  business.latitude && business.longitude && (
-                    <Marker
-                      key={business.id}
-                      longitude={business.longitude}
-                      latitude={business.latitude}
-                      anchor="center"
-                    >
-                      <VenueMarker
-                        venue={{
-                          ...business,
-                          availableUnitsCount: business.totalAvailableUnits
-                        }}
-                        isSelected={selectedBusiness?.id === business.id}
-                        onClick={() => handleBusinessClick(business)}
-                        isDayMode={isDayMode}
-                        activeFilter={activeFilter}
-                      />
-                    </Marker>
-                  )
-                ))}
-                
-                {/* NIGHT MODE: Show events on map */}
-                {!isDayMode && filteredEvents.map(event => {
-                  const venue = venues.find(v => v.id === event.venueId);
-                  if (!venue || !venue.latitude || !venue.longitude) return null;
+              {/* Only render markers after map loads */}
+              {mapLoaded && (
+                <>
+                  {/* DAY MODE: Show business groups (venues) */}
+                  {isDayMode && businessGroups.map(business => (
+                    business.latitude && business.longitude && (
+                      <Marker
+                        key={business.id}
+                        longitude={business.longitude}
+                        latitude={business.latitude}
+                        anchor="center"
+                      >
+                        <VenueMarker
+                          venue={{
+                            ...business,
+                            availableUnitsCount: business.totalAvailableUnits
+                          }}
+                          isSelected={selectedBusiness?.id === business.id}
+                          onClick={() => handleBusinessClick(business)}
+                          isDayMode={isDayMode}
+                          activeFilter={activeFilter}
+                        />
+                      </Marker>
+                    )
+                  ))}
                   
-                  return (
-                    <Marker
-                      key={event.id}
-                      longitude={venue.longitude}
-                      latitude={venue.latitude}
-                      anchor="center"
-                    >
-                      <EventMarker
-                        event={event}
-                        venue={venue}
-                        isSelected={false}
-                        onClick={() => handleEventClick(event)}
-                        isDayMode={isDayMode}
-                      />
-                    </Marker>
-                  );
-                })}
-              </>
-            )}
-            
-            {/* User location marker */}
-            {userLocation && (
-              <Marker
-                longitude={userLocation.longitude}
-                latitude={userLocation.latitude}
-                anchor="center"
-              >
-                <div className="relative flex items-center justify-center">
-                  {/* Pulsing ring */}
-                  <div className="absolute w-8 h-8">
-                    <div className={`absolute inset-0 rounded-full ${isDayMode ? 'bg-blue-500/30' : 'bg-blue-400/30'} animate-ping`}></div>
+                  {/* NIGHT MODE: Show events on map */}
+                  {!isDayMode && filteredEvents.map(event => {
+                    const venue = venues.find(v => v.id === event.venueId);
+                    if (!venue || !venue.latitude || !venue.longitude) return null;
+                    
+                    return (
+                      <Marker
+                        key={event.id}
+                        longitude={venue.longitude}
+                        latitude={venue.latitude}
+                        anchor="center"
+                      >
+                        <EventMarker
+                          event={event}
+                          venue={venue}
+                          isSelected={false}
+                          onClick={() => handleEventClick(event)}
+                          isDayMode={isDayMode}
+                        />
+                      </Marker>
+                    );
+                  })}
+                </>
+              )}
+              
+              {/* User location marker */}
+              {userLocation && (
+                <Marker
+                  longitude={userLocation.longitude}
+                  latitude={userLocation.latitude}
+                  anchor="center"
+                >
+                  <div className="relative flex items-center justify-center">
+                    {/* Pulsing ring */}
+                    <div className="absolute w-8 h-8">
+                      <div className={`absolute inset-0 rounded-full ${isDayMode ? 'bg-blue-500/30' : 'bg-blue-400/30'} animate-ping`}></div>
+                    </div>
+                    {/* Center dot */}
+                    <div className={`w-4 h-4 rounded-full border-2 ${isDayMode ? 'bg-blue-500 border-white' : 'bg-blue-400 border-zinc-950'} shadow-lg z-10`}></div>
                   </div>
-                  {/* Center dot */}
-                  <div className={`w-4 h-4 rounded-full border-2 ${isDayMode ? 'bg-blue-500 border-white' : 'bg-blue-400 border-zinc-950'} shadow-lg z-10`}></div>
-                </div>
-              </Marker>
-            )}
-          </Map>
+                </Marker>
+              )}
+            </Map>
+          </Suspense>
         </div>
       )}
 
