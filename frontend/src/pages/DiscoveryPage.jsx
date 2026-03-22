@@ -14,7 +14,7 @@ import BusinessBottomSheet from '../components/BusinessBottomSheet';
 import AssetBottomSheet from '../components/AssetBottomSheet';
 import EventsView from '../components/EventsView';
 import LocationBottomSheet from '../components/LocationBottomSheet';
-import { sortEventsByDistance, sortVenuesByDistance, getCurrentLocation } from '../utils/locationUtils';
+import { calculateDistance, sortEventsByDistance, sortVenuesByDistance, getCurrentLocation } from '../utils/locationUtils';
 
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -262,7 +262,6 @@ function EventMarker({ event, venue, isSelected, onClick, isDayMode }) {
 }
 
 export default function DiscoveryPage() {
-  // Force rebuild timestamp: 2026-03-05 15:30
   const mapRef = useRef();
   const [searchParams] = useSearchParams();
   
@@ -304,6 +303,9 @@ export default function DiscoveryPage() {
   const [selectedGeographicZone, setSelectedGeographicZone] = useState('EVERYWHERE');
   const [locationBottomSheetOpen, setLocationBottomSheetOpen] = useState(false);
   const [isUsingGPSLocation, setIsUsingGPSLocation] = useState(false); // Track if using GPS vs manual zone
+
+  // Pre-fetched data for list view
+  const [businessEventsCount, setBusinessEventsCount] = useState({}); // { businessId: count }
 
   // Dropdown states
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
@@ -523,6 +525,25 @@ export default function DiscoveryPage() {
   useEffect(() => {
     setModeInitialized(true);
   }, []);
+
+  // Pre-fetch events count per business for list view badges
+  useEffect(() => {
+    if (!venues.length || !events.length) return;
+
+    const now = new Date();
+    const counts = {};
+    // Count future events per businessId from already-loaded events
+    events.forEach(e => {
+      const end = e.endTime ? new Date(e.endTime) : new Date(new Date(e.startTime).getTime() + 6 * 3600000);
+      if (end <= now) return;
+      // Find venue to get businessId
+      const v = venues.find(v => v.id === e.venueId);
+      if (!v) return;
+      const bKey = v.businessId || v.businessName || v.name;
+      counts[bKey] = (counts[bKey] || 0) + 1;
+    });
+    setBusinessEventsCount(counts);
+  }, [venues, events]);
 
   const loadVenues = useCallback(async () => {
     try {
@@ -1107,57 +1128,73 @@ export default function DiscoveryPage() {
         <div className="absolute inset-0 pt-40 pb-[60px] overflow-y-auto no-scrollbar px-6 space-y-6">
           {/* Day Mode: Show business groups */}
           {isDayMode && businessGroups.map((business) => {
-            // Calculate business-level availability (sum of all venues)
             const isBeachBusiness = business.venues.some(v => v.type === 'Beach' || v.type === 'BEACH');
             const totalAvailable = business.totalAvailableUnits;
             const isAvailable = isBeachBusiness && totalAvailable >= 15;
             const isFewLeft = isBeachBusiness && totalAvailable > 0 && totalAvailable < 15;
-            const isFull = isBeachBusiness && totalAvailable === 0;
-            
-            // Use the first venue's image as business image
             const businessImage = business.venues[0]?.imageUrl;
-            
+            const eventsCount = businessEventsCount[business.id] || 0;
+
+            // Calculate distance from user
+            const distanceText = (() => {
+              if (!userLocation || !business.latitude || !business.longitude) return null;
+              const km = calculateDistance(userLocation.latitude, userLocation.longitude, business.latitude, business.longitude);
+              if (km < 1) return `${Math.round(km * 1000)}m`;
+              return `${km.toFixed(1)}km`;
+            })();
+
+            // Build description from real venue data
+            const description = (() => {
+              // Use actual venue description if single venue
+              if (business.venues.length === 1 && business.venues[0].description) {
+                return business.venues[0].description;
+              }
+              // Multi-venue: list actual venue types
+              if (business.venues.length > 1) {
+                const types = [...new Set(business.venues.map(v => v.type).filter(Boolean))];
+                return types.length > 0 ? types.join(' · ') : null;
+              }
+              return null;
+            })();
+
             return (
               <div key={business.id} className={`group relative overflow-hidden rounded-sm cursor-pointer ${isDayMode ? 'bg-white border border-zinc-300' : 'bg-zinc-900 border border-zinc-800'}`}
                    onClick={() => handleBusinessClick(business)}>
                 {/* Business Image */}
                 <div className={`relative h-64 w-full overflow-hidden ${isDayMode ? 'bg-stone-100' : 'bg-zinc-900'}`}>
-                  {/* Status Badge - Only for Beach businesses */}
+                  {/* Status Badge */}
                   {isBeachBusiness && (
                     <div className="absolute top-3 left-3 z-20 flex items-center space-x-2">
                       {isAvailable && (
-                        <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm ${isDayMode ? 'bg-emerald-500 border border-emerald-600 text-white' : 'bg-zinc-950 border-r border-b border-zinc-800 text-white'}`}>
-                          {isDayMode ? 'Available' : (
-                            <>
-                              <span className="w-1.5 h-1.5 bg-[#10FF88] inline-block mr-1.5"></span>
-                              LIVE NOW
-                            </>
-                          )}
+                        <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm ${isDayMode ? 'bg-emerald-500 border border-emerald-600 text-white' : 'bg-zinc-950 border border-zinc-800 text-white'}`}>
+                          {isDayMode ? 'Available' : (<><span className="w-1.5 h-1.5 bg-[#10FF88] inline-block mr-1.5"></span>LIVE NOW</>)}
                         </span>
                       )}
                       {isFewLeft && (
-                        <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm ${isDayMode ? 'bg-white border border-zinc-300 text-zinc-950' : 'bg-zinc-900 border-r border-b border-zinc-800 text-amber-500'}`}>
-                          {isDayMode ? 'Few Left' : (
-                            <>
-                              <span className="w-1.5 h-1.5 bg-amber-500 inline-block mr-1.5"></span>
-                              FILLING FAST
-                            </>
-                          )}
+                        <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm ${isDayMode ? 'bg-white border border-zinc-300 text-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-amber-500'}`}>
+                          {isDayMode ? 'Few Left' : (<><span className="w-1.5 h-1.5 bg-amber-500 inline-block mr-1.5"></span>FILLING FAST</>)}
                         </span>
                       )}
                     </div>
                   )}
-                  
-                  {/* Venue Count Badge */}
-                  <div className="absolute top-3 right-3 z-20">
-                    <div className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm backdrop-blur-md ${isDayMode ? 'bg-white/90 border border-zinc-200 text-zinc-950' : 'bg-zinc-900/90 border border-zinc-700 text-white'}`}>
-                      {business.venues.length} {business.venues.length === 1 ? 'VENUE' : 'VENUES'}
-                    </div>
+
+                  {/* Top Right Badges */}
+                  <div className="absolute top-3 right-3 z-20 flex items-center space-x-2">
+                    {eventsCount > 0 && (
+                      <div className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm backdrop-blur-md ${isDayMode ? 'bg-purple-50/90 border border-purple-200 text-purple-800' : 'bg-purple-900/90 border border-purple-700 text-purple-300'}`}>
+                        {eventsCount} {eventsCount === 1 ? 'EVENT' : 'EVENTS'}
+                      </div>
+                    )}
+                    {business.venues.length > 1 && (
+                      <div className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm backdrop-blur-md ${isDayMode ? 'bg-white/90 border border-zinc-200 text-zinc-950' : 'bg-zinc-900/90 border border-zinc-700 text-white'}`}>
+                        {business.venues.length} VENUES
+                      </div>
+                    )}
                   </div>
-                  
+
                   {businessImage ? (
-                    <img 
-                      alt={business.name} 
+                    <img
+                      alt={business.name}
                       className={`w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out ${isDayMode ? 'grayscale-[10%] group-hover:grayscale-0' : 'grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80'}`}
                       src={businessImage}
                     />
@@ -1168,22 +1205,21 @@ export default function DiscoveryPage() {
                       </svg>
                     </div>
                   )}
-                  
-                  {/* Gradient Overlay */}
+
                   <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent"></div>
-                  
-                  {/* Location Badge */}
+
+                  {/* Location Badge with real distance */}
                   <div className="absolute bottom-3 left-3 text-white">
                     <div className="flex items-center space-x-1 text-[10px] uppercase tracking-widest font-medium opacity-90">
                       <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
-                      <span>RIVIERA</span>
+                      <span>{distanceText || 'RIVIERA'}</span>
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Business Info */}
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-2">
@@ -1202,48 +1238,42 @@ export default function DiscoveryPage() {
                       </div>
                     )}
                   </div>
-                  
-                  <p className={`text-xs leading-relaxed line-clamp-2 mb-4 font-sans ${isDayMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                    {business.venues.length === 1 
-                      ? (business.venues[0].description || 'Experience world-class service and the most exclusive atmosphere on the Riviera.')
-                      : `Premium hospitality group with ${business.venues.length} exclusive venues offering diverse experiences from beach clubs to fine dining.`
-                    }
-                  </p>
-                  
+
+                  {description && (
+                    <p className={`text-xs leading-relaxed line-clamp-2 mb-4 font-sans ${isDayMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
+                      {description}
+                    </p>
+                  )}
+
                   <div className={`grid grid-cols-2 gap-4 mb-5 border-t pt-4 ${isDayMode ? 'border-zinc-200' : 'border-zinc-800'}`}>
                     {isBeachBusiness ? (
-                      // Beach businesses show availability-based pricing
                       <div className="flex flex-col">
-                        <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Total Sunbeds</span>
+                        <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Sunbeds</span>
                         <span className={`text-sm font-medium ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>
                           {totalAvailable} available
                         </span>
                       </div>
                     ) : (
-                      // Other businesses show venue count (no availability)
                       <div className="flex flex-col">
                         <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Venues</span>
                         <span className={`text-sm font-medium ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>
-                          {business.venues.length} locations
+                          {business.venues.length} {business.venues.length === 1 ? 'location' : 'locations'}
                         </span>
                       </div>
                     )}
                     <div className="flex flex-col">
-                      <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Experience</span>
+                      <span className="text-[10px] uppercase text-zinc-400 tracking-wider mb-0.5">Type</span>
                       <span className={`text-sm font-medium ${isDayMode ? 'text-zinc-900' : 'text-white'}`}>
-                        {business.venues.length === 1 
-                          ? (business.type === 'Beach' ? 'Beach Club' : business.type === 'Restaurant' ? 'Fine Dining' : 'Premium Venue')
-                          : 'Multi-Venue'
-                        }
+                        {[...new Set(business.venues.map(v => v.type).filter(Boolean))].join(' · ') || 'Venue'}
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3 pt-1">
-                    <button 
+                    <button
                       className={`flex-1 text-xs font-bold uppercase tracking-widest py-3 transition-colors border rounded-sm ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800 border-zinc-950' : 'bg-zinc-950 text-white hover:bg-zinc-800 border-zinc-950'}`}
                     >
-                      Explore Venues
+                      Explore
                     </button>
                     <button className={`w-10 h-10 flex items-center justify-center border transition-colors rounded-sm ${isDayMode ? 'border-zinc-300 hover:border-zinc-950 bg-white' : 'border-zinc-800 hover:border-zinc-100 bg-transparent'}`}>
                       <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-950' : 'text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1299,7 +1329,6 @@ export default function DiscoveryPage() {
                 <>
                   <h3 className="text-2xl font-display font-medium text-white mb-3 tracking-wide uppercase">No events match your filter</h3>
                   <p className="text-sm text-zinc-400 font-mono uppercase tracking-wider mb-2">Try selecting "ALL EVENTS" or a different filter</p>
-                  <p className="text-xs text-zinc-600 font-mono">Total events loaded: {events.length}, Active filter: {activeEventFilter}</p>
                 </>
               )}
             </div>
@@ -1375,12 +1404,19 @@ export default function DiscoveryPage() {
                     <span className="uppercase font-bold tracking-widest text-[10px]">
                       [ {venue?.name || 'TBA'} ]
                     </span>
-                    <span className="uppercase font-bold tracking-widest text-[10px] text-[#10FF88]">
-                      [ {eventDate.toLocaleTimeString('en-GB', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })} - LATE ]
-                    </span>
+                    <div className="flex items-center gap-3">
+                      {event.maxGuests > 0 && (
+                        <span className="uppercase font-bold tracking-widest text-[10px] text-zinc-500">
+                          {event.maxGuests} MAX
+                        </span>
+                      )}
+                      <span className="uppercase font-bold tracking-widest text-[10px] text-[#10FF88]">
+                        [ {eventDate.toLocaleTimeString('en-GB', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })} - LATE ]
+                      </span>
+                    </div>
                   </div>
                   
                   <div className="p-6">
@@ -1613,8 +1649,9 @@ export default function DiscoveryPage() {
                       });
                     }
                   },
-                  (error) => {
-                    alert('Unable to get your location. Please enable location services.');
+                  () => {
+                    setToast('Unable to get your location. Please enable location services.');
+                    setTimeout(() => setToast(null), 3000);
                   }
                 );
               }
@@ -1656,6 +1693,7 @@ export default function DiscoveryPage() {
             onClose={handleCloseBottomSheet}
             onVenueSelect={handleVenueClick}
             isDayMode={isDayMode}
+            userLocation={userLocation}
           />
         </div>
       )}

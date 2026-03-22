@@ -103,9 +103,16 @@ export default function EventCard({ event, venue, isDayMode, onClick, isIndustri
               <span className="uppercase font-bold tracking-widest text-[10px]">
                 [ {venue?.name || 'TBA'} ]
               </span>
-              <span className="uppercase font-bold tracking-widest text-[10px] text-[#10FF88]">
-                [ {timeStr} - LATE ]
-              </span>
+              <div className="flex items-center gap-3">
+                {event.maxGuests > 0 && (
+                  <span className="uppercase font-bold tracking-widest text-[10px] text-zinc-500">
+                    {event.maxGuests} MAX
+                  </span>
+                )}
+                <span className="uppercase font-bold tracking-widest text-[10px] text-[#10FF88]">
+                  [ {timeStr} - LATE ]
+                </span>
+              </div>
             </div>
             
             <div className="p-6">
@@ -217,13 +224,18 @@ export default function EventCard({ event, venue, isDayMode, onClick, isIndustri
       {/* Event Details */}
       <div className="p-4 space-y-3">
         {/* Date & Time */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 flex-wrap">
           <span className={`text-sm font-medium ${isDayMode ? 'text-stone-600' : 'text-zinc-400'}`}>
             🗓️ {dateStr}
           </span>
           <span className={`text-sm font-medium ${isDayMode ? 'text-stone-600' : 'text-zinc-400'}`}>
             • {timeStr}
           </span>
+          {event.maxGuests > 0 && (
+            <span className={`text-xs font-mono px-2 py-0.5 rounded-sm ${isDayMode ? 'bg-stone-100 text-stone-500' : 'bg-zinc-800 text-zinc-400'}`}>
+              {event.maxGuests} spots
+            </span>
+          )}
         </div>
         
         {/* Description (if exists) */}

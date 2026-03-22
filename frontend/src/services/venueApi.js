@@ -14,136 +14,109 @@ class VenueApiService {
 
   /**
    * Get all venues for map display
-   * Uses NEW /api/public/venues endpoint (deployed Feb 26, 2026)
    * @returns {Promise<Array>}
    */
   async getVenues() {
     const cacheKey = 'venues';
-    
-    // Check cache
+
     if (this.cache.has(cacheKey)) {
       const cached = this.cache.get(cacheKey);
       if (Date.now() - cached.timestamp < this.cacheTimeout) {
-        console.log('📦 Returning cached venues');
         return cached.data;
       }
     }
 
-    try {
-      console.log('🌐 Fetching venues from API...');
-      
-      // Use NEW public venues endpoint (capital V)
-      // Note: API_URL already includes /api from env variable
-      const response = await fetch(`${API_URL}/public/Venues`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+    const response = await fetch(`${API_URL}/public/Venues`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const venues = await response.json();
-      
-      console.log('📦 Raw API response:', venues);
-      
-      if (!venues || venues.length === 0) {
-        console.warn('⚠️ No venues returned from API');
-        return [];
-      }
-      
-      // Log each venue's coordinates
-      venues.forEach(v => {
-        console.log(`📍 Venue: ${v.name}, Lat: ${v.latitude}, Lng: ${v.longitude}`);
-      });
-      
-      // Cache the result
-      this.cache.set(cacheKey, {
-        data: venues,
-        timestamp: Date.now()
-      });
-      
-      console.log(`✅ Fetched ${venues.length} venues from API`);
-      return venues;
-      
-    } catch (error) {
-      console.error('❌ Failed to fetch venues:', error);
-      throw error;
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
+
+    const venues = await response.json();
+    if (!venues || venues.length === 0) return [];
+
+    this.cache.set(cacheKey, { data: venues, timestamp: Date.now() });
+    return venues;
   }
-
-
 
   /**
    * Get venue availability (zones and units)
-   * Uses NEW /api/public/venues/{id}/availability endpoint (deployed Feb 26, 2026)
-   * @param {string} venueId - Venue ID
+   * @param {string} venueId
    * @returns {Promise<Object>}
    */
   async getVenueAvailability(venueId) {
     const cacheKey = `availability-${venueId}`;
-    
-    // Check cache (shorter timeout for availability)
+
     if (this.cache.has(cacheKey)) {
       const cached = this.cache.get(cacheKey);
-      if (Date.now() - cached.timestamp < 60000) { // 1 minute
-        console.log('📦 Returning cached availability');
+      if (Date.now() - cached.timestamp < 60000) {
         return cached.data;
       }
     }
 
-    try {
-      console.log(`🌐 Fetching availability for venue ${venueId}...`);
-      
-      // Use NEW venue availability endpoint (capital V)
-      // Note: API_URL already includes /api from env variable
-      const response = await fetch(
-        `${API_URL}/public/Venues/${venueId}/availability`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+    const response = await fetch(`${API_URL}/public/Venues/${venueId}/availability`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      
-      // Cache the result
-      this.cache.set(cacheKey, {
-        data,
-        timestamp: Date.now()
-      });
-      
-      console.log(`✅ Fetched availability for venue ${venueId}:`, data);
-      return data;
-      
-    } catch (error) {
-      console.error(`❌ Failed to fetch availability for venue ${venueId}:`, error);
-      throw error;
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
+
+    const data = await response.json();
+    this.cache.set(cacheKey, { data, timestamp: Date.now() });
+    return data;
   }
 
   /**
-   * Clear cache
+   * Batch-fetch availability for multiple venues (for list view)
+   * @param {Array} venueIds - Array of venue IDs
+   * @returns {Promise<Object>} Map of venueId -> availability
    */
+  async getBatchAvailability(venueIds) {
+    const results = {};
+    const uncached = [];
+
+    for (const id of venueIds) {
+      const cacheKey = `availability-${id}`;
+      if (this.cache.has(cacheKey)) {
+        const cached = this.cache.get(cacheKey);
+        if (Date.now() - cached.timestamp < 60000) {
+          results[id] = cached.data;
+          continue;
+        }
+      }
+      uncached.push(id);
+    }
+
+    // Fetch uncached in parallel (max 5 concurrent)
+    const chunks = [];
+    for (let i = 0; i < uncached.length; i += 5) {
+      chunks.push(uncached.slice(i, i + 5));
+    }
+
+    for (const chunk of chunks) {
+      const fetched = await Promise.allSettled(
+        chunk.map(id => this.getVenueAvailability(id))
+      );
+      chunk.forEach((id, idx) => {
+        if (fetched[idx].status === 'fulfilled') {
+          results[id] = fetched[idx].value;
+        }
+      });
+    }
+
+    return results;
+  }
+
   clearCache() {
-    console.log('🗑️ Clearing venue cache');
     this.cache.clear();
   }
 
-  /**
-   * Clear specific cache entry
-   * @param {string} key - Cache key
-   */
   clearCacheEntry(key) {
-    console.log(`🗑️ Clearing cache entry: ${key}`);
     this.cache.delete(key);
   }
 }
