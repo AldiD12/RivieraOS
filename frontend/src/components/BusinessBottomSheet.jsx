@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { publicEventsApi } from '../services/eventsApi';
 import { calculateDistance } from '../utils/locationUtils';
+
+const MenuPreview = lazy(() => import('./MenuPreview'));
 
 export default function BusinessBottomSheet({ business, onClose, onVenueSelect, isDayMode, userLocation }) {
   if (!business) return null;
 
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(false);
+  const [menuVenue, setMenuVenue] = useState(null); // venue to show menu for
 
   // Fetch real events for this business from API
   useEffect(() => {
@@ -176,30 +179,42 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
 
           {/* RESTAURANT CARD */}
           {restaurantVenue && (
-            <div className="bg-white border border-zinc-300 p-4 rounded-sm flex justify-between items-center">
-              <div>
-                <h3 className="font-sans font-bold text-lg">{restaurantVenue.name || 'RESTAURANT'}</h3>
-                {restaurantVenue.description ? (
-                  <p className="text-zinc-500 font-mono text-xs mt-1 line-clamp-1">{restaurantVenue.description}</p>
+            <div className="bg-white border border-zinc-300 p-4 rounded-sm">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-sans font-bold text-lg">{restaurantVenue.name || 'RESTAURANT'}</h3>
+                  {restaurantVenue.description ? (
+                    <p className="text-zinc-500 font-mono text-xs mt-1 line-clamp-1">{restaurantVenue.description}</p>
+                  ) : (
+                    <p className="text-zinc-500 font-mono text-xs mt-1">Reserve a table</p>
+                  )}
+                </div>
+                {getWhatsAppNumber() ? (
+                  <button
+                    onClick={() => openWhatsApp(getWhatsAppNumber())}
+                    className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors shrink-0 ml-3"
+                  >
+                    Request Table
+                  </button>
                 ) : (
-                  <p className="text-zinc-500 font-mono text-xs mt-1">Reserve a table</p>
+                  <button
+                    onClick={() => startDirectBooking(restaurantVenue.id)}
+                    className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors shrink-0 ml-3"
+                  >
+                    View Details
+                  </button>
                 )}
               </div>
-              {getWhatsAppNumber() ? (
-                <button
-                  onClick={() => openWhatsApp(getWhatsAppNumber())}
-                  className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors"
-                >
-                  Request Table
-                </button>
-              ) : (
-                <button
-                  onClick={() => startDirectBooking(restaurantVenue.id)}
-                  className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors"
-                >
-                  View Details
-                </button>
-              )}
+              {/* View Menu button */}
+              <button
+                onClick={() => setMenuVenue(restaurantVenue)}
+                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 border border-zinc-200 text-zinc-600 font-mono text-xs uppercase tracking-wider hover:bg-zinc-50 transition-colors rounded-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                View Menu
+              </button>
             </div>
           )}
 
@@ -248,6 +263,18 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
             </div>
           )}
         </div>
+
+        {/* Menu Preview Modal */}
+        {menuVenue && (
+          <Suspense fallback={null}>
+            <MenuPreview
+              venueId={menuVenue.id}
+              venueName={menuVenue.name || business.name}
+              isDayMode={true}
+              onClose={() => setMenuVenue(null)}
+            />
+          </Suspense>
+        )}
       </div>
     </div>
   );
