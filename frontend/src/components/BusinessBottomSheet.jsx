@@ -1,97 +1,133 @@
-export default function BusinessBottomSheet({ business, onClose, onVenueSelect, isDayMode }) {
+import { useState, useEffect } from 'react';
+import { publicEventsApi } from '../services/eventsApi';
+import { calculateDistance } from '../utils/locationUtils';
+
+export default function BusinessBottomSheet({ business, onClose, onVenueSelect, isDayMode, userLocation }) {
   if (!business) return null;
 
-  // DEBUG: See what the database is actually sending
-  console.log("VENUE DATA RECEIVED:", business.venues);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
 
-  // SAFE EXTRACTION: Accounts for nulls, cases, and variations (e.g., "Beach Club", "Main Restaurant")
-  const getSafeType = (v) => (v.type || v.venueType || v.category || "").toLowerCase();
+  // Fetch real events for this business from API
+  useEffect(() => {
+    if (!business.id) return;
 
-  // 1. EXTRACT ACTION ZONES (Fuzzy Match)
-  const beachVenue = business.venues.find(v => 
+    let cancelled = false;
+    setEventsLoading(true);
+
+    publicEventsApi.getEventsByBusiness(business.id)
+      .then(events => {
+        if (cancelled) return;
+        const now = new Date();
+        const upcoming = (Array.isArray(events) ? events : [])
+          .filter(e => {
+            const end = e.endTime ? new Date(e.endTime) : new Date(new Date(e.startTime).getTime() + 6 * 3600000);
+            return end > now && (e.isPublished !== false) && !e.isDeleted;
+          })
+          .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
+          .slice(0, 3); // Show max 3 upcoming
+        setUpcomingEvents(upcoming);
+      })
+      .catch(() => { if (!cancelled) setUpcomingEvents([]); })
+      .finally(() => { if (!cancelled) setEventsLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [business.id]);
+
+  const getSafeType = (v) => (v.type || v.venueType || v.category || '').toLowerCase();
+
+  // Extract action zones from real venue data
+  const beachVenue = business.venues.find(v =>
     getSafeType(v).includes('beach') || getSafeType(v).includes('sunbed')
   );
-  const restaurantVenue = business.venues.find(v => 
+  const restaurantVenue = business.venues.find(v =>
     getSafeType(v).includes('restaurant') || getSafeType(v).includes('dining')
   );
 
-  // 2. EXTRACT AMENITIES (Everything else)
-  const amenityVenues = business.venues.filter(v => 
-    !getSafeType(v).includes('beach') &&
-    !getSafeType(v).includes('sunbed') &&
-    !getSafeType(v).includes('restaurant') &&
-    !getSafeType(v).includes('dining')
-  );
-
-  console.log("EXTRACTED DATA:", {
-    beachVenue,
-    restaurantVenue,
-    amenityVenues,
-    totalVenues: business.venues.length
-  });
-
-  // Generate amenity icons based on venue types
+  // Build amenities ONLY from actual venue types (no fake ones)
   const getAmenityIcons = () => {
     const amenities = [];
-    
-    // Always add private beach if this business has beach access
-    if (beachVenue) {
-      amenities.push({ icon: '🏖️', name: 'Private Beach' });
-    }
-    
-    // Add amenities based on other venue types
-    amenityVenues.forEach(venue => {
-      switch(getSafeType(venue)) {
-        case 'bar':
-          amenities.push({ icon: '🍸', name: 'Cocktail Bar' });
-          break;
-        case 'pool':
-          amenities.push({ icon: '🏊‍♂️', name: 'Pool' });
-          break;
-        case 'lounge':
-          amenities.push({ icon: '🛋️', name: 'VIP Lounge' });
-          break;
-        case 'boat':
-          amenities.push({ icon: '⛵', name: 'Yacht Charter' });
-          break;
-        default:
-          amenities.push({ icon: '✨', name: venue.type });
+    const seen = new Set();
+
+    business.venues.forEach(venue => {
+      const t = getSafeType(venue);
+      let item = null;
+
+      if ((t.includes('beach') || t.includes('sunbed')) && !seen.has('beach')) {
+        item = { icon: '🏖️', name: 'Private Beach' };
+        seen.add('beach');
+      } else if ((t.includes('restaurant') || t.includes('dining')) && !seen.has('restaurant')) {
+        item = { icon: '🍽️', name: 'Restaurant' };
+        seen.add('restaurant');
+      } else if (t.includes('bar') && !seen.has('bar')) {
+        item = { icon: '🍸', name: 'Bar' };
+        seen.add('bar');
+      } else if (t.includes('pool') && !seen.has('pool')) {
+        item = { icon: '🏊', name: 'Pool' };
+        seen.add('pool');
+      } else if (t.includes('lounge') && !seen.has('lounge')) {
+        item = { icon: '🛋️', name: 'Lounge' };
+        seen.add('lounge');
+      } else if ((t.includes('yacht') || t.includes('boat')) && !seen.has('yacht')) {
+        item = { icon: '⛵', name: 'Yacht Charter' };
+        seen.add('yacht');
+      } else if (t.includes('club') && !seen.has('club')) {
+        item = { icon: '🪩', name: 'Beach Club' };
+        seen.add('club');
+      } else if (t && !seen.has(t)) {
+        item = { icon: '✨', name: venue.type || venue.name };
+        seen.add(t);
       }
+
+      if (item) amenities.push(item);
     });
 
-    // Add some standard luxury amenities
-    amenities.push(
-      { icon: '🎧', name: 'Live DJ' },
-      { icon: '🅿️', name: 'Valet' }
+    return amenities.slice(0, 6);
+  };
+
+  // Calculate distance from user if available
+  const distanceText = (() => {
+    if (!userLocation || !business.latitude || !business.longitude) return null;
+    const km = calculateDistance(
+      userLocation.latitude, userLocation.longitude,
+      business.latitude, business.longitude
     );
-    
-    // Remove duplicates and limit
-    return amenities.filter((amenity, index, self) => 
-      index === self.findIndex(a => a.name === amenity.name)
-    ).slice(0, 6);
+    if (km < 1) return `${Math.round(km * 1000)}m away`;
+    return `${km.toFixed(1)}km away`;
+  })();
+
+  // Get real WhatsApp number from venues
+  const getWhatsAppNumber = () => {
+    for (const v of business.venues) {
+      const num = v.whatsappNumber || v.whatsAppNumber || v.phone;
+      if (num) return num;
+    }
+    return null;
   };
 
   const startDirectBooking = (venueId) => {
-    // Find the venue and trigger the booking flow
     const venue = business.venues.find(v => v.id === venueId);
-    if (venue) {
-      onVenueSelect(venue);
-    }
+    if (venue) onVenueSelect(venue);
   };
 
   const openWhatsApp = (phone) => {
-    // Open WhatsApp with the restaurant's phone number
+    if (!phone) return;
     const message = encodeURIComponent(`Hi! I'd like to make a reservation at ${business.name}`);
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+    window.open(`https://wa.me/${phone.replace(/[^\d+]/g, '')}?text=${message}`, '_blank');
   };
 
   return (
     <div className="absolute bottom-0 left-0 right-0 z-30 pointer-events-auto">
       <div className="bg-[#F6F5F2] text-[#111111] p-6 rounded-t-sm">
-        
+
         {/* TITLE & HEADER */}
-        <div className="flex items-start justify-between mb-6">
-          <h1 className="font-serif text-4xl uppercase tracking-tight">{business.name}</h1>
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h1 className="font-serif text-4xl uppercase tracking-tight">{business.name}</h1>
+            {distanceText && (
+              <p className="text-xs font-mono text-zinc-500 mt-1 uppercase tracking-wider">{distanceText}</p>
+            )}
+          </div>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center text-[#111111] hover:bg-zinc-200 rounded transition-colors"
@@ -102,33 +138,35 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
           </button>
         </div>
 
-        {/* THE VIBE (Amenities Grid) -> NO CLICKS, JUST INFO */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {getAmenityIcons().map((amenity, index) => (
-            <span 
-              key={index}
-              className="border border-zinc-300 px-3 py-1 text-xs font-mono uppercase"
-            >
-              {amenity.icon} {amenity.name}
-            </span>
-          ))}
-        </div>
+        {/* REAL AMENITIES (only from actual venue types) */}
+        {getAmenityIcons().length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {getAmenityIcons().map((amenity, index) => (
+              <span
+                key={index}
+                className="border border-zinc-300 px-3 py-1 text-xs font-mono uppercase"
+              >
+                {amenity.icon} {amenity.name}
+              </span>
+            ))}
+          </div>
+        )}
 
-        {/* THE ACTION ZONES -> ONLY RENDER IF THEY EXIST */}
+        {/* ACTION ZONES */}
         <div className="flex flex-col gap-4">
-          
+
           {/* BEACH CARD (Direct Booking) */}
           {beachVenue && (
             <div className="bg-white border border-zinc-300 p-4 rounded-sm flex justify-between items-center">
               <div>
-                <h3 className="font-sans font-bold text-lg">THE BEACH</h3>
+                <h3 className="font-sans font-bold text-lg">{beachVenue.name || 'THE BEACH'}</h3>
                 <p className="flex items-center gap-2 text-[#10B981] font-mono text-xs mt-1">
                   <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"></span>
                   {beachVenue.availableUnitsCount || 0} BEDS AVAILABLE
                 </p>
               </div>
-              <button 
-                onClick={() => startDirectBooking(beachVenue.id)} 
+              <button
+                onClick={() => startDirectBooking(beachVenue.id)}
                 className="bg-[#111111] text-white px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-800 transition-colors"
               >
                 Secure Sunbed
@@ -136,22 +174,79 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
             </div>
           )}
 
-          {/* RESTAURANT CARD (WhatsApp Bridge) */}
+          {/* RESTAURANT CARD */}
           {restaurantVenue && (
             <div className="bg-white border border-zinc-300 p-4 rounded-sm flex justify-between items-center">
               <div>
-                <h3 className="font-sans font-bold text-lg">RESTAURANT</h3>
-                <p className="text-zinc-500 font-mono text-xs mt-1">Mediterranean • €€</p>
+                <h3 className="font-sans font-bold text-lg">{restaurantVenue.name || 'RESTAURANT'}</h3>
+                {restaurantVenue.description ? (
+                  <p className="text-zinc-500 font-mono text-xs mt-1 line-clamp-1">{restaurantVenue.description}</p>
+                ) : (
+                  <p className="text-zinc-500 font-mono text-xs mt-1">Reserve a table</p>
+                )}
               </div>
-              <button 
-                onClick={() => openWhatsApp(restaurantVenue.phone || business.phone)} 
-                className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors"
-              >
-                Request Table
-              </button>
+              {getWhatsAppNumber() ? (
+                <button
+                  onClick={() => openWhatsApp(getWhatsAppNumber())}
+                  className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors"
+                >
+                  Request Table
+                </button>
+              ) : (
+                <button
+                  onClick={() => startDirectBooking(restaurantVenue.id)}
+                  className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors"
+                >
+                  View Details
+                </button>
+              )}
             </div>
           )}
 
+          {/* UPCOMING EVENTS (from real API) */}
+          {eventsLoading && (
+            <div className="py-3 flex items-center justify-center gap-2">
+              <div className="w-4 h-4 border-2 border-zinc-300 border-t-zinc-700 rounded-full animate-spin"></div>
+              <span className="text-xs font-mono text-zinc-400 uppercase">Loading events...</span>
+            </div>
+          )}
+
+          {!eventsLoading && upcomingEvents.length > 0 && (
+            <div className="mt-2">
+              <h3 className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest mb-3">Upcoming Events</h3>
+              {upcomingEvents.map(event => {
+                const date = new Date(event.startTime);
+                const dateStr = date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+                const timeStr = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+                return (
+                  <div key={event.id} className="bg-white border border-zinc-300 p-3 rounded-sm mb-2 flex justify-between items-center">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-sans font-bold text-sm truncate">{event.name}</h4>
+                      <div className="flex items-center gap-3 mt-1">
+                        <span className="text-[10px] font-mono text-zinc-500">{dateStr} {timeStr}</span>
+                        {event.vibe && (
+                          <span className="text-[10px] font-mono text-zinc-400 uppercase">{event.vibe}</span>
+                        )}
+                        {event.maxGuests > 0 && (
+                          <span className="text-[10px] font-mono text-zinc-400">{event.maxGuests} max</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="ml-3 shrink-0">
+                      {event.minimumSpend > 0 ? (
+                        <span className="text-[10px] font-mono font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1">€{event.minimumSpend} MIN</span>
+                      ) : event.isTicketed && event.ticketPrice > 0 ? (
+                        <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-1">€{event.ticketPrice}</span>
+                      ) : (
+                        <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1">FREE</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>

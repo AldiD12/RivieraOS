@@ -1,60 +1,34 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// 🔧 DYNAMIC IMPORTS: Fix "Cannot access 'G' before initialization" error
-// DELETE: import haptics from '../utils/haptics';
-// DELETE: import { reservationApi } from '../services/reservationApi';
-
-// ADD THESE INSTEAD: Dynamic lazy loading to prevent circular dependency crash
 const getHaptics = () => import('../utils/haptics').then(m => m.default);
 const getReservationApi = () => import('../services/reservationApi').then(m => m.reservationApi);
 
-// 🛡️ SECURITY: Detect and warn about malicious fetch interceptors
-const detectMaliciousCode = () => {
-  const fetchString = window.fetch.toString();
-  if (fetchString.includes('_w_skunk') || fetchString.includes('_o_fetch') || fetchString.includes('handleResponse')) {
-    console.warn('🚨 SECURITY WARNING: Malicious fetch interceptor detected!');
-    console.warn('🚨 This may cause "Cannot access G before initialization" errors');
-    return true;
-  }
-  return false;
-};
-
 export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) {
   const navigate = useNavigate();
-  
-  // 🛡️ SECURITY: Check for malicious code on component mount
-  if (detectMaliciousCode()) {
-    console.warn('🚨 Malicious code detected - using defensive programming patterns');
-  }
   const [selectedZone, setSelectedZone] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
-  // 🚨 TRAP 2 FIX: Load saved guest info from localStorage
+  const [toast, setToast] = useState(null);
   const [bookingData, setBookingData] = useState(() => {
     const savedName = localStorage.getItem('riviera_guestName') || '';
     const savedPhone = localStorage.getItem('riviera_guestPhone') || '';
-    
-    // Smart date defaulting: if it's after 6 PM, default to tomorrow
+
     const now = new Date();
-    const currentHour = now.getHours();
-    const defaultDate = currentHour >= 18 // After 6 PM
-      ? new Date(now.getTime() + 24 * 60 * 60 * 1000) // Tomorrow
-      : now; // Today
-    
+    const defaultDate = now.getHours() >= 18
+      ? new Date(now.getTime() + 24 * 60 * 60 * 1000)
+      : now;
+
     return {
       guestName: savedName,
       guestPhone: savedPhone,
       guestCount: 2,
       sunbedCount: 1,
-      arrivalTime: '10:00', // Default to 10:00 AM
+      arrivalTime: '10:00',
       date: defaultDate.toISOString().split('T')[0]
     };
   });
   const [submitting, setSubmitting] = useState(false);
 
-
-
-  // Time slots (09:00 - 18:00, 30-min intervals)
   const timeSlots = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
     '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
@@ -65,276 +39,110 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
   const hasAvailability = availability && availability.availableUnits > 0;
 
   const handleZoneSelect = async (zone) => {
-      setSelectedZone(zone);
-      setShowBookingForm(true);
+    setSelectedZone(zone);
+    setShowBookingForm(true);
+    try {
+      const haptics = await getHaptics();
+      if (haptics.isSupported()) haptics.light();
+    } catch (_) {}
+  };
 
-      // Haptic feedback - DYNAMIC IMPORT FIX
-      try {
-        const haptics = await getHaptics();
-        if (haptics.isSupported()) {
-          haptics.light();
-        }
-      } catch (err) {
-        console.warn('Haptics not available:', err);
-      }
-    };
+  const getSortedZones = () => {
+    if (!availability || !availability.zones) return [];
+    return [...availability.zones].sort((a, b) => b.basePrice - a.basePrice);
+  };
 
-    // Sort zones by price (highest first = closest to beach)
-    const getSortedZones = () => {
-      if (!availability || !availability.zones) return [];
-      return [...availability.zones].sort((a, b) => b.basePrice - a.basePrice);
-    };
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 4000);
+  };
 
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
-    
-    // 🚨 EMERGENCY DEBUG: THE "G" HUNT
-    console.log("🔍 DEBUG: Checking scope before submission...");
-    
-    // 🛡️ SECURITY: Protect against malicious code injection
-    try {
-      // Verify all variables are accessible before proceeding
-      const debugInfo = {
-        bookingData: bookingData,
-        selectedZone: selectedZone,
-        venue: venue,
-        guestName: bookingData?.guestName,
-        guestPhone: bookingData?.guestPhone,
-        guestCount: bookingData?.guestCount,
-        sunbedCount: bookingData?.sunbedCount,
-        arrivalTime: bookingData?.arrivalTime,
-        date: bookingData?.date
-      };
-      
-      console.log("📊 All variables verified:", debugInfo);
-      
-      // Check for undefined or null critical values
-      if (!bookingData) {
-        throw new Error("BookingData is undefined");
-      }
-      if (!selectedZone) {
-        throw new Error("SelectedZone is undefined");
-      }
-      if (!venue) {
-        throw new Error("Venue is undefined");
-      }
-      
-      console.log("✅ All scope checks passed - proceeding with submission");
-      
-    } catch (err) {
-      console.error("💥 Variable access error BEFORE submission:", err);
-      alert(`SCOPE ERROR: ${err.message}\n\nThis appears to be caused by malicious code injection. Please refresh the page and try again.`);
-      return;
-    }
-    
-    if (!selectedZone) return;
-    
+    if (!selectedZone || !bookingData || !venue) return;
+
     try {
       setSubmitting(true);
-      
-      // Haptic feedback - DYNAMIC IMPORT FIX
       try {
         const haptics = await getHaptics();
-        if (haptics.isSupported()) {
-          haptics.medium();
+        if (haptics.isSupported()) haptics.medium();
+      } catch (_) {}
+
+      // Save guest info
+      localStorage.setItem('riviera_guestName', bookingData.guestName);
+      localStorage.setItem('riviera_guestPhone', bookingData.guestPhone);
+
+      const venueType = (venue.type || '').toLowerCase();
+      const isBeach = venueType.includes('beach') || venueType.includes('plazh');
+      const isRestaurant = venueType.includes('restaurant') || venueType.includes('restorant');
+
+      if (isRestaurant) {
+        // Restaurant: WhatsApp with real venue phone (no hardcoded fallback)
+        const venuePhone = venue.whatsappNumber || venue.whatsAppNumber || venue.phone;
+        if (!venuePhone) {
+          showToast('This venue has no contact number configured yet.');
+          setSubmitting(false);
+          return;
         }
-      } catch (err) {
-        console.warn('Haptics not available:', err);
-      }
-      
-      console.log('📝 Submitting booking...', {
-        zone: selectedZone,
-        booking: bookingData,
-        venueType: venue.type,
-        venueName: venue.name,
-        fullVenue: venue,
-        apiPayload: {
+
+        const message = `Hi! 👋
+
+I'd like to reserve a table:
+
+🍽️ Restaurant: ${venue.name}
+👥 Guests: ${bookingData.guestCount}
+📅 Date: ${new Date(bookingData.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+🕐 Time: ${bookingData.arrivalTime}
+
+Name: ${bookingData.guestName}
+Phone: ${bookingData.guestPhone}
+
+Thank you!`;
+
+        const whatsappUrl = `https://wa.me/${venuePhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+        setTimeout(() => onClose(), 500);
+
+      } else if (isBeach) {
+        // Beach: Real API reservation
+        const apiPayload = {
           venueId: venue.id,
           zoneId: selectedZone.id,
           guestName: bookingData.guestName,
           guestPhone: bookingData.guestPhone,
+          guestCount: bookingData.guestCount || 2,
           sunbedCount: bookingData.sunbedCount,
           arrivalTime: bookingData.arrivalTime,
           reservationDate: bookingData.date,
+          startTime: bookingData.date + 'T' + bookingData.arrivalTime + ':00',
           notes: 'Booked via XIXA Discovery'
-        }
-      });
-      
-      // Save guest info to localStorage
-      localStorage.setItem('riviera_guestName', bookingData.guestName);
-      localStorage.setItem('riviera_guestPhone', bookingData.guestPhone);
-      
-      // Check venue type (case-insensitive and partial match)
-      const venueType = (venue.type || '').toLowerCase();
-      const isBeach = venueType.includes('beach') || venueType.includes('plazh');
-      const isRestaurant = venueType.includes('restaurant') || venueType.includes('restorant');
-      
-      console.log('🔍 Type check:', { venueType, isBeach, isRestaurant });
-      
-      if (isRestaurant) {
-        // RESTAURANT: Open WhatsApp with prefilled message
-        console.log('📱 Opening WhatsApp for restaurant booking...');
-        const venuePhone = venue.phone || '+355692000000';
-        const message = `Përshëndetje! 👋
+        };
 
-Dua të rezervoj tavolinë:
-
-🍽️ Restoranti: ${venue.name}
-👥 Persona: ${bookingData.guestCount}
-📅 Data: ${new Date(bookingData.date).toLocaleDateString('sq-AL')}
-🕐 Ora: ${bookingData.arrivalTime}
-
-Emri: ${bookingData.guestName}
-Telefoni: ${bookingData.guestPhone}
-
-Faleminderit!`;
-
-        const whatsappUrl = `https://wa.me/${venuePhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}`;
-        console.log('📱 WhatsApp URL:', whatsappUrl);
-        
-        window.open(whatsappUrl, '_blank');
-        
-        // Close modal after short delay
-        setTimeout(() => {
-          onClose();
-        }, 500);
-        
-      } else if (isBeach) {
-        // BEACH: Real instant booking API
-        console.log('🏖️ Creating beach reservation...');
-        
-        try {
-          // Convert to backend expected format (camelCase as per swagger.json)
-          console.log("🔧 Starting payload construction...");
-          
-          console.log("🔧 Building API payload...");
-          
-          // 🕵️‍♂️ THE INVESTIGATION: Payload debugging
-          const apiPayload = {
-            venueId: venue.id,
-            zoneId: selectedZone.id,
-            guestName: bookingData.guestName,
-            guestPhone: bookingData.guestPhone,
-            guestCount: bookingData.guestCount || 2,
-            sunbedCount: bookingData.sunbedCount,
-            arrivalTime: bookingData.arrivalTime,
-            reservationDate: bookingData.date, // Just send 'YYYY-MM-DD' string
-            startTime: bookingData.date + "T" + bookingData.arrivalTime + ":00", // Fixed format
-            notes: 'Booked via XIXA Discovery'
-          };
-          
-          // 🔥 PAYLOAD INSPECTION: The Truth
-          console.log("PAYLOAD INSPECTION:", JSON.stringify(apiPayload, null, 2));
-          
-          // Check specifically for nulls, undefined, or empty strings
-          Object.entries(apiPayload).forEach(([key, value]) => {
-            if (value === null || value === undefined || value === "") {
-              console.warn(`🔥 PAYLOAD FIELD ERROR: ${key} is ${value}`);
-            }
-            // Check data types
-            console.log(`📊 ${key}: ${typeof value} = ${value}`);
-          });
-          
-          // Verify critical fields
-          console.log("🔍 CRITICAL FIELD VERIFICATION:");
-          console.log(`venue.id type: ${typeof venue.id}, value: ${venue.id}`);
-          console.log(`selectedZone.id type: ${typeof selectedZone.id}, value: ${selectedZone.id}`);
-          console.log(`guestCount type: ${typeof apiPayload.guestCount}, value: ${apiPayload.guestCount}`);
-          console.log(`sunbedCount type: ${typeof apiPayload.sunbedCount}, value: ${apiPayload.sunbedCount}`);
-          
-          console.log("✅ API payload constructed successfully");
-
-          console.log('📤 Final API Payload:', JSON.stringify(apiPayload, null, 2));
-          console.log('🔍 Booking data state:', bookingData);
-          console.log('🔍 Selected zone:', selectedZone);
-          console.log('🔍 Venue data:', venue);
-
-          console.log("🌐 Calling reservationApi.createReservation...");
-          
-          // 🛡️ FAILSAFE: Dynamic import to prevent "Cannot access 'G'" error
-          let result;
-          try {
-            const resApi = await getReservationApi();
-            result = await resApi.createReservation(apiPayload);
-          } catch (moduleError) {
-            if (moduleError.message.includes("Cannot access") || moduleError.message.includes("before initialization")) {
-              console.error("🚨 MODULE INITIALIZATION ERROR:", moduleError);
-              alert("CRITICAL ERROR: Module initialization failed. This is caused by malicious code injection.\n\nPlease:\n1. Refresh the page\n2. Clear browser cache\n3. Try again");
-              return;
-            }
-            throw moduleError; // Re-throw if it's not the initialization error
-          }
-          
-          console.log('✅ Booking successful:', result);
-          navigate(`/success/${result.bookingCode}`);
-        } catch (apiError) {
-          console.error('🚨 API Error caught:', apiError);
-          throw apiError; // Re-throw to be caught by outer catch
-        }
+        const resApi = await getReservationApi();
+        const result = await resApi.createReservation(apiPayload);
+        navigate(`/success/${result.bookingCode}`);
       } else {
-        console.warn('⚠️ Unknown venue type:', venueType);
-        alert('Lloji i vendit nuk është i njohur. Ju lutem kontaktoni stafin.');
+        showToast('Booking not available for this venue type.');
       }
-      
-    } catch (error) {
-      console.error('❌ Booking failed:', error);
-      console.error('❌ Error details:', {
-        message: error.message,
-        response: error.response,
-        stack: error.stack
-      });
-      
-      // ENHANCED ERROR DISPLAY: Show exact backend response
-      const errorStatus = error.response?.status || 'undefined';
-      const errorData = error.response?.data || 'undefined';
-      const contentType = error.response?.contentType || 'unknown';
-      const statusText = error.response?.statusText || 'unknown';
-      
-      console.error('🔥 COMPLETE ERROR BREAKDOWN:', {
-        message: error.message,
-        status: errorStatus,
-        statusText,
-        contentType,
-        data: errorData,
-        fullError: error
-      });
-      
-      alert(`🔥 BACKEND ERROR DETAILS:
-Error: ${error.message}
-Status: ${errorStatus} ${statusText}
-Content-Type: ${contentType}
-Response: ${JSON.stringify(errorData, null, 2)}
 
-Check console for full details.`);
-      
+    } catch (error) {
       try {
         const haptics = await getHaptics();
-        if (haptics.isSupported()) {
-          haptics.error();
-        }
-      } catch (hapticsError) {
-        console.error('❌ Haptics error:', hapticsError);
-      }
-      
-      // Better error handling
+        if (haptics.isSupported()) haptics.error();
+      } catch (_) {}
+
       if (error.response?.data?.error === 'INSUFFICIENT_CAPACITY') {
         const available = error.response.data.availableUnits;
-        alert(`Na vjen keq, vetëm ${available} shtretër të lirë në këtë zonë. Ju lutem zgjidhni më pak shtretër ose provoni zonë tjetër.`);
-      } else if (error.message && error.message.includes('Invalid arrivalTime')) {
-        alert('Ora e arritjes është e pavlefshme. Ju lutem provoni përsëri.');
+        showToast(`Only ${available} beds available in this zone. Please select fewer or try another zone.`);
+      } else if (error.message?.includes('Invalid arrivalTime')) {
+        showToast('Invalid arrival time. Please try again.');
       } else if (error.response?.status === 404) {
-        alert('Vendi ose zona nuk u gjet. Ju lutem provoni përsëri.');
+        showToast('Venue or zone not found. Please try again.');
       } else if (error.response?.status === 400) {
-        console.error('❌ 400 Bad Request Details:', {
-          data: error.response?.data,
-          status: error.response?.status,
-          statusText: error.response?.statusText,
-          headers: error.response?.headers
-        });
-        const errorMsg = error.response?.data?.message || error.response?.data?.error || error.response?.data || 'Invalid request data';
-        alert(`Bad Request: ${JSON.stringify(errorMsg)}\n\nPlease check the console for details.`);
+        const msg = error.response?.data?.message || error.response?.data?.error || 'Invalid request';
+        showToast(`Booking failed: ${msg}`);
       } else {
-        alert(`Rezervimi dështoi: ${error.message || 'Unknown error'}\n\nJu lutem provoni përsëri ose kontaktoni stafin.`);
+        showToast(`Booking failed: ${error.message || 'Unknown error'}. Please try again.`);
       }
     } finally {
       setSubmitting(false);
@@ -344,18 +152,15 @@ Check console for full details.`);
   return (
     <>
       {/* Overlay */}
-      <div 
+      <div
         className={`fixed inset-0 backdrop-blur-sm z-40 transition-opacity duration-500 ${isDayMode ? 'bg-black/30' : 'bg-black/60'}`}
         onClick={onClose}
       />
 
       {/* Bottom Sheet */}
-      <div 
+      <div
         className={`fixed bottom-0 left-0 right-0 rounded-t-[2rem] shadow-2xl z-50 max-h-[80vh] overflow-y-auto border-t ${isDayMode ? 'bg-white border-zinc-200' : 'bg-zinc-950 border-zinc-800'}`}
-        style={{
-          animation: 'slideUp 0.5s ease-out',
-          fontFamily: 'Inter, sans-serif'
-        }}
+        style={{ animation: 'slideUp 0.5s ease-out', fontFamily: 'Inter, sans-serif' }}
       >
         {/* Handle Bar */}
         <div className="flex justify-center pt-4 pb-2">
@@ -374,7 +179,7 @@ Check console for full details.`);
           </button>
 
           {/* Venue Header */}
-          <h2 
+          <h2
             className={`text-5xl font-light mb-2 tracking-tight pr-8 ${isDayMode ? 'text-zinc-950' : 'text-white'}`}
             style={{ fontFamily: 'Playfair Display, serif' }}
           >
@@ -383,9 +188,16 @@ Check console for full details.`);
           <p className={`text-sm uppercase tracking-widest mb-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
             {venue.type}
           </p>
-          <p className={`text-base mb-6 ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
-            {venue.address}
-          </p>
+          {venue.description && (
+            <p className={`text-base mb-4 leading-relaxed ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
+              {venue.description}
+            </p>
+          )}
+          {venue.address && (
+            <p className={`text-sm mb-6 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+              {venue.address}
+            </p>
+          )}
 
           {/* Availability Summary */}
           {hasAvailability ? (
@@ -428,9 +240,8 @@ Check console for full details.`);
                   onClick={() => handleZoneSelect(zone)}
                   disabled={zone.availableUnits === 0}
                   className={`
-                    w-full rounded-sm p-6 border text-left
-                    transition-all duration-300 ease-out
-                    ${zone.availableUnits > 0 
+                    w-full rounded-sm p-6 border text-left transition-all duration-300 ease-out
+                    ${zone.availableUnits > 0
                       ? isDayMode
                         ? 'bg-white border-zinc-200 hover:border-zinc-400 hover:shadow-lg cursor-pointer'
                         : 'bg-zinc-900 border-zinc-800 hover:border-[#10FF88]/50 hover:shadow-[0_0_20px_rgba(16,255,136,0.2)] cursor-pointer'
@@ -447,15 +258,15 @@ Check console for full details.`);
                       <p className={`text-sm mb-1 ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
                         {zone.availableUnits} / {zone.totalUnits} available
                       </p>
-                      <p className={`text-xs uppercase tracking-wider ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                        {zone.zoneType}
-                      </p>
+                      {zone.zoneType && (
+                        <p className={`text-xs uppercase tracking-wider ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+                          {zone.zoneType}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right">
-                      <p 
-                        className={`text-3xl font-light mb-1 ${isDayMode ? 'text-zinc-950' : 'text-[#10FF88]'}`}
-                        style={{ fontFamily: 'Playfair Display, serif' }}
-                      >
+                      <p className={`text-3xl font-light mb-1 ${isDayMode ? 'text-zinc-950' : 'text-[#10FF88]'}`}
+                         style={{ fontFamily: 'Playfair Display, serif' }}>
                         €{zone.basePrice}
                       </p>
                       <p className={`text-xs ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>per day</p>
@@ -466,55 +277,18 @@ Check console for full details.`);
             </div>
           )}
 
-          {/* Description */}
-          {venue.description && (
-            <div className="mb-8">
-              <h3 className={`text-sm uppercase tracking-widest font-medium mb-3 ${isDayMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
-                About
-              </h3>
-              <p className={`text-base leading-relaxed ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
-                {venue.description}
-              </p>
-            </div>
-          )}
-
-          {/* Get Directions Button */}
+          {/* Get Directions */}
           {venue.latitude && venue.longitude && (
             <button
-              onClick={async () => {
-                // Open native maps app with directions
-                const destination = `${venue.latitude},${venue.longitude}`;
-                const label = encodeURIComponent(venue.name);
-                
-                // Detect platform and open appropriate maps app
+              onClick={() => {
+                const dest = `${venue.latitude},${venue.longitude}`;
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-                const isAndroid = /Android/.test(navigator.userAgent);
-                
-                let mapsUrl;
-                if (isIOS) {
-                  // Apple Maps
-                  mapsUrl = `maps://maps.apple.com/?daddr=${destination}&q=${label}`;
-                } else if (isAndroid) {
-                  // Google Maps
-                  mapsUrl = `google.navigation:q=${destination}`;
-                } else {
-                  // Desktop - Google Maps web
-                  mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}&destination_place_id=${label}`;
-                }
-                
-                window.open(mapsUrl, '_blank');
-                
-                // Haptic feedback - DYNAMIC IMPORT FIX
-                try {
-                  const haptics = await getHaptics();
-                  if (haptics.isSupported()) {
-                    haptics.light();
-                  }
-                } catch (err) {
-                  console.warn('Haptics not available:', err);
-                }
+                const url = isIOS
+                  ? `maps://maps.apple.com/?daddr=${dest}&q=${encodeURIComponent(venue.name)}`
+                  : `https://www.google.com/maps/dir/?api=1&destination=${dest}`;
+                window.open(url, '_blank');
               }}
-              className={`w-full mb-6 px-6 py-4 rounded-sm border flex items-center justify-center gap-3 transition-all duration-300 ${isDayMode ? 'bg-white border-zinc-300 text-zinc-700 hover:border-zinc-950 hover:bg-stone-50 shadow-sm' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-[#10FF88] hover:text-[#10FF88]'}`}
+              className={`w-full mb-6 px-6 py-4 rounded-sm border flex items-center justify-center gap-3 transition-all duration-300 ${isDayMode ? 'bg-white border-zinc-300 text-zinc-700 hover:border-zinc-950 shadow-sm' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-[#10FF88] hover:text-[#10FF88]'}`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -531,7 +305,7 @@ Check console for full details.`);
                   if (availability.zones && availability.zones.length === 1) {
                     handleZoneSelect(availability.zones[0]);
                   } else {
-                    alert('Please select a zone above');
+                    showToast('Please select a zone above');
                   }
                 }}
                 className={`flex-1 px-8 py-4 rounded-sm text-sm tracking-widest uppercase transition-all duration-300 ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800 shadow-lg' : 'bg-zinc-950 text-[#10FF88] border border-zinc-800 hover:shadow-[0_0_20px_rgba(16,255,136,0.4)]'}`}
@@ -554,20 +328,27 @@ Check console for full details.`);
             </button>
           </div>
         </div>
+
+        {/* Toast */}
+        {toast && (
+          <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in">
+            <div className={`px-5 py-3 rounded-sm shadow-lg text-sm font-mono tracking-wide ${isDayMode ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-950'}`}>
+              {toast}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Booking Form Modal */}
       {showBookingForm && selectedZone && (
         <div className={`fixed inset-0 backdrop-blur-lg flex items-center justify-center z-[60] p-4 ${isDayMode ? 'bg-black/30' : 'bg-black/60'}`}>
-          <div 
+          <div
             className={`rounded-sm p-8 max-w-md w-full max-h-[90vh] overflow-y-auto ${isDayMode ? 'bg-white' : 'bg-zinc-950 border border-zinc-800'}`}
             style={{ animation: 'fadeIn 0.3s ease-out' }}
           >
-            <h3 
-              className={`text-3xl font-light mb-2 ${isDayMode ? 'text-zinc-950' : 'text-white'}`}
-              style={{ fontFamily: 'Cormorant Garamond, serif' }}
-            >
-              Rezervo Tani
+            <h3 className={`text-3xl font-light mb-2 ${isDayMode ? 'text-zinc-950' : 'text-white'}`}
+                style={{ fontFamily: 'Cormorant Garamond, serif' }}>
+              Book Now
             </h3>
             <p className={`text-sm mb-6 ${isDayMode ? 'text-zinc-600' : 'text-zinc-400'}`}>
               {venue.name} - {selectedZone.name}
@@ -576,220 +357,133 @@ Check console for full details.`);
             <form onSubmit={handleBookingSubmit} className="space-y-5">
               {/* Name */}
               <div>
-                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                  Emri Juaj
-                </label>
+                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>Your Name</label>
                 <input
-                  type="text"
-                  required
+                  type="text" required
                   value={bookingData.guestName}
                   onChange={(e) => setBookingData({ ...bookingData, guestName: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-sm focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950 focus:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88] focus:border-[#10FF88]'}`}
+                  className={`w-full px-4 py-3 rounded-sm focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88]'}`}
                   placeholder="John Doe"
                 />
               </div>
 
               {/* Phone */}
               <div>
-                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                  Telefoni
-                </label>
+                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>Phone</label>
                 <input
-                  type="tel"
-                  required
+                  type="tel" required
                   value={bookingData.guestPhone}
                   onChange={(e) => setBookingData({ ...bookingData, guestPhone: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-sm focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950 focus:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88] focus:border-[#10FF88]'}`}
+                  className={`w-full px-4 py-3 rounded-sm focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88]'}`}
                   placeholder="+355 69 123 4567"
                 />
               </div>
 
-              {/* Guest Count (Restaurant only) */}
+              {/* Guest Count (Restaurant) */}
               {(venue.type || '').toLowerCase().includes('restaurant') && (
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                    Sa persona jeni?
-                  </label>
+                  <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>Number of Guests</label>
                   <div className="grid grid-cols-5 gap-2">
-                    {[
-                      { value: 2, label: '1-2' },
-                      { value: 4, label: '3-4' },
-                      { value: 6, label: '5-6' },
-                      { value: 8, label: '7-8' },
-                      { value: 10, label: '9+' }
-                    ].map(option => (
-                      <button
-                        key={option.value}
-                        type="button"
+                    {[{ value: 2, label: '1-2' }, { value: 4, label: '3-4' }, { value: 6, label: '5-6' }, { value: 8, label: '7-8' }, { value: 10, label: '9+' }].map(option => (
+                      <button key={option.value} type="button"
                         onClick={() => setBookingData({ ...bookingData, guestCount: option.value })}
-                        className={`
-                          px-3 py-2 rounded-sm text-sm font-medium transition-all
-                          ${bookingData.guestCount === option.value
-                            ? isDayMode
-                              ? 'bg-zinc-950 text-white'
-                              : 'bg-[#10FF88] text-zinc-950'
-                            : isDayMode
-                              ? 'bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-950'
-                              : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
-                          }
-                        `}
-                      >
-                        {option.label}
-                      </button>
+                        className={`px-3 py-2 rounded-sm text-sm font-medium transition-all ${bookingData.guestCount === option.value
+                          ? isDayMode ? 'bg-zinc-950 text-white' : 'bg-[#10FF88] text-zinc-950'
+                          : isDayMode ? 'bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
+                        }`}
+                      >{option.label}</button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Sunbed Count (Beach only) */}
+              {/* Sunbed Count (Beach) */}
               {(venue.type || '').toLowerCase().includes('beach') && (
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                    Sa shtretër dëshironi?
-                  </label>
+                  <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>Number of Sunbeds</label>
                   <div className="grid grid-cols-6 gap-2">
                     {[1, 2, 3, 4, 5, 6].map(count => (
-                      <button
-                        key={count}
-                        type="button"
+                      <button key={count} type="button"
                         onClick={() => setBookingData({ ...bookingData, sunbedCount: count })}
-                        className={`
-                          px-3 py-2 rounded-sm text-sm font-medium transition-all
-                          ${bookingData.sunbedCount === count
-                            ? isDayMode
-                              ? 'bg-zinc-950 text-white'
-                              : 'bg-[#10FF88] text-zinc-950'
-                            : isDayMode
-                              ? 'bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-950'
-                              : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
-                          }
-                        `}
-                      >
-                        {count}
-                      </button>
+                        className={`px-3 py-2 rounded-sm text-sm font-medium transition-all ${bookingData.sunbedCount === count
+                          ? isDayMode ? 'bg-zinc-950 text-white' : 'bg-[#10FF88] text-zinc-950'
+                          : isDayMode ? 'bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
+                        }`}
+                      >{count}</button>
                     ))}
                   </div>
                 </div>
               )}
 
-
-
-              {/* Date Selection */}
+              {/* Date */}
               <div>
-                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                  Data e Rezervimit
-                </label>
+                <label className={`block text-sm font-medium mb-2 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>Date</label>
                 <input
-                  type="date"
-                  required
+                  type="date" required
                   value={bookingData.date}
-                  min={new Date().toISOString().split('T')[0]} // Can't book in the past
+                  min={new Date().toISOString().split('T')[0]}
                   onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-sm focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950 focus:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88] focus:border-[#10FF88]'}`}
+                  className={`w-full px-4 py-3 rounded-sm focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88]'}`}
                 />
-                {bookingData.date === new Date().toISOString().split('T')[0] && (
-                  <p className={`text-xs mt-1 ${isDayMode ? 'text-amber-600' : 'text-amber-400'}`}>
-                    ⚠️ Booking for today - make sure arrival time is in the future
-                  </p>
-                )}
               </div>
 
               {/* Arrival Time */}
-              {/* Arrival Time - Sharp Design Time Grid */}
               <div>
-                <label className={`block text-sm font-medium mb-3 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>
-                  Arrival Time
-                </label>
+                <label className={`block text-sm font-medium mb-3 ${isDayMode ? 'text-zinc-700' : 'text-zinc-300'}`}>Arrival Time</label>
                 <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
                   {timeSlots.map(time => {
-                    // Check if this time slot is in the past for today's bookings
                     const isToday = bookingData.date === new Date().toISOString().split('T')[0];
                     const now = new Date();
                     const currentTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
                     const isPastTime = isToday && time <= currentTime;
-                    
+
                     return (
-                      <button
-                        key={time}
-                        type="button"
-                        disabled={isPastTime}
+                      <button key={time} type="button" disabled={isPastTime}
                         onClick={() => setBookingData({ ...bookingData, arrivalTime: time })}
-                        className={`
-                          px-3 py-2 rounded-sm text-sm font-medium transition-all
-                          ${isPastTime 
-                            ? 'opacity-50 cursor-not-allowed bg-zinc-200 text-zinc-400'
-                            : bookingData.arrivalTime === time
-                              ? isDayMode
-                                ? 'bg-zinc-950 text-white'
-                                : 'bg-[#10FF88] text-zinc-950'
-                              : isDayMode
-                              ? 'border border-zinc-300 text-zinc-700 hover:border-zinc-950'
-                              : 'border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
-                          }
-                        `}
-                      >
-                        {time}
-                      </button>
+                        className={`px-3 py-2 rounded-sm text-sm font-medium transition-all ${isPastTime
+                          ? 'opacity-50 cursor-not-allowed bg-zinc-200 text-zinc-400'
+                          : bookingData.arrivalTime === time
+                            ? isDayMode ? 'bg-zinc-950 text-white' : 'bg-[#10FF88] text-zinc-950'
+                            : isDayMode ? 'border border-zinc-300 text-zinc-700 hover:border-zinc-950' : 'border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
+                        }`}
+                      >{time}</button>
                     );
                   })}
                 </div>
                 {(venue.type || '').toLowerCase().includes('beach') && (
-                  <div className={`mt-4 p-4 rounded-lg border-2 ${isDayMode ? 'bg-amber-50 border-amber-200' : 'bg-amber-900/20 border-amber-700'}`}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                      </svg>
-                      <p className={`text-sm font-medium ${isDayMode ? 'text-amber-800' : 'text-amber-400'}`}>
-                        IMPORTANT: Reservation Expiration
-                      </p>
-                    </div>
+                  <div className={`mt-4 p-4 rounded-sm border ${isDayMode ? 'bg-amber-50 border-amber-200' : 'bg-amber-900/20 border-amber-700'}`}>
                     <p className={`text-sm ${isDayMode ? 'text-amber-700' : 'text-amber-300'}`}>
-                      Your reservation will automatically expire <strong>15 minutes after your arrival time</strong>. 
-                      Please arrive on time or your sunbeds will be released to other guests.
+                      Your reservation expires <strong>15 minutes after arrival time</strong>. Please arrive on time.
                     </p>
-                    {bookingData.date === new Date().toISOString().split('T')[0] && (
-                      <p className={`text-sm mt-2 font-medium ${isDayMode ? 'text-amber-800' : 'text-amber-200'}`}>
-                        📅 Booking for TODAY - Expired time slots are disabled
-                      </p>
-                    )}
                   </div>
                 )}
               </div>
 
-              {/* Summary - CASH IS KING Psychology */}
-              <div className="text-center py-6 border-t border-zinc-200">
+              {/* Summary */}
+              <div className={`text-center py-6 border-t ${isDayMode ? 'border-zinc-200' : 'border-zinc-800'}`}>
                 <p className={`text-xs uppercase tracking-widest mb-2 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
                   TOTAL TO PAY IN CASH
                 </p>
-                <h2 className={`text-5xl font-serif mb-2 ${isDayMode ? 'text-zinc-950' : 'text-[#10FF88]'}`} style={{ fontFamily: 'Cormorant Garamond, serif' }}>
+                <h2 className={`text-5xl font-serif mb-2 ${isDayMode ? 'text-zinc-950' : 'text-[#10FF88]'}`}
+                    style={{ fontFamily: 'Cormorant Garamond, serif' }}>
                   €{Math.round(selectedZone.basePrice * bookingData.sunbedCount)}
                 </h2>
                 <p className={`text-xs ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                  Pay at entrance • No prepayment required
+                  Pay at entrance &bull; No prepayment required
                 </p>
               </div>
 
-              {/* Submit Button */}
-              {/* Submit Button - VIP GLOW EFFECT */}
+              {/* Submit */}
               <button
-                type="submit"
-                disabled={submitting}
-                className={`
-                  w-full px-8 py-6 rounded-sm text-sm tracking-widest uppercase
-                  transition-all duration-300 font-bold
-                  ${submitting ? 'opacity-50 cursor-not-allowed' : ''}
-                  ${isDayMode
-                    ? 'bg-zinc-950 text-white hover:bg-zinc-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
-                    : 'bg-zinc-950 text-[#10FF88] border border-zinc-800 hover:shadow-[0_0_30px_rgba(16,255,136,0.6)] shadow-[0_0_20px_rgba(16,255,136,0.3)]'
-                  }
-                `}
+                type="submit" disabled={submitting}
+                className={`w-full px-8 py-6 rounded-sm text-sm tracking-widest uppercase transition-all duration-300 font-bold ${submitting ? 'opacity-50 cursor-not-allowed' : ''} ${isDayMode
+                  ? 'bg-zinc-950 text-white hover:bg-zinc-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
+                  : 'bg-zinc-950 text-[#10FF88] border border-zinc-800 hover:shadow-[0_0_30px_rgba(16,255,136,0.6)]'
+                }`}
               >
-                {submitting 
-                  ? 'SECURING ACCESS...' 
-                  : 'CONFIRM ACCESS'
-                }
+                {submitting ? 'SECURING ACCESS...' : 'CONFIRM ACCESS'}
               </button>
-              
+
               <p className={`text-center text-xs mt-3 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
                 Pay €{Math.round(selectedZone.basePrice * bookingData.sunbedCount)} cash at the entrance
               </p>
@@ -798,32 +492,21 @@ Check console for full details.`);
         </div>
       )}
 
-      {/* Animations */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes slideUp {
-            from {
-              transform: translateY(100%);
-              opacity: 0;
-            }
-            to {
-              transform: translateY(0);
-              opacity: 1;
-            }
-          }
-          
-          @keyframes fadeIn {
-            from {
-              opacity: 0;
-              transform: scale(0.95);
-            }
-            to {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-        `
-      }} />
+      <style>{`
+        @keyframes slideUp {
+          from { transform: translateY(100%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes fade-in {
+          from { opacity: 0; transform: translate(-50%, -8px); }
+          to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        .animate-fade-in { animation: fade-in 0.2s ease-out; }
+      `}</style>
     </>
   );
 }

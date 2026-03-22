@@ -1,14 +1,21 @@
 import { useState } from 'react';
 
 export default function AssetBottomSheet({ asset, isOpen, onClose, isDayMode }) {
+  const [toast, setToast] = useState(null);
+
   if (!isOpen || !asset) return null;
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
 
   // Generate professional concierge WhatsApp message
   const handleInquireCharter = () => {
     const whatsappNumber = asset.whatsappNumber || asset.whatsAppNumber || asset.phone;
-    
+
     if (!whatsappNumber) {
-      alert(`Sorry, ${asset.name} doesn't have a WhatsApp number configured yet.`);
+      showToast(`${asset.name} doesn't have a contact number yet.`);
       return;
     }
 
@@ -29,7 +36,6 @@ Thank you for your time.`;
     const cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
     const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
     
-    console.log('📱 Opening WhatsApp for yacht charter inquiry:', whatsappUrl);
     window.open(whatsappUrl, '_blank');
   };
 
@@ -189,6 +195,15 @@ Thank you for your time.`;
             </p>
           </div>
         </div>
+
+        {/* Toast */}
+        {toast && (
+          <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999]">
+            <div className={`px-5 py-3 rounded-sm shadow-lg text-sm font-mono tracking-wide ${isDayMode ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-950'}`}>
+              {toast}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
