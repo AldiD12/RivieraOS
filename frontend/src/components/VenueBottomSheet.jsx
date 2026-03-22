@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const getHaptics = () => import('../utils/haptics').then(m => m.default);
 const getReservationApi = () => import('../services/reservationApi').then(m => m.reservationApi);
+const MenuPreview = lazy(() => import('./MenuPreview'));
 
 export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) {
   const navigate = useNavigate();
   const [selectedZone, setSelectedZone] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const [toast, setToast] = useState(null);
   const [bookingData, setBookingData] = useState(() => {
     const savedName = localStorage.getItem('riviera_guestName') || '';
@@ -194,10 +196,25 @@ Thank you!`;
             </p>
           )}
           {venue.address && (
-            <p className={`text-sm mb-6 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
+            <p className={`text-sm mb-4 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
               {venue.address}
             </p>
           )}
+
+          {/* View Menu Button (for any venue that might have a digital menu) */}
+          <button
+            onClick={() => setShowMenu(true)}
+            className={`w-full mb-6 flex items-center justify-center gap-2 py-3 rounded-sm border transition-all duration-300 ${
+              isDayMode
+                ? 'border-stone-300 text-stone-600 hover:border-stone-500 hover:bg-stone-50'
+                : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:bg-zinc-900'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span className="text-sm font-medium tracking-wide">View Menu</span>
+          </button>
 
           {/* Availability Summary */}
           {hasAvailability ? (
@@ -490,6 +507,18 @@ Thank you!`;
             </form>
           </div>
         </div>
+      )}
+
+      {/* Menu Preview Modal (read-only for Discovery) */}
+      {showMenu && (
+        <Suspense fallback={null}>
+          <MenuPreview
+            venueId={venue.id}
+            venueName={venue.name}
+            isDayMode={isDayMode}
+            onClose={() => setShowMenu(false)}
+          />
+        </Suspense>
       )}
 
       <style>{`
