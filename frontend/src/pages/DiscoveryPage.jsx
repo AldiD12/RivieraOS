@@ -276,11 +276,16 @@ export default function DiscoveryPage() {
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('Beach'); // Default to Beach only
   
-  // 🪩 VENUE JAIL: Synchronously initialize correctly to avoid race conditions
+  // Initialize mode: check forced night mode OR time-based auto-switch (5PM-4AM = night)
   const isForcedNightMode = forceMode === 'night';
-  const [isDayMode, setIsDayMode] = useState(!isForcedNightMode); 
-  const [viewMode, setViewMode] = useState(isForcedNightMode ? 'list' : 'map'); 
-  const [activeCategory, setActiveCategory] = useState(isForcedNightMode ? 'EVENTS' : null);
+  const isAutoNightTime = (() => {
+    const h = new Date().getHours();
+    return h >= 17 || h < 4;
+  })();
+  const shouldStartNight = isForcedNightMode || isAutoNightTime;
+  const [isDayMode, setIsDayMode] = useState(!shouldStartNight);
+  const [viewMode, setViewMode] = useState(shouldStartNight ? 'list' : 'map');
+  const [activeCategory, setActiveCategory] = useState(null);
 
   const [userLocation, setUserLocation] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -302,6 +307,7 @@ export default function DiscoveryPage() {
 
   // Dropdown states
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [toast, setToast] = useState(null);
 
   // Theme Trigger Categories - Dynamic based on available data
 
@@ -421,29 +427,20 @@ export default function DiscoveryPage() {
     return categories;
   }, [venues, events, fromVenueId]);
 
-  // Set default category based on what's available
+  // Set default category once data is loaded (runs once)
   useEffect(() => {
-    // Only run this if we haven't forced night mode and activeCategory is STILL null
-    if (generateThemeCategories.length > 0 && !activeCategory && forceMode !== 'night') {
-      const currentHour = new Date().getHours();
-      // Auto-switch to night mode between 5 PM (17:00) and 4 AM (4:00)
-      const isNightTime = currentHour >= 17 || currentHour < 4;
-      
+    if (generateThemeCategories.length > 0 && !activeCategory) {
       let defaultCategory;
-      if (isNightTime) {
-        // Try to find a night mode category (EVENTS or CLUBS)
+      if (!isDayMode) {
         defaultCategory = generateThemeCategories.find(c => !c.isDayMode) || generateThemeCategories[0];
       } else {
-        // Try to find a day mode category
         defaultCategory = generateThemeCategories.find(c => c.isDayMode) || generateThemeCategories[0];
       }
-      
+
       setActiveCategory(defaultCategory.id);
-      setIsDayMode(defaultCategory.isDayMode);
       setActiveFilter(defaultCategory.filter);
-      setViewMode(defaultCategory.isDayMode ? 'map' : 'list');
     }
-  }, [generateThemeCategories, activeCategory, forceMode]);
+  }, [generateThemeCategories, activeCategory]);
 
   // Handle category click - Theme Trigger Magic with Smart Defaults
   const handleCategoryClick = (category) => {
@@ -459,11 +456,11 @@ export default function DiscoveryPage() {
     // Set appropriate filter
     setActiveFilter(categoryData.filter);
     
-    // SMART DEFAULTS - Intent-based view selection
-    if (category === 'BEACHES' || category === 'DINING' || category === 'YACHTS') {
-      setViewMode('map'); // Spatial problems need map view
-    } else if (category === 'EVENTS' || category === 'CLUBS') {
-      setViewMode('list'); // Vibe decisions need list view
+    // SMART DEFAULTS - Day categories show map, night categories show list
+    if (newIsDayMode) {
+      setViewMode('map');
+    } else {
+      setViewMode('list');
       setActiveEventFilter('all');
     }
   };
@@ -522,96 +519,54 @@ export default function DiscoveryPage() {
     loadEvents(); // Load all events initially
   }, []);
 
-  // Initialize day/night mode properly on mount
+  // Mark mode as initialized on mount
   useEffect(() => {
-    // Small delay to ensure proper mobile initialization
-    const initializeMode = () => {
-      console.log('🔄 Initializing day/night mode...');
-      console.log('📱 Current state:', { isDayMode, viewMode });
-      
-      // Ensure view mode matches day/night mode on first load
-      if (isDayMode && (viewMode === 'events' || viewMode === 'list')) {
-        console.log('🌅 Day mode detected, switching to map view');
-        setViewMode('map'); // Day mode should show map
-      } else if (!isDayMode && viewMode === 'map') {
-        console.log('🌙 Night mode detected, switching to list view');
-        setViewMode('list'); // Night mode should show list by default
-      }
-      
-      // Mark as initialized
-      setModeInitialized(true);
-    };
-    
-    // Run immediately
-    initializeMode();
-    
-    // Also run after a small delay for mobile devices
-    const timeoutId = setTimeout(initializeMode, 100);
-    
-    return () => clearTimeout(timeoutId);
-  }, []); // Run only once on mount
+    setModeInitialized(true);
+  }, []);
 
-  const loadVenues = async () => {
+  const loadVenues = useCallback(async () => {
     try {
       setLoading(true);
       const data = await venueApi.getVenues();
       setVenues(data);
     } catch (err) {
-      console.error('Failed to load venues:', err);
       setError('Failed to load venues');
     } finally {
       setLoading(false);
     }
-  };
-  
-  const loadEvents = async (geographicZone = null) => {
+  }, []);
+
+  const loadEvents = useCallback(async (geographicZone = null) => {
     try {
       setEventsLoading(true);
-      console.log('🌐 Fetching events from API...', geographicZone ? `for zone: ${geographicZone}` : 'all zones');
-      
-      // Use the updated API with zone filtering
       const data = await publicEventsApi.getEvents(geographicZone);
-      console.log('📦 Raw events API response:', data);
-      console.log('📊 Events data type:', typeof data, 'Array?', Array.isArray(data));
       
-      // Public API should only return published events
-      // Filter only if fields exist, otherwise trust the API
-      const published = Array.isArray(data) 
+      // Filter: published, not deleted, and not in the past
+      const now = new Date();
+      const published = Array.isArray(data)
         ? data.filter(e => {
-            // If isPublished field exists, check it. Otherwise assume published.
             const isPublished = e.isPublished !== undefined ? e.isPublished : true;
             const isDeleted = e.isDeleted !== undefined ? e.isDeleted : false;
-            const result = isPublished && !isDeleted;
-            
-            if (!result) {
-              console.log('🚫 Filtering out event:', e.name, { isPublished, isDeleted });
-            }
-            
-            return result;
+            // Hide events that ended (use endTime if available, otherwise startTime + 6h)
+            const endTime = e.endTime ? new Date(e.endTime) : new Date(new Date(e.startTime).getTime() + 6 * 60 * 60 * 1000);
+            const isNotPast = endTime > now;
+            return isPublished && !isDeleted && isNotPast;
           })
         : [];
-      
-      console.log(`✅ Filtered to ${published.length} published events:`, published);
       
       // If using GPS location, sort by distance
       if (isUsingGPSLocation && userLocation && venues.length > 0) {
         const sortedEvents = sortEventsByDistance(published, venues, userLocation);
-        console.log('📍 Sorted events by distance from user location:', sortedEvents.slice(0, 3).map(e => ({
-          name: e.name,
-          distance: e.distanceFromUser,
-          venue: e.venue?.name
-        })));
         setEvents(sortedEvents);
       } else {
         setEvents(published);
       }
     } catch (err) {
-      console.error('❌ Failed to load events:', err);
       setEvents([]); // Set empty array on error
     } finally {
       setEventsLoading(false);
     }
-  };
+  }, [isUsingGPSLocation, userLocation, venues]);
 
   // Group venues by business - Alternative approach without Map constructor
   const groupVenuesByBusiness = useCallback((venuesList) => {
@@ -759,75 +714,53 @@ export default function DiscoveryPage() {
   }, []);
 
   const handleZoneSelect = useCallback(async (zone) => {
-    console.log('🌍 Selected geographic zone:', zone);
     setSelectedGeographicZone(zone);
-    setIsUsingGPSLocation(false); // Manual zone selection, not GPS
-    
+    setIsUsingGPSLocation(false);
+
     try {
       if (zone === 'EVERYWHERE') {
-        // Load all events and venues
-        console.log('📍 Loading all events and venues');
-        await loadEvents(); // No zone filter
+        await loadEvents();
         await loadVenues();
       } else {
-        // Load filtered events for the selected zone
-        console.log(`📍 Loading events for zone: ${zone}`);
-        await loadEvents(zone); // Pass zone to filter API call
-        await loadVenues(); // Keep all venues for now (can be filtered later if needed)
+        await loadEvents(zone);
+        await loadVenues();
       }
     } catch (error) {
-      console.error('Failed to load zone data:', error);
+      // Zone load failed, keep existing data
     }
   }, [loadEvents, loadVenues]);
 
   // Handle GPS location selection
   const handleGPSLocationSelect = useCallback(async () => {
-    console.log('🛰️ Using GPS location for sorting');
-    setSelectedGeographicZone('NEARBY'); // Special indicator for GPS mode
+    setSelectedGeographicZone('NEARBY');
     setIsUsingGPSLocation(true);
-    
+
     try {
-      // Get user's current location
       const location = await getCurrentLocation();
-      console.log('📍 Got user location:', location);
-      
-      // Load all events and sort by distance
-      await loadEvents(); // Load all events, will be sorted by distance in loadEvents
-      
-      // Sort venues by distance too
+      await loadEvents();
+
       if (venues.length > 0) {
         const sortedVenues = sortVenuesByDistance(venues, location);
         setVenues(sortedVenues);
-        console.log('📍 Sorted venues by distance from user location');
       }
-      
     } catch (error) {
-      console.error('Failed to get GPS location:', error);
-      // Show user-friendly error message
-      console.log('📍 GPS failed, falling back to EVERYWHERE mode');
-      // Fallback to EVERYWHERE if GPS fails
       setSelectedGeographicZone('EVERYWHERE');
       setIsUsingGPSLocation(false);
+      setToast('Could not get your location. Showing all venues.');
+      setTimeout(() => setToast(null), 3000);
       await loadEvents();
     }
   }, [loadEvents, venues]);
   
   const handleEventClick = (event) => {
     const venue = venues.find(v => v.id === event.venueId);
-    if (!venue) {
-      console.error('❌ Venue not found for event:', event);
-      return;
-    }
-    
-    console.log('🏨 Venue data:', venue);
-    console.log('📱 WhatsApp number:', venue.whatsappNumber || venue.whatsAppNumber || venue.phone);
-    
-    // Check for WhatsApp number in different possible field names
+    if (!venue) return;
+
     const whatsappNumber = venue.whatsappNumber || venue.whatsAppNumber || venue.phone;
     
     if (!whatsappNumber) {
-      console.error('❌ No WhatsApp number found for venue:', venue.name);
-      alert(`Sorry, ${venue.name} doesn't have a WhatsApp number configured yet. Please contact the venue directly.`);
+      setToast(`${venue.name} doesn't have a contact number yet.`);
+      setTimeout(() => setToast(null), 3000);
       return;
     }
     
@@ -861,24 +794,12 @@ export default function DiscoveryPage() {
     // Clean the phone number (remove any non-digits except +)
     const cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
     const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
-    
-    console.log('📱 Opening WhatsApp URL:', whatsappUrl);
     window.open(whatsappUrl, '_blank');
   };
 
   // Filter events based on night mode filters
   const filteredEvents = useMemo(() => {
-    console.log('🔍 Filtering events:', { 
-      totalEvents: events?.length || 0, 
-      activeEventFilter,
-      fromVenueId,
-      events: events?.slice(0, 3) // Show first 3 events for debugging
-    });
-    
-    if (!events || events.length === 0) {
-      console.log('❌ No events to filter');
-      return [];
-    }
+    if (!events || events.length === 0) return [];
     
     // 🪩 VENUE JAIL: If we have a fromVenueId (meaning they clicked "Business Events" from the QR landing page),
     // we MUST filter out all other competitor events to keep them locked into this business.
@@ -915,13 +836,7 @@ export default function DiscoveryPage() {
       }
     });
     
-    console.log('✅ Filtered events result:', { 
-      filteredCount: filtered.length,
-      activeFilter: activeEventFilter,
-      filteredEvents: filtered.slice(0, 3) // Show first 3 filtered events
-    });
-    
-    // 🏖️ HOME TEAM ADVANTAGE: Pin host venue's events to top when returning from QR
+    // Pin host venue's events to top when returning from QR
     if (fromVenueId) {
       return [...filtered].sort((a, b) => {
         const aIsHost = String(a.venueId) === String(fromVenueId);
@@ -1032,7 +947,6 @@ export default function DiscoveryPage() {
             <Map
               ref={mapRef}
               initialViewState={initialViewState}
-              {...viewState}
               onMove={evt => setViewState(evt.viewState)}
               onLoad={(e) => {
                 setMapLoaded(true);
@@ -1079,7 +993,7 @@ export default function DiscoveryPage() {
                     }
                   });
                   
-                  console.log(`✅ Hidden ${hiddenCount} POI/label layers`);
+                  // POI layers hidden
                 };
                 
                 // Try hiding immediately
@@ -1274,13 +1188,19 @@ export default function DiscoveryPage() {
                 <div className="p-5">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className={`font-serif text-2xl tracking-tight ${isDayMode ? 'text-zinc-950' : 'text-white'}`}>{business.name}</h3>
-                    <div className="flex items-center space-x-0.5">
-                      <svg className={`w-3.5 h-3.5 fill-current ${isDayMode ? 'text-zinc-950' : 'text-white'}`} viewBox="0 0 24 24">
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                      </svg>
-                      <span className={`text-xs font-bold ${isDayMode ? 'text-zinc-950' : 'text-white'}`}>4.8</span>
-                      <span className="text-[10px] text-zinc-400">(128)</span>
-                    </div>
+                    {business.venues[0]?.averageRating > 0 && (
+                      <div className="flex items-center space-x-0.5">
+                        <svg className={`w-3.5 h-3.5 fill-current ${isDayMode ? 'text-zinc-950' : 'text-white'}`} viewBox="0 0 24 24">
+                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                        </svg>
+                        <span className={`text-xs font-bold ${isDayMode ? 'text-zinc-950' : 'text-white'}`}>
+                          {business.venues[0].averageRating.toFixed(1)}
+                        </span>
+                        {business.venues[0].reviewCount > 0 && (
+                          <span className="text-[10px] text-zinc-400">({business.venues[0].reviewCount})</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   
                   <p className={`text-xs leading-relaxed line-clamp-2 mb-4 font-sans ${isDayMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
@@ -1339,28 +1259,18 @@ export default function DiscoveryPage() {
           {/* Night Mode: Show filtered events */}
           {!isDayMode && eventsLoading && (
             <div className="text-center py-20">
-              <div className="w-16 h-16 mx-auto mb-6 border-2 border-stone-200 border-t-stone-900 rounded-full animate-spin"></div>
-              <p className="text-lg text-stone-500">Loading events...</p>
+              <div className="w-16 h-16 mx-auto mb-6 border-2 border-zinc-800 border-t-[#10FF88] rounded-full animate-spin"></div>
+              <p className="text-lg text-zinc-400">Loading events...</p>
             </div>
           )}
           
           {!isDayMode && !eventsLoading && events.length === 0 && (
-            <div className="text-center py-20">
-              <div className="text-stone-400 mb-6">
-                <svg className="w-20 h-20 mx-auto mb-6 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-serif font-light text-stone-700 mb-3">No published events</h3>
-              <div className="text-lg text-stone-500 space-y-2">
-                <p>Events need to be published by SuperAdmin to appear here.</p>
-                <p className="text-sm text-stone-400">
-                  To publish events: Login as SuperAdmin → Events tab → Click "Publish" on events
-                </p>
-                <p className="text-xs text-stone-300 mt-4">
-                  API Response: {events.length} events loaded from /api/public/Events
-                </p>
-              </div>
+            <div className="text-center py-20 flex flex-col items-center justify-center min-h-[50vh]">
+              <span className="text-6xl mb-6">🪩</span>
+              <h3 className="text-2xl font-display font-medium text-white mb-3 tracking-wide uppercase">No Events Yet</h3>
+              <p className="text-sm text-zinc-400 max-w-sm mx-auto font-mono uppercase tracking-wider leading-relaxed">
+                Stay tuned — new events are being added to the Riviera regularly.
+              </p>
             </div>
           )}
           
@@ -1397,10 +1307,7 @@ export default function DiscoveryPage() {
           
           {!isDayMode && filteredEvents.map((event) => {
             const venue = venues.find(v => v.id === event.venueId);
-            if (!venue) {
-              console.warn('⚠️ Event venue not found:', { eventId: event.id, venueId: event.venueId, eventName: event.name });
-              return null;
-            }
+            if (!venue) return null;
             
             const eventDate = new Date(event.startTime);
             const isToday = eventDate.toDateString() === new Date().toDateString();
@@ -1721,12 +1628,18 @@ export default function DiscoveryPage() {
           </button>
           
           <div className={`flex flex-col rounded-full backdrop-blur-md border shadow-lg overflow-hidden ${isDayMode ? 'bg-white/90 border-zinc-200' : 'bg-zinc-900/90 border-zinc-800'}`}>
-            <button className={`w-10 h-10 flex items-center justify-center transition-colors border-b ${isDayMode ? 'hover:bg-stone-100 active:bg-stone-200 border-zinc-200 text-zinc-600 hover:text-zinc-950' : 'hover:bg-zinc-800 active:bg-zinc-700 border-zinc-800 text-zinc-400 hover:text-white'}`}>
+            <button
+              onClick={() => mapRef.current?.zoomIn({ duration: 300 })}
+              className={`w-10 h-10 flex items-center justify-center transition-colors border-b ${isDayMode ? 'hover:bg-stone-100 active:bg-stone-200 border-zinc-200 text-zinc-600 hover:text-zinc-950' : 'hover:bg-zinc-800 active:bg-zinc-700 border-zinc-800 text-zinc-400 hover:text-white'}`}
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
             </button>
-            <button className={`w-10 h-10 flex items-center justify-center transition-colors ${isDayMode ? 'hover:bg-stone-100 active:bg-stone-200 text-zinc-600 hover:text-zinc-950' : 'hover:bg-zinc-800 active:bg-zinc-700 text-zinc-400 hover:text-white'}`}>
+            <button
+              onClick={() => mapRef.current?.zoomOut({ duration: 300 })}
+              className={`w-10 h-10 flex items-center justify-center transition-colors ${isDayMode ? 'hover:bg-stone-100 active:bg-stone-200 text-zinc-600 hover:text-zinc-950' : 'hover:bg-zinc-800 active:bg-zinc-700 text-zinc-400 hover:text-white'}`}
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
               </svg>
@@ -1797,6 +1710,15 @@ export default function DiscoveryPage() {
         </button>
       </div>
 
+      {/* Toast Notification */}
+      {toast && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in">
+          <div className={`px-5 py-3 rounded-sm shadow-lg text-sm font-mono tracking-wide ${isDayMode ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-950'}`}>
+            {toast}
+          </div>
+        </div>
+      )}
+
       {/* Location Bottom Sheet */}
       <LocationBottomSheet
         isOpen={locationBottomSheetOpen}
@@ -1807,66 +1729,28 @@ export default function DiscoveryPage() {
         isDayMode={isDayMode}
       />
 
-      {/* Custom Styles */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @import url('https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
-          
-          .font-display {
-            font-family: 'Anton', sans-serif;
-          }
-          
-          @keyframes pulse-ring {
-            0% { 
-              transform: scale(0.8); 
-              opacity: 0.5; 
-              border-color: ${isDayMode ? '#09090B' : '#10FF88'}; 
-            }
-            100% { 
-              transform: scale(2.5); 
-              opacity: 0; 
-              border-color: transparent; 
-            }
-          }
-          
-          .no-scrollbar::-webkit-scrollbar {
-            display: none;
-          }
-          
-          .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-          
-          .mapboxgl-map {
-            font-family: 'Inter', sans-serif;
-          }
-          
-          .mapboxgl-ctrl-logo,
-          .mapboxgl-ctrl-attrib {
-            display: none !important;
-          }
-          
-          .mapboxgl-ctrl-group {
-            background: ${isDayMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(24, 24, 27, 0.9)'} !important;
-            backdrop-filter: blur(12px);
-            border-radius: 12px !important;
-            box-shadow: ${isDayMode ? '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)' : '0 8px 30px rgba(0, 0, 0, 0.3)'} !important;
-            border: 1px solid ${isDayMode ? 'rgba(228, 228, 231, 1)' : 'rgba(39, 39, 42, 1)'} !important;
-          }
-          
-          .mapboxgl-ctrl-group button {
-            width: 36px !important;
-            height: 36px !important;
-            color: ${isDayMode ? '#71717A' : '#A1A1AA'} !important;
-          }
-          
-          .mapboxgl-ctrl-group button:hover {
-            background-color: ${isDayMode ? 'rgba(245, 245, 244, 1)' : 'rgba(39, 39, 42, 1)'} !important;
-            color: ${isDayMode ? '#09090B' : '#10FF88'} !important;
-          }
-        `
-      }} />
+      {/* Custom Styles — fonts loaded via index.html <link> */}
+      <style>{`
+        .font-display { font-family: 'Anton', sans-serif; }
+
+        @keyframes pulse-ring {
+          0% { transform: scale(0.8); opacity: 0.5; }
+          100% { transform: scale(2.5); opacity: 0; border-color: transparent; }
+        }
+
+        @keyframes fade-in {
+          from { opacity: 0; transform: translate(-50%, -8px); }
+          to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        .animate-fade-in { animation: fade-in 0.2s ease-out; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .mapboxgl-map { font-family: 'Inter', sans-serif; }
+        .mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib { display: none !important; }
+        .mapboxgl-ctrl-group { display: none !important; }
+      `}</style>
     </div>
   );
 }
