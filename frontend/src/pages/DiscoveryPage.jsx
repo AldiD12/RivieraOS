@@ -434,59 +434,53 @@ export default function DiscoveryPage() {
     return categories;
   }, [venues, events, fromVenueId]);
 
-  // Set default category once data is loaded (runs once)
+  // Set default category once data is loaded, or when mode changes and current category doesn't match
   useEffect(() => {
-    if (generateThemeCategories.length > 0 && !activeCategory) {
-      let defaultCategory;
-      if (!isDayMode) {
-        defaultCategory = generateThemeCategories.find(c => !c.isDayMode) || generateThemeCategories[0];
-      } else {
-        defaultCategory = generateThemeCategories.find(c => c.isDayMode) || generateThemeCategories[0];
+    if (generateThemeCategories.length === 0) return;
+
+    const currentCat = generateThemeCategories.find(c => c.id === activeCategory);
+    // Pick a default if no category is set, or if current category belongs to the wrong mode
+    if (!currentCat || currentCat.isDayMode !== isDayMode) {
+      const defaultCategory = generateThemeCategories.find(c => c.isDayMode === isDayMode) || generateThemeCategories[0];
+      if (defaultCategory) {
+        setActiveCategory(defaultCategory.id);
+        setActiveFilter(defaultCategory.filter);
       }
-
-      setActiveCategory(defaultCategory.id);
-      setActiveFilter(defaultCategory.filter);
     }
-  }, [generateThemeCategories, activeCategory]);
+  }, [generateThemeCategories, isDayMode]);
 
-  // Handle category click - Theme Trigger Magic with Smart Defaults
+  // Handle category click - stays within current mode
   const handleCategoryClick = (category) => {
     const categoryData = generateThemeCategories.find(c => c.id === category);
     if (!categoryData) return;
-    
+
     setActiveCategory(category);
-    
-    // THE THEME TRIGGER - Smooth transition between Day/Night modes
-    const newIsDayMode = categoryData.isDayMode;
-    setIsDayMode(newIsDayMode);
-    
-    // Set appropriate filter
     setActiveFilter(categoryData.filter);
-    
+
     // Reset sub-filters when switching category
     setActiveDayTypeFilter('all');
     setActiveEventDateFilter('all');
     setActiveEventTypeFilter('all');
     setActiveEventFilter('all');
-
-    // SMART DEFAULTS - Day categories show map, night categories show list
-    if (newIsDayMode) {
-      setViewMode('map');
-    } else {
-      setViewMode('list');
-    }
   };
 
   // Handle explicit Day/Night mode switch (Experiential Switch)
   const handleExperienceSwitch = (targetMode) => {
-    if (targetMode === 'day') {
-      // Find default day category (e.g. BEACHES)
-      const defaultDayCategory = generateThemeCategories.find(c => c.isDayMode) || generateThemeCategories[0];
-      if (defaultDayCategory) handleCategoryClick(defaultDayCategory.id);
-    } else {
-      // Find default night category (e.g. EVENTS or CLUBS)
-      const defaultNightCategory = generateThemeCategories.find(c => !c.isDayMode) || generateThemeCategories.find(c => c.id === 'EVENTS') || generateThemeCategories[0];
-      if (defaultNightCategory) handleCategoryClick(defaultNightCategory.id);
+    const goingDay = targetMode === 'day';
+    setIsDayMode(goingDay);
+    setViewMode(goingDay ? 'map' : 'list');
+
+    // Reset all sub-filters
+    setActiveDayTypeFilter('all');
+    setActiveEventDateFilter('all');
+    setActiveEventTypeFilter('all');
+    setActiveEventFilter('all');
+
+    // Pick first category for the new mode
+    const defaultCat = generateThemeCategories.find(c => c.isDayMode === goingDay);
+    if (defaultCat) {
+      setActiveCategory(defaultCat.id);
+      setActiveFilter(defaultCat.filter);
     }
   };
 
@@ -1597,7 +1591,7 @@ export default function DiscoveryPage() {
                       ? 'bg-white border-stone-200' 
                       : 'bg-zinc-900 border-zinc-800'
                   }`}>
-                    {generateThemeCategories.map(category => (
+                    {generateThemeCategories.filter(c => c.isDayMode === isDayMode).map(category => (
                       <button
                         key={category.id}
                         onClick={() => {
