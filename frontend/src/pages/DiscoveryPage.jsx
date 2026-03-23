@@ -273,7 +273,7 @@ export default function DiscoveryPage() {
   const [selectedBusiness, setSelectedBusiness] = useState(null); // For business grouping
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeFilter, setActiveFilter] = useState('Beach'); // Default to Beach only
+  const [activeFilter, setActiveFilter] = useState('all'); // Default to showing all venues
   
   // Initialize mode: check forced night mode OR time-based auto-switch (5PM-4AM = night)
   const isForcedNightMode = forceMode === 'night';
@@ -330,6 +330,16 @@ export default function DiscoveryPage() {
     // ☀️ DAYTIME VIBES (Map Centric)
     // ==========================================
     
+    // 0. "All" - Show all venues
+    categories.push({ 
+      id: 'ALL_DAY', 
+      label: 'ALL VENUES', 
+      icon: '🌏', 
+      isDayMode: true, 
+      filter: 'all',
+      count: venues.length
+    });
+
     // 1. "Chill" - Relaxed beach settings, quieter lounges
     if (!fromVenueId && (venueTypes.includes('Beach') || venueTypes.includes('BEACH') || venueTypes.includes('Lounge'))) {
       categories.push({ 
@@ -389,6 +399,16 @@ export default function DiscoveryPage() {
     // 🪩 NIGHTLIFE VIBES (List Centric)
     // ==========================================
     
+    // 0. "All" - Show all events and venues
+    categories.push({ 
+      id: 'ALL_NIGHT', 
+      label: 'ALL EVENTS', 
+      icon: '🌙', 
+      isDayMode: false, 
+      filter: 'all',
+      count: events.length > 0 ? events.length : venues.length
+    });
+
     if (hasEvents || beachClubs.length > 0 || venueTypes.includes('Restaurant')) {
       // 1. "Live DJ" - Electronic vibe events or major clubs
       categories.push({ 
