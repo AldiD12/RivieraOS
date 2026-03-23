@@ -39,6 +39,7 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
 
   const availability = venue.availability;
   const hasAvailability = availability && availability.availableUnits > 0;
+  const isBeach = (venue.type || '').toLowerCase().includes('beach');
 
   const handleZoneSelect = async (zone) => {
     setSelectedZone(zone);
@@ -226,11 +227,11 @@ Thank you!`;
                 </p>
               </div>
               <p className={`text-2xl font-light mb-1 ${isDayMode ? 'text-emerald-800' : 'text-white'}`}>
-                {availability.availableUnits} sunbeds available
+                {availability.availableUnits} {isBeach ? 'sunbeds' : 'spots'} available
               </p>
               {availability.zones && availability.zones.length > 0 && (
                 <p className={`text-sm ${isDayMode ? 'text-emerald-700' : 'text-zinc-400'}`}>
-                  From €{Math.min(...availability.zones.map(z => z.basePrice))} per day
+                  From €{Math.min(...availability.zones.map(z => z.basePrice))} {isBeach ? 'per day' : 'per person'}
                 </p>
               )}
             </div>
@@ -286,7 +287,7 @@ Thank you!`;
                          style={{ fontFamily: 'Playfair Display, serif' }}>
                         €{zone.basePrice}
                       </p>
-                      <p className={`text-xs ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>per day</p>
+                      <p className={`text-xs ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>{isBeach ? 'per day' : 'per person'}</p>
                     </div>
                   </div>
                 </button>
@@ -483,7 +484,7 @@ Thank you!`;
                 </p>
                 <h2 className={`text-5xl font-serif mb-2 ${isDayMode ? 'text-zinc-950' : 'text-[#10FF88]'}`}
                     style={{ fontFamily: 'Cormorant Garamond, serif' }}>
-                  €{Math.round(selectedZone.basePrice * bookingData.sunbedCount)}
+                  €{Math.round(selectedZone.basePrice * (isBeach ? bookingData.sunbedCount : bookingData.guestCount))}
                 </h2>
                 <p className={`text-xs ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
                   Pay at entrance &bull; No prepayment required
@@ -502,7 +503,7 @@ Thank you!`;
               </button>
 
               <p className={`text-center text-xs mt-3 ${isDayMode ? 'text-zinc-500' : 'text-zinc-500'}`}>
-                Pay €{Math.round(selectedZone.basePrice * bookingData.sunbedCount)} cash at the entrance
+                Pay €{Math.round(selectedZone.basePrice * (isBeach ? bookingData.sunbedCount : bookingData.guestCount))} cash at the entrance
               </p>
             </form>
           </div>
