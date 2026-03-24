@@ -42,9 +42,9 @@ const RIVIERA_CENTER = {
 const DAY_FILTERS = [
   { id: 'all', label: 'ALL', icon: '🌏' },
   { id: 'Beach', label: 'BEACH', icon: '⛱️' },
-  { id: 'Restaurant', label: 'DINE', icon: '🍴' },
-  { id: 'Yacht', label: 'YACHT', icon: '⚓' },
-  { id: 'Beach Club', label: 'VIBE', icon: '🥂' }
+  { id: 'Restaurant', label: 'RESTAURANT', icon: '🍴' },
+  { id: 'Beach Club', label: 'BEACH CLUB', icon: '🥂' },
+  { id: 'Yacht', label: 'YACHT', icon: '⚓' }
 ];
 
 // Event filters (for night mode)
@@ -273,7 +273,7 @@ export default function DiscoveryPage() {
   const [selectedBusiness, setSelectedBusiness] = useState(null); // For business grouping
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeFilter, setActiveFilter] = useState('all'); // Default to showing all venues
+  const [activeFilter, setActiveFilter] = useState('all'); // Default: show all, sorted by distance
   
   // Initialize mode: check forced night mode OR time-based auto-switch (5PM-4AM = night)
   const isForcedNightMode = forceMode === 'night';
@@ -284,7 +284,6 @@ export default function DiscoveryPage() {
   const shouldStartNight = isForcedNightMode || isAutoNightTime;
   const [isDayMode, setIsDayMode] = useState(!shouldStartNight);
   const [viewMode, setViewMode] = useState(shouldStartNight ? 'list' : 'map');
-  const [activeCategory, setActiveCategory] = useState(null);
 
   const [userLocation, setUserLocation] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -300,7 +299,6 @@ export default function DiscoveryPage() {
   const [activeEventFilter, setActiveEventFilter] = useState('all'); // For night mode event filtering
   const [activeEventDateFilter, setActiveEventDateFilter] = useState('all'); // Night: all/today/weekend
   const [activeEventTypeFilter, setActiveEventTypeFilter] = useState('all'); // Night: all/vip/free
-  const [activeDayTypeFilter, setActiveDayTypeFilter] = useState('all'); // Day: all/Beach/Restaurant/Yacht/Beach Club
 
   // Location/Zone state
   const [selectedGeographicZone, setSelectedGeographicZone] = useState('EVERYWHERE');
@@ -311,178 +309,9 @@ export default function DiscoveryPage() {
   const [businessEventsCount, setBusinessEventsCount] = useState({}); // { businessId: count }
 
   // Dropdown states
-  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
   const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [toast, setToast] = useState(null);
-
-  // Theme Trigger Categories - Dynamic based on available data
-
-  // Dynamic Theme Categories - Vibe Based (Intent-driven Experiential Filters)
-  const generateThemeCategories = useMemo(() => {
-    const categories = [];
-    
-    // Check what data we actually have to ensure we don't show empty vibes
-    const venueTypes = [...new Set(venues.map(v => v.type).filter(Boolean))];
-    const hasEvents = events.length > 0;
-    
-    // ==========================================
-    // ☀️ DAYTIME VIBES (Map Centric)
-    // ==========================================
-    
-    // 0. "All" - Show all venues
-    categories.push({ 
-      id: 'ALL_DAY', 
-      label: 'ALL VENUES', 
-      icon: '🌏', 
-      isDayMode: true, 
-      filter: 'all',
-      count: venues.length
-    });
-
-    // 1. "Chill" - Relaxed beach settings, quieter lounges
-    if (!fromVenueId && (venueTypes.includes('Beach') || venueTypes.includes('BEACH') || venueTypes.includes('Lounge'))) {
-      categories.push({ 
-        id: 'CHILL', 
-        label: 'CHILL', 
-        icon: '🌴', 
-        isDayMode: true, 
-        filter: 'chill', // Custom filter identifier
-        count: venues.filter(v => ['Beach', 'BEACH', 'Lounge', 'Cafe'].includes(v.type)).length
-      });
-    }
-
-    // 2. "Family" - Family friendly settings (mostly restaurants for now)
-    if (venueTypes.includes('Restaurant') || venueTypes.includes('RESTAURANT')) {
-      categories.push({ 
-        id: 'FAMILY', 
-        label: 'FAMILY', 
-        icon: '👨‍👩‍👧‍👦', 
-        isDayMode: true, 
-        filter: 'family',
-        count: venues.filter(v => ['Restaurant', 'RESTAURANT'].includes(v.type)).length
-      });
-    }
-
-    // 3. "Party Booking" - High energy day spots (Beach Clubs)
-    const beachClubs = venues.filter(v => 
-      (v.type === 'Beach Club' || v.type === 'BEACH_CLUB') || 
-      ((v.type === 'Beach' || v.type === 'BEACH') && v.hasEvents)
-    );
-    if (!fromVenueId && beachClubs.length > 0) {
-      categories.push({ 
-        id: 'PARTY_BOOKING', 
-        label: 'PARTY BOOKING', 
-        icon: '🥂', 
-        isDayMode: true, 
-        filter: 'party_booking',
-        count: beachClubs.length
-      });
-    }
-
-    // 4. "Water Sports" - Yachts, boats, and specific activities
-    const yachtVenues = venues.filter(v => 
-      ['Yacht', 'YACHT', 'Boat', 'BOAT', 'Water Sports'].includes(v.type)
-    );
-    if (yachtVenues.length > 0) {
-      categories.push({ 
-        id: 'WATER_SPORTS', 
-        label: 'WATER SPORTS', 
-        icon: '🛥️', 
-        isDayMode: true, 
-        filter: 'water_sports',
-        count: yachtVenues.length
-      });
-    }
-
-    // ==========================================
-    // 🪩 NIGHTLIFE VIBES (List Centric)
-    // ==========================================
-    
-    // 0. "All" - Show all events and venues
-    categories.push({ 
-      id: 'ALL_NIGHT', 
-      label: 'ALL EVENTS', 
-      icon: '🌙', 
-      isDayMode: false, 
-      filter: 'all',
-      count: events.length > 0 ? events.length : venues.length
-    });
-
-    if (hasEvents || beachClubs.length > 0 || venueTypes.includes('Restaurant')) {
-      // 1. "Live DJ" - Electronic vibe events or major clubs
-      categories.push({ 
-        id: 'LIVE_DJ', 
-        label: 'LIVE DJ', 
-        icon: '🎧', 
-        isDayMode: false, 
-        filter: 'live_dj',
-        count: events.filter(e => e.vibe === 'Electronic' || e.vibe === 'Acoustic').length || beachClubs.length
-      });
-
-      // 2. "Fine Dining" - Upscale restaurants open late
-      categories.push({ 
-        id: 'FINE_DINING', 
-        label: 'FINE DINING', 
-        icon: '🍷', 
-        isDayMode: false, 
-        filter: 'fine_dining',
-        count: venues.filter(v => ['Restaurant', 'RESTAURANT'].includes(v.type)).length
-      });
-
-      // 3. "VIP Tables" - High minimum spend events
-      categories.push({ 
-        id: 'VIP_TABLES', 
-        label: 'VIP TABLES', 
-        icon: '💎', 
-        isDayMode: false, 
-        filter: 'vip_tables',
-        count: events.filter(e => e.minimumSpend > 0 || e.vibe === 'VIP').length || beachClubs.length
-      });
-
-      // 4. "Sunset Drinks" - Evening view spots
-      categories.push({ 
-        id: 'SUNSET_DRINKS', 
-        label: 'SUNSET DRINKS', 
-        icon: '🌇', 
-        isDayMode: false, 
-        filter: 'sunset_drinks',
-        count: venues.filter(v => ['Beach', 'BEACH', 'Beach Club', 'Lounge'].includes(v.type)).length
-      });
-    }
-    
-    return categories;
-  }, [venues, events, fromVenueId]);
-
-  // Set default category once data is loaded, or when mode changes and current category doesn't match
-  useEffect(() => {
-    if (generateThemeCategories.length === 0) return;
-
-    const currentCat = generateThemeCategories.find(c => c.id === activeCategory);
-    // Pick a default if no category is set, or if current category belongs to the wrong mode
-    if (!currentCat || currentCat.isDayMode !== isDayMode) {
-      const defaultCategory = generateThemeCategories.find(c => c.isDayMode === isDayMode) || generateThemeCategories[0];
-      if (defaultCategory) {
-        setActiveCategory(defaultCategory.id);
-        setActiveFilter(defaultCategory.filter);
-      }
-    }
-  }, [generateThemeCategories, isDayMode]);
-
-  // Handle category click - stays within current mode
-  const handleCategoryClick = (category) => {
-    const categoryData = generateThemeCategories.find(c => c.id === category);
-    if (!categoryData) return;
-
-    setActiveCategory(category);
-    setActiveFilter(categoryData.filter);
-
-    // Reset sub-filters when switching category
-    setActiveDayTypeFilter('all');
-    setActiveEventDateFilter('all');
-    setActiveEventTypeFilter('all');
-    setActiveEventFilter('all');
-  };
 
   // Handle explicit Day/Night mode switch (Experiential Switch)
   const handleExperienceSwitch = (targetMode) => {
@@ -490,18 +319,11 @@ export default function DiscoveryPage() {
     setIsDayMode(goingDay);
     setViewMode(goingDay ? 'map' : 'list');
 
-    // Reset all sub-filters
-    setActiveDayTypeFilter('all');
+    // Reset filters
+    setActiveFilter('all');
     setActiveEventDateFilter('all');
     setActiveEventTypeFilter('all');
     setActiveEventFilter('all');
-
-    // Pick first category for the new mode
-    const defaultCat = generateThemeCategories.find(c => c.isDayMode === goingDay);
-    if (defaultCat) {
-      setActiveCategory(defaultCat.id);
-      setActiveFilter(defaultCat.filter);
-    }
   };
 
   // Get user location IMMEDIATELY on mount (before anything else)
@@ -854,30 +676,7 @@ export default function DiscoveryPage() {
       );
     }
 
-    // Apply night category filter (vibe-based)
-    let categoryFiltered = baseEvents;
-    if (activeFilter && activeFilter !== 'all') {
-      categoryFiltered = baseEvents.filter(event => {
-        switch (activeFilter) {
-          case 'live_dj':
-            return event.vibe === 'Electronic' || event.vibe === 'Acoustic' || event.vibe === 'DJ';
-          case 'fine_dining': {
-            const venue = venues.find(v => v.id === event.venueId);
-            return venue && ['Restaurant', 'RESTAURANT'].includes(venue.type);
-          }
-          case 'vip_tables':
-            return event.minimumSpend > 0 || (event.vibes && event.vibes.includes('VIP')) || event.vibe === 'VIP';
-          case 'sunset_drinks': {
-            const v = venues.find(v => v.id === event.venueId);
-            return v && ['Beach', 'BEACH', 'Beach Club', 'BEACH_CLUB', 'Lounge'].includes(v.type);
-          }
-          default:
-            return true;
-        }
-      });
-    }
-
-    const filtered = categoryFiltered.filter(event => {
+    const filtered = baseEvents.filter(event => {
       const eventDate = new Date(event.startTime);
       const today = new Date();
       const isToday = eventDate.toDateString() === today.toDateString();
@@ -914,66 +713,38 @@ export default function DiscoveryPage() {
     }
 
     return filtered;
-  }, [events, activeFilter, activeEventDateFilter, activeEventTypeFilter, fromVenueId, venues]);
+  }, [events, activeEventDateFilter, activeEventTypeFilter, fromVenueId, venues]);
 
   const filteredVenues = useMemo(() => {
     return venues.filter(v => {
       // Night mode: show all venues (map hidden or events-focused)
       if (!isDayMode) return true;
 
-      // Day mode: apply category vibe filter first
-      let passesCategory = true;
+      // Day mode: single type filter
+      if (activeFilter === 'all') return true;
+
       switch (activeFilter) {
-        case 'chill':
-          passesCategory = ['Beach', 'BEACH', 'Lounge', 'Cafe'].includes(v.type);
-          break;
-        case 'family':
-          passesCategory = ['Restaurant', 'RESTAURANT'].includes(v.type);
-          break;
-        case 'water_sports':
-          passesCategory = ['Yacht', 'YACHT', 'Boat', 'BOAT', 'Water Sports'].includes(v.type);
-          break;
-        case 'party_booking':
-          passesCategory = (v.type === 'Beach Club' || v.type === 'BEACH_CLUB') ||
-                 ((v.type === 'Beach' || v.type === 'BEACH') && v.hasEvents);
-          break;
+        case 'Beach':
+          return ['Beach', 'BEACH'].includes(v.type);
+        case 'Restaurant':
+          return ['Restaurant', 'RESTAURANT'].includes(v.type);
+        case 'Yacht':
+          return ['Yacht', 'YACHT', 'Boat', 'BOAT', 'Water Sports'].includes(v.type);
+        case 'Beach Club':
+          return ['Beach Club', 'BEACH_CLUB'].includes(v.type);
         default:
-          passesCategory = true;
+          return true;
       }
-      if (!passesCategory) return false;
-
-      // Then apply direct type filter (from type dropdown)
-      if (activeDayTypeFilter !== 'all') {
-        switch (activeDayTypeFilter) {
-          case 'Beach':
-            return ['Beach', 'BEACH'].includes(v.type);
-          case 'Restaurant':
-            return ['Restaurant', 'RESTAURANT'].includes(v.type);
-          case 'Yacht':
-            return ['Yacht', 'YACHT', 'Boat', 'BOAT', 'Water Sports'].includes(v.type);
-          case 'Beach Club':
-            return ['Beach Club', 'BEACH_CLUB'].includes(v.type);
-          default:
-            return true;
-        }
-      }
-
-      return true;
     });
-  }, [venues, activeFilter, activeDayTypeFilter, isDayMode]);
+  }, [venues, activeFilter, isDayMode]);
 
   // Group filtered venues by business for map display
   const businessGroups = useMemo(() => {
     if (!filteredVenues || filteredVenues.length === 0) return [];
     let groups = groupVenuesByBusiness(filteredVenues);
 
-    // Sort by popularity (total available units) for high-energy vibes
-    if (activeFilter === 'party_booking') {
-      groups = groups.sort((a, b) => {
-        return b.totalAvailableUnits - a.totalAvailableUnits;
-      });
-    } else if (userLocation) {
-      // Default: sort by distance (nearest first)
+    // Sort by distance (nearest first)
+    if (userLocation) {
       groups = groups.sort((a, b) => {
         const distA = (a.latitude && a.longitude) ? calculateDistance(userLocation.latitude, userLocation.longitude, a.latitude, a.longitude) : Infinity;
         const distB = (b.latitude && b.longitude) ? calculateDistance(userLocation.latitude, userLocation.longitude, b.latitude, b.longitude) : Infinity;
@@ -982,7 +753,7 @@ export default function DiscoveryPage() {
     }
 
     return groups;
-  }, [filteredVenues, activeFilter, groupVenuesByBusiness, userLocation]);
+  }, [filteredVenues, groupVenuesByBusiness, userLocation]);
 
   if (loading) {
     return (
@@ -1582,75 +1353,30 @@ export default function DiscoveryPage() {
           </div>
         </div>
 
-        {/* Filter Dropdowns Row */}
+        {/* Filter Row */}
         <div className="px-6 pb-6 mt-2">
-          <div className="flex gap-4 justify-center">
-            {/* Category Filter Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => { setCategoryDropdownOpen(!categoryDropdownOpen); setDateDropdownOpen(false); setTypeDropdownOpen(false); }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-sm border transition-all duration-300 ${
-                  isDayMode 
-                    ? 'bg-white border-stone-300 text-stone-700 hover:border-stone-400'
-                    : 'bg-zinc-900 border-zinc-700 text-white hover:border-zinc-600'
-                }`}
-              >
-                <span className="text-sm">
-                  {generateThemeCategories.find(c => c.id === activeCategory)?.icon || '🌏'}
-                </span>
-                <span className="font-mono text-xs uppercase tracking-widest">
-                  {generateThemeCategories.find(c => c.id === activeCategory)?.label || 'ALL'}
-                </span>
-                <svg className={`w-3 h-3 transition-transform duration-300 ${categoryDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              
-              {/* Dropdown Menu */}
-              {categoryDropdownOpen && (
-                <>
-                  <div 
-                    className="fixed inset-0 z-40" 
-                    onClick={() => setCategoryDropdownOpen(false)}
-                  ></div>
-                  <div className={`absolute top-full left-0 mt-2 w-48 rounded-sm shadow-xl border overflow-hidden z-50 ${
-                    isDayMode 
-                      ? 'bg-white border-stone-200' 
-                      : 'bg-zinc-900 border-zinc-800'
-                  }`}>
-                    {generateThemeCategories.filter(c => c.isDayMode === isDayMode).map(category => (
-                      <button
-                        key={category.id}
-                        onClick={() => {
-                          handleCategoryClick(category.id);
-                          setCategoryDropdownOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
-                          activeCategory === category.id
-                            ? (isDayMode ? 'bg-stone-100 text-stone-900' : 'bg-zinc-800 text-white')
-                            : (isDayMode ? 'hover:bg-stone-50 text-stone-600' : 'hover:bg-zinc-800/50 text-zinc-400')
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-lg">{category.icon}</span>
-                          <span className="font-mono text-xs uppercase tracking-widest">{category.label}</span>
-                        </div>
-                        {activeCategory === category.id && (
-                          <span className="text-[#10FF88]">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
+          {isDayMode ? (
+            /* Day Mode: Horizontal pill row for venue types */
+            <div className="flex gap-2 overflow-x-auto no-scrollbar justify-center">
+              {DAY_FILTERS.map(filter => (
+                <button
+                  key={filter.id}
+                  onClick={() => setActiveFilter(filter.id)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300 border ${
+                    activeFilter === filter.id
+                      ? 'bg-zinc-950 border-zinc-950 text-white shadow-md'
+                      : 'bg-white border-stone-300 text-stone-600 hover:border-stone-400'
+                  }`}
+                >
+                  <span className="text-sm">{filter.icon}</span>
+                  <span>{filter.label}</span>
+                </button>
+              ))}
             </div>
-
-            {/* Date/Time Filter Dropdown (Night mode only) */}
-            {!isDayMode && (
+          ) : (
+            /* Night Mode: Date + Type dropdowns for events */
+            <div className="flex gap-4 justify-center">
+              {/* Date/Time Filter Dropdown */}
               <div className="relative">
                 <button
                   onClick={() => { setDateDropdownOpen(!dateDropdownOpen); setTypeDropdownOpen(false); }}
@@ -1660,7 +1386,6 @@ export default function DiscoveryPage() {
                       : 'bg-zinc-900 border-zinc-700 text-white hover:border-zinc-600'
                   }`}
                 >
-                  <span className="text-sm">🕐</span>
                   <span className="font-mono text-xs uppercase tracking-widest">
                     {activeEventDateFilter === 'all' ? 'WHEN' : activeEventDateFilter === 'today' ? 'TODAY' : 'WEEKEND'}
                   </span>
@@ -1674,9 +1399,9 @@ export default function DiscoveryPage() {
                     <div className="fixed inset-0 z-40" onClick={() => setDateDropdownOpen(false)}></div>
                     <div className="absolute top-full left-0 mt-2 w-44 rounded-sm shadow-xl border overflow-hidden z-50 bg-zinc-900 border-zinc-800">
                       {[
-                        { id: 'all', label: 'ALL DATES', icon: '📅' },
-                        { id: 'today', label: 'TODAY', icon: '🌙' },
-                        { id: 'weekend', label: 'WEEKEND', icon: '🎉' }
+                        { id: 'all', label: 'ALL DATES' },
+                        { id: 'today', label: 'TODAY' },
+                        { id: 'weekend', label: 'WEEKEND' }
                       ].map(option => (
                         <button
                           key={option.id}
@@ -1687,10 +1412,7 @@ export default function DiscoveryPage() {
                               : 'hover:bg-zinc-800/50 text-zinc-400'
                           }`}
                         >
-                          <div className="flex items-center gap-3">
-                            <span className="text-lg">{option.icon}</span>
-                            <span className="font-mono text-xs uppercase tracking-widest">{option.label}</span>
-                          </div>
+                          <span className="font-mono text-xs uppercase tracking-widest">{option.label}</span>
                           {activeEventDateFilter === option.id && (
                             <span className="text-[#10FF88]">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1704,71 +1426,33 @@ export default function DiscoveryPage() {
                   </>
                 )}
               </div>
-            )}
 
-            {/* Type Filter Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => { setTypeDropdownOpen(!typeDropdownOpen); setDateDropdownOpen(false); }}
-                className={`flex items-center gap-2 px-4 py-2 rounded-sm border transition-all duration-300 ${
-                  (isDayMode ? activeDayTypeFilter !== 'all' : activeEventTypeFilter !== 'all')
-                    ? isDayMode
-                      ? 'bg-zinc-950 border-zinc-950 text-white'
-                      : 'bg-[#10FF88]/10 border-[#10FF88]/50 text-[#10FF88]'
-                    : isDayMode
-                      ? 'bg-white border-stone-300 text-stone-700 hover:border-stone-400'
+              {/* Type Filter Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => { setTypeDropdownOpen(!typeDropdownOpen); setDateDropdownOpen(false); }}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-sm border transition-all duration-300 ${
+                    activeEventTypeFilter !== 'all'
+                      ? 'bg-[#10FF88]/10 border-[#10FF88]/50 text-[#10FF88]'
                       : 'bg-zinc-900 border-zinc-700 text-white hover:border-zinc-600'
-                }`}
-              >
-                <span className="text-sm">{isDayMode ? '🏷️' : '✨'}</span>
-                <span className="font-mono text-xs uppercase tracking-widest">
-                  {isDayMode
-                    ? (activeDayTypeFilter === 'all' ? 'TYPE' : DAY_FILTERS.find(f => f.id === activeDayTypeFilter)?.label || 'TYPE')
-                    : (activeEventTypeFilter === 'all' ? 'TYPE' : activeEventTypeFilter === 'vip' ? 'VIP' : 'FREE')
-                  }
-                </span>
-                <svg className={`w-3 h-3 transition-transform duration-300 ${typeDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+                  }`}
+                >
+                  <span className="font-mono text-xs uppercase tracking-widest">
+                    {activeEventTypeFilter === 'all' ? 'TYPE' : activeEventTypeFilter === 'vip' ? 'VIP' : 'FREE'}
+                  </span>
+                  <svg className={`w-3 h-3 transition-transform duration-300 ${typeDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
 
-              {typeDropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setTypeDropdownOpen(false)}></div>
-                  <div className={`absolute top-full right-0 mt-2 w-44 rounded-sm shadow-xl border overflow-hidden z-50 ${
-                    isDayMode ? 'bg-white border-stone-200' : 'bg-zinc-900 border-zinc-800'
-                  }`}>
-                    {isDayMode ? (
-                      // Day mode: venue type filters
-                      DAY_FILTERS.map(filter => (
-                        <button
-                          key={filter.id}
-                          onClick={() => { setActiveDayTypeFilter(filter.id); setTypeDropdownOpen(false); }}
-                          className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
-                            activeDayTypeFilter === filter.id
-                              ? 'bg-stone-100 text-stone-900'
-                              : 'hover:bg-stone-50 text-stone-600'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <span className="text-lg">{filter.icon}</span>
-                            <span className="font-mono text-xs uppercase tracking-widest">{filter.label}</span>
-                          </div>
-                          {activeDayTypeFilter === filter.id && (
-                            <span className="text-emerald-600">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </span>
-                          )}
-                        </button>
-                      ))
-                    ) : (
-                      // Night mode: event type filters
-                      [
-                        { id: 'all', label: 'ALL TYPES', icon: '✨' },
-                        { id: 'vip', label: 'VIP TABLES', icon: '💎' },
-                        { id: 'free', label: 'FREE ENTRY', icon: '🎫' }
+                {typeDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setTypeDropdownOpen(false)}></div>
+                    <div className="absolute top-full right-0 mt-2 w-44 rounded-sm shadow-xl border overflow-hidden z-50 bg-zinc-900 border-zinc-800">
+                      {[
+                        { id: 'all', label: 'ALL TYPES' },
+                        { id: 'vip', label: 'VIP TABLES' },
+                        { id: 'free', label: 'FREE ENTRY' }
                       ].map(option => (
                         <button
                           key={option.id}
@@ -1779,10 +1463,7 @@ export default function DiscoveryPage() {
                               : 'hover:bg-zinc-800/50 text-zinc-400'
                           }`}
                         >
-                          <div className="flex items-center gap-3">
-                            <span className="text-lg">{option.icon}</span>
-                            <span className="font-mono text-xs uppercase tracking-widest">{option.label}</span>
-                          </div>
+                          <span className="font-mono text-xs uppercase tracking-widest">{option.label}</span>
                           {activeEventTypeFilter === option.id && (
                             <span className="text-[#10FF88]">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1791,13 +1472,13 @@ export default function DiscoveryPage() {
                             </span>
                           )}
                         </button>
-                      ))
-                    )}
-                  </div>
-                </>
-              )}
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
