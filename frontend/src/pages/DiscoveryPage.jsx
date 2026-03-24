@@ -1358,7 +1358,11 @@ export default function DiscoveryPage() {
           {/* Center: Location Trigger */}
           <button
             onClick={() => setLocationBottomSheetOpen(true)}
-            className={`flex items-center gap-2 transition-colors duration-300 ${isDayMode ? 'text-stone-700 hover:text-stone-900' : 'text-white hover:text-zinc-300'}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-300 ${
+              isDayMode 
+                ? 'bg-white/80 border-stone-200 text-stone-700 hover:bg-white hover:text-stone-900 shadow-sm' 
+                : 'bg-zinc-900/80 border-zinc-800 text-white hover:bg-zinc-900 hover:text-white shadow-sm'
+            }`}
           >
             <span className="text-[#10FF88]">📍</span>
             <span className="font-mono text-xs uppercase tracking-widest">
@@ -1432,7 +1436,7 @@ export default function DiscoveryPage() {
                 {dayDropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setDayDropdownOpen(false)}></div>
-                    <div className="absolute top-full left-0 mt-1 min-w-[140px] bg-zinc-900 border border-zinc-700 rounded-sm shadow-2xl z-50 overflow-hidden">
+                    <div className="absolute top-full left-0 mt-2 min-w-[160px] bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden py-1">
                       {[
                         { id: 'today',       label: 'Today' },
                         { id: 'tomorrow',    label: 'Tomorrow' },
@@ -1483,7 +1487,7 @@ export default function DiscoveryPage() {
                 {genreDropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setGenreDropdownOpen(false)}></div>
-                    <div className="absolute top-full left-0 mt-1 min-w-[140px] bg-zinc-900 border border-zinc-700 rounded-sm shadow-2xl z-50 overflow-hidden">
+                    <div className="absolute top-full left-0 mt-2 min-w-[160px] bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden py-1">
                       {[
                         { id: 'all',        label: 'All' },
                         { id: 'electronic', label: 'Electronic' },
@@ -1532,7 +1536,7 @@ export default function DiscoveryPage() {
                 {entranceDropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setEntranceDropdownOpen(false)}></div>
-                    <div className="absolute top-full left-0 mt-1 min-w-[140px] bg-zinc-900 border border-zinc-700 rounded-sm shadow-2xl z-50 overflow-hidden">
+                    <div className="absolute top-full left-0 mt-2 min-w-[160px] bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden py-1">
                       {[
                         { id: 'all',  label: 'All' },
                         { id: 'free', label: 'Free' },
@@ -1729,7 +1733,9 @@ export default function DiscoveryPage() {
       {/* Toast Notification */}
       {toast && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in">
-          <div className={`px-5 py-3 rounded-sm shadow-lg text-sm font-mono tracking-wide ${isDayMode ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-950'}`}>
+          <div className={`px-6 py-3 rounded-full shadow-2xl text-[11px] font-black tracking-widest uppercase border ${
+            isDayMode ? 'bg-zinc-950 text-white border-zinc-800' : 'bg-white text-zinc-950 border-stone-200'
+          }`}>
             {toast}
           </div>
         </div>

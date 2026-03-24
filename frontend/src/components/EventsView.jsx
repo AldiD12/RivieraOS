@@ -58,7 +58,7 @@ function FilterDropdown({ label, value, options, onChange }) {
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-1 min-w-[140px] bg-zinc-900 border border-zinc-700 rounded-sm shadow-2xl z-50 overflow-hidden">
+        <div className="absolute top-full left-0 mt-2 min-w-[160px] bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden py-1">
           {options.map(opt => (
             <button
               key={opt.id}
