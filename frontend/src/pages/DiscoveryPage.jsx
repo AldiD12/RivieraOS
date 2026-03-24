@@ -300,10 +300,17 @@ export default function DiscoveryPage() {
   const [activeEventDateFilter, setActiveEventDateFilter] = useState('all'); // Night: all/today/weekend
   const [activeEventTypeFilter, setActiveEventTypeFilter] = useState('all'); // Night: all/vip/free
 
-  // Location/Zone state
-  const [selectedGeographicZone, setSelectedGeographicZone] = useState('EVERYWHERE');
+  // Location/Zone state — restore from sessionStorage if user already picked
+  const [selectedGeographicZone, setSelectedGeographicZone] = useState(() => {
+    return sessionStorage.getItem('riviera-zone') || 'EVERYWHERE';
+  });
   const [locationBottomSheetOpen, setLocationBottomSheetOpen] = useState(false);
-  const [isUsingGPSLocation, setIsUsingGPSLocation] = useState(false); // Track if using GPS vs manual zone
+  const [isUsingGPSLocation, setIsUsingGPSLocation] = useState(() => {
+    return sessionStorage.getItem('riviera-gps') === 'true';
+  });
+  const [hasPickedLocation, setHasPickedLocation] = useState(() => {
+    return sessionStorage.getItem('riviera-zone-picked') === 'true';
+  });
 
   // Pre-fetched data for list view
   const [businessEventsCount, setBusinessEventsCount] = useState({}); // { businessId: count }
@@ -371,6 +378,13 @@ export default function DiscoveryPage() {
   useEffect(() => {
     setModeInitialized(true);
   }, []);
+
+  // Show location picker on first visit (no zone picked yet this session)
+  useEffect(() => {
+    if (!hasPickedLocation && !loading && !fromVenueId) {
+      setLocationBottomSheetOpen(true);
+    }
+  }, [hasPickedLocation, loading, fromVenueId]);
 
   // Pre-fetch events count per business for list view badges
   useEffect(() => {
@@ -583,6 +597,10 @@ export default function DiscoveryPage() {
   const handleZoneSelect = useCallback(async (zone) => {
     setSelectedGeographicZone(zone);
     setIsUsingGPSLocation(false);
+    setHasPickedLocation(true);
+    sessionStorage.setItem('riviera-zone', zone);
+    sessionStorage.setItem('riviera-gps', 'false');
+    sessionStorage.setItem('riviera-zone-picked', 'true');
 
     try {
       if (zone === 'EVERYWHERE') {
@@ -601,6 +619,10 @@ export default function DiscoveryPage() {
   const handleGPSLocationSelect = useCallback(async () => {
     setSelectedGeographicZone('NEARBY');
     setIsUsingGPSLocation(true);
+    setHasPickedLocation(true);
+    sessionStorage.setItem('riviera-zone', 'NEARBY');
+    sessionStorage.setItem('riviera-gps', 'true');
+    sessionStorage.setItem('riviera-zone-picked', 'true');
 
     try {
       const location = await getCurrentLocation();
@@ -613,6 +635,8 @@ export default function DiscoveryPage() {
     } catch (error) {
       setSelectedGeographicZone('EVERYWHERE');
       setIsUsingGPSLocation(false);
+      sessionStorage.setItem('riviera-zone', 'EVERYWHERE');
+      sessionStorage.setItem('riviera-gps', 'false');
       setToast('Could not get your location. Showing all venues.');
       setTimeout(() => setToast(null), 3000);
       await loadEvents();
