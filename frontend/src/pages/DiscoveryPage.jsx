@@ -15,6 +15,7 @@ import AssetBottomSheet from '../components/AssetBottomSheet';
 import EventsView from '../components/EventsView';
 import LocationBottomSheet from '../components/LocationBottomSheet';
 import { calculateDistance, sortEventsByDistance, sortVenuesByDistance, getCurrentLocation } from '../utils/locationUtils';
+import attractionsData from '../data/attractions_data.json';
 
 // Mapbox token
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -44,7 +45,8 @@ const DAY_FILTERS = [
   { id: 'Beach', label: 'BEACH', icon: '⛱️' },
   { id: 'Restaurant', label: 'RESTAURANT', icon: '🍴' },
   { id: 'Beach Club', label: 'BEACH CLUB', icon: '🥂' },
-  { id: 'Yacht', label: 'YACHT', icon: '⚓' }
+  { id: 'Yacht', label: 'YACHT', icon: '⚓' },
+  { id: 'Attraction', label: 'SIGHTS', icon: '🏛️' }
 ];
 
 // Event filters (for night mode)
@@ -169,6 +171,11 @@ function VenueMarker({ venue, isSelected, onClick, isDayMode, activeFilter }) {
             ) : venue.type === 'Yacht' || venue.type === 'YACHT' || venue.type === 'Boat' || venue.type === 'BOAT' ? (
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+              </svg>
+            ) : venue.type === 'Attraction' || venue.type === 'ATTRACTION' || venue.isSight ? (
+              // Attraction icon (Historical/Sight)
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
               </svg>
             ) : (
               // Default venue icon
@@ -410,7 +417,9 @@ export default function DiscoveryPage() {
     try {
       setLoading(true);
       const data = await venueApi.getVenues();
-      setVenues(data);
+      // Merge with local attractions for the "Guide" experience
+      const mergedData = [...data, ...attractionsData];
+      setVenues(mergedData);
     } catch (err) {
       setError('Failed to load venues');
     } finally {
@@ -778,6 +787,8 @@ export default function DiscoveryPage() {
           return ['Yacht', 'YACHT', 'Boat', 'BOAT', 'Water Sports'].includes(v.type);
         case 'Beach Club':
           return ['Beach Club', 'BEACH_CLUB'].includes(v.type);
+        case 'Attraction':
+          return ['Attraction', 'ATTRACTION', 'Sights', 'SIGHTS', 'Landmark', 'LANDMARK'].includes(v.type) || v.isSight;
         default:
           return true;
       }

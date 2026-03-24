@@ -39,6 +39,8 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
 
   const venueType = (venue.type || '').toLowerCase();
   const isBeachVenue = venueType.includes('beach') || venueType.includes('plazh');
+  const isAttraction = venueType === 'attraction' || venueType === 'sights' || venue.isSight;
+  const isNature = (venue.subType || '').toLowerCase() === 'nature';
 
   const availability = venue.availability;
   const hasAvailability = availability && availability.availableUnits > 0;
@@ -206,7 +208,7 @@ Thank you!`;
           )}
 
           {/* View Menu Button (for any venue that might have a digital menu) */}
-          {venue?.type?.toLowerCase() === 'restaurant' && (
+          {venue?.type?.toLowerCase() === 'restaurant' && !isAttraction && (
             <button
               onClick={() => setShowMenu(true)}
               className={`w-full mb-6 flex items-center justify-center gap-2 py-3 rounded-sm border transition-all duration-300 ${
@@ -222,8 +224,51 @@ Thank you!`;
             </button>
           )}
 
+          {/* Attraction Action Buttons */}
+          {isAttraction && (
+            <div className="space-y-4 mb-8">
+              {/* Navigate Button */}
+              <button
+                onClick={() => {
+                  const url = `https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`;
+                  window.open(url, '_blank');
+                }}
+                className={`w-full flex items-center justify-center gap-2 py-4 rounded-full border transition-all duration-300 ${
+                  isDayMode
+                    ? 'bg-zinc-950 text-white hover:bg-zinc-800'
+                    : 'bg-[#10FF88] text-zinc-950 hover:shadow-[0_0_20px_rgba(16,255,136,0.6)]'
+                }`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span className="text-sm font-bold tracking-widest uppercase">Navigate via GPS</span>
+              </button>
+
+              {/* Upsell: Boat/Transfer for nature/remote spots */}
+              {(isNature || isBeachVenue) && (
+                <button
+                  onClick={() => {
+                    // Logic to find a boat partner or just open WhatsApp with a generic transfer request
+                    const message = `Hi! I'm interested in booking a water taxi/transfer to ${venue.name}. Can you help me?`;
+                    window.open(`https://wa.me/355695811122?text=${encodeURIComponent(message)}`, '_blank'); // Placeholder boat partner
+                  }}
+                  className={`w-full flex items-center justify-center gap-2 py-4 rounded-full border transition-all duration-300 ${
+                    isDayMode
+                      ? 'border-stone-300 text-stone-600 hover:border-stone-500'
+                      : 'border-zinc-700 text-zinc-400 hover:border-zinc-500'
+                  }`}
+                >
+                  <span className="text-xl">🚤</span>
+                  <span className="text-sm font-bold tracking-widest uppercase">Book Water Taxi</span>
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Availability Summary */}
-          {isBeachVenue && (
+          {isBeachVenue && !isAttraction && (
             hasAvailability ? (
               <div className={`rounded-sm p-6 mb-8 border ${isDayMode ? 'bg-emerald-50 border-emerald-200' : 'bg-zinc-900 border-zinc-800'}`}>
                 <div className="flex items-center gap-3 mb-2">

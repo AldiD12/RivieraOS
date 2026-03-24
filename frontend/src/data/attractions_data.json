@@ -1,0 +1,52 @@
+[
+  {
+    "id": "attr_1",
+    "name": "Butrint National Park",
+    "type": "Attraction",
+    "subType": "Historical",
+    "latitude": 39.7511,
+    "longitude": 20.0194,
+    "description": "UNESCO World Heritage site featuring ancient Greek and Roman ruins. The best-preserved archaeological site in Albania.",
+    "isSight": true
+  },
+  {
+    "id": "attr_2",
+    "name": "Porto Palermo Castle",
+    "type": "Attraction",
+    "subType": "Historical",
+    "latitude": 40.0625,
+    "longitude": 19.7917,
+    "description": "A stunning 19th-century star-shaped castle built by Ali Pasha Tepelena, overlooking the turquoise bay.",
+    "isSight": true
+  },
+  {
+    "id": "attr_3",
+    "name": "Gjipe Beach & Canyon",
+    "type": "Attraction",
+    "subType": "Nature",
+    "latitude": 40.1264,
+    "longitude": 19.6688,
+    "description": "Hidden paradise reachable only by boat or a 30-minute hike. Surrounded by massive canyon walls.",
+    "isSight": true
+  },
+  {
+    "id": "attr_4",
+    "name": "The Blue Eye (Syri i Kaltër)",
+    "type": "Attraction",
+    "subType": "Nature",
+    "latitude": 39.9234,
+    "longitude": 20.1925,
+    "description": "A crystal-clear natural water spring nearly 50 meters deep. Famous for its deep blue color and freezing water.",
+    "isSight": true
+  },
+  {
+    "id": "attr_5",
+    "name": "Llogara Pass Viewpoint",
+    "type": "Attraction",
+    "subType": "Viewpoint",
+    "latitude": 40.1936,
+    "longitude": 19.5936,
+    "description": "Breathtaking panoramic views of the entire Ionian coast from 1,000 meters above sea level.",
+    "isSight": true
+  }
+]
