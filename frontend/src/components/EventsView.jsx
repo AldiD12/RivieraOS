@@ -43,7 +43,7 @@ function FilterDropdown({ label, value, options, onChange }) {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(o => !o)}
-        className={`flex items-center gap-1.5 px-3 py-2 rounded-sm border text-[11px] font-bold tracking-widest uppercase transition-all duration-200 whitespace-nowrap ${
+        className={`flex items-center gap-1 px-2.5 py-2 rounded-sm border text-[11px] font-bold tracking-widest uppercase transition-all duration-200 whitespace-nowrap ${
           isActive || open
             ? 'bg-[#10FF88] border-[#10FF88] text-zinc-950 shadow-[0_0_12px_rgba(16,255,136,0.35)]'
             : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white'
@@ -186,19 +186,19 @@ export default function EventsView({
           {/* ── 3 Dropdown Filters ──────────────────────────────────────── */}
           <div className="flex flex-wrap gap-2 pb-1">
             <FilterDropdown
-              label="DAY ▾"
+              label="DAY"
               value={dayFilter}
               options={DAY_OPTIONS}
               onChange={handleDayChange}
             />
             <FilterDropdown
-              label="GENRE ▾"
+              label="GENRE"
               value={genreFilter}
               options={GENRE_OPTIONS}
               onChange={setGenreFilter}
             />
             <FilterDropdown
-              label="ENTRANCE ▾"
+              label="ENTRANCE"
               value={entranceFilter}
               options={ENTRANCE_OPTIONS}
               onChange={setEntranceFilter}

@@ -1427,13 +1427,13 @@ export default function DiscoveryPage() {
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => { setDayDropdownOpen(!dayDropdownOpen); setGenreDropdownOpen(false); setEntranceDropdownOpen(false); }}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-sm border text-[11px] font-bold tracking-widest uppercase transition-all duration-200 whitespace-nowrap ${
+                  className={`flex items-center gap-1 px-2.5 py-2 rounded-sm border text-[11px] font-bold tracking-widest uppercase transition-all duration-200 whitespace-nowrap ${
                     eventDayFilter !== 'today' || dayDropdownOpen
                       ? 'bg-[#10FF88] border-[#10FF88] text-zinc-950 shadow-[0_0_12px_rgba(16,255,136,0.35)]'
                       : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white'
                   }`}
                 >
-                  <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">DAY ▾</span>
+                  <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">DAY</span>
                   <span>
                     {[
                       { id: 'today',       label: 'Today' },
@@ -1478,13 +1478,13 @@ export default function DiscoveryPage() {
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => { setGenreDropdownOpen(!genreDropdownOpen); setDayDropdownOpen(false); setEntranceDropdownOpen(false); }}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-sm border text-[11px] font-bold tracking-widest uppercase transition-all duration-200 whitespace-nowrap ${
+                  className={`flex items-center gap-1 px-2.5 py-2 rounded-sm border text-[11px] font-bold tracking-widest uppercase transition-all duration-200 whitespace-nowrap ${
                     eventGenreFilter !== 'all' || genreDropdownOpen
                       ? 'bg-[#10FF88] border-[#10FF88] text-zinc-950 shadow-[0_0_12px_rgba(16,255,136,0.35)]'
                       : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white'
                   }`}
                 >
-                  <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">GENRE ▾</span>
+                  <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">GENRE</span>
                   <span>
                     {[
                       { id: 'all',        label: 'All' },
@@ -1531,13 +1531,13 @@ export default function DiscoveryPage() {
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => { setEntranceDropdownOpen(!entranceDropdownOpen); setDayDropdownOpen(false); setGenreDropdownOpen(false); }}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-sm border text-[11px] font-bold tracking-widest uppercase transition-all duration-200 whitespace-nowrap ${
+                  className={`flex items-center gap-1 px-2.5 py-2 rounded-sm border text-[11px] font-bold tracking-widest uppercase transition-all duration-200 whitespace-nowrap ${
                     eventEntranceFilter !== 'all' || entranceDropdownOpen
                       ? 'bg-[#10FF88] border-[#10FF88] text-zinc-950 shadow-[0_0_12px_rgba(16,255,136,0.35)]'
                       : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white'
                   }`}
                 >
-                  <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">ENTRANCE ▾</span>
+                  <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">ENTRANCE</span>
                   <span>
                     {[
                       { id: 'all',  label: 'All' },
