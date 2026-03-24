@@ -1421,7 +1421,7 @@ export default function DiscoveryPage() {
             </div>
           ) : (
             /* Night Mode: Day + Genre + Entrance dropdowns for events */
-            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+            <div className="flex flex-wrap gap-2 pb-1 relative z-50">
               
               {/* Day Filter */}
               <div className="relative flex-shrink-0">
