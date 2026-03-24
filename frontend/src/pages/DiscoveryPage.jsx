@@ -283,7 +283,7 @@ export default function DiscoveryPage() {
   })();
   const shouldStartNight = isForcedNightMode || isAutoNightTime;
   const [isDayMode, setIsDayMode] = useState(!shouldStartNight);
-  const [viewMode, setViewMode] = useState(shouldStartNight ? 'list' : 'map');
+  const [viewMode, setViewMode] = useState('list');
 
   const [userLocation, setUserLocation] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -325,7 +325,7 @@ export default function DiscoveryPage() {
   const handleExperienceSwitch = (targetMode) => {
     const goingDay = targetMode === 'day';
     setIsDayMode(goingDay);
-    setViewMode(goingDay ? 'map' : 'list');
+    setViewMode('list');
 
     // Reset filters
     setActiveFilter('all');
