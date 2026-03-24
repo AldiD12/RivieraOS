@@ -1379,25 +1379,7 @@ export default function DiscoveryPage() {
           </button>
         </div>
 
-        {/* Experiential Switch (Daytime vs Nightlife) */}
-        <div className="flex justify-center px-6 pb-4">
-          <div className={`flex p-1 rounded-full shadow-lg ${isDayMode ? 'bg-white/90 border border-stone-200 backdrop-blur-md' : 'bg-zinc-900/90 border border-zinc-800 backdrop-blur-md'}`}>
-            <button 
-              onClick={() => handleExperienceSwitch('day')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${isDayMode ? 'bg-zinc-950 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'}`}
-            >
-              <span className="text-sm">☀️</span>
-              <span>Daytime</span>
-            </button>
-            <button 
-              onClick={() => handleExperienceSwitch('night')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${!isDayMode ? 'bg-[#10FF88] text-zinc-950 shadow-md' : 'text-stone-500 hover:text-stone-700'}`}
-            >
-              <span className="text-sm">🪩</span>
-              <span>Nightlife</span>
-            </button>
-          </div>
-        </div>
+        {/* Experiential Switch Moved to Bottom Nav */}
 
         {/* Filter Row */}
         <div className="px-6 pb-6 mt-2">
@@ -1682,31 +1664,49 @@ export default function DiscoveryPage() {
         </div>
       )}
 
-      {/* Smart Floating Switcher - XIXA Sharp Standard */}
-      <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 z-40">
+      {/* ── Unified Bottom Navigation ── */}
+      <div className="fixed bottom-6 left-0 right-0 z-50 flex flex-col items-center gap-3 pointer-events-none">
+        
+        {/* Experiential Switch (Day/Night) */}
+        <div className={`pointer-events-auto flex p-1 rounded-full shadow-2xl ${
+          isDayMode ? 'bg-white/95 border border-stone-200 backdrop-blur-xl' : 'bg-zinc-900/95 border border-zinc-700 backdrop-blur-xl'
+        }`}>
+          <button 
+            onClick={() => handleExperienceSwitch('day')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${
+              isDayMode ? 'bg-zinc-950 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            <span className="text-sm">☀️</span>
+            <span>Daytime</span>
+          </button>
+          <button 
+            onClick={() => handleExperienceSwitch('night')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${
+              !isDayMode ? 'bg-[#10FF88] text-zinc-950 shadow-md' : 'text-stone-500 hover:text-stone-700'
+            }`}
+          >
+            <span className="text-sm">🪩</span>
+            <span>Nightlife</span>
+          </button>
+        </div>
+
+        {/* View Toggle (Map/List) */}
         <button
           onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-          className={`
-            px-6 py-3 rounded-sm font-mono text-xs uppercase tracking-widest
-            transition-all duration-300 shadow-lg hover:scale-105 active:scale-95
-            ${isDayMode 
-              ? 'bg-zinc-950 text-white shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.4)]'
-              : 'bg-white text-zinc-950 shadow-[0_0_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_30px_rgba(0,0,0,0.7)]'
-            }
-          `}
+          className={`pointer-events-auto px-6 py-3 rounded-full font-mono text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 shadow-xl ${
+            isDayMode 
+              ? 'bg-zinc-950 text-white border border-zinc-800 hover:bg-zinc-800'
+              : 'bg-white text-zinc-950 border border-stone-200 hover:bg-stone-50'
+          }`}
         >
           {viewMode === 'map' ? (
-            <>
-              <span className="mr-2">📄</span>
-              LIST
-            </>
+            <><span className="mr-2">📄</span> LIST VIEW</>
           ) : (
-            <>
-              <span className="mr-2">🗺️</span>
-              MAP
-            </>
+            <><span className="mr-2">🗺️</span> MAP VIEW</>
           )}
         </button>
+
       </div>
 
       {/* Toast Notification */}
