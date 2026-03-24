@@ -116,19 +116,21 @@ function LandingSpotPage() {
       <main className="flex-1 w-full max-w-md mx-auto px-6 py-8 flex flex-col gap-5 z-20 -mt-2">
 
         {/* OPTION 1: MENU */}
-        <button
-          onClick={() => navigate(getMenuUrl())}
-          className="w-full bg-white border border-stone-200 p-5 flex items-center gap-5 rounded-sm relative overflow-hidden group hover:bg-stone-50 transition-colors text-left shadow-sm"
-        >
-          <div className="w-14 h-14 bg-[#FAFAF9] rounded-sm border border-stone-200 flex items-center justify-center shrink-0 z-10 group-hover:scale-105 transition-transform duration-500">
-            <span className="material-symbols-outlined text-stone-900 text-3xl">restaurant</span>
-          </div>
-          <div className="z-10 flex-1">
-            <h3 className="text-stone-900 font-display text-xl font-bold uppercase tracking-wide mb-1">Business Menu</h3>
-            <p className="text-stone-400 font-mono text-xs uppercase tracking-wider">Order Food & Drinks</p>
-          </div>
-          <span className="material-symbols-outlined text-stone-300 group-hover:text-stone-600 transition-colors">chevron_right</span>
-        </button>
+        {venue?.type?.toLowerCase() === 'restaurant' && (
+          <button
+            onClick={() => navigate(getMenuUrl())}
+            className="w-full bg-white border border-stone-200 p-5 flex items-center gap-5 rounded-sm relative overflow-hidden group hover:bg-stone-50 transition-colors text-left shadow-sm"
+          >
+            <div className="w-14 h-14 bg-[#FAFAF9] rounded-sm border border-stone-200 flex items-center justify-center shrink-0 z-10 group-hover:scale-105 transition-transform duration-500">
+              <span className="material-symbols-outlined text-stone-900 text-3xl">restaurant</span>
+            </div>
+            <div className="z-10 flex-1">
+              <h3 className="text-stone-900 font-display text-xl font-bold uppercase tracking-wide mb-1">Business Menu</h3>
+              <p className="text-stone-400 font-mono text-xs uppercase tracking-wider">Order Food & Drinks</p>
+            </div>
+            <span className="material-symbols-outlined text-stone-300 group-hover:text-stone-600 transition-colors">chevron_right</span>
+          </button>
+        )}
 
         {/* OPTION 2: EVENTS */}
         <button
