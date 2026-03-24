@@ -1014,7 +1014,7 @@ export default function DiscoveryPage() {
 
       {/* List View - Show Businesses Grouped (Day Mode) or Events (Night Mode) */}
       {viewMode === 'list' && (
-        <div className="absolute inset-0 pt-40 pb-[60px] overflow-y-auto no-scrollbar px-6 space-y-6">
+        <div className="absolute inset-0 pt-40 pb-[120px] overflow-y-auto no-scrollbar px-6 space-y-6">
           {/* Day Mode: Show business groups */}
           {isDayMode && businessGroups.map((business) => {
             const isBeachBusiness = business.venues.some(v => v.type === 'Beach' || v.type === 'BEACH');
@@ -1336,7 +1336,7 @@ export default function DiscoveryPage() {
       
       {/* Events View */}
       {viewMode === 'events' && (
-        <div className={`absolute inset-0 pt-[80px] pb-[60px] overflow-y-auto no-scrollbar px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
+        <div className={`absolute inset-0 pt-[80px] pb-[120px] overflow-y-auto no-scrollbar px-6 ${isDayMode ? 'bg-stone-50' : 'bg-zinc-950'}`}>
           <EventsView
             events={filteredEvents}
             venues={venues}
@@ -1664,49 +1664,53 @@ export default function DiscoveryPage() {
         </div>
       )}
 
-      {/* ── Unified Bottom Navigation ── */}
-      <div className="fixed bottom-6 left-0 right-0 z-50 flex flex-col items-center gap-3 pointer-events-none">
-        
-        {/* Experiential Switch (Day/Night) */}
-        <div className={`pointer-events-auto flex p-1 rounded-full shadow-2xl ${
-          isDayMode ? 'bg-white/95 border border-stone-200 backdrop-blur-xl' : 'bg-zinc-900/95 border border-zinc-700 backdrop-blur-xl'
-        }`}>
-          <button 
-            onClick={() => handleExperienceSwitch('day')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${
-              isDayMode ? 'bg-zinc-950 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'
+      {/* ── Solid Bottom Navigation ── */}
+      <div className={`fixed bottom-0 left-0 right-0 z-50 pt-4 pb-8 px-5 border-t ${
+        isDayMode ? 'bg-[#FAFAF9] border-stone-200' : 'bg-zinc-950 border-zinc-800'
+      }`}>
+        <div className="w-full max-w-md mx-auto flex items-center justify-between">
+          
+          {/* Experiential Switch (Day/Night) */}
+          <div className={`flex p-1 rounded-sm border ${
+            isDayMode ? 'bg-white border-stone-200 shadow-sm' : 'bg-zinc-900 border-zinc-700 shadow-sm'
+          }`}>
+            <button 
+              onClick={() => handleExperienceSwitch('day')}
+              className={`flex items-center gap-1.5 px-3 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                isDayMode ? 'bg-zinc-950 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              <span className="text-sm">☀️</span>
+              <span>Day</span>
+            </button>
+            <button 
+              onClick={() => handleExperienceSwitch('night')}
+              className={`flex items-center gap-1.5 px-3 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                !isDayMode ? 'bg-[#10FF88] text-zinc-950 shadow-md' : 'text-stone-500 hover:text-stone-700'
+              }`}
+            >
+              <span className="text-sm">🪩</span>
+              <span>Night</span>
+            </button>
+          </div>
+
+          {/* View Toggle (Map/List) */}
+          <button
+            onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+            className={`px-4 py-2.5 rounded-sm font-mono text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 border shadow-sm ${
+              isDayMode 
+                ? 'bg-white text-zinc-950 border-stone-200 hover:bg-stone-50'
+                : 'bg-zinc-900 text-white border-zinc-700 hover:bg-zinc-800'
             }`}
           >
-            <span className="text-sm">☀️</span>
-            <span>Daytime</span>
+            {viewMode === 'map' ? (
+              <><span className="mr-1.5 text-sm">📄</span> LIST</>
+            ) : (
+              <><span className="mr-1.5 text-sm">🗺️</span> MAP</>
+            )}
           </button>
-          <button 
-            onClick={() => handleExperienceSwitch('night')}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${
-              !isDayMode ? 'bg-[#10FF88] text-zinc-950 shadow-md' : 'text-stone-500 hover:text-stone-700'
-            }`}
-          >
-            <span className="text-sm">🪩</span>
-            <span>Nightlife</span>
-          </button>
+
         </div>
-
-        {/* View Toggle (Map/List) */}
-        <button
-          onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-          className={`pointer-events-auto px-6 py-3 rounded-full font-mono text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 shadow-xl ${
-            isDayMode 
-              ? 'bg-zinc-950 text-white border border-zinc-800 hover:bg-zinc-800'
-              : 'bg-white text-zinc-950 border border-stone-200 hover:bg-stone-50'
-          }`}
-        >
-          {viewMode === 'map' ? (
-            <><span className="mr-2">📄</span> LIST VIEW</>
-          ) : (
-            <><span className="mr-2">🗺️</span> MAP VIEW</>
-          )}
-        </button>
-
       </div>
 
       {/* Toast Notification */}
