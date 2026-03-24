@@ -1670,13 +1670,33 @@ export default function DiscoveryPage() {
       }`}>
         <div className="w-full max-w-md mx-auto flex items-center justify-between">
           
-          {/* Experiential Switch (Day/Night) */}
-          <div className={`flex p-1 rounded-sm border ${
+          {/* Left: Venue Button */}
+          <button
+            onClick={() => {
+              if (fromVenueId) {
+                // Navigate back to the spot page
+                navigate(`/${fromVenueId}`);
+              } else {
+                setToast("You are not currently at a venue.");
+                setTimeout(() => setToast(null), 3000);
+              }
+            }}
+            className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 border shadow-sm ${
+              fromVenueId 
+                ? (isDayMode ? 'bg-white text-zinc-900 border-stone-200 hover:bg-stone-50' : 'bg-zinc-900 text-white border-zinc-700 hover:bg-zinc-800')
+                : (isDayMode ? 'bg-stone-100 text-stone-400 border-stone-200 opacity-70' : 'bg-zinc-900/50 text-zinc-600 border-zinc-800 opacity-70')
+            }`}
+          >
+            <span className="text-xl">🍸</span>
+          </button>
+
+          {/* Center: Experiential Switch (Day/Night) */}
+          <div className={`flex p-1 rounded-full border ${
             isDayMode ? 'bg-white border-stone-200 shadow-sm' : 'bg-zinc-900 border-zinc-700 shadow-sm'
           }`}>
             <button 
               onClick={() => handleExperienceSwitch('day')}
-              className={`flex items-center gap-1.5 px-3 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
                 isDayMode ? 'bg-zinc-950 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
@@ -1685,7 +1705,7 @@ export default function DiscoveryPage() {
             </button>
             <button 
               onClick={() => handleExperienceSwitch('night')}
-              className={`flex items-center gap-1.5 px-3 py-2.5 rounded-sm text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
                 !isDayMode ? 'bg-[#10FF88] text-zinc-950 shadow-md' : 'text-stone-500 hover:text-stone-700'
               }`}
             >
@@ -1694,20 +1714,16 @@ export default function DiscoveryPage() {
             </button>
           </div>
 
-          {/* View Toggle (Map/List) */}
+          {/* Right: View Toggle (Map/List) */}
           <button
             onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
-            className={`px-4 py-2.5 rounded-sm font-mono text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 border shadow-sm ${
+            className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 border shadow-sm ${
               isDayMode 
                 ? 'bg-white text-zinc-950 border-stone-200 hover:bg-stone-50'
                 : 'bg-zinc-900 text-white border-zinc-700 hover:bg-zinc-800'
             }`}
           >
-            {viewMode === 'map' ? (
-              <><span className="mr-1.5 text-sm">📄</span> LIST</>
-            ) : (
-              <><span className="mr-1.5 text-sm">🗺️</span> MAP</>
-            )}
+            <span className="text-xl">{viewMode === 'map' ? '📄' : '🗺️'}</span>
           </button>
 
         </div>
