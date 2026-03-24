@@ -946,16 +946,23 @@ export default function DiscoveryPage() {
   const businessGroups = useMemo(() => {
     if (!filteredVenues || filteredVenues.length === 0) return [];
     let groups = groupVenuesByBusiness(filteredVenues);
-    
+
     // Sort by popularity (total available units) for high-energy vibes
     if (activeFilter === 'party_booking') {
       groups = groups.sort((a, b) => {
         return b.totalAvailableUnits - a.totalAvailableUnits;
       });
+    } else if (userLocation) {
+      // Default: sort by distance (nearest first)
+      groups = groups.sort((a, b) => {
+        const distA = (a.latitude && a.longitude) ? calculateDistance(userLocation.latitude, userLocation.longitude, a.latitude, a.longitude) : Infinity;
+        const distB = (b.latitude && b.longitude) ? calculateDistance(userLocation.latitude, userLocation.longitude, b.latitude, b.longitude) : Infinity;
+        return distA - distB;
+      });
     }
-    
+
     return groups;
-  }, [filteredVenues, activeFilter, groupVenuesByBusiness]);
+  }, [filteredVenues, activeFilter, groupVenuesByBusiness, userLocation]);
 
   if (loading) {
     return (

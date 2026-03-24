@@ -217,37 +217,39 @@ Thank you!`;
             <span className="text-sm font-medium tracking-wide">View Menu</span>
           </button>
 
-          {/* Availability Summary */}
-          {hasAvailability ? (
-            <div className={`rounded-sm p-6 mb-8 border ${isDayMode ? 'bg-emerald-50 border-emerald-200' : 'bg-zinc-900 border-zinc-800'}`}>
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`w-3 h-3 rounded-sm animate-pulse ${isDayMode ? 'bg-emerald-500' : 'bg-[#10FF88]'}`}></div>
-                <p className={`text-lg font-medium ${isDayMode ? 'text-emerald-900' : 'text-[#10FF88]'}`}>
-                  {isDayMode ? 'Available Now' : 'LIVE NOW'}
+          {/* Availability Summary - Only for Beach venues */}
+          {isBeach && (
+            hasAvailability ? (
+              <div className={`rounded-sm p-6 mb-8 border ${isDayMode ? 'bg-emerald-50 border-emerald-200' : 'bg-zinc-900 border-zinc-800'}`}>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`w-3 h-3 rounded-sm animate-pulse ${isDayMode ? 'bg-emerald-500' : 'bg-[#10FF88]'}`}></div>
+                  <p className={`text-lg font-medium ${isDayMode ? 'text-emerald-900' : 'text-[#10FF88]'}`}>
+                    {isDayMode ? 'Available Now' : 'LIVE NOW'}
+                  </p>
+                </div>
+                <p className={`text-2xl font-light mb-1 ${isDayMode ? 'text-emerald-800' : 'text-white'}`}>
+                  {availability.availableUnits} sunbeds available
+                </p>
+                {availability.zones && availability.zones.length > 0 && (
+                  <p className={`text-sm ${isDayMode ? 'text-emerald-700' : 'text-zinc-400'}`}>
+                    From €{Math.min(...availability.zones.map(z => z.basePrice))} per day
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className={`rounded-sm p-6 mb-8 border ${isDayMode ? 'bg-stone-50 border-stone-200' : 'bg-zinc-900 border-zinc-800'}`}>
+                <p className={`text-lg font-medium mb-1 ${isDayMode ? 'text-stone-700' : 'text-zinc-400'}`}>
+                  Fully Booked
+                </p>
+                <p className={`text-sm ${isDayMode ? 'text-stone-600' : 'text-zinc-500'}`}>
+                  No availability at this time
                 </p>
               </div>
-              <p className={`text-2xl font-light mb-1 ${isDayMode ? 'text-emerald-800' : 'text-white'}`}>
-                {availability.availableUnits} {isBeach ? 'sunbeds' : 'spots'} available
-              </p>
-              {availability.zones && availability.zones.length > 0 && (
-                <p className={`text-sm ${isDayMode ? 'text-emerald-700' : 'text-zinc-400'}`}>
-                  From €{Math.min(...availability.zones.map(z => z.basePrice))} {isBeach ? 'per day' : 'per person'}
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className={`rounded-sm p-6 mb-8 border ${isDayMode ? 'bg-stone-50 border-stone-200' : 'bg-zinc-900 border-zinc-800'}`}>
-              <p className={`text-lg font-medium mb-1 ${isDayMode ? 'text-stone-700' : 'text-zinc-400'}`}>
-                Fully Booked
-              </p>
-              <p className={`text-sm ${isDayMode ? 'text-stone-600' : 'text-zinc-500'}`}>
-                No availability at this time
-              </p>
-            </div>
+            )
           )}
 
-          {/* Zones */}
-          {availability && availability.zones && availability.zones.length > 0 && (
+          {/* Zones - Only for Beach venues */}
+          {isBeach && availability && availability.zones && availability.zones.length > 0 && (
             <div className="space-y-4 mb-8">
               <h3 className={`text-sm uppercase tracking-widest font-medium ${isDayMode ? 'text-zinc-500' : 'text-zinc-400'}`}>
                 Available Zones
