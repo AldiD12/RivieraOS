@@ -296,9 +296,9 @@ export default function DiscoveryPage() {
   const [eventsLoading, setEventsLoading] = useState(false);
   const [eventVibeFilter, setEventVibeFilter] = useState('all');
   const [eventDateFilter, setEventDateFilter] = useState('all');
-  const [activeEventFilter, setActiveEventFilter] = useState('all'); // For night mode event filtering
-  const [activeEventDateFilter, setActiveEventDateFilter] = useState('all'); // Night: all/today/weekend
-  const [activeEventTypeFilter, setActiveEventTypeFilter] = useState('all'); // Night: all/vip/free
+  const [eventDayFilter, setEventDayFilter] = useState('today');
+  const [eventGenreFilter, setEventGenreFilter] = useState('all');
+  const [eventEntranceFilter, setEventEntranceFilter] = useState('all');
 
   // Location/Zone state — restore from sessionStorage if user already picked
   const [selectedGeographicZone, setSelectedGeographicZone] = useState(() => {
@@ -316,8 +316,9 @@ export default function DiscoveryPage() {
   const [businessEventsCount, setBusinessEventsCount] = useState({}); // { businessId: count }
 
   // Dropdown states
-  const [dateDropdownOpen, setDateDropdownOpen] = useState(false);
-  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
+  const [dayDropdownOpen, setDayDropdownOpen] = useState(false);
+  const [genreDropdownOpen, setGenreDropdownOpen] = useState(false);
+  const [entranceDropdownOpen, setEntranceDropdownOpen] = useState(false);
   const [toast, setToast] = useState(null);
 
   // Handle explicit Day/Night mode switch (Experiential Switch)
@@ -688,7 +689,7 @@ export default function DiscoveryPage() {
     window.open(whatsappUrl, '_blank');
   };
 
-  // Filter events based on night mode filters (date + type combined)
+  // Filter events based on night mode filters (Day + Genre + Entrance combined)
   const filteredEvents = useMemo(() => {
     if (!events || events.length === 0) return [];
 
@@ -700,26 +701,47 @@ export default function DiscoveryPage() {
       );
     }
 
-    const filtered = baseEvents.filter(event => {
-      const eventDate = new Date(event.startTime);
-      const today = new Date();
-      const isToday = eventDate.toDateString() === today.toDateString();
-      const isWeekend = [5, 6, 0].includes(eventDate.getDay());
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+    const afterTomorrow = new Date(today); afterTomorrow.setDate(today.getDate() + 2);
 
-      // Apply date filter
-      if (activeEventDateFilter !== 'all') {
-        if (activeEventDateFilter === 'today' && !isToday) return false;
-        if (activeEventDateFilter === 'weekend' && !isWeekend) return false;
+    // Figure out this weekend (Fri–Sun)
+    const dayOfWeek = today.getDay(); // 0=Sun … 6=Sat
+    const daysToFri = (5 - dayOfWeek + 7) % 7 || 7;
+    const friday = new Date(today); friday.setDate(today.getDate() + daysToFri);
+    const sunday = new Date(friday); sunday.setDate(friday.getDate() + 2);
+    sunday.setHours(23, 59, 59, 999);
+
+    const filtered = baseEvents.filter(event => {
+      const d = new Date(event.startTime);
+
+      // 1. Day filter
+      let dayMatch = true;
+      switch (eventDayFilter) {
+        case 'today':       dayMatch = d >= today && d < tomorrow; break;
+        case 'tomorrow':    dayMatch = d >= tomorrow && d < afterTomorrow; break;
+        case 'thisWeekend': dayMatch = d >= friday && d <= sunday; break;
+        case 'upcoming':    dayMatch = d >= today; break;
+        case 'past':        dayMatch = d < today; break;
+        default: break;
+      }
+      if (!dayMatch) return false;
+
+      // 2. Genre filter
+      if (eventGenreFilter !== 'all') {
+        const v = eventGenreFilter.toLowerCase();
+        const genre = (event.genre || event.vibe || event.musicGenre || '').toLowerCase();
+        if (!genre.includes(v)) return false;
       }
 
-      // Apply type filter
-      if (activeEventTypeFilter !== 'all') {
-        if (activeEventTypeFilter === 'vip') {
-          if (!(event.minimumSpend > 0 || (event.vibes && event.vibes.includes('VIP')))) return false;
-        }
-        if (activeEventTypeFilter === 'free') {
-          if (event.isTicketed && event.ticketPrice > 0) return false;
-        }
+      // 3. Entrance filter
+      if (eventEntranceFilter !== 'all') {
+        const isFree = (!event.isTicketed || event.ticketPrice === 0) && event.minimumSpend === 0;
+        if (eventEntranceFilter === 'free' && !isFree) return false;
+        
+        const isPaid = (event.isTicketed && event.ticketPrice > 0) || event.minimumSpend > 0;
+        if (eventEntranceFilter === 'paid' && !isPaid) return false;
       }
 
       return true;
@@ -737,7 +759,7 @@ export default function DiscoveryPage() {
     }
 
     return filtered;
-  }, [events, activeEventDateFilter, activeEventTypeFilter, fromVenueId, venues]);
+  }, [events, eventDayFilter, eventGenreFilter, eventEntranceFilter, fromVenueId, venues]);
 
   const filteredVenues = useMemo(() => {
     return venues.filter(v => {
@@ -1398,52 +1420,53 @@ export default function DiscoveryPage() {
               ))}
             </div>
           ) : (
-            /* Night Mode: Date + Type dropdowns for events */
-            <div className="flex gap-4 justify-center">
-              {/* Date/Time Filter Dropdown */}
-              <div className="relative">
+            /* Night Mode: Day + Genre + Entrance dropdowns for events */
+            <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+              
+              {/* Day Filter */}
+              <div className="relative flex-shrink-0">
                 <button
-                  onClick={() => { setDateDropdownOpen(!dateDropdownOpen); setTypeDropdownOpen(false); }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-sm border transition-all duration-300 ${
-                    activeEventDateFilter !== 'all'
-                      ? 'bg-[#10FF88]/10 border-[#10FF88]/50 text-[#10FF88]'
-                      : 'bg-zinc-900 border-zinc-700 text-white hover:border-zinc-600'
+                  onClick={() => { setDayDropdownOpen(!dayDropdownOpen); setGenreDropdownOpen(false); setEntranceDropdownOpen(false); }}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-sm border text-[11px] font-bold tracking-widest uppercase transition-all duration-200 whitespace-nowrap ${
+                    eventDayFilter !== 'today' || dayDropdownOpen
+                      ? 'bg-[#10FF88] border-[#10FF88] text-zinc-950 shadow-[0_0_12px_rgba(16,255,136,0.35)]'
+                      : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white'
                   }`}
                 >
-                  <span className="font-mono text-xs uppercase tracking-widest">
-                    {activeEventDateFilter === 'all' ? 'WHEN' : activeEventDateFilter === 'today' ? 'TODAY' : 'WEEKEND'}
+                  <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">DAY ▾</span>
+                  <span>
+                    {[
+                      { id: 'today',       label: 'Today' },
+                      { id: 'tomorrow',    label: 'Tomorrow' },
+                      { id: 'thisWeekend', label: 'This Weekend' },
+                      { id: 'upcoming',    label: 'Upcoming' },
+                      { id: 'past',        label: 'Past Events' },
+                    ].find(o => o.id === eventDayFilter)?.label || 'All'}
                   </span>
-                  <svg className={`w-3 h-3 transition-transform duration-300 ${dateDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                  <svg className={`w-2.5 h-2.5 transition-transform ${dayDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
-                {dateDropdownOpen && (
+                {dayDropdownOpen && (
                   <>
-                    <div className="fixed inset-0 z-40" onClick={() => setDateDropdownOpen(false)}></div>
-                    <div className="absolute top-full left-0 mt-2 w-44 rounded-sm shadow-xl border overflow-hidden z-50 bg-zinc-900 border-zinc-800">
+                    <div className="fixed inset-0 z-40" onClick={() => setDayDropdownOpen(false)}></div>
+                    <div className="absolute top-full left-0 mt-1 min-w-[140px] bg-zinc-900 border border-zinc-700 rounded-sm shadow-2xl z-50 overflow-hidden">
                       {[
-                        { id: 'all', label: 'ALL DATES' },
-                        { id: 'today', label: 'TODAY' },
-                        { id: 'weekend', label: 'WEEKEND' }
-                      ].map(option => (
+                        { id: 'today',       label: 'Today' },
+                        { id: 'tomorrow',    label: 'Tomorrow' },
+                        { id: 'thisWeekend', label: 'This Weekend' },
+                        { id: 'upcoming',    label: 'Upcoming' },
+                        { id: 'past',        label: 'Past Events' },
+                      ].map(opt => (
                         <button
-                          key={option.id}
-                          onClick={() => { setActiveEventDateFilter(option.id); setDateDropdownOpen(false); }}
-                          className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
-                            activeEventDateFilter === option.id
-                              ? 'bg-zinc-800 text-white'
-                              : 'hover:bg-zinc-800/50 text-zinc-400'
+                          key={opt.id}
+                          onClick={() => { setEventDayFilter(opt.id); setDayDropdownOpen(false); }}
+                          className={`w-full text-left px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest transition-colors ${
+                            eventDayFilter === opt.id ? 'bg-[#10FF88] text-zinc-950' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'
                           }`}
                         >
-                          <span className="font-mono text-xs uppercase tracking-widest">{option.label}</span>
-                          {activeEventDateFilter === option.id && (
-                            <span className="text-[#10FF88]">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </span>
-                          )}
+                          {opt.label}
                         </button>
                       ))}
                     </div>
@@ -1451,56 +1474,106 @@ export default function DiscoveryPage() {
                 )}
               </div>
 
-              {/* Type Filter Dropdown */}
-              <div className="relative">
+              {/* Genre Filter */}
+              <div className="relative flex-shrink-0">
                 <button
-                  onClick={() => { setTypeDropdownOpen(!typeDropdownOpen); setDateDropdownOpen(false); }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-sm border transition-all duration-300 ${
-                    activeEventTypeFilter !== 'all'
-                      ? 'bg-[#10FF88]/10 border-[#10FF88]/50 text-[#10FF88]'
-                      : 'bg-zinc-900 border-zinc-700 text-white hover:border-zinc-600'
+                  onClick={() => { setGenreDropdownOpen(!genreDropdownOpen); setDayDropdownOpen(false); setEntranceDropdownOpen(false); }}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-sm border text-[11px] font-bold tracking-widest uppercase transition-all duration-200 whitespace-nowrap ${
+                    eventGenreFilter !== 'all' || genreDropdownOpen
+                      ? 'bg-[#10FF88] border-[#10FF88] text-zinc-950 shadow-[0_0_12px_rgba(16,255,136,0.35)]'
+                      : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white'
                   }`}
                 >
-                  <span className="font-mono text-xs uppercase tracking-widest">
-                    {activeEventTypeFilter === 'all' ? 'TYPE' : activeEventTypeFilter === 'vip' ? 'VIP' : 'FREE'}
+                  <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">GENRE ▾</span>
+                  <span>
+                    {[
+                      { id: 'all',        label: 'All' },
+                      { id: 'electronic', label: 'Electronic' },
+                      { id: 'popullore',  label: 'Popullore' },
+                      { id: 'commercial', label: 'Commercial' },
+                      { id: 'rock',       label: 'Rock' },
+                      { id: 'hiphop',     label: 'Hip-Hop' },
+                    ].find(o => o.id === eventGenreFilter)?.label || 'All'}
                   </span>
-                  <svg className={`w-3 h-3 transition-transform duration-300 ${typeDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                  <svg className={`w-2.5 h-2.5 transition-transform ${genreDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
-                {typeDropdownOpen && (
+                {genreDropdownOpen && (
                   <>
-                    <div className="fixed inset-0 z-40" onClick={() => setTypeDropdownOpen(false)}></div>
-                    <div className="absolute top-full right-0 mt-2 w-44 rounded-sm shadow-xl border overflow-hidden z-50 bg-zinc-900 border-zinc-800">
+                    <div className="fixed inset-0 z-40" onClick={() => setGenreDropdownOpen(false)}></div>
+                    <div className="absolute top-full left-0 mt-1 min-w-[140px] bg-zinc-900 border border-zinc-700 rounded-sm shadow-2xl z-50 overflow-hidden">
                       {[
-                        { id: 'all', label: 'ALL TYPES' },
-                        { id: 'vip', label: 'VIP TABLES' },
-                        { id: 'free', label: 'FREE ENTRY' }
-                      ].map(option => (
+                        { id: 'all',        label: 'All' },
+                        { id: 'electronic', label: 'Electronic' },
+                        { id: 'popullore',  label: 'Popullore' },
+                        { id: 'commercial', label: 'Commercial' },
+                        { id: 'rock',       label: 'Rock' },
+                        { id: 'hiphop',     label: 'Hip-Hop' },
+                      ].map(opt => (
                         <button
-                          key={option.id}
-                          onClick={() => { setActiveEventTypeFilter(option.id); setTypeDropdownOpen(false); }}
-                          className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
-                            activeEventTypeFilter === option.id
-                              ? 'bg-zinc-800 text-white'
-                              : 'hover:bg-zinc-800/50 text-zinc-400'
+                          key={opt.id}
+                          onClick={() => { setEventGenreFilter(opt.id); setGenreDropdownOpen(false); }}
+                          className={`w-full text-left px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest transition-colors ${
+                            eventGenreFilter === opt.id ? 'bg-[#10FF88] text-zinc-950' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'
                           }`}
                         >
-                          <span className="font-mono text-xs uppercase tracking-widest">{option.label}</span>
-                          {activeEventTypeFilter === option.id && (
-                            <span className="text-[#10FF88]">
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                              </svg>
-                            </span>
-                          )}
+                          {opt.label}
                         </button>
                       ))}
                     </div>
                   </>
                 )}
               </div>
+
+              {/* Entrance Filter */}
+              <div className="relative flex-shrink-0">
+                <button
+                  onClick={() => { setEntranceDropdownOpen(!entranceDropdownOpen); setDayDropdownOpen(false); setGenreDropdownOpen(false); }}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-sm border text-[11px] font-bold tracking-widest uppercase transition-all duration-200 whitespace-nowrap ${
+                    eventEntranceFilter !== 'all' || entranceDropdownOpen
+                      ? 'bg-[#10FF88] border-[#10FF88] text-zinc-950 shadow-[0_0_12px_rgba(16,255,136,0.35)]'
+                      : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white'
+                  }`}
+                >
+                  <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">ENTRANCE ▾</span>
+                  <span>
+                    {[
+                      { id: 'all',  label: 'All' },
+                      { id: 'free', label: 'Free' },
+                      { id: 'paid', label: 'Paid' },
+                    ].find(o => o.id === eventEntranceFilter)?.label || 'All'}
+                  </span>
+                  <svg className={`w-2.5 h-2.5 transition-transform ${entranceDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {entranceDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setEntranceDropdownOpen(false)}></div>
+                    <div className="absolute top-full left-0 mt-1 min-w-[140px] bg-zinc-900 border border-zinc-700 rounded-sm shadow-2xl z-50 overflow-hidden">
+                      {[
+                        { id: 'all',  label: 'All' },
+                        { id: 'free', label: 'Free' },
+                        { id: 'paid', label: 'Paid' },
+                      ].map(opt => (
+                        <button
+                          key={opt.id}
+                          onClick={() => { setEventEntranceFilter(opt.id); setEntranceDropdownOpen(false); }}
+                          className={`w-full text-left px-4 py-2.5 text-[11px] font-bold uppercase tracking-widest transition-colors ${
+                            eventEntranceFilter === opt.id ? 'bg-[#10FF88] text-zinc-950' : 'text-zinc-300 hover:bg-zinc-800 hover:text-white'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
             </div>
           )}
         </div>
