@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>XIXA Beach Club Menu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#10FF88",
+                        "background-dark": "#09090B", // Zinc-950
+                        "surface-dark": "#18181B", // Zinc-900
+                        "border-dark": "#27272A", // Zinc-800
+                    },
+                    fontFamily: {
+                        display: ["Playfair Display", "serif"],
+                        sans: ["Inter", "sans-serif"],
+                        mono: ["JetBrains Mono", "monospace"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "2px",
+                        sm: "2px",
+                        md: "2px",
+                        lg: "2px",
+                        xl: "2px",
+                        "2xl": "2px",
+                        "3xl": "2px",
+                        full: "2px",
+                    },
+                },
+            },
+        };
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glow-primary {
+            filter: drop-shadow(0 0 12px rgba(16, 255, 136, 0.4));
+        }
+        .text-glow {
+            text-shadow: 0 0 12px rgba(16, 255, 136, 0.4);
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark text-zinc-100 font-sans antialiased">
+<header class="relative w-full h-64 md:h-80">
+<img alt="Immersive beach club view with luxury sunbeds" class="w-full h-full object-cover rounded-none" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8WwQlTWCp-ILL2b_lkfUnaiP9s_hGxRZsn-2CAzXztNWkQieRJmoqS9akLFXLBRdX9c-jJQvaQuspeWk-ZnDGKwbZd7oXDHdUC3Xc8brjUZUdR8EBjcl4JbBvFNaV_FOvpawMlgzQ3ltJuJMqHjuTtHWlJLb5BlcrqOBl6LifJGu4Gu1VrjRpVC9Cwy5i5-cQIPBxiikNRKM23KeJIhy24G1nxGJS9ap35lyt4gXPVxgbu8fU8m3QxqQeB93tuvMcrHvuAGIa_I5r"/>
+<div class="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-10 bg-gradient-to-b from-black/80 to-transparent">
+<button class="w-10 h-10 bg-surface-dark/90 rounded flex items-center justify-center text-white border border-border-dark">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex-1 mx-3 relative">
+<div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-zinc-400 text-lg">search</span>
+</div>
+<input class="w-full bg-surface-dark/90 border border-border-dark text-zinc-100 rounded py-2 pl-10 pr-4 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm font-mono" placeholder="SEARCH MENU" type="text"/>
+</div>
+<button class="w-10 h-10 bg-surface-dark/90 rounded flex items-center justify-center text-white border border-border-dark">
+<span class="material-symbols-outlined">favorite_border</span>
+</button>
+</div>
+<div class="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background-dark to-transparent"></div>
+<div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-24 h-16 bg-surface-dark rounded flex items-center justify-center border border-border-dark z-20">
+<span class="font-display font-bold text-2xl tracking-widest text-white">XIXA</span>
+</div>
+</header>
+<section class="px-4 pt-14 pb-6 text-center border-b border-border-dark">
+<h1 class="font-display text-3xl font-bold mb-2 tracking-tight text-white uppercase">XIXA Beach Club</h1>
+<div class="flex flex-wrap items-center justify-center text-xs text-zinc-400 gap-x-3 gap-y-1 mb-4 font-mono uppercase tracking-wider">
+<span class="flex items-center"><span class="material-symbols-outlined text-[14px] mr-1 text-primary text-glow">star</span> 9.8</span>
+<span>•</span>
+<span>Open until 23:00</span>
+<span>•</span>
+<span>Min. <span class="text-primary text-glow">1,500 ALL</span></span>
+</div>
+<div class="flex items-center gap-2 mt-4">
+<div class="flex-1 bg-surface-dark border border-border-dark rounded flex items-center justify-between px-4 py-3">
+<div class="flex items-center text-sm font-medium text-zinc-200 uppercase tracking-wide">
+<span class="material-symbols-outlined text-primary text-glow mr-2 text-[18px]">room_service</span>
+                    Sunbed Delivery
+                </div>
+<span class="material-symbols-outlined text-zinc-500 text-[18px]">expand_more</span>
+</div>
+<button class="w-12 h-[46px] bg-surface-dark border border-border-dark rounded flex items-center justify-center text-zinc-200">
+<span class="material-symbols-outlined text-[20px]">group</span>
+</button>
+</div>
+</section>
+<main class="pb-24">
+<div class="p-4">
+<div class="bg-surface-dark border border-border-dark rounded p-4 flex items-center gap-4 relative overflow-hidden">
+<div class="w-12 h-12 bg-background-dark rounded border border-border-dark flex items-center justify-center shrink-0 z-10 glow-primary">
+<span class="material-symbols-outlined text-primary text-glow">local_offer</span>
+</div>
+<div class="z-10">
+<h3 class="text-white text-sm font-bold uppercase tracking-wide mb-1">20% discount on Signature Cocktails</h3>
+<a class="text-primary text-glow text-xs font-mono flex items-center hover:underline uppercase" href="#">
+                        Show details <span class="material-symbols-outlined text-[14px] ml-1">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<section class="mt-4">
+<div class="px-4 flex items-center justify-between mb-3">
+<h2 class="font-display text-xl font-bold uppercase tracking-wider text-white">Recently Ordered</h2>
+<a class="text-primary text-glow font-mono text-sm uppercase" href="#">See all</a>
+</div>
+<div class="flex overflow-x-auto hide-scrollbar pl-4 pr-4 gap-3 pb-4">
+<div class="w-40 shrink-0 bg-surface-dark border border-border-dark rounded overflow-hidden relative group cursor-pointer">
+<div class="h-32 bg-zinc-800 relative">
+<img alt="Artisan Aperol Spritz" class="w-full h-full object-cover contrast-125 saturate-150" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCxQmwv7WDmyGiLB_UF29_kd3hVN_1hXFim0zZOHAsOqf9MPvc6FAHKUhMWlx95EoP7GwaLNbOk48R6GcTV2vfzMTUtNHelMlmbEk_R5-R9ZTi1__35G3sDUKj7CmgRmwqRArwaiDr4P50ghmYf3JBZHTIySoptAAk4E22VZInLLwPZZ_A6FaBdri3OywGebQZ_RmshbJrRQXKuu7XyHRBgkawhDDeJL2oJWMAvibrN3E-zROsracNAWCvigw2GqPhd5er4byd-rxE"/>
+<button class="absolute top-2 right-2 w-8 h-8 bg-surface-dark rounded flex items-center justify-center text-primary border border-border-dark glow-primary">
+<span class="material-symbols-outlined text-[20px] text-glow">add</span>
+</button>
+</div>
+<div class="p-3">
+<div class="text-primary text-glow font-mono text-sm font-bold mb-1">950 ALL</div>
+<h4 class="text-sm font-bold text-zinc-200 leading-tight line-clamp-2 uppercase tracking-wide">XIXA Signature Spritz</h4>
+</div>
+</div>
+<div class="w-40 shrink-0 bg-surface-dark border border-border-dark rounded overflow-hidden relative group cursor-pointer">
+<div class="h-32 bg-zinc-800 relative">
+<img alt="Truffle Fries" class="w-full h-full object-cover contrast-125 saturate-150" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5jAq7nDh93n6Wnx6-jWgILQM83pEeH9Po2HYMroyCsfRRFs9jRC7lcEvUwx-JuOLk1Op-sYU-VS10TpKIkbTbeyMUbZC-p_sc908juNepCChvPvxummq8IdvtIdj9pqoAhIqxjQaSZI0wJr0petUmwOclOG6WR2a8IzJzP-fXbnfG2yHXfnlbutTB43hWY5wQWRZHkrc2cQag00FylFQx0glRA8uLip2vG--jTnu_SU18YUCsGk1hEUj1Lci0gsqZIgQw1QqdqzSa"/>
+<button class="absolute top-2 right-2 w-8 h-8 bg-surface-dark rounded flex items-center justify-center text-primary border border-border-dark glow-primary">
+<span class="material-symbols-outlined text-[20px] text-glow">add</span>
+</button>
+</div>
+<div class="p-3">
+<div class="text-primary text-glow font-mono text-sm font-bold mb-1">600 ALL</div>
+<h4 class="text-sm font-bold text-zinc-200 leading-tight line-clamp-2 uppercase tracking-wide">Truffle Parmesan Fries</h4>
+</div>
+</div>
+<div class="w-40 shrink-0 bg-surface-dark border border-border-dark rounded overflow-hidden relative group cursor-pointer">
+<div class="h-32 bg-zinc-800 relative">
+<img alt="Club Sandwich" class="w-full h-full object-cover contrast-125 saturate-150" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-MWK4S37PWqXmBgmX_sXM8JciSqd1MX1MFoaaCJ6mj7qfEYMnDk7XdfxcZu8jXfTDPgwHKuHw65Tph5M6ywa-gKDwChTjdQEDItIYY-5FEcfIsbFelt4twS4XA8jZFMJfpGFZXqJAfEa5JP9tAcG_379ENRttyr6yRADFF6emIDua33GYX41neQJgGxSFA029fbayCNWJVITWaxe7629T6FSx2lkkXKeE_1CVCw4oMNzJ-iIAbZTKukONEnzo3w0dM6oI8JrSc6Cm"/>
+<button class="absolute top-2 right-2 w-8 h-8 bg-surface-dark rounded flex items-center justify-center text-primary border border-border-dark glow-primary">
+<span class="material-symbols-outlined text-[20px] text-glow">add</span>
+</button>
+</div>
+<div class="p-3">
+<div class="text-primary text-glow font-mono text-sm font-bold mb-1">1,200 ALL</div>
+<h4 class="text-sm font-bold text-zinc-200 leading-tight line-clamp-2 uppercase tracking-wide">Riviera Club Sandwich</h4>
+</div>
+</div>
+</div>
+</section>
+<section class="mt-6 border-t border-border-dark pt-6">
+<div class="px-4 flex items-center justify-between mb-4">
+<h2 class="font-display text-xl font-bold uppercase tracking-wider text-white">New Offers</h2>
+<a class="text-primary text-glow font-mono text-xs font-bold flex items-center uppercase" href="#">
+<span class="material-symbols-outlined text-[16px] mr-1">translate</span>
+                    Original menu
+                </a>
+</div>
+<div class="flex flex-col">
+<div class="flex items-start p-4 border-b border-border-dark hover:bg-zinc-900/50 cursor-pointer">
+<div class="flex-1 pr-4">
+<h3 class="text-base font-bold text-zinc-100 mb-1 uppercase tracking-wide">Sunset Tapas Platter</h3>
+<p class="text-sm text-zinc-400 mb-2 leading-snug font-mono text-xs">Prosciutto, local cheeses, olives, artisan bread.</p>
+<div class="flex items-center text-primary text-glow font-mono text-xs font-bold mb-2 uppercase">
+<span class="material-symbols-outlined text-[14px] mr-1">local_offer</span>
+                            15% off with a bottle of wine
+                        </div>
+<div class="flex items-center gap-3">
+<span class="text-primary text-glow font-mono font-bold">2,200 ALL</span>
+<span class="text-zinc-600 line-through font-mono text-xs">2,600 ALL</span>
+<span class="border border-primary text-primary text-glow text-[10px] font-bold px-1.5 py-0.5 rounded uppercase flex items-center">
+<span class="material-symbols-outlined text-[12px] mr-0.5">star</span> Popular
+                            </span>
+</div>
+</div>
+<div class="w-24 h-24 shrink-0 bg-surface-dark border border-border-dark rounded overflow-hidden relative">
+<img alt="Tapas platter" class="w-full h-full object-cover contrast-125 saturate-150" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCu0dyswuC7g1UVRcHmGvQqJCtKC7mjeaxSv7LLS1D7HCHvRdl2I_H8EjwudwsfHLlOtuXBCbQMKLiYUORauKg6CULnQPEPwxAdlz2XtPYmeT1kJKZJZPeE947uYaBQXqattawPPhZiwsM5qda2JhoO9vGfoXosyOp1W1DwtmW1_dp1JJemi1SK8RnSAUJN1iyx5y2ebN3bvQ2snspSMcPchVRwR2cDWlFB6AlgyERSYxLT2TZymXHOlpRjsByebZpY9t3_S50TJ0HA"/>
+<button class="absolute bottom-1 right-1 w-8 h-8 bg-surface-dark rounded flex items-center justify-center text-primary border border-border-dark glow-primary">
+<span class="material-symbols-outlined text-[20px] text-glow">add</span>
+</button>
+</div>
+</div>
+<div class="flex items-start p-4 border-b border-border-dark hover:bg-zinc-900/50 cursor-pointer">
+<div class="flex-1 pr-4">
+<h3 class="text-base font-bold text-zinc-100 mb-1 uppercase tracking-wide">Crispy Calamari <span class="text-lg leading-none">🌶️</span></h3>
+<p class="text-sm text-zinc-400 mb-2 leading-snug font-mono text-xs">Fresh caught squid, spicy mayo, lemon wedges.</p>
+<div class="flex items-center gap-2">
+<span class="text-primary text-glow font-mono font-bold">1,400 ALL</span>
+</div>
+</div>
+<div class="w-24 h-24 shrink-0 bg-surface-dark border border-border-dark rounded overflow-hidden relative">
+<img alt="Crispy Calamari" class="w-full h-full object-cover contrast-125 saturate-150" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLukrG-uchUhOVxdZ-JsZ52G2fSze5grFvsJAxuuqHXyePExy-VzFjtc3SJ-NIQoesBj-2sIT42Imh8OTfTXdaiRNgVoWd_BlAYOCdMMpn3xfYxr03xoGxNMreTnqxXw2T28h5x8PwVNoaYfzRGBbftCv_J8-0sFUeXx7gcw7rpuVPkhk46xrHYxd6mYMvNZilB51G0a2-lPGnsX_ThHXNCmBJ_MG9BH17RB8KctGMJni3Yl_0F4JtGeZ-b9TpAwMKxYpmTIXcQfuy"/>
+<button class="absolute bottom-1 right-1 w-8 h-8 bg-surface-dark rounded flex items-center justify-center text-primary border border-border-dark glow-primary">
+<span class="material-symbols-outlined text-[20px] text-glow">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<section class="mt-2 pt-4">
+<div class="px-4 mb-4">
+<h2 class="font-display text-xl font-bold uppercase tracking-wider text-white">Signature Cocktails</h2>
+</div>
+<div class="flex flex-col">
+<div class="flex items-start p-4 border-b border-border-dark hover:bg-zinc-900/50 cursor-pointer">
+<div class="flex-1 pr-4">
+<h3 class="text-base font-bold text-zinc-100 mb-1 uppercase tracking-wide">XIXA Noir</h3>
+<p class="text-sm text-zinc-400 mb-2 leading-snug font-mono text-xs">Activated charcoal, premium vodka, blackberry reduction, lime.</p>
+<div class="flex items-center gap-2">
+<span class="text-primary text-glow font-mono font-bold">1,100 ALL</span>
+</div>
+</div>
+<div class="w-24 h-24 shrink-0 bg-surface-dark border border-border-dark rounded overflow-hidden relative">
+<img alt="Dark charcoal cocktail" class="w-full h-full object-cover contrast-125 saturate-150" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-L0UWYbjLFeCwUOQx-tanwrrGstZdS7P5DVHZJrgOEjv1jlgRGYi7uGIcsBtDkaAiOJOnzjxhUa4hoCL_a54qmkEXQ06136P5OYolg2sDZC-CwY6EvRF4U13-tn2JPuLscHXZ8L0RgX4fSRQUEvbWpzIueOITsunH2zddcwph9H5s_78snlLMgAOT0J1CQV6maVmuwN7H1ukt1XeAMO6Bsc3X3nspWjfuHFlG7ZVY2s28bKHtlIsZAJF0O4m-cidVvWEPNlUC99iI"/>
+<button class="absolute bottom-1 right-1 w-8 h-8 bg-surface-dark rounded flex items-center justify-center text-primary border border-border-dark glow-primary">
+<span class="material-symbols-outlined text-[20px] text-glow">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</body></html>
