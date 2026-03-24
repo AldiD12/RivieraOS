@@ -50,7 +50,7 @@ function FilterDropdown({ label, value, options, onChange }) {
         }`}
       >
         <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">{label}</span>
-        <span>{selected?.label || 'All'}</span>
+        <span className="truncate max-w-[65px] inline-block align-bottom">{selected?.label || 'All'}</span>
         <svg className={`w-2.5 h-2.5 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
         </svg>

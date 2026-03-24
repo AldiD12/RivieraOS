@@ -1415,15 +1415,14 @@ export default function DiscoveryPage() {
                       : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white'
                   }`}
                 >
-                  <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">DAY</span>
-                  <span>
+                  <span className="truncate max-w-[80px] inline-block align-bottom">
                     {[
                       { id: 'today',       label: 'Today' },
                       { id: 'tomorrow',    label: 'Tomorrow' },
                       { id: 'thisWeekend', label: 'This Weekend' },
                       { id: 'upcoming',    label: 'Upcoming' },
                       { id: 'past',        label: 'Past Events' },
-                    ].find(o => o.id === eventDayFilter)?.label || 'All'}
+                    ].find(o => o.id === eventDayFilter)?.label || 'Day'}
                   </span>
                   <svg className={`w-2.5 h-2.5 transition-transform ${dayDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
@@ -1466,16 +1465,15 @@ export default function DiscoveryPage() {
                       : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white'
                   }`}
                 >
-                  <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">GENRE</span>
-                  <span>
-                    {[
+                  <span className="truncate max-w-[80px] inline-block align-bottom">
+                    {eventGenreFilter === 'all' ? 'GENRE' : [
                       { id: 'all',        label: 'All' },
                       { id: 'electronic', label: 'Electronic' },
                       { id: 'popullore',  label: 'Popullore' },
                       { id: 'commercial', label: 'Commercial' },
                       { id: 'rock',       label: 'Rock' },
                       { id: 'hiphop',     label: 'Hip-Hop' },
-                    ].find(o => o.id === eventGenreFilter)?.label || 'All'}
+                    ].find(o => o.id === eventGenreFilter)?.label || 'GENRE'}
                   </span>
                   <svg className={`w-2.5 h-2.5 transition-transform ${genreDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
@@ -1519,13 +1517,12 @@ export default function DiscoveryPage() {
                       : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white'
                   }`}
                 >
-                  <span className="text-[10px] text-current opacity-60 font-mono pr-0.5">ENTRANCE</span>
-                  <span>
-                    {[
+                  <span className="truncate max-w-[80px] inline-block align-bottom">
+                    {eventEntranceFilter === 'all' ? 'ENTRANCE' : [
                       { id: 'all',  label: 'All' },
                       { id: 'free', label: 'Free' },
                       { id: 'paid', label: 'Paid' },
-                    ].find(o => o.id === eventEntranceFilter)?.label || 'All'}
+                    ].find(o => o.id === eventEntranceFilter)?.label || 'ENTRANCE'}
                   </span>
                   <svg className={`w-2.5 h-2.5 transition-transform ${entranceDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
