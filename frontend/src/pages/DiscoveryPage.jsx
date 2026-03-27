@@ -1098,7 +1098,7 @@ export default function DiscoveryPage() {
             })();
 
             return (
-              <div key={business.id} className={`group relative overflow-hidden rounded-sm cursor-pointer ${isDayMode ? 'bg-white border border-zinc-300' : 'bg-zinc-900 border border-zinc-800'}`}
+              <div key={business.id} className={`group relative overflow-hidden rounded-3xl cursor-pointer shadow-sm hover:shadow-md transition-shadow duration-300 ${isDayMode ? 'bg-white border border-stone-200' : 'bg-zinc-900 border border-zinc-800'}`}
                    onClick={() => handleBusinessClick(business)}>
                 {/* Business Image */}
                 <div className={`relative h-64 w-full overflow-hidden ${isDayMode ? 'bg-stone-100' : 'bg-zinc-900'}`}>
@@ -1106,13 +1106,13 @@ export default function DiscoveryPage() {
                   {isBeachBusiness && (
                     <div className="absolute top-3 left-3 z-20 flex items-center space-x-2">
                       {isAvailable && (
-                        <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm ${isDayMode ? 'bg-emerald-500 border border-emerald-600 text-white' : 'bg-zinc-950 border border-zinc-800 text-white'}`}>
-                          {isDayMode ? 'Available' : (<><span className="w-1.5 h-1.5 bg-[#10FF88] inline-block mr-1.5"></span>LIVE NOW</>)}
+                        <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${isDayMode ? 'bg-emerald-500 border border-emerald-600 text-white' : 'bg-zinc-950 border border-zinc-800 text-[#10FF88] shadow-[0_0_8px_rgba(16,255,136,0.3)]'}`}>
+                          {isDayMode ? 'Available' : (<><span className="w-1.5 h-1.5 bg-[#10FF88] inline-block mr-1.5 rounded-full"></span>LIVE NOW</>)}
                         </span>
                       )}
                       {isFewLeft && (
-                        <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm ${isDayMode ? 'bg-white border border-zinc-300 text-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-amber-500'}`}>
-                          {isDayMode ? 'Few Left' : (<><span className="w-1.5 h-1.5 bg-amber-500 inline-block mr-1.5"></span>FILLING FAST</>)}
+                        <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full ${isDayMode ? 'bg-white border border-stone-200 text-zinc-950 shadow-sm' : 'bg-zinc-900 border border-zinc-800 text-amber-500'}`}>
+                          {isDayMode ? 'Few Left' : (<><span className="w-1.5 h-1.5 bg-amber-500 inline-block mr-1.5 rounded-full"></span>FILLING FAST</>)}
                         </span>
                       )}
                     </div>
@@ -1121,12 +1121,12 @@ export default function DiscoveryPage() {
                   {/* Top Right Badges */}
                   <div className="absolute top-3 right-3 z-20 flex items-center space-x-2">
                     {eventsCount > 0 && (
-                      <div className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm backdrop-blur-md ${isDayMode ? 'bg-purple-50/90 border border-purple-200 text-purple-800' : 'bg-purple-900/90 border border-purple-700 text-purple-300'}`}>
+                      <div className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full backdrop-blur-md ${isDayMode ? 'bg-white/90 border border-stone-200 text-zinc-900 shadow-sm' : 'bg-zinc-950/90 border border-zinc-800 text-zinc-300'}`}>
                         {eventsCount} {eventsCount === 1 ? 'EVENT' : 'EVENTS'}
                       </div>
                     )}
                     {business.venues.length > 1 && (
-                      <div className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-sm backdrop-blur-md ${isDayMode ? 'bg-white/90 border border-zinc-200 text-zinc-950' : 'bg-zinc-900/90 border border-zinc-700 text-white'}`}>
+                      <div className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full backdrop-blur-md ${isDayMode ? 'bg-white/90 border border-stone-200 text-zinc-950 shadow-sm' : 'bg-zinc-900/90 border border-zinc-800 text-white'}`}>
                         {business.venues.length} VENUES
                       </div>
                     )}
@@ -1209,13 +1209,13 @@ export default function DiscoveryPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-3 pt-1">
+                  <div className="flex items-center space-x-3 pt-2">
                     <button
-                      className={`flex-1 text-xs font-bold uppercase tracking-widest py-3 transition-colors border rounded-sm ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800 border-zinc-950' : 'bg-zinc-950 text-white hover:bg-zinc-800 border-zinc-950'}`}
+                      className={`flex-1 text-xs font-bold uppercase tracking-widest py-3.5 transition-colors border rounded-2xl ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800 border-zinc-950' : 'bg-zinc-950 text-[#10FF88] hover:bg-zinc-900 border-[#10FF88]/30 shadow-[0_0_15px_rgba(16,255,136,0.1)]'}`}
                     >
                       Explore
                     </button>
-                    <button className={`w-10 h-10 flex items-center justify-center border transition-colors rounded-sm ${isDayMode ? 'border-zinc-300 hover:border-zinc-950 bg-white' : 'border-zinc-800 hover:border-zinc-100 bg-transparent'}`}>
+                    <button className={`w-11 h-11 flex items-center justify-center border transition-colors rounded-2xl ${isDayMode ? 'border-stone-200 hover:border-zinc-950 bg-stone-50 text-zinc-950' : 'border-zinc-800 hover:border-zinc-500 bg-zinc-900/50 text-zinc-300'}`}>
                       <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-950' : 'text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
@@ -1285,7 +1285,7 @@ export default function DiscoveryPage() {
             return (
               <div 
                 key={event.id} 
-                className="relative w-full aspect-[4/5] bg-zinc-900 border-2 border-zinc-800 rounded-sm overflow-hidden group hover:border-zinc-600 transition-all duration-300 shadow-lg cursor-pointer mb-8"
+                className="relative w-full aspect-[4/5] bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden group hover:border-zinc-600 transition-all duration-500 shadow-2xl cursor-pointer mb-8"
                 onClick={() => handleEventClick(event)}
               >
                 {/* Event Image */}
@@ -1303,15 +1303,15 @@ export default function DiscoveryPage() {
                   )}
                 </div>
                 
-                {/* Overlays - Exact from HTML */}
+                {/* Overlays - softened styles */}
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent z-10 pointer-events-none"></div>
-                <div className="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-2 rounded-sm"></div>
-                <div className="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-4 rounded-sm"></div>
+                <div className="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-2 rounded-2xl"></div>
+                <div className="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-4 rounded-[1rem]"></div>
                 
-                {/* Top Bar - Exact from HTML */}
+                {/* Top Bar */}
                 <div className="absolute top-0 left-0 z-20 w-full flex justify-between p-4 border-b border-zinc-800/50">
-                  <div className="bg-zinc-900 px-4 py-2 rounded-none border border-zinc-800 flex flex-col items-center justify-center font-mono">
-                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none">
+                  <div className="bg-zinc-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-zinc-700 shadow-md flex flex-col items-center justify-center font-mono">
+                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest leading-none">
                       {eventDate.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase()}
                     </span>
                     <span className="text-xl font-black text-white leading-none mt-1">
@@ -1321,8 +1321,8 @@ export default function DiscoveryPage() {
                   
                   {/* Entry Badge - Only show if free entry */}
                   {(!event.isTicketed || event.ticketPrice === 0) && event.minimumSpend === 0 && (
-                    <div className="bg-zinc-900 px-4 py-2 border border-zinc-800 rounded-none flex items-center">
-                      <span className="text-[10px] font-mono text-zinc-300 font-black tracking-widest uppercase">[ FREE ENTRY ]</span>
+                    <div className="bg-zinc-900/90 backdrop-blur-md px-4 py-2 border border-[#10FF88]/30 rounded-full flex items-center shadow-[0_0_10px_rgba(16,255,136,0.1)]">
+                      <span className="text-[10px] font-mono text-[#10FF88] font-black tracking-widest uppercase">FREE ENTRY</span>
                     </div>
                   )}
                 </div>
