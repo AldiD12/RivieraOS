@@ -116,7 +116,7 @@ function LandingSpotPage() {
       <main className="flex-1 w-full max-w-md mx-auto px-6 py-8 flex flex-col gap-5 z-20 -mt-2">
 
         {/* OPTION 1: MENU */}
-        {venue?.type?.toLowerCase() === 'restaurant' && (
+        {(venue?.allowsDigitalOrdering || venue?.type?.toLowerCase() === 'restaurant') && (
           <button
             onClick={() => navigate(getMenuUrl())}
             className="w-full bg-white border border-stone-200 p-5 flex items-center gap-5 rounded-sm relative overflow-hidden group hover:bg-stone-50 transition-colors text-left shadow-sm"

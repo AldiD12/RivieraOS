@@ -208,7 +208,7 @@ Thank you!`;
           )}
 
           {/* View Menu Button (for any venue that might have a digital menu) */}
-          {venue?.type?.toLowerCase() === 'restaurant' && !isAttraction && (
+          {(venue?.allowsDigitalOrdering || venue?.type?.toLowerCase() === 'restaurant') && !isAttraction && (
             <button
               onClick={() => setShowMenu(true)}
               className={`w-full mb-6 flex items-center justify-center gap-2 py-3 rounded-sm border transition-all duration-300 ${
