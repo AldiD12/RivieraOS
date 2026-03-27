@@ -8,6 +8,7 @@ const NavigationControl = lazy(() => import('react-map-gl').then(mod => ({ defau
 import { venueApi } from '../services/venueApi';
 import { publicEventsApi } from '../services/eventsApi';
 import { geographicZonesApi } from '../services/geographicZonesApi';
+import { useAppStore } from '../store/appStore';
 
 // Lazy load bottom sheet components (only needed on user interaction)
 const VenueBottomSheet = lazy(() => import('../components/VenueBottomSheet'));
@@ -311,6 +312,9 @@ export default function DiscoveryPage() {
   });
   const [eventGenreFilter, setEventGenreFilter] = useState('all');
   const [eventEntranceFilter, setEventEntranceFilter] = useState('all');
+
+  // Recover session data for returning to Spot pages
+  const { isSessionActive, tableNumber, zoneId: sessionZoneId } = useAppStore();
 
   // Location/Zone state — restore from sessionStorage if user already picked
   const [selectedGeographicZone, setSelectedGeographicZone] = useState(() => {
@@ -1724,8 +1728,15 @@ export default function DiscoveryPage() {
           <button
             onClick={() => {
               if (fromVenueId) {
-                // Navigate back to the spot page landing
-                navigate(`/spot?v=${fromVenueId}`);
+                // Return to Spot landing fully, preserving table number if active
+                let returnUrl = `/spot?v=${fromVenueId}`;
+                if (isSessionActive && tableNumber) {
+                  returnUrl += `&u=${tableNumber}`;
+                }
+                if (isSessionActive && sessionZoneId) {
+                  returnUrl += `&z=${sessionZoneId}`;
+                }
+                window.location.href = returnUrl;
               } else {
                 setToast("You are not currently at a venue.");
                 setTimeout(() => setToast(null), 3000);
