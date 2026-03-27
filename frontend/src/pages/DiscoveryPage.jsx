@@ -728,12 +728,22 @@ export default function DiscoveryPage() {
   const filteredEvents = useMemo(() => {
     if (!events || events.length === 0) return [];
 
-    // VENUE JAIL: If we have a fromVenueId, filter to only that venue's events
+    // BUSINESS JAIL: If we have a fromVenueId, show all events for the parent business
     let baseEvents = events;
     if (fromVenueId) {
-      baseEvents = baseEvents.filter(event =>
-        event.venueId === parseInt(fromVenueId) || event.venueId === fromVenueId
-      );
+      const hostVenue = venues.find(v => String(v.id) === String(fromVenueId));
+      
+      if (hostVenue && hostVenue.businessId) {
+        // Show all events belonging to the same business
+        baseEvents = baseEvents.filter(event => 
+          String(event.businessId) === String(hostVenue.businessId)
+        );
+      } else {
+        // Fallback to strict venue filtering if business data isn't loaded yet
+        baseEvents = baseEvents.filter(event =>
+          String(event.venueId) === String(fromVenueId) || event.venueId === parseInt(fromVenueId)
+        );
+      }
     }
 
     const now = new Date();
