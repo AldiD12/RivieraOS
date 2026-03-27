@@ -306,7 +306,9 @@ export default function DiscoveryPage() {
   const [eventsLoading, setEventsLoading] = useState(false);
   const [eventVibeFilter, setEventVibeFilter] = useState('all');
   const [eventDateFilter, setEventDateFilter] = useState('all');
-  const [eventDayFilter, setEventDayFilter] = useState('today');
+  const [eventDayFilter, setEventDayFilter] = useState(() => {
+    return new URLSearchParams(window.location.search).get('from') ? 'upcoming' : 'today';
+  });
   const [eventGenreFilter, setEventGenreFilter] = useState('all');
   const [eventEntranceFilter, setEventEntranceFilter] = useState('all');
 
@@ -1401,7 +1403,9 @@ export default function DiscoveryPage() {
           >
             <span className="text-[#10FF88]">📍</span>
             <span className="font-mono text-xs uppercase tracking-widest">
-              {selectedGeographicZone === 'EVERYWHERE' 
+              {fromVenueId && venues.length > 0
+                ? venues.find(v => String(v.id) === String(fromVenueId))?.name || 'VENUE'
+                : selectedGeographicZone === 'EVERYWHERE' 
                 ? 'EVERYWHERE' 
                 : selectedGeographicZone === 'NEARBY'
                 ? 'NEARBY'
