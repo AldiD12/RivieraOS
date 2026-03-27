@@ -609,14 +609,14 @@ export default function SpotPage() {
             <input 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white/90 border border-stone-200 text-stone-800 rounded py-2 pl-10 pr-4 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400 focus:border-stone-400 text-sm font-mono" 
+              className="w-full bg-white/90 border border-stone-200 text-stone-800 rounded-full py-2 pl-10 pr-4 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-400 focus:border-stone-400 text-sm font-mono" 
               placeholder="SEARCH MENU" 
               type="text"
             />
           </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#FAFAF9] to-transparent"></div>
-        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 min-w-24 px-4 h-16 bg-white rounded flex flex-col items-center justify-center border border-stone-200 z-20">
+        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 min-w-24 px-5 h-16 bg-white rounded-2xl flex flex-col items-center justify-center border border-stone-200 shadow-sm z-20">
           <span className="font-display font-bold text-xl tracking-widest text-stone-900 whitespace-nowrap">{venue?.name || 'RIVIERA'}</span>
           {unitId && <span className="text-zinc-950 font-mono text-[10px] uppercase border-t border-stone-200 mt-1 pt-1">UNIT {unitId}</span>}
         </div>
@@ -636,7 +636,7 @@ export default function SpotPage() {
         {/* Reservation Action Button */}
         {!canOrder && venue?.allowsDigitalOrdering && (
            <div className="mt-4 flex justify-center">
-             <button onClick={() => setShowReserveModal(true)} className="px-6 py-3 bg-zinc-950 text-white rounded font-mono text-sm font-bold tracking-widest uppercase hover:bg-zinc-800 transition-all">
+             <button onClick={() => setShowReserveModal(true)} className="px-8 py-3.5 bg-zinc-950 text-white rounded-full font-mono text-sm font-bold tracking-widest uppercase hover:bg-zinc-800 transition-all shadow-md">
                Reserve Table
              </button>
            </div>
@@ -646,13 +646,13 @@ export default function SpotPage() {
       {/* Dynamic Category Filtering ribbon */}
       <div className="px-4 py-4 border-b border-stone-200 sticky top-0 z-30 bg-[#FAFAF9]/80 backdrop-blur-md">
         <label className="block text-[10px] font-mono text-stone-400 uppercase tracking-[0.2em] mb-3 ml-1">Navigate Menu</label>
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
           <button 
             onClick={() => setSelectedCategoryId(null)}
-            className={`flex-shrink-0 px-5 py-2.5 rounded-sm font-mono text-[11px] uppercase tracking-widest transition-all duration-300 ${
+            className={`flex-shrink-0 px-5 py-2.5 rounded-full font-mono text-[11px] uppercase tracking-widest transition-all duration-300 ${
               !selectedCategoryId 
                 ? 'bg-zinc-950 text-white font-black shadow-md' 
-                : 'bg-stone-100 text-stone-500 border border-stone-200 hover:border-stone-300'
+                : 'bg-white text-stone-500 border border-stone-200 hover:border-stone-300'
             }`}
           >
             All
@@ -661,10 +661,10 @@ export default function SpotPage() {
             <button 
               key={category.id}
               onClick={() => setSelectedCategoryId(category.id)}
-              className={`flex-shrink-0 px-5 py-2.5 rounded-sm font-mono text-[11px] uppercase tracking-widest transition-all duration-300 ${
+              className={`flex-shrink-0 px-5 py-2.5 rounded-full font-mono text-[11px] uppercase tracking-widest transition-all duration-300 ${
                 selectedCategoryId === category.id 
                   ? 'bg-zinc-950 text-white font-black shadow-md' 
-                  : 'bg-stone-100 text-stone-500 border border-stone-200 hover:border-stone-300'
+                  : 'bg-white text-stone-500 border border-stone-200 hover:border-stone-300'
               }`}
             >
               {category.name}
@@ -691,10 +691,10 @@ export default function SpotPage() {
       {canOrder && cart.length > 0 && (
         <button
           onClick={() => setShowCartModal(true)}
-          className="fixed bottom-24 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-zinc-950 text-white p-4 rounded-sm shadow-2xl z-40 group hover:bg-zinc-800 transition-colors flex items-center justify-between"
+          className="fixed bottom-24 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-zinc-950 text-white p-4 rounded-full shadow-2xl z-40 group hover:bg-zinc-800 transition-colors flex items-center justify-between"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-black/10 rounded flex items-center justify-center font-mono font-bold">
+          <div className="flex items-center gap-3 pl-2">
+            <div className="w-8 h-8 bg-black/20 rounded-full flex items-center justify-center font-mono font-bold">
               {cart.reduce((sum, item) => sum + item.quantity, 0)}
             </div>
             <span className="font-bold tracking-widest uppercase text-sm">View Order</span>
@@ -748,13 +748,16 @@ export default function SpotPage() {
       {/* Cart Modal */}
       {showCartModal && canOrder && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end justify-center" onClick={() => setShowCartModal(false)}>
-          <div className="bg-white rounded-t-lg border-t border-x border-stone-200 p-6 w-full max-w-lg max-h-[85vh] flex flex-col animate-slideUp" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-t-3xl border-t border-x border-stone-200 p-6 w-full max-w-lg max-h-[85vh] flex flex-col animate-slideUp" onClick={(e) => e.stopPropagation()}>
+            <div className="w-full flex justify-center pb-4">
+              <div className="w-12 h-1 bg-stone-300 rounded"></div>
+            </div>
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-stone-200 shrink-0">
               <h3 className="text-lg font-display tracking-widest uppercase font-bold text-stone-900 flex items-center gap-2">
                 <span className="material-symbols-outlined text-zinc-950">shopping_cart</span>
                 Your Order
               </h3>
-              <button onClick={() => setShowCartModal(false)} className="text-stone-400 hover:text-stone-900 transition-colors flex items-center justify-center p-2 rounded hover:bg-stone-100">
+              <button onClick={() => setShowCartModal(false)} className="text-stone-400 hover:text-stone-900 transition-colors flex items-center justify-center p-2 rounded-full hover:bg-stone-100 bg-stone-50">
                  <span className="material-symbols-outlined">close</span>
               </button>
             </div>
@@ -768,15 +771,15 @@ export default function SpotPage() {
               <>
                 <div className="flex-1 overflow-y-auto pr-2 space-y-4 mb-6 hide-scrollbar">
                   {cart.map(item => (
-                    <div key={item.id} className="flex items-start justify-between bg-[#FAFAF9] p-4 rounded border border-stone-200">
+                    <div key={item.id} className="flex items-start justify-between bg-[#FAFAF9] p-4 rounded-2xl border border-stone-200">
                       <div className="flex-1">
                         <p className="text-stone-900 font-bold text-sm uppercase tracking-wide">{item.name}</p>
                         <p className="font-mono text-xs text-stone-500 mt-1">€{item.price.toFixed(2)} / ea</p>
                       </div>
-                      <div className="flex items-center gap-3 bg-white rounded border border-stone-200">
-                        <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 flex items-center justify-center text-stone-500 hover:text-stone-900">-</button>
+                      <div className="flex items-center gap-3 bg-white rounded-full border border-stone-200 px-1 py-1">
+                        <button onClick={() => updateQuantity(item.id, -1)} className="w-8 h-8 flex items-center justify-center text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-full transition-colors">-</button>
                         <span className="w-4 text-center text-zinc-950 font-mono text-xs font-bold">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.id, 1)} className="w-8 h-8 flex items-center justify-center text-zinc-950 hover:text-stone-900">+</button>
+                        <button onClick={() => updateQuantity(item.id, 1)} className="w-8 h-8 flex items-center justify-center text-zinc-950 hover:text-stone-900 hover:bg-stone-100 rounded-full transition-colors">+</button>
                       </div>
                     </div>
                   ))}
@@ -790,11 +793,11 @@ export default function SpotPage() {
                     </span>
                   </div>
 
-                  <input type="text" placeholder="YOUR NAME (OPTIONAL)" value={bookingForm.guestName} onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })} className="w-full bg-[#FAFAF9] border border-stone-200 rounded px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-1 focus:ring-stone-400 transition-colors font-mono text-sm mb-3 uppercase" />
+                  <input type="text" placeholder="YOUR NAME (OPTIONAL)" value={bookingForm.guestName} onChange={(e) => setBookingForm({ ...bookingForm, guestName: e.target.value })} className="w-full bg-[#FAFAF9] border border-stone-200 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-1 focus:ring-stone-400 transition-colors font-mono text-sm mb-3 uppercase" />
 
-                  <textarea placeholder="SPECIAL REQUESTS (OPTIONAL)" value={bookingForm.notes} onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })} rows={2} className="w-full bg-[#FAFAF9] border border-stone-200 rounded px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-1 focus:ring-stone-400 transition-colors font-mono text-sm resize-none mb-4 uppercase" />
+                  <textarea placeholder="SPECIAL REQUESTS (OPTIONAL)" value={bookingForm.notes} onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })} rows={2} className="w-full bg-[#FAFAF9] border border-stone-200 rounded-xl px-4 py-3 text-stone-900 focus:border-stone-400 focus:ring-1 focus:ring-stone-400 transition-colors font-mono text-sm resize-none mb-4 uppercase" />
 
-                  <button onClick={handlePlaceOrder} className="w-full bg-zinc-950 text-white px-8 py-4 rounded text-sm font-bold tracking-widest uppercase hover:bg-zinc-800 transition-all duration-300 flex items-center justify-center gap-2">
+                  <button onClick={handlePlaceOrder} className="w-full bg-zinc-950 text-white px-8 py-4 rounded-full text-sm font-bold tracking-widest uppercase hover:bg-zinc-800 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg">
                     <span className="material-symbols-outlined text-[18px]">send</span> SUBMIT ORDER
                   </button>
                 </div>
@@ -842,7 +845,7 @@ function MenuDisplay({ menu, cart, addToCart, updateQuantity, getTotalPrice, han
                   </div>
                   
                   {product.imageUrl ? (
-                    <div className="w-24 h-24 shrink-0 bg-white border border-stone-200 rounded overflow-hidden relative group">
+                    <div className="w-24 h-24 shrink-0 bg-white border border-stone-200 rounded-2xl overflow-hidden relative group shadow-sm">
                       <img 
                         src={product.imageUrl} 
                         alt={product.name} 
@@ -850,19 +853,19 @@ function MenuDisplay({ menu, cart, addToCart, updateQuantity, getTotalPrice, han
                         onError={(e) => { e.target.style.display = 'none'; }}
                       />
                       {canOrder && (
-                        <div className="absolute bottom-1 right-1 flex items-center bg-white rounded border border-stone-200 overflow-hidden">
+                        <div className="absolute bottom-1 right-1 flex items-center bg-white/90 backdrop-blur-md rounded-full border border-stone-200 overflow-hidden shadow-sm px-1 py-1">
                            {cartItem ? (
                              <>
-                              <button onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, -1); }} className="w-8 h-8 flex items-center justify-center text-stone-500 hover:text-stone-900 transition-colors">-</button>
+                              <button onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, -1); }} className="w-7 h-7 flex items-center justify-center text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-full transition-colors">-</button>
                               <span className="w-4 text-center text-zinc-950 font-mono text-xs font-bold">{cartItem.quantity}</span>
-                              <button onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, 1); }} className="w-8 h-8 flex items-center justify-center text-zinc-950 hover:text-stone-900 transition-colors">+</button>
+                              <button onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, 1); }} className="w-7 h-7 flex items-center justify-center text-zinc-950 hover:text-stone-900 hover:bg-stone-100 rounded-full transition-colors">+</button>
                              </>
                            ) : (
                              <button 
                               onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                              className="w-8 h-8 flex items-center justify-center text-zinc-950 hover:bg-stone-100 transition-colors"
+                              className="w-7 h-7 flex items-center justify-center text-zinc-950 hover:bg-stone-100 rounded-full transition-colors cursor-pointer"
                             >
-                              <span className="material-symbols-outlined text-[20px]">add</span>
+                              <span className="material-symbols-outlined text-[18px]">add</span>
                             </button>
                            )}
                         </div>
@@ -870,17 +873,17 @@ function MenuDisplay({ menu, cart, addToCart, updateQuantity, getTotalPrice, han
                     </div>
                   ) : (
                     canOrder && (
-                      <div className="self-center flex items-center bg-white rounded border border-stone-200 overflow-hidden ml-2">
+                      <div className="self-center flex items-center bg-white rounded-full border border-stone-200 overflow-hidden ml-2 shadow-sm px-1 py-1">
                          {cartItem ? (
                            <>
-                            <button onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, -1); }} className="w-8 h-8 flex items-center justify-center text-stone-500 hover:text-stone-900 transition-colors">-</button>
+                            <button onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, -1); }} className="w-8 h-8 flex items-center justify-center text-stone-500 hover:bg-stone-50 hover:text-stone-900 rounded-full transition-colors">-</button>
                             <span className="w-4 text-center text-zinc-950 font-mono text-xs font-bold">{cartItem.quantity}</span>
-                            <button onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, 1); }} className="w-8 h-8 flex items-center justify-center text-zinc-950 hover:text-stone-900 transition-colors">+</button>
+                            <button onClick={(e) => { e.stopPropagation(); updateQuantity(product.id, 1); }} className="w-8 h-8 flex items-center justify-center text-zinc-950 hover:bg-stone-50 hover:text-stone-900 rounded-full transition-colors">+</button>
                            </>
                          ) : (
                            <button 
                             onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                            className="w-10 h-10 flex items-center justify-center text-zinc-950 hover:bg-stone-100 transition-colors"
+                            className="w-9 h-9 flex items-center justify-center text-zinc-950 hover:bg-stone-50 rounded-full transition-colors"
                           >
                             <span className="material-symbols-outlined text-[20px]">add</span>
                           </button>

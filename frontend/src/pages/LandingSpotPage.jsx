@@ -109,7 +109,7 @@ function LandingSpotPage() {
             {venue?.name || 'RIVIERA'}
           </h1>
           {unitId && (
-            <div className="inline-block border border-stone-300 bg-white/90 px-3 py-1 rounded-sm text-stone-700 font-mono text-xs tracking-widest uppercase shadow-sm">
+            <div className="inline-block border border-stone-300 bg-white/90 px-4 py-1.5 rounded-full text-stone-700 font-mono text-xs tracking-widest uppercase shadow-md">
               UNIT {unitId}
             </div>
           )}
@@ -123,9 +123,9 @@ function LandingSpotPage() {
         {(venue?.allowsDigitalOrdering || venue?.type?.toLowerCase() === 'restaurant') && (
           <button
             onClick={() => navigate(getMenuUrl())}
-            className="w-full bg-white border border-stone-200 p-5 flex items-center gap-5 rounded-sm relative overflow-hidden group hover:bg-stone-50 transition-colors text-left shadow-sm"
+            className="w-full bg-white border border-stone-200 p-5 flex items-center gap-5 rounded-3xl relative overflow-hidden group hover:bg-stone-50 transition-all duration-300 text-left shadow-sm hover:shadow-md"
           >
-            <div className="w-14 h-14 bg-[#FAFAF9] rounded-sm border border-stone-200 flex items-center justify-center shrink-0 z-10 group-hover:scale-105 transition-transform duration-500">
+            <div className="w-14 h-14 bg-[#FAFAF9] rounded-2xl border border-stone-200 flex items-center justify-center shrink-0 z-10 group-hover:scale-105 transition-transform duration-500">
               <span className="material-symbols-outlined text-stone-900 text-3xl">restaurant</span>
             </div>
             <div className="z-10 flex-1">
@@ -139,9 +139,9 @@ function LandingSpotPage() {
         {/* OPTION 2: EVENTS */}
         <button
           onClick={() => navigate(`/?mode=night&from=${venueId}`)}
-          className="w-full bg-white border border-stone-200 p-5 flex items-center gap-5 rounded-sm relative overflow-hidden group hover:bg-stone-50 transition-colors text-left shadow-sm"
+          className="w-full bg-white border border-stone-200 p-5 flex items-center gap-5 rounded-3xl relative overflow-hidden group hover:bg-stone-50 transition-all duration-300 text-left shadow-sm hover:shadow-md"
         >
-          <div className="w-14 h-14 bg-[#FAFAF9] rounded-sm border border-stone-200 flex items-center justify-center shrink-0 z-10 group-hover:scale-105 transition-transform duration-500">
+          <div className="w-14 h-14 bg-[#FAFAF9] rounded-2xl border border-stone-200 flex items-center justify-center shrink-0 z-10 group-hover:scale-105 transition-transform duration-500">
             <span className="text-2xl">🪩</span>
           </div>
           <div className="z-10 flex-1">
@@ -154,9 +154,9 @@ function LandingSpotPage() {
         {/* OPTION 3: REVIEW */}
         <button
           onClick={() => navigate(`/review?v=${venueId}`)}
-          className="w-full bg-white border border-stone-200 p-5 flex items-center gap-5 rounded-sm relative overflow-hidden group hover:bg-stone-50 transition-colors text-left mt-2 shadow-sm"
+          className="w-full bg-white border border-stone-200 p-5 flex items-center gap-5 rounded-3xl relative overflow-hidden group hover:bg-stone-50 transition-all duration-300 text-left shadow-sm hover:shadow-md"
         >
-          <div className="w-14 h-14 bg-[#FAFAF9] rounded-sm border border-stone-200 flex items-center justify-center shrink-0 z-10 group-hover:border-amber-300 transition-colors group-hover:scale-105 duration-500">
+          <div className="w-14 h-14 bg-[#FAFAF9] rounded-2xl border border-stone-200 flex items-center justify-center shrink-0 z-10 group-hover:border-amber-300 transition-colors group-hover:scale-105 duration-500">
             <span className="material-symbols-outlined text-amber-500 text-3xl">star</span>
           </div>
           <div className="z-10 flex-1">
