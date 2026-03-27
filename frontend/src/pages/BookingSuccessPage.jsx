@@ -116,7 +116,7 @@ export default function BookingSuccessPage() {
 
       {/* Booking Code */}
       <div className="p-6">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 mb-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 mb-6 shadow-md">
           <p className="text-xs uppercase tracking-widest text-zinc-500 mb-3 text-center">
             Kodi Juaj / Your Code
           </p>
@@ -135,7 +135,7 @@ export default function BookingSuccessPage() {
 
         {/* Sunbed Codes */}
         {booking.unitCodes && booking.unitCodes.length > 0 ? (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6 shadow-md">
             <p className="text-xs uppercase tracking-widest text-zinc-500 mb-4">
               Shtretërit Tuaj / Your Sunbeds
             </p>
@@ -143,7 +143,7 @@ export default function BookingSuccessPage() {
               {booking.unitCodes.map((code, index) => (
                 <div
                   key={index}
-                  className="bg-zinc-950 border border-[#10FF88] rounded-lg px-6 py-3"
+                  className="bg-zinc-950 border border-[#10FF88] rounded-full px-6 py-3 shadow-inner"
                 >
                   <p 
                     className="text-2xl font-mono text-[#10FF88]"
@@ -158,7 +158,7 @@ export default function BookingSuccessPage() {
             </p>
           </div>
         ) : (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6 shadow-md">
             <p className="text-xs uppercase tracking-widest text-zinc-500 mb-4 text-center">
               Shtretërit Tuaj / Your Sunbeds
             </p>
@@ -177,7 +177,7 @@ export default function BookingSuccessPage() {
         )}
 
         {/* Details */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6 space-y-4">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6 space-y-4 shadow-md">
           <p className="text-xs uppercase tracking-widest text-zinc-500 mb-4">
             Detajet / Details
           </p>
@@ -216,7 +216,7 @@ export default function BookingSuccessPage() {
         </div>
 
         {/* Expiration Warning */}
-        <div className="bg-amber-900/20 border border-amber-600/50 rounded-2xl p-6 mb-6">
+        <div className="bg-amber-900/20 border border-amber-600/50 rounded-3xl p-6 mb-6 shadow-md">
           <div className="flex items-start gap-3">
             <Clock className="w-5 h-5 text-amber-500 mt-0.5" />
             <div>
@@ -231,7 +231,7 @@ export default function BookingSuccessPage() {
         </div>
 
         {/* Price */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 mb-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6 shadow-md">
           <div className="flex justify-between items-center">
             <p className="text-zinc-400">Totali / Total</p>
             <p 

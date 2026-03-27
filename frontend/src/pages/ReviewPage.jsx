@@ -192,8 +192,8 @@ export default function ReviewPage() {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-8 brutalist-border rounded-none flex items-center justify-center border-xixa-green/20 animate-pulse">
-            <div className="w-8 h-8 brutalist-border rounded-none border-xixa-green animate-spin"></div>
+          <div className="w-16 h-16 mx-auto mb-8 brutalist-border rounded-3xl flex items-center justify-center border-xixa-green/20 animate-pulse">
+            <div className="w-8 h-8 brutalist-border rounded-xl border-xixa-green animate-spin"></div>
           </div>
           <p className="text-xixa-green font-mono text-[10px] tracking-ultra-wide uppercase opacity-60">Loading Experience...</p>
         </div>
@@ -206,7 +206,7 @@ export default function ReviewPage() {
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-8">
         <div className="text-center max-w-xs">
           <div className="mb-10 flex justify-center">
-            <div className="border border-zinc-800 px-6 py-2">
+            <div className="border border-zinc-800 rounded-full px-6 py-2">
               <span className="font-serif text-xl font-bold tracking-[0.3em] uppercase text-zinc-500">XIXA</span>
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function ReviewPage() {
           </h1>
           <button 
             onClick={() => navigate('/')}
-            className="w-full border border-zinc-800 py-4 px-6 flex items-center justify-center transition-all hover:bg-white hover:text-black group"
+            className="w-full border border-zinc-800 rounded-full py-4 px-6 flex items-center justify-center transition-all hover:bg-white hover:text-black group"
           >
             <span className="font-mono text-[10px] tracking-extra-wide uppercase">Return Home</span>
           </button>
@@ -232,7 +232,7 @@ export default function ReviewPage() {
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/95 backdrop-blur-md transition-all duration-700">
           <div className="text-center animate-pulse px-8">
-            <div className="w-20 h-20 mx-auto mb-10 brutalist-border rounded-none flex items-center justify-center border-xixa-green/30">
+            <div className="w-20 h-20 mx-auto mb-10 brutalist-border rounded-full flex items-center justify-center border-xixa-green/30">
               <span className="material-symbols-outlined text-4xl text-xixa-green rating-glow">favorite</span>
             </div>
             <h2 className="font-serif text-5xl font-light mb-6 tracking-tight italic">
@@ -250,7 +250,7 @@ export default function ReviewPage() {
       {/* BEGIN: MainHeader */}
       <header className="pt-16 pb-8 px-6 text-center border-b border-zinc-800/50">
         <div className="mb-12 flex justify-center">
-          <div className="border border-white px-6 py-2">
+          <div className="border border-white/30 rounded-full px-6 py-2">
             <span className="font-serif text-2xl font-bold tracking-[0.3em] uppercase">
               {venue?.name || 'XIXA'}
             </span>
@@ -271,7 +271,7 @@ export default function ReviewPage() {
           {[1, 2, 3, 4, 5].map((val) => (
             <button
               key={val}
-              className={`brutalist-border aspect-square flex items-center justify-center rounded-none transition-all duration-500 group active:scale-95 ${
+              className={`brutalist-border aspect-square flex items-center justify-center rounded-2xl transition-all duration-500 group active:scale-95 ${
                 (hoveredRating || rating) === val ? 'selected-rating rating-glow' : 'hover:border-zinc-500'
               }`}
               onMouseEnter={() => setHoveredRating(val)}
@@ -300,7 +300,7 @@ export default function ReviewPage() {
         {/* Main Call to Action */}
         <button 
           onClick={() => navigate('/')}
-          className="w-full border border-zinc-800 py-6 px-6 flex items-center justify-center transition-all hover:bg-white hover:text-black group active:scale-[0.99]"
+          className="w-full border border-zinc-800 rounded-full py-5 px-6 flex items-center justify-center transition-all hover:bg-white hover:text-black group active:scale-[0.99] shadow-lg shadow-black/50"
         >
           <span className="font-mono text-[10px] tracking-extra-wide uppercase">Return to Home</span>
         </button>

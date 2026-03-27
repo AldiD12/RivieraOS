@@ -191,7 +191,7 @@ export default function BookingActionPage() {
           <p className="text-lg text-zinc-600 mb-8">{error}</p>
           <button
             onClick={() => navigate('/collector')}
-            className="bg-zinc-900 text-white px-8 py-4 rounded-lg font-bold hover:bg-zinc-800"
+            className="bg-zinc-900 text-white px-8 py-4 rounded-full font-bold hover:bg-zinc-800 transition-all shadow-md"
           >
             Go to Dashboard
           </button>
@@ -241,7 +241,7 @@ export default function BookingActionPage() {
                   onClick={() => handleUnitToggle(unit.id, unit.unitCode)}
                   disabled={processing}
                   className={`
-                    rounded-lg p-6 aspect-square flex flex-col items-center justify-center
+                    rounded-3xl p-6 aspect-square flex flex-col items-center justify-center
                     transition-all disabled:opacity-50 disabled:cursor-not-allowed
                     ${isSelected 
                       ? 'bg-yellow-500 border-4 border-yellow-600 scale-110' 
@@ -251,11 +251,11 @@ export default function BookingActionPage() {
                 >
                   <p className="text-3xl font-black text-white mb-2">{unit.unitCode}</p>
                   {isSelected ? (
-                    <span className="text-xs px-2 py-1 rounded bg-white text-yellow-900 font-bold">
+                    <span className="text-xs px-3 py-1 rounded-full bg-white text-yellow-900 font-bold shadow-sm">
                       SELECTED
                     </span>
                   ) : (
-                    <span className="text-xs px-2 py-1 rounded bg-green-500 text-white font-bold">
+                    <span className="text-xs px-3 py-1 rounded-full bg-green-500 text-white font-bold shadow-sm">
                       Available
                     </span>
                   )}
@@ -272,7 +272,7 @@ export default function BookingActionPage() {
             <button
               onClick={handleConfirmSelection}
               disabled={selectedUnits.length !== unitsToSelect || processing}
-              className="bg-green-600 text-white px-8 py-4 rounded-2xl text-xl font-black hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="bg-green-600 text-white px-8 py-4 rounded-full text-xl font-black hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
             >
               {processing ? 'PROCESSING...' : 'CONFIRM SELECTION'}
             </button>
@@ -293,7 +293,7 @@ export default function BookingActionPage() {
     <div className="min-h-screen bg-white flex items-center justify-center p-6">
       <div className="max-w-md w-full">
         {/* Booking Details Card */}
-        <div className="bg-zinc-50 rounded-2xl p-8 mb-6 border border-zinc-200">
+        <div className="bg-zinc-50 rounded-3xl p-8 mb-6 border border-zinc-200 shadow-sm">
           <div className="text-center mb-6">
             <h1 className="text-5xl font-black text-zinc-900 mb-2">
               #{bookingCode}
@@ -333,7 +333,7 @@ export default function BookingActionPage() {
 
             {/* 🚨 MULTI-SELECT: Show units needed if > 1 */}
             {booking.unitsNeeded && booking.unitsNeeded > 1 && (
-              <div className="bg-amber-50 rounded-lg p-4 border border-amber-200">
+              <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200 shadow-inner">
                 <p className="text-xs text-amber-700 uppercase tracking-wider mb-1">Units Needed</p>
                 <p className="text-2xl font-bold text-amber-900">{booking.unitsNeeded}</p>
                 <p className="text-xs text-amber-600 mt-1">
@@ -357,7 +357,7 @@ export default function BookingActionPage() {
             <button
               onClick={handleApproveClick}
               disabled={processing}
-              className="w-full bg-green-600 text-white px-8 py-6 rounded-2xl text-2xl font-black hover:bg-green-700 transition-all disabled:opacity-50 shadow-lg"
+              className="w-full bg-green-600 text-white px-8 py-6 rounded-full text-2xl font-black hover:bg-green-700 transition-all disabled:opacity-50 shadow-lg"
             >
               ✅ APPROVE
             </button>
@@ -365,7 +365,7 @@ export default function BookingActionPage() {
             <button
               onClick={handleReject}
               disabled={processing}
-              className="w-full bg-red-600 text-white px-8 py-6 rounded-2xl text-2xl font-black hover:bg-red-700 transition-all disabled:opacity-50 shadow-lg"
+              className="w-full bg-red-600 text-white px-8 py-6 rounded-full text-2xl font-black hover:bg-red-700 transition-all disabled:opacity-50 shadow-lg"
             >
               ❌ REJECT
             </button>
@@ -379,7 +379,7 @@ export default function BookingActionPage() {
             </p>
             <button
               onClick={() => navigate('/collector')}
-              className="bg-zinc-900 text-white px-6 py-3 rounded-lg font-bold hover:bg-zinc-800"
+              className="bg-zinc-900 text-white px-6 py-3 rounded-full font-bold hover:bg-zinc-800 transition-all shadow-md"
             >
               Go to Dashboard
             </button>
