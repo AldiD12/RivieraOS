@@ -247,7 +247,17 @@ export default function SpotPage() {
         body: JSON.stringify(orderData)
       });
 
-      if (!response.ok) throw new Error('Failed to place order');
+      if (!response.ok) {
+        let errorText = 'Failed to place order';
+        try {
+          // Try to get detailed error from backend (e.g., "Zone not found")
+          const backendError = await response.text();
+          if (backendError && backendError.length < 100) {
+            errorText = backendError;
+          }
+        } catch (e) {}
+        throw new Error(errorText);
+      }
       
       const result = await response.json();
       
@@ -280,8 +290,8 @@ export default function SpotPage() {
         haptics.error();
       }
       
-      // Display error to user
-      alert('Failed to place order. Please try again.');
+      // Display exact error to user
+      alert(err.message || 'Failed to place order. Please try again.');
     }
   };
 
