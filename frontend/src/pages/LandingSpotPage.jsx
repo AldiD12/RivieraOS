@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppStore } from '../store/appStore';
-import { venueApi } from '../services/venueApi';
 import { Check } from 'lucide-react';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+const baseUrl = API_URL.trim().replace(/\/+$/, '').replace(/\/api$/, '') + '/api';
 
 function LandingSpotPage() {
   const [searchParams] = useSearchParams();
@@ -36,10 +38,12 @@ function LandingSpotPage() {
     console.log('🔍 Pre-Menu Landing: QR code detected:', { venueId: v, unitId: u });
     startSession(v, u || '', '');
 
-    // 3. Fetch Venue details for the Hero Image & Name
+    // 3. Fetch Venue details for the Hero Image & Name & Ordering status
     const fetchVenueDetails = async () => {
       try {
-        const venueData = await venueApi.getById(v);
+        const response = await fetch(`${baseUrl}/public/Venues/${v}`);
+        if (!response.ok) throw new Error('Failed to fetch venue');
+        const venueData = await response.json();
         setVenue(venueData);
         // Update session with correct venue name
         startSession(v, u || '', venueData.name);
