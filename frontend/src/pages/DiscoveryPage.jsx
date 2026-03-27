@@ -1733,11 +1733,11 @@ export default function DiscoveryPage() {
             }}
             className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 border shadow-sm ${
               fromVenueId 
-                ? (isDayMode ? 'bg-white text-zinc-900 border-stone-200 hover:bg-stone-50' : 'bg-zinc-900 text-white border-zinc-700 hover:bg-zinc-800')
+                ? (isDayMode ? 'bg-white text-zinc-900 border-stone-200 hover:bg-stone-50 hover:scale-105' : 'bg-[#10FF88] text-zinc-950 border-[#10FF88] hover:bg-[#0ee67b] shadow-[0_0_12px_rgba(16,255,136,0.4)] hover:scale-105')
                 : (isDayMode ? 'bg-stone-100 text-stone-400 border-stone-200 opacity-70' : 'bg-zinc-900/50 text-zinc-600 border-zinc-800 opacity-70')
             }`}
           >
-            <span className="text-xl">🍸</span>
+            <span className="material-symbols-outlined text-[22px]" style={{ fontVariationSettings: "'FILL' 1" }}>storefront</span>
           </button>
 
           {/* Center: Experiential Switch (Day/Night) */}
