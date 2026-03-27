@@ -265,7 +265,7 @@ export default function CollectorDashboard() {
               )}
               <button
                 onClick={fetchVenueData}
-                className="p-2 hover:bg-zinc-800 rounded-lg transition-colors"
+                className="p-2 hover:bg-zinc-800 rounded-full transition-colors"
                 title="Refresh"
               >
                 <RefreshCw className="w-5 h-5" />
@@ -288,14 +288,14 @@ export default function CollectorDashboard() {
         </div>
 
         {/* Filters - Sticky Below Header */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 mb-6 sticky top-[120px] md:top-[100px] z-40">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6 sticky top-[120px] md:top-[100px] z-40 shadow-lg">
           <div className="flex flex-col md:flex-row gap-3">
             <div className="flex-1">
               <label className="block text-xs text-zinc-500 uppercase tracking-wider mb-2">Zone</label>
               <select
                 value={selectedZoneId || ''}
                 onChange={(e) => setSelectedZoneId(parseInt(e.target.value))}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-full px-4 py-3 text-white focus:border-zinc-600 focus:outline-none"
               >
                 {venueData.zones?.map(zone => (
                   <option key={zone.id} value={zone.id}>{zone.name}</option>
@@ -307,7 +307,7 @@ export default function CollectorDashboard() {
               <select
                 value={selectedStatusFilter}
                 onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-md px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-full px-4 py-3 text-white focus:border-zinc-600 focus:outline-none"
               >
                 <option value="all">All Status</option>
                 <option value="available">Available</option>
@@ -333,7 +333,7 @@ export default function CollectorDashboard() {
                   setSelectedUnit(unit);
                   setShowUnitModal(true);
                 }}
-                className={`border-2 rounded-lg p-4 transition-all aspect-square flex flex-col items-center justify-center hover:scale-105 ${getStatusColor(unit.status)}`}
+                className={`border-2 rounded-3xl p-4 transition-all aspect-square flex flex-col items-center justify-center hover:scale-105 shadow-md ${getStatusColor(unit.status)}`}
               >
                 <p className="text-2xl md:text-3xl font-black mb-2">{unit.unitCode}</p>
                 <span className={`text-xs px-2 py-1 rounded font-bold ${getStatusBadgeColor(unit.status)}`}>
@@ -379,7 +379,7 @@ function StatCard({ label, value, color }) {
   };
 
   return (
-    <div className={`bg-zinc-900 border-2 ${colorClasses[color]} rounded-lg p-4 min-w-[120px]`}>
+    <div className={`bg-zinc-900 border-2 ${colorClasses[color]} rounded-3xl p-4 min-w-[120px] shadow-md`}>
       <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">{label}</p>
       <p className={`text-4xl font-black ${textColorClasses[color]}`}>{value}</p>
     </div>
@@ -410,7 +410,7 @@ function UnitModal({ unit, onClose, onAction }) {
       <button
         key={action}
         onClick={() => onAction(unit.id, action)}
-        className={`flex-1 ${config.color} text-white px-4 py-3 rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2`}
+        className={`flex-1 ${config.color} text-white px-6 py-4 rounded-full font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-md`}
       >
         <Icon className="w-4 h-4" />
         {config.label}
@@ -421,9 +421,9 @@ function UnitModal({ unit, onClose, onAction }) {
   const availableActions = getAvailableActions();
 
   return (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50">
-      <div className="bg-zinc-900 rounded-lg max-w-md w-full border-2 border-zinc-800 max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+      <div className="bg-zinc-900 rounded-3xl max-w-md w-full border-2 border-zinc-800 max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="p-8">
           {/* Header */}
           <div className="flex justify-between items-start mb-6">
             <div>
@@ -449,19 +449,19 @@ function UnitModal({ unit, onClose, onAction }) {
           {/* Booking Details */}
           {unit.currentBooking && (
             <div className="space-y-3 mb-6">
-              <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+              <div className="bg-zinc-800 rounded-2xl p-4 border border-zinc-700 shadow-inner">
                 <p className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Guest</p>
                 <p className="text-xl font-bold">{unit.currentBooking.guestName}</p>
               </div>
 
               {unit.currentBooking.guestPhone && (
-                <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+                <div className="bg-zinc-800 rounded-2xl p-4 border border-zinc-700 shadow-inner">
                   <p className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Phone</p>
                   <p className="text-lg font-mono">{unit.currentBooking.guestPhone}</p>
                 </div>
               )}
 
-              <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+              <div className="bg-zinc-800 rounded-2xl p-4 border border-zinc-700 shadow-inner">
                 <p className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Check-in Time</p>
                 <p className="text-lg">
                   {unit.currentBooking.checkInTime 
@@ -471,7 +471,7 @@ function UnitModal({ unit, onClose, onAction }) {
               </div>
 
               {unit.currentBooking.endTime && (
-                <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700">
+                <div className="bg-zinc-800 rounded-2xl p-4 border border-zinc-700 shadow-inner">
                   <p className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Expected End</p>
                   <p className="text-lg">
                     {new Date(unit.currentBooking.endTime).toLocaleString()}
@@ -483,7 +483,7 @@ function UnitModal({ unit, onClose, onAction }) {
 
           {/* No Booking */}
           {!unit.currentBooking && unit.status !== 'Available' && (
-            <div className="bg-zinc-800 rounded-lg p-4 border border-zinc-700 mb-6">
+            <div className="bg-zinc-800 rounded-2xl p-4 border border-zinc-700 mb-6 shadow-inner">
               <p className="text-zinc-400 text-center">No active booking</p>
             </div>
           )}
