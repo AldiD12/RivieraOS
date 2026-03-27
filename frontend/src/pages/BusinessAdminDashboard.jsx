@@ -216,7 +216,7 @@ export default function BusinessAdminDashboard() {
       startPolling();
 
       // Fetch business profile and dashboard data
-      const [profile, dashboard] = await Promise.all([
+      const [profile, dashboard, activeOrders, bookings] = await Promise.all([
         businessApi.profile.get().catch(err => {
           console.warn('Profile fetch failed:', err);
           if (err.status === 403) {
