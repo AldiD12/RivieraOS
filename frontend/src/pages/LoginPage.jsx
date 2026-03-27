@@ -372,23 +372,28 @@ export default function LoginPage() {
   }, [pin, phoneNumber, loading, activeTab]); // Dependencies to prevent multiple calls
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-zinc-950">
+      {/* Deep premium background effects */}
+      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-blue-900 rounded-full blur-[120px] opacity-40 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-zinc-800 rounded-full blur-[120px] opacity-50 pointer-events-none"></div>
+      
+      <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
+        
         {/* App Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-zinc-900 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Building2 className="w-8 h-8 text-white" />
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 bg-gradient-to-tr from-zinc-800 to-zinc-700 rounded-full flex items-center justify-center mx-auto mb-5 shadow-[0_0_30px_rgba(0,0,0,0.5)] border border-zinc-700/50">
+            <Building2 className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-zinc-900 mb-1 tracking-tight">
-            RivieraOS
+          <h1 className="text-3xl font-black text-white mb-1 tracking-tighter">
+            Riviera OS
           </h1>
-          <p className="text-sm text-zinc-600">
-            Staff Login
+          <p className="text-sm font-mono tracking-widest uppercase text-zinc-400">
+            Secure Access
           </p>
         </div>
 
-        {/* Tabs */}
-        <div className="bg-white rounded-lg border border-zinc-200 p-1 mb-6 flex gap-1">
+        {/* Floating Pill Tabs */}
+        <div className="bg-zinc-900/50 backdrop-blur-xl rounded-full border border-zinc-800 p-1.5 mb-8 flex gap-1 shadow-lg mx-4 sm:mx-0">
           <button
             onClick={() => {
               setActiveTab('staff');
@@ -397,14 +402,14 @@ export default function LoginPage() {
               setPassword('');
               setError('');
             }}
-            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 py-3 rounded-full text-sm font-bold transition-all duration-300 ${
               activeTab === 'staff'
-                ? 'bg-zinc-900 text-white'
-                : 'text-zinc-600 hover:text-zinc-900'
+                ? 'bg-white text-zinc-900 shadow-md transform scale-[1.02]'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
           >
-            <User className="w-4 h-4 inline-block mr-1.5" />
-            Staff Login
+            <User className="w-4 h-4 inline-block mr-2 -mt-0.5" />
+            Staff PIN
           </button>
           <button
             onClick={() => {
@@ -414,183 +419,188 @@ export default function LoginPage() {
               setPassword('');
               setError('');
             }}
-            className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex-1 py-3 rounded-full text-sm font-bold transition-all duration-300 ${
               activeTab === 'manager'
-                ? 'bg-zinc-900 text-white'
-                : 'text-zinc-600 hover:text-zinc-900'
+                ? 'bg-white text-zinc-900 shadow-md transform scale-[1.02]'
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
           >
-            <Lock className="w-4 h-4 inline-block mr-1.5" />
-            Manager Login
+            <Lock className="w-4 h-4 inline-block mr-2 -mt-0.5" />
+            Manager
           </button>
         </div>
 
-        {/* Content */}
-        <div className="bg-white rounded-lg border border-zinc-200 p-8">
+        {/* Main Glass Container */}
+        <div className="bg-zinc-900/40 backdrop-blur-2xl rounded-3xl border border-zinc-800/80 p-6 sm:p-10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
           {activeTab === 'staff' ? (
-            <div>
-              <h2 className="text-lg font-bold text-zinc-900 mb-2 tracking-tight">Staff Login</h2>
-              <p className="text-sm text-zinc-600 mb-6">Enter your phone number and 4-digit PIN</p>
+            <div className="animate-in fade-in duration-500">
+              <div className="text-center mb-8">
+                <h2 className="text-xl font-bold text-white mb-2 tracking-tight">Staff Terminal</h2>
+                <p className="text-sm text-zinc-400">Enter your assigned phone and PIN</p>
+              </div>
 
               {/* Error Message */}
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">
+                <div className="mb-6 p-4 bg-red-950/40 border border-red-900/50 rounded-2xl text-red-400 text-sm text-center backdrop-blur-sm animate-in zoom-in-95 duration-200">
                   {error}
                 </div>
               )}
 
               {/* Phone Number Input */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-zinc-700 mb-2">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-400" />
-                  <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) => {
-                      setPhoneNumber(e.target.value);
-                      setError('');
-                    }}
-                    className="w-full pl-10 pr-4 py-3 border border-zinc-200 rounded-lg focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 outline-none transition-all"
-                    placeholder="Enter your phone number"
-                    disabled={loading}
-                    autoFocus
-                  />
+              <div className="mb-8">
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full opacity-0 group-focus-within:opacity-30 transition duration-500 blur"></div>
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-zinc-500 transition-colors group-focus-within:text-white" />
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => {
+                        setPhoneNumber(e.target.value);
+                        setError('');
+                      }}
+                      className="w-full pl-12 pr-6 py-4 bg-zinc-950/50 border border-zinc-800 rounded-full text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-all font-mono tracking-wider text-center"
+                      placeholder="e.g. +355 69 123 4567"
+                      disabled={loading}
+                      autoFocus
+                    />
+                  </div>
                 </div>
-                <p className="text-xs text-zinc-500 mt-1">Example: +355691234567</p>
               </div>
 
-              {/* PIN Display */}
-              <div className={`flex justify-center gap-3 mb-8 ${shake ? 'animate-shake' : ''}`}>
+              {/* PIN Indicator Dots */}
+              <div className={`flex justify-center gap-4 mb-8 ${shake ? 'animate-shake' : ''}`}>
                 {[0, 1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className={`w-14 h-14 rounded-lg border-2 flex items-center justify-center transition-all ${
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                       pin.length > i
-                        ? 'border-zinc-900 bg-zinc-900'
-                        : 'border-zinc-200 bg-white'
+                        ? 'border-white bg-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]'
+                        : 'border-zinc-700 bg-transparent'
                     }`}
-                  >
-                    {pin.length > i && (
-                      <div className="w-3 h-3 bg-white rounded-full"></div>
-                    )}
-                  </div>
+                  ></div>
                 ))}
               </div>
 
-              {/* PIN Pad */}
-              <div className="grid grid-cols-3 gap-3 mb-4">
+              {/* Circular Luxury PIN Pad */}
+              <div className="grid grid-cols-3 gap-y-4 gap-x-2 sm:gap-4 max-w-[280px] mx-auto">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
                   <button
                     key={digit}
                     onClick={() => handlePinPress(digit.toString())}
                     disabled={loading || !phoneNumber}
-                    className="aspect-square bg-white border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 rounded-lg text-2xl font-bold text-zinc-900 transition-all active:scale-95 disabled:opacity-50"
+                    className="aspect-square w-16 sm:w-20 mx-auto rounded-full bg-zinc-800/30 border border-zinc-700/50 hover:bg-zinc-700 hover:border-zinc-500 text-2xl font-light text-white transition-all duration-200 active:scale-90 disabled:opacity-30 disabled:hover:bg-zinc-800/30 flex items-center justify-center"
                   >
                     {digit}
                   </button>
                 ))}
+                
                 <button
                   onClick={handlePinDelete}
                   disabled={loading || pin.length === 0}
-                  className="aspect-square bg-white border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 rounded-lg flex items-center justify-center text-zinc-600 transition-all active:scale-95 disabled:opacity-30"
+                  className="aspect-square w-16 sm:w-20 mx-auto rounded-full bg-transparent hover:bg-red-950/30 text-zinc-500 hover:text-red-400 transition-all duration-200 active:scale-90 disabled:opacity-30 flex items-center justify-center"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-8 h-8" />
                 </button>
+                
                 <button
                   onClick={() => handlePinPress('0')}
                   disabled={loading || !phoneNumber}
-                  className="aspect-square bg-white border border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 rounded-lg text-2xl font-bold text-zinc-900 transition-all active:scale-95 disabled:opacity-50"
+                  className="aspect-square w-16 sm:w-20 mx-auto rounded-full bg-zinc-800/30 border border-zinc-700/50 hover:bg-zinc-700 hover:border-zinc-500 text-2xl font-light text-white transition-all duration-200 active:scale-90 disabled:opacity-30 disabled:hover:bg-zinc-800/30 flex items-center justify-center"
                 >
                   0
                 </button>
-                <div className="aspect-square"></div>
+                
+                <div className="aspect-square w-16 sm:w-20 mx-auto"></div>
               </div>
 
               {loading && (
-                <div className="text-center text-sm text-zinc-500 mb-4">
-                  Verifying credentials...
-                </div>
-              )}
-
-              {!phoneNumber && (
-                <div className="text-center text-sm text-zinc-500">
-                  Please enter your phone number first
+                <div className="text-center mt-6">
+                  <div className="w-6 h-6 border-b-2 border-white rounded-full animate-spin mx-auto"></div>
                 </div>
               )}
             </div>
           ) : (
             // Manager Login
-            <form onSubmit={handleManagerSubmit}>
-              <h2 className="text-lg font-bold text-zinc-900 mb-2 tracking-tight">Manager Access</h2>
-              <p className="text-sm text-zinc-600 mb-6">Enter your credentials to continue</p>
+            <form onSubmit={handleManagerSubmit} className="animate-in fade-in duration-500">
+              <div className="text-center mb-8">
+                <h2 className="text-xl font-bold text-white mb-2 tracking-tight">Manager Dashboard</h2>
+                <p className="text-sm text-zinc-400">Access your business analytics</p>
+              </div>
 
               {/* Error Message */}
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="mb-6 p-4 bg-red-950/40 border border-red-900/50 rounded-2xl text-red-400 text-sm text-center backdrop-blur-sm animate-in zoom-in-95 duration-200">
                   {error}
                 </div>
               )}
 
               {/* Email Input */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-zinc-700 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    setError('');
-                  }}
-                  className="w-full px-4 py-3 border border-zinc-200 rounded-lg focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 outline-none transition-all"
-                  placeholder="Enter your email"
-                  disabled={loading}
-                  autoFocus
-                />
+              <div className="mb-5">
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full opacity-0 group-focus-within:opacity-30 transition duration-500 blur"></div>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setError('');
+                    }}
+                    className="relative w-full px-6 py-4 bg-zinc-950/50 border border-zinc-800 rounded-full text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-all text-center"
+                    placeholder="Email Address"
+                    disabled={loading}
+                    autoFocus
+                  />
+                </div>
               </div>
 
               {/* Password Input */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-zinc-700 mb-2">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setError('');
-                  }}
-                  className="w-full px-4 py-3 border border-zinc-200 rounded-lg focus:ring-1 focus:ring-zinc-900 focus:border-zinc-900 outline-none transition-all"
-                  placeholder="Enter password"
-                  disabled={loading}
-                />
+              <div className="mb-8">
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full opacity-0 group-focus-within:opacity-30 transition duration-500 blur"></div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError('');
+                    }}
+                    className="relative w-full px-6 py-4 bg-zinc-950/50 border border-zinc-800 rounded-full text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-all text-center tracking-widest"
+                    placeholder="••••••••"
+                    disabled={loading}
+                  />
+                </div>
               </div>
 
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading || !email || !password}
-                className="w-full bg-zinc-900 hover:bg-zinc-800 text-white py-3 rounded-lg font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border border-zinc-900"
+                className="w-full relative group overflow-hidden bg-white text-black py-4 rounded-full font-black text-sm uppercase tracking-widest transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(255,255,255,0.3)]"
               >
-                {loading ? 'Signing in...' : 'Sign In'}
+                <div className="relative z-10 flex items-center justify-center">
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-b-2 border-black rounded-full animate-spin"></div>
+                      Authenticating
+                    </span>
+                  ) : (
+                    'Unlock Dashboard'
+                  )}
+                </div>
               </button>
             </form>
           )}
         </div>
 
-        {/* Back to Home */}
-        <div className="text-center mt-6">
-          <a
-            href="/"
-            className="text-sm text-zinc-600 hover:text-zinc-900 transition-colors"
+        {/* Back Link */}
+        <div className="text-center mt-10">
+          <button
+            onClick={() => navigate('/')}
+            className="text-xs font-mono uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
           >
-            ← Back to Home
-          </a>
+            ← Disconnect
+          </button>
         </div>
       </div>
 

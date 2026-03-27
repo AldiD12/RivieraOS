@@ -136,63 +136,66 @@ export default function SuperAdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-black flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Deep premium background effects for SuperAdmin */}
+      <div className="absolute top-1/2 left-1/2 -mt-64 -ml-64 w-[500px] h-[500px] bg-red-900/20 rounded-full blur-[120px] pointer-events-none"></div>
+      
+      <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-zinc-900 rounded-full mb-4 border border-zinc-800">
-            <Shield className="w-8 h-8 text-white" />
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-b from-zinc-800 to-black rounded-full mb-5 shadow-[0_0_40px_rgba(255,0,0,0.15)] border border-zinc-800">
+            <Shield className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Super Admin Access</h1>
-          <p className="text-sm text-zinc-400">System Administrator Portal</p>
+          <h1 className="text-3xl font-black text-white mb-2 tracking-tighter">SuperAdmin</h1>
+          <p className="text-xs font-mono uppercase tracking-widest text-zinc-500">System Override Portal</p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-zinc-900 rounded-lg border border-zinc-800 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-zinc-900/40 backdrop-blur-2xl rounded-3xl border border-zinc-800/80 p-8 sm:p-10 shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+          <form onSubmit={handleSubmit} className="space-y-7">
             {/* Error Message */}
             {error && (
-              <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 text-red-400 text-sm text-center">
+              <div className="bg-red-950/40 border border-red-900/50 rounded-2xl p-4 text-red-400 text-sm text-center backdrop-blur-sm animate-in zoom-in-95 duration-200">
                 {error}
               </div>
             )}
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={credentials.email}
-                onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none transition-colors"
-                placeholder="Enter email address"
-                required
-              />
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-red-900 rounded-full opacity-0 group-focus-within:opacity-30 transition duration-500 blur"></div>
+                <input
+                  type="email"
+                  value={credentials.email}
+                  onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
+                  className="relative w-full bg-black/50 border border-zinc-800 rounded-full px-6 py-4 text-white placeholder-zinc-600 focus:outline-none focus:border-red-900/50 transition-all font-mono text-center tracking-wide"
+                  placeholder="Master Email"
+                  required
+                />
+              </div>
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={credentials.password}
-                  onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 pr-12 text-white placeholder-zinc-500 focus:border-zinc-600 focus:outline-none transition-colors"
-                  placeholder="Enter password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-300 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+              <div className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-red-900 rounded-full opacity-0 group-focus-within:opacity-30 transition duration-500 blur"></div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={credentials.password}
+                    onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                    className="w-full bg-black/50 border border-zinc-800 rounded-full px-6 py-4 pr-12 text-white placeholder-zinc-600 focus:outline-none focus:border-red-900/50 transition-all text-center tracking-widest"
+                    placeholder="••••••••••••"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -200,31 +203,40 @@ export default function SuperAdminLogin() {
             <button
               type="submit"
               disabled={loading || !credentials.email || !credentials.password}
-              className="w-full bg-white text-black py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full relative group overflow-hidden bg-white text-black py-4 rounded-full font-black text-sm uppercase tracking-widest transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] mt-2"
             >
-              {loading ? 'Authenticating...' : 'Access System'}
+              <div className="relative z-10 flex items-center justify-center">
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-b-2 border-black rounded-full animate-spin"></div>
+                    Authenticating
+                  </span>
+                ) : (
+                  'Authorize'
+                )}
+              </div>
             </button>
           </form>
 
-          {/* Back Link */}
-          <div className="text-center mt-6">
-            <a
-              href="/login"
-              className="text-sm text-zinc-400 hover:text-zinc-300 transition-colors"
-            >
-              ← Back to Staff Login
-            </a>
+          {/* Security Notice */}
+          <div className="text-center mt-10">
+            <p className="text-[10px] font-mono tracking-widest uppercase text-red-500/70">
+              ⚠️ Restricted Override Area
+            </p>
+            <p className="text-[10px] text-zinc-600 mt-2">
+              All access attempts are fully logged and monitored.
+            </p>
           </div>
         </div>
 
-        {/* Security Notice */}
-        <div className="text-center mt-6">
-          <p className="text-xs text-zinc-500">
-            ⚠️ Restricted Area: All access attempts are logged and monitored.
-          </p>
-          <p className="text-xs text-zinc-600 mt-1">
-            Unauthorized access is prohibited and may result in legal action.
-          </p>
+        {/* Back Link */}
+        <div className="text-center mt-10">
+          <button
+            onClick={() => navigate('/login')}
+            className="text-xs font-mono uppercase tracking-widest text-zinc-600 hover:text-white transition-colors"
+          >
+            ← Standard Portal
+          </button>
         </div>
       </div>
     </div>
