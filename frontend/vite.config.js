@@ -9,7 +9,8 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-map': ['mapbox-gl', 'react-map-gl'],
+          'mapbox-core': ['mapbox-gl'],
+          'react-map-bindings': ['react-map-gl'],
           'vendor-admin': ['@microsoft/signalr', 'axios', 'framer-motion']
         }
       }

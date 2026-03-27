@@ -110,7 +110,15 @@ export default function SpotPage() {
       const menuUrl = `${baseUrl}/public/Orders/menu?venueId=${venueId}`;
       console.log('📡 Fetching menu from:', menuUrl);
       
-      const menuResponse = await fetch(menuUrl);
+      // Fetch both simultaneously to prevent API waterfall
+      const [menuResponse, venueResponse] = await Promise.all([
+        fetch(menuUrl),
+        fetch(`${baseUrl}/public/Venues/${venueId}`).catch(err => {
+          console.warn('⚠️ Venue fetch failed, continuing with menu data only', err);
+          return null; // Return null so we can handle failure gracefully
+        })
+      ]);
+
       console.log('📊 Menu response status:', menuResponse.status);
       
       if (!menuResponse.ok) {
@@ -123,43 +131,24 @@ export default function SpotPage() {
       
       // DEBUG: Log menu data to check if imageUrl is present
       console.log('📋 Menu data received:', menuData);
-      console.log('📊 Menu categories count:', menuData.length);
       
       if (menuData.length === 0) {
         console.warn('⚠️ No menu categories found for venue:', venueId);
       }
       
-      if (menuData.length > 0 && menuData[0].products?.length > 0) {
-        console.log('🖼️ First product imageUrl:', menuData[0].products[0].imageUrl);
-      }
-      
       setMenu(menuData);
 
-      // Fetch venue details with digital ordering status
+      // Process venue details
       let venueData = null;
-      
-      try {
-        // Fetch full venue details from public endpoint (includes allowsDigitalOrdering)
-        const venueResponse = await fetch(`${baseUrl}/public/Venues/${venueId}`);
-        if (venueResponse.ok) {
-          venueData = await venueResponse.json();
-          console.log('✅ Venue details loaded:', {
-            name: venueData.name,
-            type: venueData.type,
-            allowsDigitalOrdering: venueData.allowsDigitalOrdering
-          });
-        } else {
-          console.warn('⚠️ Could not fetch venue details, using fallback');
-          // Fallback: use menu data
-          venueData = {
-            id: venueId,
-            name: menuData[0]?.venueName || 'Venue',
-            type: 'OTHER',
-            allowsDigitalOrdering: false
-          };
-        }
-      } catch (err) {
-        console.error('❌ Error fetching venue details:', err);
+      if (venueResponse && venueResponse.ok) {
+        venueData = await venueResponse.json();
+        console.log('✅ Venue details loaded:', {
+          name: venueData.name,
+          type: venueData.type,
+          allowsDigitalOrdering: venueData.allowsDigitalOrdering
+        });
+      } else {
+        console.warn('⚠️ Could not fetch venue details, using fallback');
         // Fallback: use menu data
         venueData = {
           id: venueId,

@@ -1,19 +1,21 @@
 import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
-// Lazy load heavy mapbox components
+// Lazy load heavy mapbox components (deferred until map view)
 const Map = lazy(() => import('react-map-gl'));
 const Marker = lazy(() => import('react-map-gl').then(mod => ({ default: mod.Marker })));
 const NavigationControl = lazy(() => import('react-map-gl').then(mod => ({ default: mod.NavigationControl })));
 import { venueApi } from '../services/venueApi';
 import { publicEventsApi } from '../services/eventsApi';
 import { geographicZonesApi } from '../services/geographicZonesApi';
-import VenueBottomSheet from '../components/VenueBottomSheet';
-import BusinessBottomSheet from '../components/BusinessBottomSheet';
-import AssetBottomSheet from '../components/AssetBottomSheet';
-import EventsView from '../components/EventsView';
-import LocationBottomSheet from '../components/LocationBottomSheet';
+
+// Lazy load bottom sheet components (only needed on user interaction)
+const VenueBottomSheet = lazy(() => import('../components/VenueBottomSheet'));
+const BusinessBottomSheet = lazy(() => import('../components/BusinessBottomSheet'));
+const AssetBottomSheet = lazy(() => import('../components/AssetBottomSheet'));
+const EventsView = lazy(() => import('../components/EventsView'));
+const LocationBottomSheet = lazy(() => import('../components/LocationBottomSheet'));
+
 import { calculateDistance, sortEventsByDistance, sortVenuesByDistance, getCurrentLocation } from '../utils/locationUtils';
 import attractionsData from '../data/attractions_data.json';
 
@@ -294,6 +296,7 @@ export default function DiscoveryPage() {
 
   const [userLocation, setUserLocation] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapCssLoaded, setMapCssLoaded] = useState(false);
   const [initialViewState, setInitialViewState] = useState(RIVIERA_CENTER);
   const [viewState, setViewState] = useState(RIVIERA_CENTER);
   const [modeInitialized, setModeInitialized] = useState(false); // Track if mode is properly initialized
@@ -377,10 +380,31 @@ export default function DiscoveryPage() {
     }
   }, []);
 
+  // Dynamically load Mapbox CSS only when map view is activated
+  useEffect(() => {
+    if (viewMode === 'map' && !mapCssLoaded) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://api.mapbox.com/mapbox-gl-js/v3.9.4/mapbox-gl.css';
+      link.onload = () => setMapCssLoaded(true);
+      document.head.appendChild(link);
+    }
+  }, [viewMode, mapCssLoaded]);
+
   useEffect(() => {
     loadVenues();
-    loadEvents(); // Load all events initially
+    // Only load events if starting in night mode
+    if (!isDayMode) {
+      loadEvents();
+    }
   }, []);
+
+  // Load events when switching to night mode
+  useEffect(() => {
+    if (!isDayMode && events.length === 0) {
+      loadEvents();
+    }
+  }, [isDayMode]);
 
   // Mark mode as initialized on mount
   useEffect(() => {
