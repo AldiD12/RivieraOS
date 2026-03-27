@@ -220,7 +220,7 @@ export default function BarDisplay() {
       </div>
 
       {error && (
-        <div className="bg-red-900/20 border border-red-500 rounded-lg p-4 mb-6">
+        <div className="bg-red-900/20 border border-red-500 rounded-3xl p-6 mb-6 shadow-md">
           <div className="flex items-center gap-3">
             <AlertCircle className="w-6 h-6 text-red-500" />
             <span className="text-red-200">{error}</span>
@@ -297,7 +297,7 @@ function OrderColumn({ title, count, color, orders, onUpdateStatus, formatTime, 
   return (
     <div className="flex flex-col h-full">
       {/* Column Header */}
-      <div className={`border-2 ${colorClasses[color]} rounded-lg p-4 mb-4`}>
+      <div className={`border-2 ${colorClasses[color]} rounded-3xl p-6 mb-4 shadow-md`}>
         <div className="text-sm text-zinc-400 mb-1">STATUS</div>
         <div className="text-3xl font-black">{title}</div>
         <div className="text-xl text-zinc-400 mt-1">{count} orders</div>
@@ -331,16 +331,16 @@ function OrderCard({ order, onUpdateStatus, formatTime, getTimeSince, getStatusC
   const nextStatus = getNextStatus(order.status);
 
   return (
-    <div className="bg-zinc-900 border-2 border-zinc-800 rounded-lg p-4 hover:border-zinc-700 transition-colors">
+    <div className="bg-zinc-900 border-2 border-zinc-800 rounded-3xl p-6 hover:border-zinc-700 transition-colors shadow-sm">
       {/* Order Header */}
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between mb-4">
         <div>
           <div className="text-2xl font-black text-white mb-1">
             #{order.orderNumber}
           </div>
           <div className="text-sm text-zinc-400">
             {order.unitCode && (
-              <span className="inline-block bg-amber-600 text-white px-3 py-1 rounded-full font-bold mr-2">
+              <span className="inline-block bg-amber-600 text-white px-3 py-1 rounded-full font-bold mr-2 shadow-sm">
                 {order.unitCode}
               </span>
             )}
@@ -375,7 +375,7 @@ function OrderCard({ order, onUpdateStatus, formatTime, getTimeSince, getStatusC
 
       {/* Notes */}
       {order.notes && (
-        <div className="bg-zinc-800 rounded p-2 mb-4">
+        <div className="bg-zinc-800 rounded-2xl p-4 mb-4 shadow-inner">
           <div className="text-xs text-zinc-500 mb-1">NOTES</div>
           <div className="text-sm text-zinc-300">{order.notes}</div>
         </div>
@@ -385,7 +385,7 @@ function OrderCard({ order, onUpdateStatus, formatTime, getTimeSince, getStatusC
       {nextStatus && (
         <button
           onClick={() => onUpdateStatus(order.id, nextStatus)}
-          className="w-full bg-white text-black py-3 rounded-lg font-bold text-lg hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2"
+          className="w-full bg-white text-black py-4 rounded-full font-bold text-lg hover:bg-zinc-200 transition-colors flex items-center justify-center gap-2 shadow-md"
         >
           <CheckCircle className="w-5 h-5" />
           Mark as {nextStatus}
