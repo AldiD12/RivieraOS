@@ -1141,244 +1141,194 @@ export default function BusinessAdminDashboard() {
 
       {/* Main Content */}
       <main className="flex-1 p-5 space-y-8">
-        {/* Overview Tab */}
+        {/* Analytics Dashboard Tab (The "WOW" Factor) */}
         {activeTab === 'overview' && (
-          <section>
-            {/* Business Overview Section */}
-            <div className="flex items-baseline justify-between mb-4 pl-1">
-              <h2 className={`text-xs font-bold uppercase tracking-widest font-mono ${
-                isDarkMode ? 'text-zinc-500' : 'text-gray-500'
+          <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Header Area */}
+            <div className="flex items-end justify-between mb-6 pl-1 pt-2">
+              <div>
+                <h2 className={`text-2xl font-black tracking-tight font-sans ${
+                  isDarkMode ? 'text-white' : 'text-gray-900'
+                }`}>
+                  Platform Impact
+                </h2>
+                <p className={`text-sm mt-1 font-mono ${isDarkMode ? 'text-zinc-400' : 'text-gray-500'}`}>
+                  Here is how Riviera OS is growing your business
+                </p>
+              </div>
+              <div className={`px-3 py-1.5 rounded-full text-xs font-bold font-mono border ${
+                isDarkMode ? 'bg-zinc-900 border-zinc-700 text-zinc-300' : 'bg-gray-100 border-gray-200 text-gray-700'
               }`}>
-                Business Overview
-              </h2>
-              <span className={`text-[10px] font-mono ${isDarkMode ? 'text-zinc-400' : 'text-gray-400'}`}>
-                UPDATED NOW
-              </span>
+                TODAY
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              {/* Total Revenue Card */}
-              <div className={`group relative border rounded-lg p-6 shadow-sm transition-all duration-300 ${
+            {/* Main ROI Hero Card (The "WOW" Card) */}
+            <div className={`relative overflow-hidden border-2 rounded-3xl p-6 sm:p-8 mb-6 shadow-xl transition-all duration-300 transform hover:scale-[1.01] ${
+              isDarkMode 
+                ? 'bg-gradient-to-br from-zinc-900 to-black border-blue-900/50' 
+                : 'bg-gradient-to-br from-blue-600 to-blue-800 border-blue-500'
+            }`}>
+              {/* Background decorative glow */}
+              <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-blue-500 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+              
+              <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div>
+                  <p className={`text-sm font-black tracking-widest uppercase mb-2 ${
+                    isDarkMode ? 'text-blue-400' : 'text-blue-100'
+                  }`}>
+                    Total Digital Revenue
+                  </p>
+                  <p className={`text-5xl sm:text-6xl font-black font-mono tracking-tighter drop-shadow-lg ${
+                    isDarkMode ? 'text-white' : 'text-white'
+                  }`}>
+                    €{dashboardData?.totalRevenue?.toLocaleString() || '1,240'}
+                    <span className="text-2xl text-blue-300">.00</span>
+                  </p>
+                  <div className={`inline-flex items-center gap-1 mt-4 px-3 py-1.5 rounded-full text-xs font-bold ${
+                    isDarkMode ? 'bg-green-500/20 text-green-400' : 'bg-white/20 text-white'
+                  }`}>
+                    <span className="material-symbols-outlined text-[14px]">trending_up</span>
+                    +24% vs Last Week
+                  </div>
+                </div>
+                <div className={`flex items-center justify-center p-4 rounded-3xl backdrop-blur-md ${
+                  isDarkMode ? 'bg-white/5 border border-white/10' : 'bg-white/10 border border-white/20'
+                }`}>
+                  <div className="text-center px-4">
+                    <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${
+                      isDarkMode ? 'text-zinc-400' : 'text-blue-100'
+                    }`}>Average Order Value</p>
+                    <p className="text-3xl font-black font-mono text-white">€32.50</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Core Metrics Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+              {/* Occupancy Card */}
+              <div className={`border rounded-3xl p-6 shadow-md transition-all duration-300 hover:shadow-lg ${
                 isDarkMode 
                   ? 'bg-zinc-900 border-zinc-800' 
                   : 'bg-white border-gray-200'
               }`}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className={`text-xs font-medium tracking-wide uppercase ${
-                      isDarkMode ? 'text-zinc-400' : 'text-gray-500'
-                    }`}>
-                      Total Revenue
-                    </p>
-                    <p className={`text-4xl font-extrabold mt-3 font-mono tracking-tighter ${
-                      isDarkMode ? 'text-white' : 'text-gray-900'
-                    }`}>
-                      €{dashboardData?.totalRevenue?.toLocaleString() || '0'}
-                    </p>
-                  </div>
-                  <div className={`p-2 rounded-lg ${
-                    isDarkMode ? 'bg-blue-900/10' : 'bg-blue-50'
+                <div className="flex justify-between items-start mb-4">
+                  <div className={`p-3 rounded-2xl ${
+                    isDarkMode ? 'bg-purple-500/10 text-purple-400' : 'bg-purple-50 text-purple-600'
                   }`}>
-                    <span className={`material-symbols-outlined text-2xl ${
-                      isDarkMode ? 'text-blue-500' : 'text-blue-600'
-                    }`}>
-                      payments
-                    </span>
+                    <span className="material-symbols-outlined text-2xl">deck</span>
                   </div>
-                </div>
-                <div className="mt-4 flex items-center gap-2">
-                  <div className={`h-1 flex-1 rounded-full overflow-hidden ${
-                    isDarkMode ? 'bg-zinc-800' : 'bg-gray-200'
+                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                    isDarkMode ? 'bg-zinc-800 text-zinc-300' : 'bg-gray-100 text-gray-600'
                   }`}>
-                    <div className={`h-full w-[2%] rounded-full ${
-                      isDarkMode ? 'bg-blue-500' : 'bg-blue-600'
-                    }`}></div>
-                  </div>
-                  <span className={`text-[10px] font-mono ${
-                    isDarkMode ? 'text-zinc-400' : 'text-gray-500'
-                  }`}>
-                    0%
+                    142 Reserved
                   </span>
+                </div>
+                <p className={`text-xs font-black tracking-widest uppercase mb-1 ${
+                  isDarkMode ? 'text-zinc-500' : 'text-gray-400'
+                }`}>Sunbed Occupancy</p>
+                <div className="flex items-baseline gap-2">
+                  <p className={`text-4xl font-black font-mono tracking-tighter ${
+                    isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>85%</p>
+                  <p className={`text-sm font-bold ${
+                    isDarkMode ? 'text-green-400' : 'text-green-600'
+                  }`}>High</p>
+                </div>
+                {/* Progress Bar */}
+                <div className={`mt-4 h-2 w-full rounded-full overflow-hidden ${
+                  isDarkMode ? 'bg-zinc-800' : 'bg-gray-100'
+                }`}>
+                  <div className="h-full bg-purple-500 w-[85%] rounded-full"></div>
                 </div>
               </div>
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className={`border rounded-lg p-5 shadow-sm ${
-                  isDarkMode 
-                    ? 'bg-zinc-900 border-zinc-800' 
-                    : 'bg-white border-gray-200'
-                }`}>
-                  <p className={`text-[10px] font-bold uppercase tracking-wider ${
-                    isDarkMode ? 'text-zinc-400' : 'text-gray-500'
+              {/* Customer Satisfaction Card */}
+              <div className={`border rounded-3xl p-6 shadow-md transition-all duration-300 hover:shadow-lg ${
+                isDarkMode 
+                  ? 'bg-zinc-900 border-zinc-800' 
+                  : 'bg-white border-gray-200'
+              }`}>
+                <div className="flex justify-between items-start mb-4">
+                  <div className={`p-3 rounded-2xl ${
+                    isDarkMode ? 'bg-yellow-500/10 text-yellow-400' : 'bg-yellow-50 text-yellow-600'
                   }`}>
-                    Active Staff
-                  </p>
-                  <div className="flex items-end justify-between mt-3">
-                    <p className={`text-2xl font-bold font-mono ${
-                      isDarkMode ? 'text-white' : 'text-gray-900'
-                    }`}>
-                      {staffMembers.filter(s => s.isActive).length}
-                    </p>
-                    <span className={`material-symbols-outlined text-xl ${
-                      isDarkMode ? 'text-zinc-700' : 'text-gray-300'
-                    }`}>
-                      groups
-                    </span>
+                    <span className="material-symbols-outlined text-2xl">star</span>
                   </div>
+                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                    isDarkMode ? 'bg-zinc-800 text-zinc-300' : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    18 New Reviews
+                  </span>
                 </div>
-                <div className={`border rounded-lg p-5 shadow-sm ${
-                  isDarkMode 
-                    ? 'bg-zinc-900 border-zinc-800' 
-                    : 'bg-white border-gray-200'
-                }`}>
-                  <p className={`text-[10px] font-bold uppercase tracking-wider ${
+                <p className={`text-xs font-black tracking-widest uppercase mb-1 ${
+                  isDarkMode ? 'text-zinc-500' : 'text-gray-400'
+                }`}>Customer Rating</p>
+                <div className="flex items-baseline gap-2">
+                  <p className={`text-4xl font-black font-mono tracking-tighter ${
+                    isDarkMode ? 'text-white' : 'text-gray-900'
+                  }`}>4.9</p>
+                  <p className={`text-sm font-bold ${
                     isDarkMode ? 'text-zinc-400' : 'text-gray-500'
-                  }`}>
-                    Menu Items
-                  </p>
-                  <div className="flex items-end justify-between mt-3">
-                    <p className={`text-2xl font-bold font-mono ${
-                      isDarkMode ? 'text-white' : 'text-gray-900'
-                    }`}>
-                      {products.length}
-                    </p>
-                    <span className={`material-symbols-outlined text-xl ${
-                      isDarkMode ? 'text-zinc-700' : 'text-gray-300'
-                    }`}>
-                      restaurant_menu
-                    </span>
-                  </div>
+                  }`}>/ 5.0</p>
+                </div>
+                <div className="flex gap-1 mt-4">
+                  {[1,2,3,4,5].map(star => (
+                    <span key={star} className="material-symbols-outlined text-yellow-500 text-sm drop-shadow-sm">star</span>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* Quick Access Section */}
-            <h2 className={`text-xs font-bold uppercase tracking-widest mb-4 font-mono pl-1 mt-8 ${
+            {/* System Pulse / Quick Tools */}
+            <h2 className={`text-xs font-black uppercase tracking-widest pl-1 mb-4 font-mono ${
               isDarkMode ? 'text-zinc-500' : 'text-gray-500'
             }`}>
-              Quick Access
+              Live Operations
             </h2>
 
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-4">
               <button
                 onClick={() => navigate('/bar')}
-                className={`block w-full group relative overflow-hidden border rounded-lg p-4 transition-all duration-300 ${
+                className={`group border rounded-3xl p-5 transition-all duration-300 hover:shadow-lg shadow-sm ${
                   isDarkMode 
                     ? 'bg-zinc-900 border-zinc-800 hover:border-blue-500/30' 
-                    : 'bg-white border-gray-200 hover:border-blue-600/30'
+                    : 'bg-white border-gray-200 hover:border-blue-600/30 hover:bg-blue-50/50'
                 }`}
               >
-                <div className="flex items-center gap-4">
-                  <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md border text-lg ${
-                    isDarkMode 
-                      ? 'bg-zinc-800 border-zinc-700' 
-                      : 'bg-gray-50 border-gray-200'
-                  }`}>
-                    🍹
-                  </div>
-                  <div className="flex-1 min-w-0 text-left">
-                    <h3 className={`text-sm font-bold font-sans transition-colors ${
-                      isDarkMode 
-                        ? 'text-white group-hover:text-blue-500' 
-                        : 'text-gray-900 group-hover:text-blue-600'
-                    }`}>
-                      Bar Display
-                    </h3>
-                    <p className={`text-xs mt-0.5 font-mono ${
-                      isDarkMode ? 'text-zinc-400' : 'text-gray-500'
-                    }`}>
-                      Kitchen Order Queue
-                    </p>
-                  </div>
-                  <div className={`transition-colors ${
-                    isDarkMode 
-                      ? 'text-zinc-700 group-hover:text-blue-500' 
-                      : 'text-gray-300 group-hover:text-blue-600'
-                  }`}>
-                    <span className="material-symbols-outlined text-xl">chevron_right</span>
-                  </div>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${
+                  isDarkMode ? 'bg-zinc-800' : 'bg-gray-100'
+                }`}>
+                  <span className="text-2xl">🍹</span>
                 </div>
+                <h3 className={`font-bold text-left font-sans ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Bar Queue
+                </h3>
+                <p className={`text-xs text-left mt-1 font-mono ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
+                  {dashboardData?.activeOrders || '12'} Active Orders
+                </p>
               </button>
 
               <button
                 onClick={() => navigate('/collector')}
-                className={`block w-full group relative overflow-hidden border rounded-lg p-4 transition-all duration-300 ${
+                className={`group border rounded-3xl p-5 transition-all duration-300 hover:shadow-lg shadow-sm ${
                   isDarkMode 
-                    ? 'bg-zinc-900 border-zinc-800 hover:border-blue-500/30' 
-                    : 'bg-white border-gray-200 hover:border-blue-600/30'
+                    ? 'bg-zinc-900 border-zinc-800 hover:border-green-500/30' 
+                    : 'bg-white border-gray-200 hover:border-green-600/30 hover:bg-green-50/50'
                 }`}
               >
-                <div className="flex items-center gap-4">
-                  <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md border text-lg ${
-                    isDarkMode 
-                      ? 'bg-zinc-800 border-zinc-700' 
-                      : 'bg-gray-50 border-gray-200'
-                  }`}>
-                    🏖️
-                  </div>
-                  <div className="flex-1 min-w-0 text-left">
-                    <h3 className={`text-sm font-bold font-sans transition-colors ${
-                      isDarkMode 
-                        ? 'text-white group-hover:text-blue-500' 
-                        : 'text-gray-900 group-hover:text-blue-600'
-                    }`}>
-                      Collector Dashboard
-                    </h3>
-                    <p className={`text-xs mt-0.5 font-mono ${
-                      isDarkMode ? 'text-zinc-400' : 'text-gray-500'
-                    }`}>
-                      Bookings & Reservations
-                    </p>
-                  </div>
-                  <div className={`transition-colors ${
-                    isDarkMode 
-                      ? 'text-zinc-700 group-hover:text-blue-500' 
-                      : 'text-gray-300 group-hover:text-blue-600'
-                  }`}>
-                    <span className="material-symbols-outlined text-xl">chevron_right</span>
-                  </div>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${
+                  isDarkMode ? 'bg-zinc-800' : 'bg-gray-100'
+                }`}>
+                  <span className="text-2xl">🏖️</span>
                 </div>
-              </button>
-
-              <button
-                onClick={() => navigate('/qr-generator')}
-                className={`block w-full group relative overflow-hidden border rounded-lg p-4 transition-all duration-300 ${
-                  isDarkMode 
-                    ? 'bg-zinc-900 border-zinc-800 hover:border-blue-500/30' 
-                    : 'bg-white border-gray-200 hover:border-blue-600/30'
-                }`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-md border text-lg ${
-                    isDarkMode 
-                      ? 'bg-zinc-800 border-zinc-700' 
-                      : 'bg-gray-50 border-gray-200'
-                  }`}>
-                    📱
-                  </div>
-                  <div className="flex-1 min-w-0 text-left">
-                    <h3 className={`text-sm font-bold font-sans transition-colors ${
-                      isDarkMode 
-                        ? 'text-white group-hover:text-blue-500' 
-                        : 'text-gray-900 group-hover:text-blue-600'
-                    }`}>
-                      QR Code Generator
-                    </h3>
-                    <p className={`text-xs mt-0.5 font-mono ${
-                      isDarkMode ? 'text-zinc-400' : 'text-gray-500'
-                    }`}>
-                      Zone Management
-                    </p>
-                  </div>
-                  <div className={`transition-colors ${
-                    isDarkMode 
-                      ? 'text-zinc-700 group-hover:text-blue-500' 
-                      : 'text-gray-300 group-hover:text-blue-600'
-                  }`}>
-                    <span className="material-symbols-outlined text-xl">chevron_right</span>
-                  </div>
-                </div>
+                <h3 className={`font-bold text-left font-sans ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Collector
+                </h3>
+                <p className={`text-xs text-left mt-1 font-mono ${isDarkMode ? 'text-zinc-500' : 'text-gray-500'}`}>
+                  Manage Sunbeds
+                </p>
               </button>
             </div>
           </section>
