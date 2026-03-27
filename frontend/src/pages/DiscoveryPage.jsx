@@ -1710,8 +1710,8 @@ export default function DiscoveryPage() {
           <button
             onClick={() => {
               if (fromVenueId) {
-                // Navigate back to the spot page
-                navigate(`/${fromVenueId}`);
+                // Navigate back to the spot page landing
+                navigate(`/spot?v=${fromVenueId}`);
               } else {
                 setToast("You are not currently at a venue.");
                 setTimeout(() => setToast(null), 3000);
