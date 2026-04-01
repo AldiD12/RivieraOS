@@ -78,6 +78,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? Address { get; set; }
 
         [MaxLength(500)]
+        [Url]
         public string? ImageUrl { get; set; }
 
         public double? Latitude { get; set; }
@@ -104,6 +105,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? Address { get; set; }
 
         [MaxLength(500)]
+        [Url]
         public string? ImageUrl { get; set; }
 
         public double? Latitude { get; set; }
@@ -120,7 +122,9 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public bool IsBookingEnabled { get; set; }
         public bool IsSelfServiceEnabled { get; set; }
         public bool IsEventModeEnabled { get; set; }
+        [Range(0, 10000)]
         public int MaxCapacity { get; set; }
+        [Range(0, 99999)]
         public decimal BookingDepositAmount { get; set; }
     }
 }

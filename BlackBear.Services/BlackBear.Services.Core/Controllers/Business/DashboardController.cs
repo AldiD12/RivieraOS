@@ -41,25 +41,54 @@ namespace BlackBear.Services.Core.Controllers.Business
                 return NotFound("Business not found");
             }
 
-            // Get counts - using the multi-tenancy filter automatically
-            var totalVenues = await _context.Venues.CountAsync();
-            var activeVenues = await _context.Venues.CountAsync(v => v.IsActive);
+            // Get all counts in parallel to minimize round-trips
+            var venueCountsTask = _context.Venues
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    Active = g.Count(v => v.IsActive)
+                })
+                .FirstOrDefaultAsync();
 
-            var totalStaff = await _context.Users
-                .CountAsync(u => u.BusinessId == businessId.Value);
-            var activeStaff = await _context.Users
-                .CountAsync(u => u.BusinessId == businessId.Value && u.IsActive);
+            var staffCountsTask = _context.Users
+                .Where(u => u.BusinessId == businessId.Value)
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    Active = g.Count(u => u.IsActive)
+                })
+                .FirstOrDefaultAsync();
 
-            var totalCategories = await _context.Categories.CountAsync();
-            var totalProducts = await _context.Products.CountAsync();
-            var availableProducts = await _context.Products.CountAsync(p => p.IsAvailable);
+            var productCountsTask = _context.Products
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    Available = g.Count(p => p.IsAvailable)
+                })
+                .FirstOrDefaultAsync();
 
-            var totalEvents = await _context.ScheduledEvents
-                .Include(e => e.Venue)
-                .CountAsync(e => e.Venue != null && e.Venue.BusinessId == businessId.Value);
-            var upcomingEvents = await _context.ScheduledEvents
-                .Include(e => e.Venue)
-                .CountAsync(e => e.Venue != null && e.Venue.BusinessId == businessId.Value && e.StartTime >= DateTime.UtcNow);
+            var totalCategories = _context.Categories.CountAsync();
+
+            var businessVenueIds = _context.Venues.Select(v => v.Id);
+            var eventCountsTask = _context.ScheduledEvents
+                .Where(e => businessVenueIds.Contains(e.VenueId))
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    Upcoming = g.Count(e => e.StartTime >= DateTime.UtcNow)
+                })
+                .FirstOrDefaultAsync();
+
+            await Task.WhenAll(venueCountsTask, staffCountsTask, productCountsTask, totalCategories, eventCountsTask);
+
+            var venueCounts = venueCountsTask.Result;
+            var staffCounts = staffCountsTask.Result;
+            var productCounts = productCountsTask.Result;
+            var eventCounts = eventCountsTask.Result;
 
             return Ok(new BusinessDashboardDto
             {
@@ -73,15 +102,15 @@ namespace BlackBear.Services.Core.Controllers.Business
                     IsActive = business.IsActive,
                     CreatedAt = business.CreatedAt
                 },
-                TotalVenues = totalVenues,
-                ActiveVenues = activeVenues,
-                TotalStaff = totalStaff,
-                ActiveStaff = activeStaff,
-                TotalCategories = totalCategories,
-                TotalProducts = totalProducts,
-                AvailableProducts = availableProducts,
-                TotalEvents = totalEvents,
-                UpcomingEvents = upcomingEvents
+                TotalVenues = venueCounts?.Total ?? 0,
+                ActiveVenues = venueCounts?.Active ?? 0,
+                TotalStaff = staffCounts?.Total ?? 0,
+                ActiveStaff = staffCounts?.Active ?? 0,
+                TotalCategories = totalCategories.Result,
+                TotalProducts = productCounts?.Total ?? 0,
+                AvailableProducts = productCounts?.Available ?? 0,
+                TotalEvents = eventCounts?.Total ?? 0,
+                UpcomingEvents = eventCounts?.Upcoming ?? 0
             });
         }
     }

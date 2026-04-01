@@ -44,11 +44,14 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? Description { get; set; }
 
         [MaxLength(500)]
+        [Url]
         public string? ImageUrl { get; set; }
 
         [Required]
+        [Range(0, 99999)]
         public decimal Price { get; set; }
 
+        [Range(0, 99999)]
         public decimal? OldPrice { get; set; }
 
         public bool IsAvailable { get; set; } = true;
@@ -66,11 +69,14 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? Description { get; set; }
 
         [MaxLength(500)]
+        [Url]
         public string? ImageUrl { get; set; }
 
         [Required]
+        [Range(0, 99999)]
         public decimal Price { get; set; }
 
+        [Range(0, 99999)]
         public decimal? OldPrice { get; set; }
 
         public bool IsAvailable { get; set; } = true;

@@ -59,6 +59,7 @@ namespace BlackBear.Services.Core.DTOs.Public
         public string? GuestName { get; set; }
 
         [MaxLength(50)]
+        [Phone]
         public string? GuestPhone { get; set; }
 
         [MaxLength(255)]

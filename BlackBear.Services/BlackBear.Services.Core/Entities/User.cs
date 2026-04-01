@@ -38,6 +38,12 @@ namespace BlackBear.Services.Core.Entities
         [Column("is_active")]
         public bool IsActive { get; set; } = true;
 
+        [Column("failed_login_attempts")]
+        public int FailedLoginAttempts { get; set; } = 0;
+
+        [Column("lockout_end")]
+        public DateTime? LockoutEnd { get; set; }
+
         [Column("created_at")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

@@ -61,6 +61,7 @@ namespace BlackBear.Services.Core.DTOs.Business
         [MaxLength(50)]
         public string UnitType { get; set; } = "Sunbed";
 
+        [Range(0, 99999)]
         public decimal? BasePrice { get; set; }
 
         public int? PositionX { get; set; }
@@ -83,6 +84,7 @@ namespace BlackBear.Services.Core.DTOs.Business
         [MaxLength(50)]
         public string? UnitType { get; set; }
 
+        [Range(0, 99999)]
         public decimal? BasePrice { get; set; }
 
         public int? PositionX { get; set; }

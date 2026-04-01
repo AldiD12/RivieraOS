@@ -89,6 +89,9 @@ namespace BlackBear.Services.Core.Controllers.Public
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
             var query = _context.Reviews
                 .IgnoreQueryFilters()
                 .Where(r => r.VenueId == venueId && r.IsPublic && !r.IsDeleted);
@@ -128,27 +131,38 @@ namespace BlackBear.Services.Core.Controllers.Public
         [HttpGet("rating")]
         public async Task<ActionResult<PublicRatingSummaryDto>> GetRatingSummary(int venueId)
         {
-            var reviews = await _context.Reviews
+            var stats = await _context.Reviews
                 .IgnoreQueryFilters()
                 .Where(r => r.VenueId == venueId && r.IsPublic && !r.IsDeleted)
-                .ToListAsync();
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    AverageRating = g.Average(r => (double)r.Rating),
+                    TotalReviews = g.Count(),
+                    Star5 = g.Count(r => r.Rating == 5),
+                    Star4 = g.Count(r => r.Rating == 4),
+                    Star3 = g.Count(r => r.Rating == 3),
+                    Star2 = g.Count(r => r.Rating == 2),
+                    Star1 = g.Count(r => r.Rating == 1)
+                })
+                .FirstOrDefaultAsync();
 
-            if (!reviews.Any())
+            if (stats == null)
             {
                 return Ok(new PublicRatingSummaryDto());
             }
 
             return Ok(new PublicRatingSummaryDto
             {
-                AverageRating = Math.Round(reviews.Average(r => r.Rating), 1),
-                TotalReviews = reviews.Count,
+                AverageRating = Math.Round(stats.AverageRating, 1),
+                TotalReviews = stats.TotalReviews,
                 Distribution = new PublicRatingDistributionDto
                 {
-                    Star5 = reviews.Count(r => r.Rating == 5),
-                    Star4 = reviews.Count(r => r.Rating == 4),
-                    Star3 = reviews.Count(r => r.Rating == 3),
-                    Star2 = reviews.Count(r => r.Rating == 2),
-                    Star1 = reviews.Count(r => r.Rating == 1)
+                    Star5 = stats.Star5,
+                    Star4 = stats.Star4,
+                    Star3 = stats.Star3,
+                    Star2 = stats.Star2,
+                    Star1 = stats.Star1
                 }
             });
         }

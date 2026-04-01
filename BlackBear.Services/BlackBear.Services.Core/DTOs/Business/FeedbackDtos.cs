@@ -11,7 +11,6 @@ namespace BlackBear.Services.Core.DTOs.Business
         public string? Comment { get; set; }
         public string? UnitCode { get; set; }
         public string? GuestName { get; set; }
-        public string? GuestPhone { get; set; }
         public DateTime SubmittedAt { get; set; }
         public string Status { get; set; } = string.Empty;
         public DateTime? ResolvedAt { get; set; }

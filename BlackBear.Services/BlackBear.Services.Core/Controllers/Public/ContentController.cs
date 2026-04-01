@@ -25,6 +25,8 @@ namespace BlackBear.Services.Core.Controllers.Public
             [FromQuery] string? type = null,
             [FromQuery] int limit = 10)
         {
+            limit = Math.Clamp(limit, 1, 100);
+
             var query = _context.Contents
                 .AsQueryable();
 

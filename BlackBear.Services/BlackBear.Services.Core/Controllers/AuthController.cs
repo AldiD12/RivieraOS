@@ -98,10 +98,31 @@ namespace BlackBear.Services.Core.Controllers
                 return Unauthorized("Invalid email or password.");
             }
 
+            // Check if account is locked out
+            if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
+            {
+                return Unauthorized("Account is temporarily locked. Please try again later.");
+            }
+
             // Verify password
             if (!VerifyPassword(request.Password, user.PasswordHash))
             {
+                // Track failed attempt
+                user.FailedLoginAttempts++;
+                if (user.FailedLoginAttempts >= 5)
+                {
+                    user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
+                }
+                await _context.SaveChangesAsync();
                 return Unauthorized("Invalid email or password.");
+            }
+
+            // Reset failed attempts on successful login
+            if (user.FailedLoginAttempts > 0)
+            {
+                user.FailedLoginAttempts = 0;
+                user.LockoutEnd = null;
+                await _context.SaveChangesAsync();
             }
 
             // Check if user is active
@@ -150,6 +171,12 @@ namespace BlackBear.Services.Core.Controllers
                 return Unauthorized("Invalid phone number or PIN.");
             }
 
+            // Check if account is locked out
+            if (user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTime.UtcNow)
+            {
+                return Unauthorized("Account is temporarily locked. Please try again later.");
+            }
+
             // Check if user has a PIN set
             if (string.IsNullOrEmpty(user.PinHash))
             {
@@ -159,7 +186,21 @@ namespace BlackBear.Services.Core.Controllers
             // Verify PIN
             if (!VerifyPin(request.Pin, user.PinHash))
             {
+                user.FailedLoginAttempts++;
+                if (user.FailedLoginAttempts >= 5)
+                {
+                    user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
+                }
+                await _context.SaveChangesAsync();
                 return Unauthorized("Invalid phone number or PIN.");
+            }
+
+            // Reset failed attempts on successful login
+            if (user.FailedLoginAttempts > 0)
+            {
+                user.FailedLoginAttempts = 0;
+                user.LockoutEnd = null;
+                await _context.SaveChangesAsync();
             }
 
             // Check if user is active

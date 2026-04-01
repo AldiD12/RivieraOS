@@ -9,7 +9,6 @@ namespace BlackBear.Services.Core.DTOs.Business
         public string BookingCode { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string? GuestName { get; set; }
-        public string? GuestPhone { get; set; }
         public int GuestCount { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }

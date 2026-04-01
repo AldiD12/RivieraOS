@@ -49,6 +49,8 @@ namespace BlackBear.Services.Core.Controllers.Public
             [FromQuery] string? geographicZone = null,
             [FromQuery] int limit = 50)
         {
+            limit = Math.Clamp(limit, 1, 100);
+
             var query = _context.ScheduledEvents
                 .Include(e => e.Venue)
                     .ThenInclude(v => v!.Business)
@@ -162,6 +164,8 @@ namespace BlackBear.Services.Core.Controllers.Public
         [HttpGet("venue/{venueId}")]
         public async Task<ActionResult<List<PublicEventListItemDto>>> GetEventsByVenue(int venueId, [FromQuery] int limit = 20)
         {
+            limit = Math.Clamp(limit, 1, 100);
+
             var events = await _context.ScheduledEvents
                 .Include(e => e.Venue)
                     .ThenInclude(v => v!.Business)
@@ -206,6 +210,8 @@ namespace BlackBear.Services.Core.Controllers.Public
         [HttpGet("business/{businessId}")]
         public async Task<ActionResult<List<PublicEventListItemDto>>> GetEventsByBusiness(int businessId, [FromQuery] int limit = 20)
         {
+            limit = Math.Clamp(limit, 1, 100);
+
             var events = await _context.ScheduledEvents
                 .Include(e => e.Venue)
                     .ThenInclude(v => v!.Business)

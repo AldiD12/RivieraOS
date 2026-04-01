@@ -182,10 +182,13 @@ namespace BlackBear.Services.Core.Controllers.Public
                 Type = venue.Type
             };
 
+            var unitCountsDict = unitCounts.ToDictionary(c => c.ZoneId);
+            var reservedCountsDict = reservedCounts.ToDictionary(r => r.ZoneId, r => r.Reserved);
+
             var result = zones.Select(zone =>
             {
-                var counts = unitCounts.FirstOrDefault(c => c.ZoneId == zone.Id);
-                var reserved = reservedCounts.FirstOrDefault(r => r.ZoneId == zone.Id)?.Reserved ?? 0;
+                unitCountsDict.TryGetValue(zone.Id, out var counts);
+                reservedCountsDict.TryGetValue(zone.Id, out var reserved);
 
                 return new PublicZoneAvailabilityDto
                 {

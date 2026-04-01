@@ -8,8 +8,6 @@ namespace BlackBear.Services.Core.DTOs.Collector
         public string BookingCode { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string? GuestName { get; set; }
-        public string? GuestPhone { get; set; }
-        public string? GuestEmail { get; set; }
         public int GuestCount { get; set; }
         public int UnitsNeeded { get; set; }
         public string ZoneName { get; set; } = string.Empty;

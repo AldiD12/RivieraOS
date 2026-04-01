@@ -110,43 +110,58 @@ namespace BlackBear.Services.Core.Controllers.Business
                 return NotFound("Venue not found");
             }
 
-            var allReviews = await _context.Reviews
-                .Where(r => r.VenueId == venueId)
-                .ToListAsync();
+            var baseQuery = _context.Reviews.Where(r => r.VenueId == venueId);
 
-            var publicReviews = allReviews.Where(r => r.IsPublic).ToList();
-            var privateReviews = allReviews.Where(r => !r.IsPublic).ToList();
+            // Single aggregation query instead of loading all reviews into memory
+            var stats = await baseQuery
+                .GroupBy(_ => 1)
+                .Select(g => new
+                {
+                    Total = g.Count(),
+                    PublicCount = g.Count(r => r.IsPublic),
+                    PrivateCount = g.Count(r => !r.IsPublic),
+                    AverageRating = g.Average(r => (double)r.Rating),
+                    PublicAverageRating = g.Where(r => r.IsPublic).Average(r => (double?)r.Rating),
+                    Star5 = g.Count(r => r.Rating == 5),
+                    Star4 = g.Count(r => r.Rating == 4),
+                    Star3 = g.Count(r => r.Rating == 3),
+                    Star2 = g.Count(r => r.Rating == 2),
+                    Star1 = g.Count(r => r.Rating == 1)
+                })
+                .FirstOrDefaultAsync();
+
+            var recentLowRatings = await baseQuery
+                .Where(r => r.Rating < 4)
+                .OrderByDescending(r => r.CreatedAt)
+                .Take(5)
+                .Select(r => new BizRecentLowRatingDto
+                {
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CreatedAt = r.CreatedAt
+                })
+                .ToListAsync();
 
             return Ok(new BizReviewStatsDto
             {
-                Total = allReviews.Count,
-                PublicCount = publicReviews.Count,
-                PrivateCount = privateReviews.Count,
-                AverageRating = allReviews.Any()
-                    ? Math.Round(allReviews.Average(r => r.Rating), 1)
+                Total = stats?.Total ?? 0,
+                PublicCount = stats?.PublicCount ?? 0,
+                PrivateCount = stats?.PrivateCount ?? 0,
+                AverageRating = stats != null && stats.Total > 0
+                    ? Math.Round(stats.AverageRating, 1)
                     : 0,
-                PublicAverageRating = publicReviews.Any()
-                    ? Math.Round(publicReviews.Average(r => r.Rating), 1)
+                PublicAverageRating = stats?.PublicAverageRating.HasValue == true
+                    ? Math.Round(stats.PublicAverageRating.Value, 1)
                     : 0,
                 Distribution = new BizRatingDistributionDto
                 {
-                    Star5 = allReviews.Count(r => r.Rating == 5),
-                    Star4 = allReviews.Count(r => r.Rating == 4),
-                    Star3 = allReviews.Count(r => r.Rating == 3),
-                    Star2 = allReviews.Count(r => r.Rating == 2),
-                    Star1 = allReviews.Count(r => r.Rating == 1)
+                    Star5 = stats?.Star5 ?? 0,
+                    Star4 = stats?.Star4 ?? 0,
+                    Star3 = stats?.Star3 ?? 0,
+                    Star2 = stats?.Star2 ?? 0,
+                    Star1 = stats?.Star1 ?? 0
                 },
-                RecentLowRatings = allReviews
-                    .Where(r => r.Rating < 4)
-                    .OrderByDescending(r => r.CreatedAt)
-                    .Take(5)
-                    .Select(r => new BizRecentLowRatingDto
-                    {
-                        Rating = r.Rating,
-                        Comment = r.Comment,
-                        CreatedAt = r.CreatedAt
-                    })
-                    .ToList()
+                RecentLowRatings = recentLowRatings
             });
         }
     }

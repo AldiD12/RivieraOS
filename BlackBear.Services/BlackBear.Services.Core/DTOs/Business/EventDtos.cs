@@ -52,6 +52,7 @@ namespace BlackBear.Services.Core.DTOs.Business
         public string? Description { get; set; }
 
         [MaxLength(500)]
+        [Url]
         public string? FlyerImageUrl { get; set; }
 
         [Required]
@@ -62,10 +63,13 @@ namespace BlackBear.Services.Core.DTOs.Business
 
         public bool IsTicketed { get; set; } = false;
 
+        [Range(0, 99999)]
         public decimal TicketPrice { get; set; } = 0;
 
+        [Range(0, 99999)]
         public decimal MinimumSpend { get; set; } = 0;
 
+        [Range(0, 10000)]
         public int MaxGuests { get; set; } = 0;
 
         [MaxLength(50)]
@@ -89,6 +93,7 @@ namespace BlackBear.Services.Core.DTOs.Business
         public string? Description { get; set; }
 
         [MaxLength(500)]
+        [Url]
         public string? FlyerImageUrl { get; set; }
 
         [Required]
@@ -99,10 +104,13 @@ namespace BlackBear.Services.Core.DTOs.Business
 
         public bool IsTicketed { get; set; } = false;
 
+        [Range(0, 99999)]
         public decimal TicketPrice { get; set; } = 0;
 
+        [Range(0, 99999)]
         public decimal MinimumSpend { get; set; } = 0;
 
+        [Range(0, 10000)]
         public int MaxGuests { get; set; } = 0;
 
         [MaxLength(50)]

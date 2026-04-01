@@ -68,6 +68,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? ContactEmail { get; set; }
 
         [MaxLength(500)]
+        [Url]
         public string? LogoUrl { get; set; }
 
         [MaxLength(50)]
@@ -92,6 +93,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? ContactEmail { get; set; }
 
         [MaxLength(500)]
+        [Url]
         public string? LogoUrl { get; set; }
 
         [MaxLength(50)]

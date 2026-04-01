@@ -70,7 +70,6 @@ namespace BlackBear.Services.Core.Controllers.Business
                     Comment = nf.Comment,
                     UnitCode = nf.UnitCode,
                     GuestName = nf.GuestName,
-                    GuestPhone = nf.GuestPhone,
                     SubmittedAt = nf.SubmittedAt,
                     Status = nf.Status,
                     ResolvedAt = nf.ResolvedAt,

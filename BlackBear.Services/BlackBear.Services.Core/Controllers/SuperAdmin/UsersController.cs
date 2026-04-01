@@ -43,9 +43,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 .Select(u => new UserListItemDto
                 {
                     Id = u.Id,
-                    Email = u.Email,
                     FullName = u.FullName,
-                    PhoneNumber = u.PhoneNumber,
                     Role = u.UserRoles.FirstOrDefault() != null ? u.UserRoles.FirstOrDefault()!.Role!.RoleName : null,
                     IsActive = u.IsActive,
                     HasPinSet = !string.IsNullOrEmpty(u.PinHash),
@@ -385,9 +383,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 .Select(u => new UserListItemDto
                 {
                     Id = u.Id,
-                    Email = u.Email,
                     FullName = u.FullName,
-                    PhoneNumber = u.PhoneNumber,
                     Role = "SuperAdmin",
                     IsActive = u.IsActive,
                     CreatedAt = u.CreatedAt,
