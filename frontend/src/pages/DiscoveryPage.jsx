@@ -1211,11 +1211,11 @@ export default function DiscoveryPage() {
 
                   <div className="flex items-center space-x-3 pt-2">
                     <button
-                      className={`flex-1 text-xs font-bold uppercase tracking-widest py-3.5 transition-colors border rounded-2xl ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800 border-zinc-950' : 'bg-zinc-950 text-[#10FF88] hover:bg-zinc-900 border-[#10FF88]/30 shadow-[0_0_15px_rgba(16,255,136,0.1)]'}`}
+                      className={`flex-1 text-xs font-bold uppercase tracking-widest py-3.5 transition-colors border rounded-full ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800 border-zinc-950' : 'bg-zinc-950 text-[#10FF88] hover:bg-zinc-900 border-[#10FF88]/30 shadow-[0_0_15px_rgba(16,255,136,0.1)]'}`}
                     >
                       Explore
                     </button>
-                    <button className={`w-11 h-11 flex items-center justify-center border transition-colors rounded-2xl ${isDayMode ? 'border-stone-200 hover:border-zinc-950 bg-stone-50 text-zinc-950' : 'border-zinc-800 hover:border-zinc-500 bg-zinc-900/50 text-zinc-300'}`}>
+                    <button className={`w-11 h-11 flex items-center justify-center border transition-colors rounded-full ${isDayMode ? 'border-stone-200 hover:border-zinc-950 bg-stone-50 text-zinc-950' : 'border-zinc-800 hover:border-zinc-500 bg-zinc-900/50 text-zinc-300'}`}>
                       <svg className={`w-5 h-5 ${isDayMode ? 'text-zinc-950' : 'text-white'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                       </svg>
