@@ -211,7 +211,7 @@ Thank you!`;
           {(venue?.allowsDigitalOrdering || venue?.type?.toLowerCase() === 'restaurant') && !isAttraction && (
             <button
               onClick={() => setShowMenu(true)}
-              className={`w-full mb-6 flex items-center justify-center gap-2 py-3 rounded-sm border transition-all duration-300 ${
+              className={`w-full mb-6 flex items-center justify-center gap-2 py-3 rounded-full border transition-all duration-300 ${
                 isDayMode
                   ? 'border-stone-300 text-stone-600 hover:border-stone-500 hover:bg-stone-50'
                   : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:bg-zinc-900'
@@ -270,9 +270,9 @@ Thank you!`;
           {/* Availability Summary */}
           {isBeachVenue && !isAttraction && (
             hasAvailability ? (
-              <div className={`rounded-sm p-6 mb-8 border ${isDayMode ? 'bg-emerald-50 border-emerald-200' : 'bg-zinc-900 border-zinc-800'}`}>
+              <div className={`rounded-2xl p-6 mb-8 border ${isDayMode ? 'bg-emerald-50 border-emerald-200' : 'bg-zinc-900 border-zinc-800'}`}>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className={`w-3 h-3 rounded-sm animate-pulse ${isDayMode ? 'bg-emerald-500' : 'bg-[#10FF88]'}`}></div>
+                  <div className={`w-3 h-3 rounded-full animate-pulse ${isDayMode ? 'bg-emerald-500' : 'bg-[#10FF88]'}`}></div>
                   <p className={`text-lg font-medium ${isDayMode ? 'text-emerald-900' : 'text-[#10FF88]'}`}>
                     {isDayMode ? 'Available Now' : 'LIVE NOW'}
                   </p>
@@ -287,7 +287,7 @@ Thank you!`;
                 )}
               </div>
             ) : (
-              <div className={`rounded-sm p-6 mb-8 border ${isDayMode ? 'bg-stone-50 border-stone-200' : 'bg-zinc-900 border-zinc-800'}`}>
+              <div className={`rounded-2xl p-6 mb-8 border ${isDayMode ? 'bg-stone-50 border-stone-200' : 'bg-zinc-900 border-zinc-800'}`}>
                 <p className={`text-lg font-medium mb-1 ${isDayMode ? 'text-stone-700' : 'text-zinc-400'}`}>
                   Fully Booked
                 </p>
@@ -310,7 +310,7 @@ Thank you!`;
                   onClick={() => handleZoneSelect(zone)}
                   disabled={zone.availableUnits === 0}
                   className={`
-                    w-full rounded-sm p-6 border text-left transition-all duration-300 ease-out
+                    w-full rounded-2xl p-6 border text-left transition-all duration-300 ease-out
                     ${zone.availableUnits > 0
                       ? isDayMode
                         ? 'bg-white border-zinc-200 hover:border-zinc-400 hover:shadow-lg cursor-pointer'
@@ -358,7 +358,7 @@ Thank you!`;
                   : `https://www.google.com/maps/dir/?api=1&destination=${dest}`;
                 window.open(url, '_blank');
               }}
-              className={`w-full mb-6 px-6 py-4 rounded-sm border flex items-center justify-center gap-3 transition-all duration-300 ${isDayMode ? 'bg-white border-zinc-300 text-zinc-700 hover:border-zinc-950 shadow-sm' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-[#10FF88] hover:text-[#10FF88]'}`}
+              className={`w-full mb-6 px-6 py-4 rounded-full border flex items-center justify-center gap-3 transition-all duration-300 ${isDayMode ? 'bg-white border-zinc-300 text-zinc-700 hover:border-zinc-950 shadow-sm' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-[#10FF88] hover:text-[#10FF88]'}`}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -379,14 +379,14 @@ Thank you!`;
                       showToast('Please select a zone above');
                     }
                   }}
-                  className={`flex-1 px-8 py-4 rounded-sm text-sm tracking-widest uppercase transition-all duration-300 ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800 shadow-lg' : 'bg-zinc-950 text-[#10FF88] border border-zinc-800 hover:shadow-[0_0_20px_rgba(16,255,136,0.4)]'}`}
+                  className={`flex-1 px-8 py-4 rounded-full text-sm tracking-widest uppercase transition-all duration-300 ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800 shadow-lg' : 'bg-zinc-950 text-[#10FF88] border border-zinc-800 hover:shadow-[0_0_20px_rgba(16,255,136,0.4)]'}`}
                 >
                   Book Now
                 </button>
               ) : (
                 <button
                   disabled
-                  className={`flex-1 px-8 py-4 rounded-sm text-sm tracking-widest uppercase cursor-not-allowed ${isDayMode ? 'bg-zinc-200 text-zinc-400' : 'bg-zinc-900 text-zinc-600 border border-zinc-800'}`}
+                  className={`flex-1 px-8 py-4 rounded-full text-sm tracking-widest uppercase cursor-not-allowed ${isDayMode ? 'bg-zinc-200 text-zinc-400' : 'bg-zinc-900 text-zinc-600 border border-zinc-800'}`}
                 >
                   Fully Booked
                 </button>
@@ -397,7 +397,7 @@ Thank you!`;
                   setSelectedZone({ id: 'whatsapp-only', name: 'Reservation', basePrice: 0 });
                   setShowBookingForm(true);
                 }}
-                className={`flex-1 flex justify-center items-center gap-2 px-8 py-4 rounded-sm text-sm tracking-widest uppercase transition-all duration-300 ${isDayMode ? 'bg-[#25D366] text-white hover:bg-[#128C7E] shadow-lg' : 'bg-[#25D366] text-zinc-950 hover:bg-[#128C7E] hover:shadow-[0_0_20px_rgba(37,211,102,0.4)]'}`}
+                className={`flex-1 flex justify-center items-center gap-2 px-8 py-4 rounded-full text-sm tracking-widest uppercase transition-all duration-300 ${isDayMode ? 'bg-[#25D366] text-white hover:bg-[#128C7E] shadow-lg' : 'bg-[#25D366] text-zinc-950 hover:bg-[#128C7E] hover:shadow-[0_0_20px_rgba(37,211,102,0.4)]'}`}
               >
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
@@ -407,7 +407,7 @@ Thank you!`;
             )}
             <button
               onClick={onClose}
-              className={`flex-1 border px-8 py-4 rounded-sm transition-all duration-300 ${isDayMode ? 'border-zinc-300 text-zinc-700 hover:border-zinc-400 hover:bg-stone-50' : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-900'}`}
+              className={`flex-1 border px-8 py-4 rounded-full transition-all duration-300 ${isDayMode ? 'border-zinc-300 text-zinc-700 hover:border-zinc-400 hover:bg-stone-50' : 'border-zinc-800 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-900'}`}
             >
               Close
             </button>
@@ -417,7 +417,7 @@ Thank you!`;
         {/* Toast */}
         {toast && (
           <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in">
-            <div className={`px-5 py-3 rounded-sm shadow-lg text-sm font-mono tracking-wide ${isDayMode ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-950'}`}>
+            <div className={`px-5 py-3 rounded-2xl shadow-lg text-sm font-mono tracking-wide ${isDayMode ? 'bg-zinc-950 text-white' : 'bg-white text-zinc-950'}`}>
               {toast}
             </div>
           </div>
@@ -428,7 +428,7 @@ Thank you!`;
       {showBookingForm && selectedZone && (
         <div className={`fixed inset-0 backdrop-blur-lg flex items-center justify-center z-[60] p-4 ${isDayMode ? 'bg-black/30' : 'bg-black/60'}`}>
           <div
-            className={`rounded-sm p-8 max-w-md w-full max-h-[90vh] overflow-y-auto ${isDayMode ? 'bg-white' : 'bg-zinc-950 border border-zinc-800'}`}
+            className={`rounded-3xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto ${isDayMode ? 'bg-white' : 'bg-zinc-950 border border-zinc-800'}`}
             style={{ animation: 'fadeIn 0.3s ease-out' }}
           >
             <h3 className={`text-3xl font-light mb-2 ${isDayMode ? 'text-zinc-950' : 'text-white'}`}
@@ -447,7 +447,7 @@ Thank you!`;
                   type="text" required
                   value={bookingData.guestName}
                   onChange={(e) => setBookingData({ ...bookingData, guestName: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-sm focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88]'}`}
+                  className={`w-full px-4 py-3 rounded-full focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88]'}`}
                   placeholder="John Doe"
                 />
               </div>
@@ -459,7 +459,7 @@ Thank you!`;
                   type="tel" required
                   value={bookingData.guestPhone}
                   onChange={(e) => setBookingData({ ...bookingData, guestPhone: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-sm focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88]'}`}
+                  className={`w-full px-4 py-3 rounded-full focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88]'}`}
                   placeholder="+355 69 123 4567"
                 />
               </div>
@@ -472,7 +472,7 @@ Thank you!`;
                     {[{ value: 2, label: '1-2' }, { value: 4, label: '3-4' }, { value: 6, label: '5-6' }, { value: 8, label: '7-8' }, { value: 10, label: '9+' }].map(option => (
                       <button key={option.value} type="button"
                         onClick={() => setBookingData({ ...bookingData, guestCount: option.value })}
-                        className={`px-3 py-2 rounded-sm text-sm font-medium transition-all ${bookingData.guestCount === option.value
+                        className={`px-3 py-2 rounded-full text-sm font-medium transition-all ${bookingData.guestCount === option.value
                           ? isDayMode ? 'bg-zinc-950 text-white' : 'bg-[#10FF88] text-zinc-950'
                           : isDayMode ? 'bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
                         }`}
@@ -490,7 +490,7 @@ Thank you!`;
                     {[1, 2, 3, 4, 5, 6].map(count => (
                       <button key={count} type="button"
                         onClick={() => setBookingData({ ...bookingData, sunbedCount: count })}
-                        className={`px-3 py-2 rounded-sm text-sm font-medium transition-all ${bookingData.sunbedCount === count
+                        className={`px-3 py-2 rounded-full text-sm font-medium transition-all ${bookingData.sunbedCount === count
                           ? isDayMode ? 'bg-zinc-950 text-white' : 'bg-[#10FF88] text-zinc-950'
                           : isDayMode ? 'bg-white border border-zinc-300 text-zinc-700 hover:border-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-zinc-400 hover:border-[#10FF88]'
                         }`}
@@ -508,7 +508,7 @@ Thank you!`;
                   value={bookingData.date}
                   min={new Date().toISOString().split('T')[0]}
                   onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })}
-                  className={`w-full px-4 py-3 rounded-sm focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88]'}`}
+                  className={`w-full px-4 py-3 rounded-full focus:outline-none focus:ring-2 transition-all ${isDayMode ? 'border border-zinc-300 focus:ring-zinc-950' : 'bg-zinc-900 border border-zinc-800 text-white focus:ring-[#10FF88]'}`}
                 />
               </div>
 
@@ -525,7 +525,7 @@ Thank you!`;
                     return (
                       <button key={time} type="button" disabled={isPastTime}
                         onClick={() => setBookingData({ ...bookingData, arrivalTime: time })}
-                        className={`px-3 py-2 rounded-sm text-sm font-medium transition-all ${isPastTime
+                        className={`px-3 py-2 rounded-full text-sm font-medium transition-all ${isPastTime
                           ? 'opacity-50 cursor-not-allowed bg-zinc-200 text-zinc-400'
                           : bookingData.arrivalTime === time
                             ? isDayMode ? 'bg-zinc-950 text-white' : 'bg-[#10FF88] text-zinc-950'
@@ -536,7 +536,7 @@ Thank you!`;
                   })}
                 </div>
                 {(venue.type || '').toLowerCase().includes('beach') && (
-                  <div className={`mt-4 p-4 rounded-sm border ${isDayMode ? 'bg-amber-50 border-amber-200' : 'bg-amber-900/20 border-amber-700'}`}>
+                  <div className={`mt-4 p-4 rounded-2xl border ${isDayMode ? 'bg-amber-50 border-amber-200' : 'bg-amber-900/20 border-amber-700'}`}>
                     <p className={`text-sm ${isDayMode ? 'text-amber-700' : 'text-amber-300'}`}>
                       Your reservation expires <strong>15 minutes after arrival time</strong>. Please arrive on time.
                     </p>
@@ -562,7 +562,7 @@ Thank you!`;
               {/* Submit */}
               <button
                 type="submit" disabled={submitting}
-                className={`w-full px-8 py-6 rounded-sm text-sm tracking-widest uppercase transition-all duration-300 font-bold ${submitting ? 'opacity-50 cursor-not-allowed' : ''} ${isDayMode
+                className={`w-full px-8 py-6 rounded-full text-sm tracking-widest uppercase transition-all duration-300 font-bold ${submitting ? 'opacity-50 cursor-not-allowed' : ''} ${isDayMode
                   ? 'bg-zinc-950 text-white hover:bg-zinc-800 shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
                   : 'bg-zinc-950 text-[#10FF88] border border-zinc-800 hover:shadow-[0_0_30px_rgba(16,255,136,0.6)]'
                 }`}
