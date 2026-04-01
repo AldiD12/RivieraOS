@@ -6,6 +6,7 @@ using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.DTOs;
 using BlackBear.Services.Core.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -13,6 +14,7 @@ namespace BlackBear.Services.Core.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("auth")]
     public class AuthController : ControllerBase
     {
         private readonly BlackBearDbContext _context;

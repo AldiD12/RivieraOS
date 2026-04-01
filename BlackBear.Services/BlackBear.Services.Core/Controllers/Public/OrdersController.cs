@@ -3,6 +3,7 @@ using BlackBear.Services.Core.DTOs.Public;
 using BlackBear.Services.Core.Entities;
 using BlackBear.Services.Core.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,6 +11,7 @@ namespace BlackBear.Services.Core.Controllers.Public
 {
     [Route("api/public/[controller]")]
     [ApiController]
+    [EnableRateLimiting("public")]
     public class OrdersController : ControllerBase
     {
         private readonly BlackBearDbContext _context;

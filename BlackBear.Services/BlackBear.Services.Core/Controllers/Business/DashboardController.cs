@@ -3,12 +3,14 @@ using BlackBear.Services.Core.DTOs.Business;
 using BlackBear.Services.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlackBear.Services.Core.Controllers.Business
 {
     [Route("api/business/[controller]")]
     [ApiController]
+    [EnableRateLimiting("fixed")]
     [Authorize(Policy = "Manager")]
     public class DashboardController : ControllerBase
     {

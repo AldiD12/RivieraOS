@@ -2,12 +2,14 @@ using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.DTOs.Public;
 using BlackBear.Services.Core.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlackBear.Services.Core.Controllers.Public
 {
     [Route("api/public/venues/{venueId}/reviews")]
     [ApiController]
+    [EnableRateLimiting("public")]
     public class ReviewsController : ControllerBase
     {
         private readonly BlackBearDbContext _context;

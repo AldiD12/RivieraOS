@@ -2,12 +2,14 @@ using BlackBear.Services.Core.Data;
 using BlackBear.Services.Core.DTOs.SuperAdmin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlackBear.Services.Core.Controllers.SuperAdmin
 {
     [Route("api/superadmin/[controller]")]
     [ApiController]
+    [EnableRateLimiting("fixed")]
     [Authorize(Policy = "SuperAdmin")]
     public class OrdersController : ControllerBase
     {

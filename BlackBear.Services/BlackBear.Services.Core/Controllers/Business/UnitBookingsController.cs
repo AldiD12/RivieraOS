@@ -6,6 +6,7 @@ using BlackBear.Services.Core.Hubs;
 using BlackBear.Services.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 {
     [Route("api/business/venues/{venueId}/bookings")]
     [ApiController]
+    [EnableRateLimiting("fixed")]
     [Authorize(Policy = "Collector")]
     [RequireFeature(nameof(BusinessFeature.HasBookings))]
     public class UnitBookingsController : ControllerBase

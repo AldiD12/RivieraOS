@@ -1,11 +1,13 @@
 using BlackBear.Services.Core.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlackBear.Services.Core.Controllers.Public
 {
     [Route("api/public/[controller]")]
     [ApiController]
+    [EnableRateLimiting("public")]
     public class UnitsController : ControllerBase
     {
         private readonly BlackBearDbContext _context;
