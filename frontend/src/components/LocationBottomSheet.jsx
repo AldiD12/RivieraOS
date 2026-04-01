@@ -102,7 +102,7 @@ export default function LocationBottomSheet({
               <p className={`text-sm font-mono ${isDayMode ? 'text-red-600' : 'text-red-400'}`}>{error}</p>
               <button
                 onClick={loadZones}
-                className={`mt-4 px-4 py-2 text-sm font-mono border transition-colors ${isDayMode ? 'border-stone-300 text-stone-700 hover:bg-stone-50' : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800'}`}
+                className={`mt-4 px-4 py-2 text-sm font-mono border rounded-full transition-colors ${isDayMode ? 'border-stone-300 text-stone-700 hover:bg-stone-50' : 'border-zinc-700 text-zinc-300 hover:bg-zinc-800'}`}
               >
                 [ RETRY ]
               </button>
@@ -115,7 +115,7 @@ export default function LocationBottomSheet({
               <button
                 onClick={handleShowAll}
                 className={`
-                  w-full text-left py-4 px-5 border transition-all duration-300 flex justify-between items-center group
+                  w-full text-left py-4 px-5 border rounded-2xl transition-all duration-300 flex justify-between items-center group
                   ${selectedZone === 'EVERYWHERE'
                     ? isDayMode
                       ? 'border-stone-900 bg-stone-50 shadow-sm'
@@ -152,7 +152,7 @@ export default function LocationBottomSheet({
                   key={zoneData.zone}
                   onClick={() => handleZoneClick(zoneData.zone)}
                   className={`
-                    w-full text-left py-4 px-5 border transition-all duration-300 flex justify-between items-center group
+                    w-full text-left py-4 px-5 border rounded-2xl transition-all duration-300 flex justify-between items-center group
                     ${selectedZone === zoneData.zone
                       ? isDayMode
                         ? 'border-stone-900 bg-stone-50 shadow-sm'
@@ -189,7 +189,7 @@ export default function LocationBottomSheet({
                 <button 
                   onClick={handleGPSClick}
                   className={`
-                    w-full py-4 px-5 border flex items-center justify-center gap-3 transition-all
+                    w-full py-4 px-5 border rounded-2xl flex items-center justify-center gap-3 transition-all
                     ${isDayMode
                       ? 'border-stone-900 bg-stone-50 hover:bg-stone-100 text-stone-900'
                       : 'border-white bg-white/5 hover:bg-white/10 text-white'
