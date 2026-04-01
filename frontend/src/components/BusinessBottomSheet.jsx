@@ -121,7 +121,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
 
   return (
     <div className="absolute bottom-0 left-0 right-0 z-30 pointer-events-auto">
-      <div className="bg-[#F6F5F2] text-[#111111] p-6 rounded-t-sm">
+      <div className="bg-[#F6F5F2] text-[#111111] p-6 rounded-t-3xl shadow-2xl">
 
         {/* TITLE & HEADER */}
         <div className="flex items-start justify-between mb-4">
@@ -133,7 +133,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center text-[#111111] hover:bg-zinc-200 rounded transition-colors"
+            className="w-8 h-8 flex items-center justify-center text-[#111111] hover:bg-zinc-200 rounded-full transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -147,7 +147,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
             {getAmenityIcons().map((amenity, index) => (
               <span
                 key={index}
-                className="border border-zinc-300 px-3 py-1 text-xs font-mono uppercase"
+                className="border border-zinc-300 px-3 py-1 text-xs font-mono uppercase rounded-full"
               >
                 {amenity.icon} {amenity.name}
               </span>
@@ -160,7 +160,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
 
           {/* BEACH CARD (Direct Booking) */}
           {beachVenue && (
-            <div className="bg-white border border-zinc-300 p-4 rounded-sm flex justify-between items-center">
+            <div className="bg-white border border-zinc-300 p-4 rounded-2xl flex justify-between items-center">
               <div>
                 <h3 className="font-sans font-bold text-lg">{beachVenue.name || 'THE BEACH'}</h3>
                 <p className="flex items-center gap-2 text-[#10B981] font-mono text-xs mt-1">
@@ -170,7 +170,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
               </div>
               <button
                 onClick={() => startDirectBooking(beachVenue.id)}
-                className="bg-[#111111] text-white px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-800 transition-colors"
+                className="bg-[#111111] text-white px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-800 transition-colors rounded-full"
               >
                 Secure Sunbed
               </button>
@@ -179,7 +179,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
 
           {/* RESTAURANT CARD */}
           {restaurantVenue && (
-            <div className="bg-white border border-zinc-300 p-4 rounded-sm">
+            <div className="bg-white border border-zinc-300 p-4 rounded-2xl">
               <div className="flex justify-between items-center">
                 <div>
                   <h3 className="font-sans font-bold text-lg">{restaurantVenue.name || 'RESTAURANT'}</h3>
@@ -192,14 +192,14 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
                 {getWhatsAppNumber() ? (
                   <button
                     onClick={() => openWhatsApp(getWhatsAppNumber())}
-                    className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors shrink-0 ml-3"
+                    className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors shrink-0 ml-3 rounded-full"
                   >
                     Request Table
                   </button>
                 ) : (
                   <button
                     onClick={() => startDirectBooking(restaurantVenue.id)}
-                    className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors shrink-0 ml-3"
+                    className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors shrink-0 ml-3 rounded-full"
                   >
                     View Details
                   </button>
@@ -208,7 +208,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
               {/* View Menu button */}
               <button
                 onClick={() => setMenuVenue(restaurantVenue)}
-                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 border border-zinc-200 text-zinc-600 font-mono text-xs uppercase tracking-wider hover:bg-zinc-50 transition-colors rounded-sm"
+                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 border border-zinc-200 text-zinc-600 font-mono text-xs uppercase tracking-wider hover:bg-zinc-50 transition-colors rounded-full"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -235,7 +235,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
                 const timeStr = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
                 return (
-                  <div key={event.id} className="bg-white border border-zinc-300 p-3 rounded-sm mb-2 flex justify-between items-center">
+                  <div key={event.id} className="bg-white border border-zinc-300 p-3 rounded-2xl mb-2 flex justify-between items-center">
                     <div className="flex-1 min-w-0">
                       <h4 className="font-sans font-bold text-sm truncate">{event.name}</h4>
                       <div className="flex items-center gap-3 mt-1">

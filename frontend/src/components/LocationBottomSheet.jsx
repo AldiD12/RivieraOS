@@ -73,7 +73,7 @@ export default function LocationBottomSheet({
         transform transition-transform duration-300 ease-out
         ${isOpen ? 'translate-y-0' : 'translate-y-full'}
         ${isDayMode ? 'bg-white' : 'bg-zinc-950'}
-        border-t shadow-2xl
+        border-t shadow-2xl rounded-t-3xl
         ${isDayMode ? 'border-stone-200' : 'border-zinc-800'}
         max-h-[85vh] overflow-hidden flex flex-col
       `}>
