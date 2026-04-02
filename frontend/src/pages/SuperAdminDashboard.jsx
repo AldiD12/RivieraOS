@@ -9,6 +9,7 @@ import { CreateCategoryModal, EditCategoryModal } from '../components/dashboard/
 import { CreateProductModal, EditProductModal } from '../components/dashboard/modals/ProductModals';
 import { CreateEventModal, EditEventModal, DeleteEventModal } from '../components/dashboard/modals/EventModals';
 import { SuperAdminFeaturesPanel } from '../components/SuperAdminFeaturesPanel';
+import BulkProductImport from '../components/BulkProductImport';
 
 // Utility function to normalize phone numbers (match backend format)
 const normalizePhoneNumber = (phone) => {
@@ -2089,6 +2090,28 @@ export default function SuperAdminDashboard() {
           </div>
         );
 
+      case 'bulk-import':
+        return (
+          <div className="space-y-6">
+            {!selectedBusiness ? (
+              <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 mt-6">
+                <p className="text-blue-300">
+                  💡 Select a business from the Businesses tab to bulk import products.
+                </p>
+              </div>
+            ) : (
+              <BulkProductImport 
+                businessId={selectedBusiness.id} 
+                existingCategories={categories}
+                onImportComplete={() => {
+                  fetchMenuForBusiness(selectedBusiness.id);
+                  setActiveTab('menu');
+                }}
+              />
+            )}
+          </div>
+        );
+
       case 'events':
         return (
           <EventsTab
@@ -2709,6 +2732,7 @@ export default function SuperAdminDashboard() {
               { id: 'businesses', label: 'Businesses' },
               { id: 'staff', label: 'Staff Management' },
               { id: 'menu', label: 'Menu Management' },
+              { id: 'bulk-import', label: 'Bulk Import' },
               { id: 'venues', label: 'Venues & Zones' },
               { id: 'events', label: 'Events' },
               { id: 'qr-generator', label: 'QR Codes' }
