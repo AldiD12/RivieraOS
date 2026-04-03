@@ -55,11 +55,11 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
 
     public class CreateZoneUnitRequest
     {
-        [Required]
+        
         [MaxLength(20)]
         public string UnitCode { get; set; } = string.Empty;
 
-        [Required]
+        
         [MaxLength(50)]
         public string UnitType { get; set; } = "Sunbed";
 
@@ -72,7 +72,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         [MaxLength(500)]
         public string? Notes { get; set; }
 
-        [Required]
+        
         public int VenueZoneId { get; set; }
     }
 
@@ -96,7 +96,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
 
     public class UpdateUnitStatusRequest
     {
-        [Required]
+        
         [RegularExpression("^(Available|Reserved|Occupied|Maintenance)$",
             ErrorMessage = "Status must be Available, Reserved, Occupied, or Maintenance")]
         public string Status { get; set; } = string.Empty;
@@ -107,22 +107,22 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
 
     public class BulkCreateUnitsRequest
     {
-        [Required]
+        
         public int VenueZoneId { get; set; }
 
-        [Required]
+        
         [MaxLength(50)]
         public string UnitType { get; set; } = "Sunbed";
 
-        [Required]
+        
         [MaxLength(10)]
         public string Prefix { get; set; } = string.Empty;
 
-        [Required]
+        
         [Range(1, 100)]
         public int StartNumber { get; set; } = 1;
 
-        [Required]
+        
         [Range(1, 100)]
         public int Count { get; set; } = 1;
 
