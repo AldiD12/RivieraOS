@@ -179,7 +179,7 @@ export default function BulkProductImport({ businessId, existingCategories, onIm
         const catId = categoryMap[p.categoryName.toLowerCase()]?.id;
         if (!catId) throw new Error('Category missing');
 
-        await productApi.business.create(catId, {
+        await productApi.create(catId, {
           name: p.name,
           description: p.description,
           price: parseFloat(p.price),

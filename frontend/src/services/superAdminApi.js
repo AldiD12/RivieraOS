@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // SuperAdmin API service for business management
-const AZURE_BASE_URL = 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+const AZURE_BASE_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
 export const superAdminApi = axios.create({
   baseURL: AZURE_BASE_URL,
