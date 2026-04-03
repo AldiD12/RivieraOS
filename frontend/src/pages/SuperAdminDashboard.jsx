@@ -1238,15 +1238,19 @@ export default function SuperAdminDashboard() {
     
     try {
       // Update staff member with email, phone number and PIN
+      // Only include PIN if it's not empty to avoid 400 validation error (regex ^\d{4}$)
       const staffData = {
         email: staffForm.email,
-        phoneNumber: staffForm.phoneNumber,
+        phoneNumber: normalizePhoneNumber(staffForm.phoneNumber),
         fullName: staffForm.fullName,
         role: staffForm.role,
-        pin: staffForm.pin,
         isActive: staffForm.isActive,
         venueId: staffForm.venueId || null
       };
+
+      if (staffForm.pin && staffForm.pin.trim() !== '') {
+        staffData.pin = staffForm.pin;
+      }
       
       await staffApi.update(selectedBusiness.id, editingStaff.id, staffData);
       setShowEditStaffModal(false);
@@ -1665,7 +1669,17 @@ export default function SuperAdminDashboard() {
     if (!selectedBusiness?.id) return;
     
     try {
-      await venueApi.create(selectedBusiness.id, venueForm);
+      // Sanitize venue form to convert empty strings to null for backend
+      const sanitizedVenue = {
+        ...venueForm,
+        type: venueForm.type || null,
+        description: venueForm.description || null,
+        address: venueForm.address || null,
+        imageUrl: venueForm.imageUrl || null,
+        googlePlaceId: venueForm.googlePlaceId || null
+      };
+      
+      await venueApi.create(selectedBusiness.id, sanitizedVenue);
       setShowCreateVenueModal(false);
       setVenueForm({
         name: '',
@@ -1868,10 +1882,14 @@ export default function SuperAdminDashboard() {
     if (!selectedVenue || !selectedZone) return;
     
     try {
-      await unitApi.bulkCreate(selectedVenue.id, {
+      // Sanitize bulk unit form
+      const sanitizedBulkData = {
         venueZoneId: selectedZone.id,
-        ...bulkUnitForm
-      });
+        ...bulkUnitForm,
+        prefix: bulkUnitForm.prefix || null // Convert empty string to null (since I made it optional in backend)
+      };
+      
+      await unitApi.bulkCreate(selectedVenue.id, sanitizedBulkData);
       setShowBulkCreateModal(false);
       setBulkUnitForm({
         prefix: '',
@@ -2235,8 +2253,8 @@ export default function SuperAdminDashboard() {
                 email: staff.email || '',
                 phoneNumber: staff.phoneNumber || '',
                 fullName: staff.fullName || '',
-                role: staff.role || '',
-                pin: '', // Don't pre-fill PIN for security
+                role: staff.role || 'Staff',
+                pin: '', // Don't pre-fill PIN for security, update logic will omit if empty
                 isActive: staff.isActive,
                 venueId: staff.venueId || null,
                 venues: venues
