@@ -104,7 +104,12 @@ export default function LoginPage() {
         
         // Show user-friendly error message
         if (lastError?.status === 401) {
-          setError('Invalid phone number or PIN. Please check your credentials.');
+          // If the backend sends a specific string (like telling managers to use email), show it.
+          // Otherwise, fall back to the generic message.
+          const errorMsg = lastError?.errorText && lastError.errorText.length < 100 
+            ? lastError.errorText 
+            : 'Invalid phone number or PIN. Please check your credentials.';
+          setError(errorMsg);
         } else if (lastError?.status === 400) {
           setError('Invalid phone number format. Please enter a valid phone number.');
         } else if (lastError?.status === 0) {
