@@ -57,73 +57,7 @@ export const CreateVenueModal = ({
               </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Description
-              </label>
-              <textarea
-                value={venueForm.description}
-                onChange={(e) => onFormChange('description', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                rows="3"
-                placeholder="Enter venue description"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Address
-              </label>
-              <input
-                type="text"
-                value={venueForm.address}
-                onChange={(e) => onFormChange('address', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                placeholder="Enter address"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                WhatsApp Number
-              </label>
-              <input
-                type="text"
-                value={venueForm.whatsappNumber || ''}
-                onChange={(e) => onFormChange('whatsappNumber', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                placeholder="355123456789 (country code + number, no spaces)"
-              />
-              <p className="text-xs text-zinc-500 mt-1">
-                Used for WhatsApp booking links. Format: country code + number without spaces or symbols.
-                <br />
-                Example: 355123456789 (Albania), 306912345678 (Greece)
-              </p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Google Place ID
-              </label>
-              <input
-                type="text"
-                value={venueForm.googlePlaceId || ''}
-                onChange={(e) => onFormChange('googlePlaceId', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                placeholder="ChIJN1t_tDeuEmsRUsoyG83frY4"
-              />
-              <p className="text-xs text-zinc-500 mt-1">
-                For 4-5 star reviews to redirect to Google Maps. Find it at{' '}
-                <a 
-                  href="https://developers.google.com/maps/documentation/places/web-service/place-id" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:underline"
-                >
-                  Google Place ID Finder
-                </a>
-              </p>
-            </div>
+
             
             <ImageUpload
               value={venueForm.imageUrl}
@@ -273,73 +207,7 @@ export const EditVenueModal = ({
               </div>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Description
-              </label>
-              <textarea
-                value={venueForm.description}
-                onChange={(e) => onFormChange('description', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                rows="3"
-                placeholder="Enter venue description"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Address
-              </label>
-              <input
-                type="text"
-                value={venueForm.address}
-                onChange={(e) => onFormChange('address', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                placeholder="Enter address"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                WhatsApp Number
-              </label>
-              <input
-                type="text"
-                value={venueForm.whatsappNumber || ''}
-                onChange={(e) => onFormChange('whatsappNumber', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                placeholder="355123456789 (country code + number, no spaces)"
-              />
-              <p className="text-xs text-zinc-500 mt-1">
-                Used for WhatsApp booking links. Format: country code + number without spaces or symbols.
-                <br />
-                Example: 355123456789 (Albania), 306912345678 (Greece)
-              </p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
-                Google Place ID
-              </label>
-              <input
-                type="text"
-                value={venueForm.googlePlaceId || ''}
-                onChange={(e) => onFormChange('googlePlaceId', e.target.value)}
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                placeholder="ChIJN1t_tDeuEmsRUsoyG83frY4"
-              />
-              <p className="text-xs text-zinc-500 mt-1">
-                For 4-5 star reviews to redirect to Google Maps. Find it at{' '}
-                <a 
-                  href="https://developers.google.com/maps/documentation/places/web-service/place-id" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:underline"
-                >
-                  Google Place ID Finder
-                </a>
-              </p>
-            </div>
+
             
             <ImageUpload
               value={venueForm.imageUrl}
