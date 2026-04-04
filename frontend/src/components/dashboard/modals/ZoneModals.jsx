@@ -59,36 +59,7 @@ export const CreateZoneModal = ({
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Capacity Per Unit *
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={zoneForm.capacityPerUnit}
-                    onChange={(e) => onFormChange('capacityPerUnit', parseInt(e.target.value) || 1)}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
-                    Base Price (€) *
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="0"
-                    step="0.01"
-                    value={zoneForm.basePrice}
-                    onChange={(e) => onFormChange('basePrice', parseFloat(e.target.value) || 0)}
-                    className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                  />
-                </div>
-              </div>
+
               
               <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-4">
                 <p className="text-sm text-zinc-300 mb-2">
@@ -179,36 +150,7 @@ export const EditZoneModal = ({
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Capacity Per Unit *
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  value={zoneForm.capacityPerUnit}
-                  onChange={(e) => onFormChange('capacityPerUnit', parseInt(e.target.value) || 1)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-2">
-                  Base Price (€) *
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  step="0.01"
-                  value={zoneForm.basePrice}
-                  onChange={(e) => onFormChange('basePrice', parseFloat(e.target.value) || 0)}
-                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
-                />
-              </div>
-            </div>
+
             
             <div className="bg-zinc-800 border border-zinc-700 rounded-lg p-4">
               <p className="text-sm text-zinc-300 mb-2">
