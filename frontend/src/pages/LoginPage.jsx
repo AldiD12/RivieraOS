@@ -120,6 +120,7 @@ export default function LoginPage() {
         
         setShake(true);
         setTimeout(() => setShake(false), 500);
+        setPin(''); // IMPORTANT: Clear the pin so the useEffect doesn't trigger an infinite loop
         setLoading(false);
         return;
       }
