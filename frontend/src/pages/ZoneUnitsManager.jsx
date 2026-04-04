@@ -293,8 +293,6 @@ export default function ZoneUnitsManager() {
                   >
                     <option value="Sunbed">Sunbed</option>
                     <option value="Table">Table</option>
-                    <option value="Cabana">Cabana</option>
-                    <option value="Lounge">Lounge</option>
                   </select>
                 </div>
 

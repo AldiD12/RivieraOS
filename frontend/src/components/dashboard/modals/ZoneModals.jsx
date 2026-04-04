@@ -52,9 +52,6 @@ export const CreateZoneModal = ({
                     <option value="">Select type</option>
                     <option value="sunbed">Sunbed</option>
                     <option value="table">Table</option>
-                    <option value="cabana">Cabana</option>
-                    <option value="vip">VIP</option>
-                    <option value="regular">Regular</option>
                   </select>
                 </div>
               </div>
@@ -143,9 +140,6 @@ export const EditZoneModal = ({
                   <option value="">Select type</option>
                   <option value="sunbed">Sunbed</option>
                   <option value="table">Table</option>
-                  <option value="cabana">Cabana</option>
-                  <option value="vip">VIP</option>
-                  <option value="regular">Regular</option>
                 </select>
               </div>
             </div>

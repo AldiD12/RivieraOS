@@ -2966,10 +2966,7 @@ export default function SuperAdminDashboard() {
                   required
                 >
                   <option value="Sunbed">Sunbed</option>
-                  <option value="Cabana">Cabana</option>
-                  <option value="Umbrella">Umbrella</option>
                   <option value="Table">Table</option>
-                  <option value="Lounge">Lounge</option>
                 </select>
               </div>
 
