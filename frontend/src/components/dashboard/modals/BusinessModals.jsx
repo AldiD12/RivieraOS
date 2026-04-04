@@ -74,6 +74,58 @@ export const CreateBusinessModal = ({
                   placeholder="Enter contact email"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={businessForm.phoneNumber || ''}
+                  onChange={(e) => onFormChange('phoneNumber', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter phone number"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Operation Zone
+                </label>
+                <input
+                  type="text"
+                  value={businessForm.operationZone || ''}
+                  onChange={(e) => onFormChange('operationZone', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="e.g. Tirana, Vlore"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Google Maps Address
+                </label>
+                <input
+                  type="text"
+                  value={businessForm.googleMapsAddress || ''}
+                  onChange={(e) => onFormChange('googleMapsAddress', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter Maps URL or physical address"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Review Link
+                </label>
+                <input
+                  type="url"
+                  value={businessForm.reviewLink || ''}
+                  onChange={(e) => onFormChange('reviewLink', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                  placeholder="Enter Google Review Link"
+                />
+              </div>
               
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -191,6 +243,54 @@ export const EditBusinessModal = ({
                   required
                   value={businessForm.contactEmail}
                   onChange={(e) => onFormChange('contactEmail', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={businessForm.phoneNumber || ''}
+                  onChange={(e) => onFormChange('phoneNumber', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Operation Zone
+                </label>
+                <input
+                  type="text"
+                  value={businessForm.operationZone || ''}
+                  onChange={(e) => onFormChange('operationZone', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Google Maps Address
+                </label>
+                <input
+                  type="text"
+                  value={businessForm.googleMapsAddress || ''}
+                  onChange={(e) => onFormChange('googleMapsAddress', e.target.value)}
+                  className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Review Link
+                </label>
+                <input
+                  type="url"
+                  value={businessForm.reviewLink || ''}
+                  onChange={(e) => onFormChange('reviewLink', e.target.value)}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                 />
               </div>
