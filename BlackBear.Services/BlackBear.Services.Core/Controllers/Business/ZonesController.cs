@@ -117,8 +117,6 @@ namespace BlackBear.Services.Core.Controllers.Business
             {
                 Name = request.Name,
                 ZoneType = request.ZoneType,
-                CapacityPerUnit = request.CapacityPerUnit,
-                BasePrice = request.BasePrice,
                 IsActive = request.IsActive,
                 VenueId = venueId
             };
@@ -166,8 +164,6 @@ namespace BlackBear.Services.Core.Controllers.Business
 
             zone.Name = request.Name;
             zone.ZoneType = request.ZoneType;
-            zone.CapacityPerUnit = request.CapacityPerUnit;
-            zone.BasePrice = request.BasePrice;
             zone.IsActive = request.IsActive;
 
             await _context.SaveChangesAsync();

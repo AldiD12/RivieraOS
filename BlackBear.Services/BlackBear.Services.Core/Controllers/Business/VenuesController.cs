@@ -127,7 +127,6 @@ namespace BlackBear.Services.Core.Controllers.Business
             {
                 Name = request.Name,
                 Type = request.Type,
-                Description = request.Description,
                 Address = request.Address,
                 ImageUrl = request.ImageUrl,
                 Latitude = request.Latitude,
@@ -202,7 +201,6 @@ namespace BlackBear.Services.Core.Controllers.Business
 
             venue.Name = request.Name;
             venue.Type = request.Type;
-            venue.Description = request.Description;
             venue.Address = request.Address;
             venue.ImageUrl = request.ImageUrl;
             venue.Latitude = request.Latitude;

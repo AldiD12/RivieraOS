@@ -33,11 +33,6 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         [MaxLength(50)]
         public string? ZoneType { get; set; }
 
-        public int CapacityPerUnit { get; set; } = 0;
-
-        [Range(0, 99999)]
-        public decimal BasePrice { get; set; } = 0;
-
         public bool IsActive { get; set; } = true;
     }
 
@@ -49,11 +44,6 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
 
         [MaxLength(50)]
         public string? ZoneType { get; set; }
-
-        public int CapacityPerUnit { get; set; } = 0;
-
-        [Range(0, 99999)]
-        public decimal BasePrice { get; set; } = 0;
 
         public bool IsActive { get; set; } = true;
     }

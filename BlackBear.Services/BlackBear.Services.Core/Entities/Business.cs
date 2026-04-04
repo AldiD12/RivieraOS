@@ -35,6 +35,22 @@ namespace BlackBear.Services.Core.Entities
         [Column("subscription_status")]
         public string SubscriptionStatus { get; set; } = "Trial";
 
+        [MaxLength(500)]
+        [Column("google_maps_address")]
+        public string? GoogleMapsAddress { get; set; }
+
+        [MaxLength(500)]
+        [Column("review_link")]
+        public string? ReviewLink { get; set; }
+
+        [MaxLength(50)]
+        [Column("phone_number")]
+        public string? PhoneNumber { get; set; }
+
+        [MaxLength(255)]
+        [Column("operation_zone")]
+        public string? OperationZone { get; set; }
+
         [Column("is_active")]
         public bool IsActive { get; set; } = true;
 

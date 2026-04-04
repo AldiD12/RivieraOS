@@ -134,6 +134,12 @@ namespace BlackBear.Services.Core.Controllers
             // Get user's role
             var roleName = user.UserRoles.FirstOrDefault()?.Role?.RoleName;
 
+            // Block floor staff from using email/password login
+            if (roleName == "Staff" || roleName == "Bartender" || roleName == "Collector")
+            {
+                return Unauthorized("Floor staff must login using Phone Number and PIN.");
+            }
+
             // Generate JWT token
             var token = GenerateJwtToken(user, roleName);
 
@@ -215,11 +221,11 @@ namespace BlackBear.Services.Core.Controllers
                 return Unauthorized("PIN login is only available for staff members.");
             }
 
-            // Get user's role and verify it's a staff role (Staff, Bartender, Manager, or Collector)
+            // Get user's role and verify it's a floor staff role (Staff, Bartender, or Collector)
             var roleName = user.UserRoles.FirstOrDefault()?.Role?.RoleName;
-            if (roleName != "Staff" && roleName != "Bartender" && roleName != "Manager" && roleName != "Collector")
+            if (roleName != "Staff" && roleName != "Bartender" && roleName != "Collector")
             {
-                return Unauthorized("PIN login is only available for staff members.");
+                return Unauthorized("PIN login is only available for floor staff. Managers must use email login.");
             }
 
             // Generate JWT token

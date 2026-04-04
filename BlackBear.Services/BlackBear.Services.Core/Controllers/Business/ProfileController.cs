@@ -49,6 +49,10 @@ namespace BlackBear.Services.Core.Controllers.Business
                 TaxId = business.TaxId,
                 ContactEmail = business.ContactEmail,
                 LogoUrl = business.LogoUrl,
+                GoogleMapsAddress = business.GoogleMapsAddress,
+                ReviewLink = business.ReviewLink,
+                PhoneNumber = business.PhoneNumber,
+                OperationZone = business.OperationZone,
                 SubscriptionStatus = business.SubscriptionStatus,
                 IsActive = business.IsActive,
                 CreatedAt = business.CreatedAt

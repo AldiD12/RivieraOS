@@ -4,6 +4,7 @@ using BlackBear.Services.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlackBear.Services.Core.Migrations
 {
     [DbContext(typeof(BlackBearDbContext))]
-    partial class BlackBearDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260403132010_AddUserLoginLockout")]
+    partial class AddUserLoginLockout
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -49,11 +52,6 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("deleted_at");
 
-                    b.Property<string>("GoogleMapsAddress")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("google_maps_address");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit")
                         .HasColumnName("is_active");
@@ -67,26 +65,11 @@ namespace BlackBear.Services.Core.Migrations
                         .HasColumnType("nvarchar(500)")
                         .HasColumnName("logo_url");
 
-                    b.Property<string>("OperationZone")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)")
-                        .HasColumnName("operation_zone");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasColumnName("phone_number");
-
                     b.Property<string>("RegisteredName")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)")
                         .HasColumnName("registered_name");
-
-                    b.Property<string>("ReviewLink")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)")
-                        .HasColumnName("review_link");
 
                     b.Property<string>("SubscriptionStatus")
                         .IsRequired()

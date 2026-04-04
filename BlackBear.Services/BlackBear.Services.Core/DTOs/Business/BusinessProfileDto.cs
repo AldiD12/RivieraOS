@@ -10,6 +10,10 @@ namespace BlackBear.Services.Core.DTOs.Business
         public string? TaxId { get; set; }
         public string? ContactEmail { get; set; }
         public string? LogoUrl { get; set; }
+        public string? GoogleMapsAddress { get; set; }
+        public string? ReviewLink { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? OperationZone { get; set; }
         public string SubscriptionStatus { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }

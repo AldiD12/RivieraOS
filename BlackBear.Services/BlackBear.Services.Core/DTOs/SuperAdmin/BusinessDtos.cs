@@ -25,6 +25,10 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? TaxId { get; set; }
         public string? ContactEmail { get; set; }
         public string? LogoUrl { get; set; }
+        public string? GoogleMapsAddress { get; set; }
+        public string? ReviewLink { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? OperationZone { get; set; }
         public string SubscriptionStatus { get; set; } = string.Empty;
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -71,6 +75,18 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         [Url]
         public string? LogoUrl { get; set; }
 
+        [MaxLength(500)]
+        public string? GoogleMapsAddress { get; set; }
+
+        [MaxLength(500)]
+        public string? ReviewLink { get; set; }
+
+        [MaxLength(50)]
+        public string? PhoneNumber { get; set; }
+
+        [MaxLength(255)]
+        public string? OperationZone { get; set; }
+
         [MaxLength(50)]
         public string SubscriptionStatus { get; set; } = "Trial";
     }
@@ -95,6 +111,18 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         [MaxLength(500)]
         [Url]
         public string? LogoUrl { get; set; }
+
+        [MaxLength(500)]
+        public string? GoogleMapsAddress { get; set; }
+
+        [MaxLength(500)]
+        public string? ReviewLink { get; set; }
+
+        [MaxLength(50)]
+        public string? PhoneNumber { get; set; }
+
+        [MaxLength(255)]
+        public string? OperationZone { get; set; }
 
         [MaxLength(50)]
         public string SubscriptionStatus { get; set; } = "Trial";

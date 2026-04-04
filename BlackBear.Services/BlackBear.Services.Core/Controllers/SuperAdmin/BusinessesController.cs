@@ -95,6 +95,10 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 TaxId = business.TaxId,
                 ContactEmail = business.ContactEmail,
                 LogoUrl = business.LogoUrl,
+                GoogleMapsAddress = business.GoogleMapsAddress,
+                ReviewLink = business.ReviewLink,
+                PhoneNumber = business.PhoneNumber,
+                OperationZone = business.OperationZone,
                 SubscriptionStatus = business.SubscriptionStatus,
                 IsActive = business.IsActive,
                 CreatedAt = business.CreatedAt,
@@ -130,6 +134,10 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 TaxId = request.TaxId,
                 ContactEmail = request.ContactEmail,
                 LogoUrl = request.LogoUrl,
+                GoogleMapsAddress = request.GoogleMapsAddress,
+                ReviewLink = request.ReviewLink,
+                PhoneNumber = request.PhoneNumber,
+                OperationZone = request.OperationZone,
                 SubscriptionStatus = request.SubscriptionStatus,
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow
@@ -159,6 +167,10 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 TaxId = business.TaxId,
                 ContactEmail = business.ContactEmail,
                 LogoUrl = business.LogoUrl,
+                GoogleMapsAddress = business.GoogleMapsAddress,
+                ReviewLink = business.ReviewLink,
+                PhoneNumber = business.PhoneNumber,
+                OperationZone = business.OperationZone,
                 SubscriptionStatus = business.SubscriptionStatus,
                 IsActive = business.IsActive,
                 CreatedAt = business.CreatedAt,
@@ -183,6 +195,10 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
             business.TaxId = request.TaxId;
             business.ContactEmail = request.ContactEmail;
             business.LogoUrl = request.LogoUrl;
+            business.GoogleMapsAddress = request.GoogleMapsAddress;
+            business.ReviewLink = request.ReviewLink;
+            business.PhoneNumber = request.PhoneNumber;
+            business.OperationZone = request.OperationZone;
             business.SubscriptionStatus = request.SubscriptionStatus;
             business.IsActive = request.IsActive;
 
