@@ -287,7 +287,8 @@ export default function DiscoveryPage() {
   
   // Initialize mode: FORCE NIGHT MODE for Tirana testing launch
   // Day mode (beaches, pools, restaurants) is Coming Soon
-  const [isDayMode, setIsDayMode] = useState(false);
+  // DEV BYPASS: Add ?mode=day to the URL to force Day mode for testing
+  const [isDayMode, setIsDayMode] = useState(forceMode === 'day');
   const [viewMode, setViewMode] = useState('list');
 
   const [userLocation, setUserLocation] = useState(null);
@@ -334,8 +335,8 @@ export default function DiscoveryPage() {
 
   // Handle explicit Day/Night mode switch (Experiential Switch)
   const handleExperienceSwitch = (targetMode) => {
-    // Day mode is Coming Soon - block the switch
-    if (targetMode === 'day') {
+    // Day mode is Coming Soon - block the switch (unless dev bypass ?mode=day)
+    if (targetMode === 'day' && forceMode !== 'day') {
       setToast({ message: '☀️ Day Mode — Coming Soon!', type: 'info' });
       setTimeout(() => setToast(null), 2500);
       return;
