@@ -61,13 +61,19 @@ namespace BlackBear.Services.Core.Entities
         [Column("deleted_at")]
         public DateTime? DeletedAt { get; set; }
 
-        // Foreign key
+        // Foreign keys
         [Column("venue_id")]
-        public int VenueId { get; set; }
+        public int? VenueId { get; set; }
+
+        [Column("business_id")]
+        public int BusinessId { get; set; }
 
         // Navigation properties
         [ForeignKey("VenueId")]
         public Venue? Venue { get; set; }
+
+        [ForeignKey("BusinessId")]
+        public Business? Business { get; set; }
 
         public ICollection<EventBooking> EventBookings { get; set; } = new List<EventBooking>();
     }

@@ -16,7 +16,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? Vibe { get; set; }
         public string? EntryType { get; set; }
         public bool IsPublished { get; set; }
-        public int VenueId { get; set; }
+        public int? VenueId { get; set; }
         public string? VenueName { get; set; }
         public string? BusinessName { get; set; }
         public int BookingCount { get; set; }
@@ -38,7 +38,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? EntryType { get; set; }
         public bool IsPublished { get; set; }
         public DateTime CreatedAt { get; set; }
-        public int VenueId { get; set; }
+        public int? VenueId { get; set; }
         public string? VenueName { get; set; }
         public int? BusinessId { get; set; }
         public string? BusinessName { get; set; }
@@ -83,8 +83,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
 
         public bool IsPublished { get; set; } = false;
 
-        [Required]
-        public int VenueId { get; set; }
+        public int? VenueId { get; set; }
     }
 
     public class UpdateEventRequest
@@ -124,7 +123,6 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
 
         public bool IsPublished { get; set; } = false;
 
-        [Required]
-        public int VenueId { get; set; }
+        public int? VenueId { get; set; }
     }
 }

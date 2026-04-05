@@ -33,7 +33,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
         {
             var query = _context.ScheduledEvents
                 .Include(e => e.Venue)
-                    .ThenInclude(v => v!.Business)
+                .Include(e => e.Business)
                 .Include(e => e.EventBookings)
                 .IgnoreQueryFilters()
                 .Where(e => !e.IsDeleted)
@@ -46,7 +46,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
 
             if (businessId.HasValue)
             {
-                query = query.Where(e => e.Venue != null && e.Venue.BusinessId == businessId.Value);
+                query = query.Where(e => e.BusinessId == businessId.Value);
             }
 
             if (upcoming == true)
@@ -88,7 +88,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                     IsPublished = e.IsPublished,
                     VenueId = e.VenueId,
                     VenueName = e.Venue != null ? e.Venue.Name : null,
-                    BusinessName = e.Venue != null && e.Venue.Business != null ? e.Venue.Business.BrandName ?? e.Venue.Business.RegisteredName : null,
+                    BusinessName = e.Business != null ? e.Business.BrandName ?? e.Business.RegisteredName : null,
                     BookingCount = e.EventBookings.Count
                 })
                 .ToListAsync();
@@ -108,7 +108,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
         {
             var evt = await _context.ScheduledEvents
                 .Include(e => e.Venue)
-                    .ThenInclude(v => v!.Business)
+                .Include(e => e.Business)
                 .Include(e => e.EventBookings)
                 .IgnoreQueryFilters()
                 .Where(e => !e.IsDeleted)
@@ -137,8 +137,8 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 CreatedAt = evt.CreatedAt,
                 VenueId = evt.VenueId,
                 VenueName = evt.Venue?.Name,
-                BusinessId = evt.Venue?.BusinessId,
-                BusinessName = evt.Venue?.Business?.BrandName ?? evt.Venue?.Business?.RegisteredName,
+                BusinessId = evt.BusinessId,
+                BusinessName = evt.Business?.BrandName ?? evt.Business?.RegisteredName,
                 BookingCount = evt.EventBookings.Count,
                 TotalGuests = evt.EventBookings.Sum(b => b.GuestCount)
             });
@@ -146,17 +146,30 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
 
         // POST: api/superadmin/events
         [HttpPost]
-        public async Task<ActionResult<EventDetailDto>> CreateEvent(CreateEventRequest request)
+        public async Task<ActionResult<EventDetailDto>> CreateEvent([FromQuery] int businessId, CreateEventRequest request)
         {
-            // Verify venue exists
-            var venue = await _context.Venues
+            // Verify business exists
+            var business = await _context.Businesses
                 .IgnoreQueryFilters()
-                .Include(v => v.Business)
-                .FirstOrDefaultAsync(v => v.Id == request.VenueId && !v.IsDeleted);
+                .FirstOrDefaultAsync(b => b.Id == businessId && !b.IsDeleted);
 
-            if (venue == null)
+            if (business == null)
             {
-                return BadRequest("Venue not found");
+                return BadRequest("Business not found");
+            }
+
+            // If VenueId provided, verify it exists and belongs to this business
+            Venue? venue = null;
+            if (request.VenueId.HasValue)
+            {
+                venue = await _context.Venues
+                    .IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(v => v.Id == request.VenueId.Value && v.BusinessId == businessId && !v.IsDeleted);
+
+                if (venue == null)
+                {
+                    return BadRequest("Venue not found");
+                }
             }
 
             var evt = new ScheduledEvent
@@ -174,6 +187,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 EntryType = request.EntryType,
                 IsPublished = request.IsPublished,
                 VenueId = request.VenueId,
+                BusinessId = businessId,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -197,9 +211,9 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 IsPublished = evt.IsPublished,
                 CreatedAt = evt.CreatedAt,
                 VenueId = evt.VenueId,
-                VenueName = venue.Name,
-                BusinessId = venue.BusinessId,
-                BusinessName = venue.Business?.BrandName ?? venue.Business?.RegisteredName,
+                VenueName = venue?.Name,
+                BusinessId = businessId,
+                BusinessName = business.BrandName ?? business.RegisteredName,
                 BookingCount = 0,
                 TotalGuests = 0
             });
@@ -218,14 +232,14 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 return NotFound();
             }
 
-            // If venue is changing, verify new venue exists
-            if (request.VenueId != evt.VenueId)
+            // If VenueId provided and changing, verify new venue exists
+            if (request.VenueId.HasValue && request.VenueId != evt.VenueId)
             {
-                var venue = await _context.Venues
+                var venueExists = await _context.Venues
                     .IgnoreQueryFilters()
-                    .AnyAsync(v => v.Id == request.VenueId && !v.IsDeleted);
+                    .AnyAsync(v => v.Id == request.VenueId.Value && !v.IsDeleted);
 
-                if (!venue)
+                if (!venueExists)
                 {
                     return BadRequest("Venue not found");
                 }

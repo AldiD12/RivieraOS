@@ -72,9 +72,7 @@ namespace BlackBear.Services.Core.Controllers.Business
 
             var totalCategories = _context.Categories.CountAsync();
 
-            var businessVenueIds = _context.Venues.Select(v => v.Id);
             var eventCountsTask = _context.ScheduledEvents
-                .Where(e => businessVenueIds.Contains(e.VenueId))
                 .GroupBy(_ => 1)
                 .Select(g => new
                 {

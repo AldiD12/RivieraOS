@@ -41,7 +41,6 @@ namespace BlackBear.Services.Core.Controllers.Business
             var query = _context.ScheduledEvents
                 .Include(e => e.Venue)
                 .Include(e => e.EventBookings)
-                .Where(e => e.Venue != null && e.Venue.BusinessId == businessId.Value)
                 .AsQueryable();
 
             if (venueId.HasValue)
@@ -96,7 +95,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             var evt = await _context.ScheduledEvents
                 .Include(e => e.Venue)
                 .Include(e => e.EventBookings)
-                .FirstOrDefaultAsync(e => e.Id == id && e.Venue != null && e.Venue.BusinessId == businessId.Value);
+                .FirstOrDefaultAsync(e => e.Id == id);
 
             if (evt == null)
             {
@@ -136,12 +135,16 @@ namespace BlackBear.Services.Core.Controllers.Business
                 return StatusCode(403, new { error = "User is not associated with a business" });
             }
 
-            // Verify venue belongs to this business
-            var venue = await _context.Venues.FirstOrDefaultAsync(v => v.Id == request.VenueId);
-
-            if (venue == null)
+            // If VenueId provided, verify it belongs to this business
+            Venue? venue = null;
+            if (request.VenueId.HasValue)
             {
-                return BadRequest("Venue not found or doesn't belong to your business");
+                venue = await _context.Venues.FirstOrDefaultAsync(v => v.Id == request.VenueId.Value);
+
+                if (venue == null)
+                {
+                    return BadRequest("Venue not found or doesn't belong to your business");
+                }
             }
 
             var evt = new ScheduledEvent
@@ -159,6 +162,7 @@ namespace BlackBear.Services.Core.Controllers.Business
                 EntryType = request.EntryType,
                 IsPublished = request.IsPublished,
                 VenueId = request.VenueId,
+                BusinessId = businessId.Value,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -182,7 +186,7 @@ namespace BlackBear.Services.Core.Controllers.Business
                 IsPublished = evt.IsPublished,
                 CreatedAt = evt.CreatedAt,
                 VenueId = evt.VenueId,
-                VenueName = venue.Name,
+                VenueName = venue?.Name,
                 BookingCount = 0,
                 TotalGuests = 0
             });
@@ -199,18 +203,17 @@ namespace BlackBear.Services.Core.Controllers.Business
             }
 
             var evt = await _context.ScheduledEvents
-                .Include(e => e.Venue)
-                .FirstOrDefaultAsync(e => e.Id == id && e.Venue != null && e.Venue.BusinessId == businessId.Value);
+                .FirstOrDefaultAsync(e => e.Id == id);
 
             if (evt == null)
             {
                 return NotFound();
             }
 
-            // If venue is changing, verify new venue belongs to this business
-            if (request.VenueId != evt.VenueId)
+            // If VenueId provided and changing, verify new venue belongs to this business
+            if (request.VenueId.HasValue && request.VenueId != evt.VenueId)
             {
-                var newVenue = await _context.Venues.AnyAsync(v => v.Id == request.VenueId);
+                var newVenue = await _context.Venues.AnyAsync(v => v.Id == request.VenueId.Value);
                 if (!newVenue)
                 {
                     return BadRequest("Venue not found or doesn't belong to your business");
@@ -247,8 +250,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             }
 
             var evt = await _context.ScheduledEvents
-                .Include(e => e.Venue)
-                .FirstOrDefaultAsync(e => e.Id == id && e.Venue != null && e.Venue.BusinessId == businessId.Value);
+                .FirstOrDefaultAsync(e => e.Id == id);
 
             if (evt == null)
             {
@@ -275,8 +277,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             }
 
             var evt = await _context.ScheduledEvents
-                .Include(e => e.Venue)
-                .FirstOrDefaultAsync(e => e.Id == id && e.Venue != null && e.Venue.BusinessId == businessId.Value);
+                .FirstOrDefaultAsync(e => e.Id == id);
 
             if (evt == null)
             {
@@ -300,8 +301,7 @@ namespace BlackBear.Services.Core.Controllers.Business
             }
 
             var evt = await _context.ScheduledEvents
-                .Include(e => e.Venue)
-                .FirstOrDefaultAsync(e => e.Id == id && e.Venue != null && e.Venue.BusinessId == businessId.Value);
+                .FirstOrDefaultAsync(e => e.Id == id);
 
             if (evt == null)
             {

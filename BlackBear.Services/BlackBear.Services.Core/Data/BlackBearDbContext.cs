@@ -99,8 +99,11 @@ namespace BlackBear.Services.Core.Data
                 _currentUserService.BusinessId == null ||
                 u.BusinessId == _currentUserService.BusinessId);
 
-            // ScheduledEvent: soft delete only (filtered through Venue for multi-tenancy)
-            modelBuilder.Entity<ScheduledEvent>().HasQueryFilter(e => !e.IsDeleted);
+            // ScheduledEvent: soft delete + multi-tenancy via BusinessId
+            modelBuilder.Entity<ScheduledEvent>().HasQueryFilter(e =>
+                !e.IsDeleted &&
+                (!_currentUserService.BusinessId.HasValue ||
+                 e.BusinessId == _currentUserService.BusinessId));
 
             // Order: soft delete + multi-tenancy
             modelBuilder.Entity<Order>().HasQueryFilter(o =>
@@ -225,7 +228,8 @@ namespace BlackBear.Services.Core.Data
                 entity.HasMany(v => v.ScheduledEvents)
                     .WithOne(se => se.Venue)
                     .HasForeignKey(se => se.VenueId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 entity.HasMany(v => v.CategoryExclusions)
                     .WithOne(ce => ce.Venue)
@@ -273,6 +277,11 @@ namespace BlackBear.Services.Core.Data
             // ScheduledEvent configuration
             modelBuilder.Entity<ScheduledEvent>(entity =>
             {
+                entity.HasOne(se => se.Business)
+                    .WithMany()
+                    .HasForeignKey(se => se.BusinessId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
                 entity.HasMany(se => se.EventBookings)
                     .WithOne(eb => eb.ScheduledEvent)
                     .HasForeignKey(eb => eb.EventId)

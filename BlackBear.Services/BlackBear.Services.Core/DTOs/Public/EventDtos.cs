@@ -21,7 +21,7 @@ namespace BlackBear.Services.Core.DTOs.Public
         public int SpotsRemaining { get; set; }
         public string? Vibe { get; set; }
         public string? EntryType { get; set; }
-        public int VenueId { get; set; }
+        public int? VenueId { get; set; }
         public string? VenueName { get; set; }
         public string? VenueAddress { get; set; }
         public string? VenueGeographicZone { get; set; }
@@ -47,7 +47,7 @@ namespace BlackBear.Services.Core.DTOs.Public
         public int SpotsRemaining { get; set; }
         public string? Vibe { get; set; }
         public string? EntryType { get; set; }
-        public int VenueId { get; set; }
+        public int? VenueId { get; set; }
         public string? VenueName { get; set; }
         public string? VenueAddress { get; set; }
         public string? VenueGeographicZone { get; set; }

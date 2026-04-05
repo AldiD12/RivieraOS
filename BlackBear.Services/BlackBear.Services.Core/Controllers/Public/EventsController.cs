@@ -27,8 +27,8 @@ namespace BlackBear.Services.Core.Controllers.Public
                 .IgnoreQueryFilters()
                 .Where(e => !e.IsDeleted && e.IsPublished && e.EndTime > DateTime.UtcNow)
                 .Where(e => e.Venue != null && e.Venue.GeographicZone != null)
-                .Where(e => e.Venue != null && _context.BusinessFeatures
-                    .Any(bf => bf.BusinessId == e.Venue.BusinessId && !bf.IsDeleted && bf.HasEvents))
+                .Where(e => _context.BusinessFeatures
+                    .Any(bf => bf.BusinessId == e.BusinessId && !bf.IsDeleted && bf.HasEvents))
                 .GroupBy(e => e.Venue!.GeographicZone)
                 .Select(g => new PublicGeographicZoneDto
                 {
@@ -53,13 +53,13 @@ namespace BlackBear.Services.Core.Controllers.Public
 
             var query = _context.ScheduledEvents
                 .Include(e => e.Venue)
-                    .ThenInclude(v => v!.Business)
+                .Include(e => e.Business)
                 .Include(e => e.EventBookings)
                 .IgnoreQueryFilters()
                 .Where(e => !e.IsDeleted && e.IsPublished && e.StartTime >= DateTime.UtcNow)
                 // Feature gate: only show events for businesses that have HasEvents enabled
-                .Where(e => e.Venue != null && _context.BusinessFeatures
-                    .Any(bf => bf.BusinessId == e.Venue.BusinessId && !bf.IsDeleted && bf.HasEvents))
+                .Where(e => _context.BusinessFeatures
+                    .Any(bf => bf.BusinessId == e.BusinessId && !bf.IsDeleted && bf.HasEvents))
                 .AsQueryable();
 
             if (venueId.HasValue)
@@ -69,7 +69,7 @@ namespace BlackBear.Services.Core.Controllers.Public
 
             if (businessId.HasValue)
             {
-                query = query.Where(e => e.Venue != null && e.Venue.BusinessId == businessId.Value);
+                query = query.Where(e => e.BusinessId == businessId.Value);
             }
 
             if (!string.IsNullOrEmpty(geographicZone))
@@ -99,8 +99,8 @@ namespace BlackBear.Services.Core.Controllers.Public
                     VenueAddress = e.Venue != null ? e.Venue.Address : null,
                     VenueGeographicZone = e.Venue != null ? e.Venue.GeographicZone : null,
                     VenueWhatsappNumber = e.Venue != null ? e.Venue.WhatsappNumber : null,
-                    BusinessId = e.Venue != null ? e.Venue.BusinessId : null,
-                    BusinessName = e.Venue != null && e.Venue.Business != null ? e.Venue.Business.BrandName ?? e.Venue.Business.RegisteredName : null,
+                    BusinessId = e.BusinessId,
+                    BusinessName = e.Business != null ? e.Business.BrandName ?? e.Business.RegisteredName : null,
                     SpotsRemaining = e.MaxGuests > 0 ? e.MaxGuests - e.EventBookings.Sum(b => b.GuestCount) : 0,
                     IsPublished = e.IsPublished,
                     IsDeleted = e.IsDeleted
@@ -116,13 +116,13 @@ namespace BlackBear.Services.Core.Controllers.Public
         {
             var evt = await _context.ScheduledEvents
                 .Include(e => e.Venue)
-                    .ThenInclude(v => v!.Business)
+                .Include(e => e.Business)
                 .Include(e => e.EventBookings)
                 .IgnoreQueryFilters()
                 .Where(e => !e.IsDeleted && e.IsPublished)
                 // Feature gate: only show events for businesses that have HasEvents enabled
-                .Where(e => e.Venue != null && _context.BusinessFeatures
-                    .Any(bf => bf.BusinessId == e.Venue.BusinessId && !bf.IsDeleted && bf.HasEvents))
+                .Where(e => _context.BusinessFeatures
+                    .Any(bf => bf.BusinessId == e.BusinessId && !bf.IsDeleted && bf.HasEvents))
                 .FirstOrDefaultAsync(e => e.Id == id);
 
             if (evt == null)
@@ -152,9 +152,9 @@ namespace BlackBear.Services.Core.Controllers.Public
                 VenueWhatsappNumber = evt.Venue?.WhatsappNumber,
                 VenueLatitude = evt.Venue?.Latitude,
                 VenueLongitude = evt.Venue?.Longitude,
-                BusinessId = evt.Venue?.BusinessId,
-                BusinessName = evt.Venue?.Business?.BrandName ?? evt.Venue?.Business?.RegisteredName,
-                BusinessLogoUrl = evt.Venue?.Business?.LogoUrl,
+                BusinessId = evt.BusinessId,
+                BusinessName = evt.Business?.BrandName ?? evt.Business?.RegisteredName,
+                BusinessLogoUrl = evt.Business?.LogoUrl,
                 IsPublished = evt.IsPublished,
                 IsDeleted = evt.IsDeleted
             });
@@ -168,12 +168,12 @@ namespace BlackBear.Services.Core.Controllers.Public
 
             var events = await _context.ScheduledEvents
                 .Include(e => e.Venue)
-                    .ThenInclude(v => v!.Business)
+                .Include(e => e.Business)
                 .Include(e => e.EventBookings)
                 .IgnoreQueryFilters()
                 .Where(e => !e.IsDeleted && e.IsPublished && e.VenueId == venueId && e.StartTime >= DateTime.UtcNow)
-                .Where(e => e.Venue != null && _context.BusinessFeatures
-                    .Any(bf => bf.BusinessId == e.Venue.BusinessId && !bf.IsDeleted && bf.HasEvents))
+                .Where(e => _context.BusinessFeatures
+                    .Any(bf => bf.BusinessId == e.BusinessId && !bf.IsDeleted && bf.HasEvents))
                 .OrderBy(e => e.StartTime)
                 .Take(limit)
                 .Select(e => new PublicEventListItemDto
@@ -195,8 +195,8 @@ namespace BlackBear.Services.Core.Controllers.Public
                     VenueAddress = e.Venue != null ? e.Venue.Address : null,
                     VenueGeographicZone = e.Venue != null ? e.Venue.GeographicZone : null,
                     VenueWhatsappNumber = e.Venue != null ? e.Venue.WhatsappNumber : null,
-                    BusinessId = e.Venue != null ? e.Venue.BusinessId : null,
-                    BusinessName = e.Venue != null && e.Venue.Business != null ? e.Venue.Business.BrandName ?? e.Venue.Business.RegisteredName : null,
+                    BusinessId = e.BusinessId,
+                    BusinessName = e.Business != null ? e.Business.BrandName ?? e.Business.RegisteredName : null,
                     SpotsRemaining = e.MaxGuests > 0 ? e.MaxGuests - e.EventBookings.Sum(b => b.GuestCount) : 0,
                     IsPublished = e.IsPublished,
                     IsDeleted = e.IsDeleted
@@ -214,12 +214,12 @@ namespace BlackBear.Services.Core.Controllers.Public
 
             var events = await _context.ScheduledEvents
                 .Include(e => e.Venue)
-                    .ThenInclude(v => v!.Business)
+                .Include(e => e.Business)
                 .Include(e => e.EventBookings)
                 .IgnoreQueryFilters()
-                .Where(e => !e.IsDeleted && e.IsPublished && e.Venue != null && e.Venue.BusinessId == businessId && e.StartTime >= DateTime.UtcNow)
+                .Where(e => !e.IsDeleted && e.IsPublished && e.BusinessId == businessId && e.StartTime >= DateTime.UtcNow)
                 .Where(e => _context.BusinessFeatures
-                    .Any(bf => bf.BusinessId == e.Venue!.BusinessId && !bf.IsDeleted && bf.HasEvents))
+                    .Any(bf => bf.BusinessId == e.BusinessId && !bf.IsDeleted && bf.HasEvents))
                 .OrderBy(e => e.StartTime)
                 .Take(limit)
                 .Select(e => new PublicEventListItemDto
@@ -241,8 +241,8 @@ namespace BlackBear.Services.Core.Controllers.Public
                     VenueAddress = e.Venue != null ? e.Venue.Address : null,
                     VenueGeographicZone = e.Venue != null ? e.Venue.GeographicZone : null,
                     VenueWhatsappNumber = e.Venue != null ? e.Venue.WhatsappNumber : null,
-                    BusinessId = e.Venue != null ? e.Venue.BusinessId : null,
-                    BusinessName = e.Venue != null && e.Venue.Business != null ? e.Venue.Business.BrandName ?? e.Venue.Business.RegisteredName : null,
+                    BusinessId = e.BusinessId,
+                    BusinessName = e.Business != null ? e.Business.BrandName ?? e.Business.RegisteredName : null,
                     SpotsRemaining = e.MaxGuests > 0 ? e.MaxGuests - e.EventBookings.Sum(b => b.GuestCount) : 0,
                     IsPublished = e.IsPublished,
                     IsDeleted = e.IsDeleted
