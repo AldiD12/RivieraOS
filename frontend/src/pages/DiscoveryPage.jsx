@@ -1781,7 +1781,9 @@ export default function DiscoveryPage() {
                 isDayMode ? 'bg-zinc-950 text-white shadow-md' : 'text-zinc-500 hover:text-zinc-300'
               }`}
             >
-              <span className="text-sm">☀️</span>
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18.75a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25a.75.75 0 01.75-.75zM6.166 17.834a.75.75 0 001.06 1.06l1.59-1.591a.75.75 0 10-1.06-1.061l-1.59 1.59zM4.5 12a.75.75 0 01-.75.75H1.5a.75.75 0 010-1.5h2.25a.75.75 0 01.75.75zM6.166 6.166a.75.75 0 001.061-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.59z"/>
+              </svg>
               <span>Day</span>
               <span className="text-[8px] ml-0.5 opacity-60">SOON</span>
             </button>
@@ -1791,7 +1793,9 @@ export default function DiscoveryPage() {
                 !isDayMode ? 'bg-[#10FF88] text-zinc-950 shadow-md' : 'text-stone-500 hover:text-stone-700'
               }`}
             >
-              <span className="text-sm">🪩</span>
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <path fillRule="evenodd" d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z" clipRule="evenodd" />
+              </svg>
               <span>Night</span>
             </button>
           </div>
@@ -1805,7 +1809,17 @@ export default function DiscoveryPage() {
                 : 'bg-zinc-900 text-white border-zinc-700 hover:bg-zinc-800'
             }`}
           >
-            <span className="text-xl">{viewMode === 'map' ? '📄' : '🗺️'}</span>
+            {viewMode === 'map' ? (
+              // List Icon
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path fillRule="evenodd" d="M3 6a1 1 0 011-1h16a1 1 0 110 2H4a1 1 0 01-1-1zm0 6a1 1 0 011-1h16a1 1 0 110 2H4a1 1 0 01-1-1zm1 5a1 1 0 100 2h16a1 1 0 100-2H4z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              // Map Icon
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path fillRule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+              </svg>
+            )}
           </button>
 
         </div>
