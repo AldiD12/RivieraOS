@@ -1985,17 +1985,17 @@ export default function SuperAdminDashboard() {
 
   const handleCreateEvent = async (eventData) => {
     try {
-      // Backend requires venueId — auto-assign first venue if none selected
+      // Backend now allows optional venueId
       if (!eventData.venueId || isNaN(eventData.venueId)) {
         if (venues.length > 0) {
           eventData.venueId = venues[0].id;
         } else {
-          setError('Please create a venue first before creating an event.');
-          return;
+          eventData.venueId = null;
         }
+      } else {
+        // Ensure venueId is a proper integer
+        eventData.venueId = parseInt(eventData.venueId);
       }
-      // Ensure venueId is a proper integer
-      eventData.venueId = parseInt(eventData.venueId);
       console.log('📤 Creating event with payload:', JSON.stringify(eventData, null, 2));
       await eventsApi.create(eventData);
       setShowCreateEventModal(false);
@@ -2010,16 +2010,15 @@ export default function SuperAdminDashboard() {
 
   const handleUpdateEvent = async (eventId, eventData) => {
     try {
-      // Backend requires venueId — auto-assign first venue if none selected
       if (!eventData.venueId || isNaN(eventData.venueId)) {
         if (venues.length > 0) {
           eventData.venueId = venues[0].id;
         } else {
-          setError('Please create a venue first before updating an event.');
-          return;
+          eventData.venueId = null;
         }
+      } else {
+        eventData.venueId = parseInt(eventData.venueId);
       }
-      eventData.venueId = parseInt(eventData.venueId);
       console.log('📤 Updating event with payload:', JSON.stringify(eventData, null, 2));
       await eventsApi.update(eventId, eventData);
       setShowEditEventModal(false);
