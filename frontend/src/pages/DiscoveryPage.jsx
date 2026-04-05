@@ -247,9 +247,27 @@ function EventMarker({ event, venue, isSelected, onClick, isDayMode }) {
       >
         {/* Event icon */}
         <div className={`${isToday && isUpcoming ? 'text-[#10FF88]' : isUpcoming ? 'text-purple-400' : 'text-zinc-500'}`}>
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
+          {event.vibe?.toLowerCase() === 'techno' ? (
+            // Lightning bolt for Techno
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13 2.05v7.45h5.5l-9.5 12.5v-7.45H3.5L13 2.05z" />
+            </svg>
+          ) : event.vibe?.toLowerCase() === 'house' || event.vibe?.toLowerCase() === 'electronic' || event.vibe?.toLowerCase() === 'commercial' ? (
+            // Music note for House/Commercial
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+            </svg>
+          ) : event.vibe?.toLowerCase() === 'hiphop' || event.vibe?.toLowerCase() === 'hip hop' ? (
+            // Flame for Hip Hop
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M17.5 11.5c-1.5-2.5-4-5.5-4-10.5 0 0-2.5 3.5-2.5 7.5s-2 5-2 5c-1-1.5-1.5-3.5-1.5-3.5-1 1.5-1.5 3.5-1.5 6 0 3.86 3.14 7 7 7s7-3.14 7-7c0-2-1-4-2.5-4.5z" />
+            </svg>
+          ) : (
+            // Star for generic/other events
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+            </svg>
+          )}
         </div>
       </div>
       
