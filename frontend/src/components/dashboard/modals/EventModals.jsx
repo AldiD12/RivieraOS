@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ImageUpload } from '../../ImageUpload';
 
 // Create Event Modal
-export function CreateEventModal({ isOpen, onClose, onSubmit, venues }) {
+export function CreateEventModal({ isOpen, onClose, onSubmit, venues, isSuperAdmin = false }) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -24,7 +24,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues }) {
     // Convert to proper format
     const eventData = {
       ...formData,
-      venueId: parseInt(formData.venueId),
+      venueId: formData.venueId ? parseInt(formData.venueId) : null,
       isTicketed: formData.entryType === 'ticketed',
       ticketPrice: formData.entryType === 'ticketed' ? parseFloat(formData.ticketPrice) || 0 : 0,
       minimumSpend: formData.entryType === 'reservation' ? parseFloat(formData.minimumSpend) || 0 : 0,
@@ -65,21 +65,22 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues }) {
             />
           </div>
 
-          {/* Venue Selection */}
-          <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-2">Venue *</label>
-            <select
-              required
-              value={formData.venueId}
-              onChange={(e) => setFormData({ ...formData, venueId: e.target.value })}
-              className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
-            >
-              <option value="">Select a venue</option>
-              {venues?.map(venue => (
-                <option key={venue.id} value={venue.id}>{venue.name}</option>
-              ))}
-            </select>
-          </div>
+          {/* Venue Selection - Only shown for SuperAdmin */}
+          {isSuperAdmin && venues?.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">Venue</label>
+              <select
+                value={formData.venueId}
+                onChange={(e) => setFormData({ ...formData, venueId: e.target.value })}
+                className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
+              >
+                <option value="">All Venues (Business-level)</option>
+                {venues?.map(venue => (
+                  <option key={venue.id} value={venue.id}>{venue.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Vibe Tag - Discovery Engine */}
           <div>
@@ -277,7 +278,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues }) {
 }
 
 // Edit Event Modal
-export function EditEventModal({ isOpen, onClose, onSubmit, event, venues }) {
+export function EditEventModal({ isOpen, onClose, onSubmit, event, venues, isSuperAdmin = false }) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -337,7 +338,7 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues }) {
     
     const eventData = {
       ...formData,
-      venueId: parseInt(formData.venueId),
+      venueId: formData.venueId ? parseInt(formData.venueId) : null,
       isTicketed: formData.entryType === 'ticketed',
       ticketPrice: formData.entryType === 'ticketed' ? parseFloat(formData.ticketPrice) || 0 : 0,
       minimumSpend: formData.entryType === 'reservation' ? parseFloat(formData.minimumSpend) || 0 : 0,
@@ -377,20 +378,22 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues }) {
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-2">Venue *</label>
-            <select
-              required
-              value={formData.venueId}
-              onChange={(e) => setFormData({ ...formData, venueId: e.target.value })}
-              className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
-            >
-              <option value="">Select a venue</option>
-              {venues?.map(venue => (
-                <option key={venue.id} value={venue.id}>{venue.name}</option>
-              ))}
-            </select>
-          </div>
+          {/* Venue Selection - Only shown for SuperAdmin */}
+          {isSuperAdmin && venues?.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">Venue</label>
+              <select
+                value={formData.venueId}
+                onChange={(e) => setFormData({ ...formData, venueId: e.target.value })}
+                className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
+              >
+                <option value="">All Venues (Business-level)</option>
+                {venues?.map(venue => (
+                  <option key={venue.id} value={venue.id}>{venue.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-zinc-400 mb-2">Description</label>

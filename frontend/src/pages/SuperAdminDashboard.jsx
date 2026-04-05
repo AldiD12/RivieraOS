@@ -3074,6 +3074,7 @@ export default function SuperAdminDashboard() {
           onClose={() => setShowCreateEventModal(false)}
           onSubmit={handleCreateEvent}
           venues={venues}
+          isSuperAdmin={true}
         />
       )}
 
@@ -3087,6 +3088,7 @@ export default function SuperAdminDashboard() {
           onSubmit={handleUpdateEvent}
           event={editingEvent}
           venues={venues}
+          isSuperAdmin={true}
         />
       )}
 
