@@ -1986,25 +1986,41 @@ export default function SuperAdminDashboard() {
   const handleCreateEvent = async (eventData) => {
     try {
       // Backend requires venueId — auto-assign first venue if none selected
-      if (!eventData.venueId && venues.length > 0) {
-        eventData.venueId = venues[0].id;
+      if (!eventData.venueId || isNaN(eventData.venueId)) {
+        if (venues.length > 0) {
+          eventData.venueId = venues[0].id;
+        } else {
+          setError('Please create a venue first before creating an event.');
+          return;
+        }
       }
+      // Ensure venueId is a proper integer
+      eventData.venueId = parseInt(eventData.venueId);
+      console.log('📤 Creating event with payload:', JSON.stringify(eventData, null, 2));
       await eventsApi.create(eventData);
       setShowCreateEventModal(false);
       await fetchEvents();
       setError(''); // Clear any previous errors
     } catch (err) {
       console.error('Error creating event:', err);
-      setError(`Failed to create event: ${err.response?.data?.message || err.message}`);
+      console.error('Response data:', err.response?.data);
+      setError(`Failed to create event: ${err.response?.data?.message || err.response?.data || err.message}`);
     }
   };
 
   const handleUpdateEvent = async (eventId, eventData) => {
     try {
       // Backend requires venueId — auto-assign first venue if none selected
-      if (!eventData.venueId && venues.length > 0) {
-        eventData.venueId = venues[0].id;
+      if (!eventData.venueId || isNaN(eventData.venueId)) {
+        if (venues.length > 0) {
+          eventData.venueId = venues[0].id;
+        } else {
+          setError('Please create a venue first before updating an event.');
+          return;
+        }
       }
+      eventData.venueId = parseInt(eventData.venueId);
+      console.log('📤 Updating event with payload:', JSON.stringify(eventData, null, 2));
       await eventsApi.update(eventId, eventData);
       setShowEditEventModal(false);
       setEditingEvent(null);
@@ -2012,7 +2028,8 @@ export default function SuperAdminDashboard() {
       setError(''); // Clear any previous errors
     } catch (err) {
       console.error('Error updating event:', err);
-      setError(`Failed to update event: ${err.response?.data?.message || err.message}`);
+      console.error('Response data:', err.response?.data);
+      setError(`Failed to update event: ${err.response?.data?.message || err.response?.data || err.message}`);
     }
   };
 
