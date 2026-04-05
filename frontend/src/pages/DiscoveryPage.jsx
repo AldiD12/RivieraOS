@@ -1793,13 +1793,12 @@ export default function DiscoveryPage() {
         </div>
       </div>
 
-      {/* Toast Notification */}
       {toast && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in">
           <div className={`px-6 py-3 rounded-full shadow-2xl text-[11px] font-black tracking-widest uppercase border ${
             isDayMode ? 'bg-zinc-950 text-white border-zinc-800' : 'bg-white text-zinc-950 border-stone-200'
           }`}>
-            {toast}
+            {toast.message || (typeof toast === 'string' ? toast : '')}
           </div>
         </div>
       )}
