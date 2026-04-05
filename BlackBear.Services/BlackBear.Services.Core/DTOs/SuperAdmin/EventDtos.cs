@@ -84,6 +84,8 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public bool IsPublished { get; set; } = false;
 
         public int? VenueId { get; set; }
+
+        public int? BusinessId { get; set; }
     }
 
     public class UpdateEventRequest
@@ -124,5 +126,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public bool IsPublished { get; set; } = false;
 
         public int? VenueId { get; set; }
+
+        public int? BusinessId { get; set; }
     }
 }

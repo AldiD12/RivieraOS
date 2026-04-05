@@ -146,8 +146,15 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
 
         // POST: api/superadmin/events
         [HttpPost]
-        public async Task<ActionResult<EventDetailDto>> CreateEvent([FromQuery] int businessId, CreateEventRequest request)
+        public async Task<ActionResult<EventDetailDto>> CreateEvent(CreateEventRequest request)
         {
+            if (!request.BusinessId.HasValue)
+            {
+                return BadRequest("BusinessId is required");
+            }
+
+            var businessId = request.BusinessId.Value;
+
             // Verify business exists
             var business = await _context.Businesses
                 .IgnoreQueryFilters()
