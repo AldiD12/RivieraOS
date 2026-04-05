@@ -487,9 +487,9 @@ export default function BusinessAdminDashboard() {
 
   const handleCreateEvent = async (eventData) => {
     try {
-      // Backend requires venueId — auto-assign first venue if none selected
-      if (!eventData.venueId && venues.length > 0) {
-        eventData.venueId = venues[0].id;
+      // Backend now beautifully handles null venueId for business-level events
+      if (!eventData.venueId) {
+        eventData.venueId = null;
       }
       await businessApi.events.create(eventData);
       setShowCreateEventModal(false);
@@ -502,9 +502,9 @@ export default function BusinessAdminDashboard() {
 
   const handleEditEvent = async (id, eventData) => {
     try {
-      // Backend requires venueId — auto-assign first venue if none selected
-      if (!eventData.venueId && venues.length > 0) {
-        eventData.venueId = venues[0].id;
+      // Backend now beautifully handles null venueId for business-level events
+      if (!eventData.venueId) {
+        eventData.venueId = null;
       }
       await businessApi.events.update(id, eventData);
       setEditingEvent(null);

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ImageUpload } from '../../ImageUpload';
 
 // Create Event Modal
-export function CreateEventModal({ isOpen, onClose, onSubmit, venues, isSuperAdmin = false }) {
+export function CreateEventModal({ isOpen, onClose, onSubmit, venues, isSuperAdmin = false, businesses = [] }) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -15,7 +15,8 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues, isSuperAdm
     maxGuests: 0,
     vibe: '', // House | Techno | Commercial | Live Music | Hip Hop | Chill
     isPublished: false,
-    venueId: ''
+    venueId: '',
+    businessId: ''
   });
 
   const handleSubmit = (e) => {
@@ -25,6 +26,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues, isSuperAdm
     const eventData = {
       ...formData,
       venueId: formData.venueId ? parseInt(formData.venueId) : null,
+      businessId: formData.businessId ? parseInt(formData.businessId) : null,
       isTicketed: formData.entryType === 'ticketed',
       ticketPrice: formData.entryType === 'ticketed' ? parseFloat(formData.ticketPrice) || 0 : 0,
       minimumSpend: formData.entryType === 'reservation' ? parseFloat(formData.minimumSpend) || 0 : 0,
@@ -65,6 +67,26 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues, isSuperAdm
             />
           </div>
 
+          {/* Business Selection - Only shown for SuperAdmin */}
+          {isSuperAdmin && businesses?.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">Business *</label>
+              <select
+                required
+                value={formData.businessId}
+                onChange={(e) => setFormData({ ...formData, businessId: e.target.value, venueId: '' })}
+                className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
+              >
+                <option value="">Select a Business</option>
+                {businesses?.map(business => (
+                  <option key={business.id} value={business.id}>
+                    {business.brandName || business.registeredName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Venue Selection - Only shown for SuperAdmin */}
           {isSuperAdmin && venues?.length > 0 && (
             <div>
@@ -73,9 +95,10 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues, isSuperAdm
                 value={formData.venueId}
                 onChange={(e) => setFormData({ ...formData, venueId: e.target.value })}
                 className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
+                disabled={!formData.businessId}
               >
                 <option value="">All Venues (Business-level)</option>
-                {venues?.map(venue => (
+                {venues?.filter(v => parseInt(v.businessId) === parseInt(formData.businessId)).map(venue => (
                   <option key={venue.id} value={venue.id}>{venue.name}</option>
                 ))}
               </select>
@@ -278,7 +301,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues, isSuperAdm
 }
 
 // Edit Event Modal
-export function EditEventModal({ isOpen, onClose, onSubmit, event, venues, isSuperAdmin = false }) {
+export function EditEventModal({ isOpen, onClose, onSubmit, event, venues, isSuperAdmin = false, businesses = [] }) {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -291,7 +314,8 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues, isSup
     maxGuests: 0,
     vibe: '',
     isPublished: false,
-    venueId: ''
+    venueId: '',
+    businessId: ''
   });
 
   useEffect(() => {
@@ -328,7 +352,8 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues, isSup
         maxGuests: event.maxGuests || 0,
         vibe: event.vibe || '',
         isPublished: event.isPublished || false,
-        venueId: event.venueId || ''
+        venueId: event.venueId || '',
+        businessId: event.businessId || ''
       });
     }
   }, [event]);
@@ -378,6 +403,26 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues, isSup
             />
           </div>
 
+          {/* Business Selection - Only shown for SuperAdmin */}
+          {isSuperAdmin && businesses?.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-zinc-400 mb-2">Business *</label>
+              <select
+                required
+                value={formData.businessId}
+                onChange={(e) => setFormData({ ...formData, businessId: e.target.value, venueId: '' })}
+                className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
+              >
+                <option value="">Select a Business</option>
+                {businesses?.map(business => (
+                  <option key={business.id} value={business.id}>
+                    {business.brandName || business.registeredName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {/* Venue Selection - Only shown for SuperAdmin */}
           {isSuperAdmin && venues?.length > 0 && (
             <div>
@@ -386,9 +431,10 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues, isSup
                 value={formData.venueId}
                 onChange={(e) => setFormData({ ...formData, venueId: e.target.value })}
                 className="w-full px-4 py-3 bg-black border border-zinc-700 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-white"
+                disabled={!formData.businessId}
               >
                 <option value="">All Venues (Business-level)</option>
-                {venues?.map(venue => (
+                {venues?.filter(v => parseInt(v.businessId) === parseInt(formData.businessId)).map(venue => (
                   <option key={venue.id} value={venue.id}>{venue.name}</option>
                 ))}
               </select>

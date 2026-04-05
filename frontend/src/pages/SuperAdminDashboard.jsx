@@ -1987,11 +1987,7 @@ export default function SuperAdminDashboard() {
     try {
       // Backend now allows optional venueId
       if (!eventData.venueId || isNaN(eventData.venueId)) {
-        if (venues.length > 0) {
-          eventData.venueId = venues[0].id;
-        } else {
-          eventData.venueId = null;
-        }
+        eventData.venueId = null;
       } else {
         // Ensure venueId is a proper integer
         eventData.venueId = parseInt(eventData.venueId);
@@ -2011,11 +2007,7 @@ export default function SuperAdminDashboard() {
   const handleUpdateEvent = async (eventId, eventData) => {
     try {
       if (!eventData.venueId || isNaN(eventData.venueId)) {
-        if (venues.length > 0) {
-          eventData.venueId = venues[0].id;
-        } else {
-          eventData.venueId = null;
-        }
+        eventData.venueId = null;
       } else {
         eventData.venueId = parseInt(eventData.venueId);
       }
@@ -3098,6 +3090,7 @@ export default function SuperAdminDashboard() {
           onClose={() => setShowCreateEventModal(false)}
           onSubmit={handleCreateEvent}
           venues={venues}
+          businesses={businesses}
           isSuperAdmin={true}
         />
       )}
@@ -3112,6 +3105,7 @@ export default function SuperAdminDashboard() {
           onSubmit={handleUpdateEvent}
           event={editingEvent}
           venues={venues}
+          businesses={businesses}
           isSuperAdmin={true}
         />
       )}
