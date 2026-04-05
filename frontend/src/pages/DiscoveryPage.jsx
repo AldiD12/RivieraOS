@@ -285,14 +285,9 @@ export default function DiscoveryPage() {
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all'); // Default: show all, sorted by distance
   
-  // Initialize mode: check forced night mode OR time-based auto-switch (5PM-4AM = night)
-  const isForcedNightMode = forceMode === 'night';
-  const isAutoNightTime = (() => {
-    const h = new Date().getHours();
-    return h >= 17 || h < 4;
-  })();
-  const shouldStartNight = isForcedNightMode || isAutoNightTime;
-  const [isDayMode, setIsDayMode] = useState(!shouldStartNight);
+  // Initialize mode: FORCE NIGHT MODE for Tirana testing launch
+  // Day mode (beaches, pools, restaurants) is Coming Soon
+  const [isDayMode, setIsDayMode] = useState(false);
   const [viewMode, setViewMode] = useState('list');
 
   const [userLocation, setUserLocation] = useState(null);
@@ -339,6 +334,12 @@ export default function DiscoveryPage() {
 
   // Handle explicit Day/Night mode switch (Experiential Switch)
   const handleExperienceSwitch = (targetMode) => {
+    // Day mode is Coming Soon - block the switch
+    if (targetMode === 'day') {
+      setToast({ message: '☀️ Day Mode — Coming Soon!', type: 'info' });
+      setTimeout(() => setToast(null), 2500);
+      return;
+    }
     const goingDay = targetMode === 'day';
     setIsDayMode(goingDay);
     setViewMode('list');
@@ -1763,6 +1764,7 @@ export default function DiscoveryPage() {
             >
               <span className="text-sm">☀️</span>
               <span>Day</span>
+              <span className="text-[8px] ml-0.5 opacity-60">SOON</span>
             </button>
             <button 
               onClick={() => handleExperienceSwitch('night')}
