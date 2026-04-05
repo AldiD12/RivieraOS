@@ -1985,6 +1985,10 @@ export default function SuperAdminDashboard() {
 
   const handleCreateEvent = async (eventData) => {
     try {
+      // Backend requires venueId — auto-assign first venue if none selected
+      if (!eventData.venueId && venues.length > 0) {
+        eventData.venueId = venues[0].id;
+      }
       await eventsApi.create(eventData);
       setShowCreateEventModal(false);
       await fetchEvents();
@@ -1997,6 +2001,10 @@ export default function SuperAdminDashboard() {
 
   const handleUpdateEvent = async (eventId, eventData) => {
     try {
+      // Backend requires venueId — auto-assign first venue if none selected
+      if (!eventData.venueId && venues.length > 0) {
+        eventData.venueId = venues[0].id;
+      }
       await eventsApi.update(eventId, eventData);
       setShowEditEventModal(false);
       setEditingEvent(null);
