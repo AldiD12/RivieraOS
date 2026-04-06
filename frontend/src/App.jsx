@@ -33,12 +33,12 @@ const BookingActionPage = lazy(() => import('./pages/BookingActionPage'));
 const ZoneUnitsManager = lazy(() => import('./pages/ZoneUnitsManager'));
 const SunbedMapper = lazy(() => import('./pages/SunbedMapper'));
 
-// Full screen loading fallback for Suspense
+// Full screen loading fallback for Suspense - matches app dark theme
 const FullScreenLoader = () => (
-  <div className="fixed inset-0 bg-stone-50 flex items-center justify-center z-50">
+  <div className="fixed inset-0 bg-zinc-950 flex items-center justify-center z-50">
     <div className="flex flex-col items-center gap-4">
-      <div className="w-10 h-10 border-4 border-stone-200 border-t-zinc-900 rounded-full animate-spin"></div>
-      <p className="text-sm font-medium tracking-widest uppercase text-zinc-500">Loading...</p>
+      <div className="text-white font-serif text-3xl font-light tracking-[0.2em] uppercase mb-2">XIXA</div>
+      <div className="w-8 h-8 border-2 border-zinc-800 border-t-[#10FF88] rounded-full animate-spin"></div>
     </div>
   </div>
 );
