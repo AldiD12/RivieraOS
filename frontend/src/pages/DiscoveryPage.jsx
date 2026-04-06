@@ -1762,6 +1762,7 @@ export default function DiscoveryPage() {
                 setTimeout(() => setToast(null), 3000);
               }
             }}
+            aria-label="Zone Selection"
             className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 border shadow-sm ${
               fromVenueId 
                 ? (isDayMode ? 'bg-white text-zinc-900 border-stone-200 hover:bg-stone-50 hover:scale-105' : 'bg-[#10FF88] text-zinc-950 border-[#10FF88] hover:bg-[#0ee67b] shadow-[0_0_12px_rgba(16,255,136,0.4)] hover:scale-105')
@@ -1803,6 +1804,7 @@ export default function DiscoveryPage() {
           {/* Right: View Toggle (Map/List) */}
           <button
             onClick={() => setViewMode(viewMode === 'map' ? 'list' : 'map')}
+            aria-label="Toggle View Mode"
             className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 border shadow-sm ${
               isDayMode 
                 ? 'bg-white text-zinc-950 border-stone-200 hover:bg-stone-50'

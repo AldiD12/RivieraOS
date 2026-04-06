@@ -84,7 +84,7 @@ export default function LocationBottomSheet({
 
         {/* Sheet Title - Industrial Style */}
         <div className="px-6 pb-6">
-          <h2 className={`font-mono text-xs tracking-[0.2em] uppercase ${isDayMode ? 'text-stone-500' : 'text-zinc-500'}`}>
+          <h2 className={`font-mono text-xs tracking-[0.2em] uppercase ${isDayMode ? 'text-stone-600' : 'text-zinc-400'}`}>
             [ SELECT ZONE ]
           </h2>
         </div>
@@ -92,7 +92,7 @@ export default function LocationBottomSheet({
         {/* Zone List - Industrial Design */}
         <div className="flex flex-col px-6 gap-3 pb-8 overflow-y-auto">
           {loading && (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex items-center justify-center min-h-[300px]">
               <div className={`w-8 h-8 border-2 rounded-full animate-spin ${isDayMode ? 'border-stone-200 border-t-stone-900' : 'border-zinc-800 border-t-[#10FF88]'}`} />
             </div>
           )}
