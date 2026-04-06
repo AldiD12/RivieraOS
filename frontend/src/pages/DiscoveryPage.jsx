@@ -729,13 +729,17 @@ export default function DiscoveryPage() {
   }, [loadEvents, venues]);
   
   const handleEventClick = (event) => {
-    const venue = venues.find(v => v.id === event.venueId);
-    if (!venue) return;
+    const venue = venues.find(v => v.id === event.venueId) || null;
 
-    const whatsappNumber = venue.whatsappNumber || venue.whatsAppNumber || venue.phone;
+    // For business-level events (no venue), fallback to business contact on the event itself
+    const contactName = venue?.name || event.venueName || event.businessName || 'the venue';
+    const whatsappNumber = 
+      venue?.whatsappNumber || venue?.whatsAppNumber || venue?.phone ||
+      event.venueWhatsappNumber ||
+      null;
     
     if (!whatsappNumber) {
-      setToast(`${venue.name} doesn't have a contact number yet.`);
+      setToast(`No contact number available yet. Check back soon!`);
       setTimeout(() => setToast(null), 3000);
       return;
     }
@@ -753,9 +757,9 @@ export default function DiscoveryPage() {
       minute: '2-digit'
     });
     
-    let message = `Hi! I'd like to book for ${event.name} at ${venue.name} on ${eventDate}.\n\n`;
+    let message = `Hi! I'd like to book for ${event.name} at ${contactName} on ${eventDate}.\n\n`;
     message += `📅 Event: ${event.name}\n`;
-    message += `📍 Venue: ${venue.name}\n`;
+    message += `📍 Venue: ${contactName}\n`;
     message += `🕐 Date & Time: ${eventDate} at ${eventTime}\n`;
     
     if (event.minimumSpend > 0) {
