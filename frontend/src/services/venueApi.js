@@ -25,7 +25,27 @@ class VenueApiService {
         return cached.data;
       }
     }
+    
+    // Return stale data immediately while fetching in background
+    const staleData = localStorage.getItem('riviera_venues_data');
+    if (staleData && !this.backgroundFetchTriggered) {
+      this.backgroundFetchTriggered = true;
+      // Fetch in background quietly
+      this.fetchAndCacheVenues().catch(e => console.error("Background venue fetch failed", e));
+      try {
+        const parsed = JSON.parse(staleData);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch (e) {}
+    }
 
+    // Default network fetch if no stale data
+    return await this.fetchAndCacheVenues();
+  }
+
+  async fetchAndCacheVenues() {
+    console.log("Fetching venues from network...");
     const response = await fetch(`${API_URL}/public/Venues`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
@@ -38,7 +58,12 @@ class VenueApiService {
     const venues = await response.json();
     if (!venues || venues.length === 0) return [];
 
-    this.cache.set(cacheKey, { data: venues, timestamp: Date.now() });
+    this.cache.set('venues', { data: venues, timestamp: Date.now() });
+    localStorage.setItem('riviera_venues_data', JSON.stringify(venues));
+    
+    // Dispatch event to notify React that fresh data arrived
+    window.dispatchEvent(new CustomEvent('riviera_venues_updated', { detail: venues }));
+    
     return venues;
   }
 

@@ -114,49 +114,67 @@ Because your current C# DTOs treat these as optional/nullable, the system will n
 
 ## Task 4: Make VenueId Optional on Events (URGENT)
 
-Events should live at the **business level**, not be tied to a specific venue. Right now `VenueId` is `[Required]` which means:
+Events should be capable of living at the **business level**, not solely tied to a specific venue. Right now `VenueId` is `[Required]` which means:
 - Businesses that haven't created a venue yet **cannot create events at all**
-- Business Admins are forced to pick a venue even though it doesn't make sense
+- We can't have platform-wide or business-wide events.
+
+### The Big Architecture Change:
+If `VenueId` becomes optional (null), **we MUST add a `BusinessId` column to the `events_scheduled` table** so the event doesn't become an orphan!
 
 ### Changes Needed
 
-**1. Update `CreateEventRequest` in `EventDtos.cs` (SuperAdmin namespace):**
+**1. Update the `ScheduledEvent` Entity (`ScheduledEvent.cs`)**
 ```csharp
-// CHANGE THIS:
-[Required]
-public int VenueId { get; set; }
-
-// TO THIS:
-public int? VenueId { get; set; }
-```
-
-**2. Update `UpdateEventRequest` in the same file — same change:**
-```csharp
-// CHANGE THIS:
-[Required]
-public int VenueId { get; set; }
-
-// TO THIS:
-public int? VenueId { get; set; }
-```
-
-**3. Do the same in `Business/EventDtos.cs`** (if the Business namespace has its own Event DTOs).
-
-**4. Update the Event Entity** (`Event.cs` or equivalent):
-```csharp
-// Change the column to nullable
+// 1. Make VenueId Nullable
 [Column("venue_id")]
 public int? VenueId { get; set; }
+
+// 2. ADD BusinessId as a new Foreign Key
+[Column("business_id")]
+public int BusinessId { get; set; } // Required, so the event always has a business owner
+
+[ForeignKey("BusinessId")]
+public Business? Business { get; set; }
 ```
 
-**5. Update the Controller** to handle nullable VenueId:
-- If `VenueId` is null, just store it as null — the event belongs to the whole business
-- If `VenueId` has a value, validate it exists as before
+**2. Update EVERY `CreateEventRequest` & `UpdateEventRequest` DTO (SuperAdmin AND Business Namespaces):**
+- Make `VenueId` a `public int? VenueId { get; set; }`.
+- **(SuperAdmin ONLY)** Add `public int? BusinessId { get; set; }` inside the DTO so the frontend can tell you which business to attach it to. (Business Admins don't need this since you read it from their JWT claim).
 
-**6. Generate Migration:**
+**3. Update Both Controllers (`SuperAdmin/EventsController` & `Business/EventsController`)**
+When creating a new Event:
+```csharp
+var evt = new ScheduledEvent
+{
+    // ... other fields
+    VenueId = request.VenueId, // can be null
+    BusinessId = businessIdFromRequestOrClaims // IMPORTANT!
+};
+```
+*Note: In SuperAdmin, read `BusinessId` from the frontend JSON. In Business logic, read it from `_currentUserService`.*
+
+**4. Update GetEvents Queries (`SuperAdmin` and `Business` Controllers)**
+If you have queries like `query.Where(e => e.Venue.BusinessId == businessId)`, you must update them because `e.Venue` could be null! Change them to:
+```csharp
+query = query.Where(e => e.BusinessId == businessId);
+```
+
+**4b. ⚠️ UPDATE `PublicEventsController.cs` (CRITICAL)**
+Currently, **every single `[HttpGet]` method** in `PublicEventsController` has a filter that looks like this:
+```csharp
+.Where(e => e.Venue != null && _context.BusinessFeatures.Any(bf => bf.BusinessId == e.Venue.BusinessId && bf.HasEvents))
+```
+This brutally and silently omits ALL events that don't have a venue! Because of this, business-level events don't show up on the frontend's Night Mode Map.
+You must update these Public LINQ queries to use the Event's new `BusinessId` instead of `Venue.BusinessId`, and REMOVE the `e.Venue != null` requirement.
+Example:
+```csharp
+.Where(e => _context.BusinessFeatures.Any(bf => bf.BusinessId == e.BusinessId && !bf.IsDeleted && bf.HasEvents))
+```
+
+**5. Generate Migration:**
 ```bash
-dotnet ef migrations add MakeEventVenueIdOptional
+dotnet ef migrations add AddBusinessIdToEvents
 dotnet ef database update
 ```
 
-*(The frontend is already handling the null case — once you deploy this, everything will work automatically!)*
+*(Frontend is heavily reliant on this fix. Until this is fully deployed on Azure, creating an Event fails!)*

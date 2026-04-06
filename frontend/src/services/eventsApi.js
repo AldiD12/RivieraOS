@@ -134,27 +134,55 @@ export const publicEventsApi = {
   getEvents: async (geographicZone = null) => {
     try {
       let url = `${API_BASE_URL}/public/Events`;
+      const cacheKey = `riviera_events_cache_${geographicZone || 'all'}`;
       
       // Add geographic zone filter if specified
       if (geographicZone && geographicZone !== 'EVERYWHERE') {
         url += `?geographicZone=${encodeURIComponent(geographicZone)}`;
       }
       
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
+      // Support Stale-While-Revalidate for INSTANT UI boot
+      const fetchAndCacheEvents = async () => {
+        try {
+          const response = await fetch(url, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          
+          const data = await response.json();
+          const events = Array.isArray(data) ? data : [];
+          
+          // Save to local storage for instant next boot
+          localStorage.setItem(cacheKey, JSON.stringify(events));
+          
+          // Notify React that fresh data arrived quietly
+          window.dispatchEvent(new CustomEvent('riviera_events_updated', { detail: events }));
+          return events;
+        } catch (error) {
+          console.error('Error fetching public events:', error);
+          return [];
         }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      };
+
+      const staleData = localStorage.getItem(cacheKey);
+      if (staleData && !window._eventsBackgroundFetchTriggered) {
+        window._eventsBackgroundFetchTriggered = true;
+        // Fire background fetch quietly
+        fetchAndCacheEvents();
+        try {
+          const parsed = JSON.parse(staleData);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            return parsed; // Return instant cached data
+          }
+        } catch (e) {}
       }
-      
-      const data = await response.json();
-      return Array.isArray(data) ? data : [];
+
+      // Default network fetch
+      return await fetchAndCacheEvents();
     } catch (error) {
-      console.error('Error fetching public events:', error);
+      console.error('Error in getEvents wrapper:', error);
       return [];
     }
   },

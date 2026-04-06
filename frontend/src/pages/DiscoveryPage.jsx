@@ -465,7 +465,7 @@ export default function DiscoveryPage() {
 
   const loadVenues = useCallback(async () => {
     try {
-      setLoading(true);
+      if (venues.length === 0) setLoading(true); // Only show spinner if entirely empty
       const data = await venueApi.getVenues();
       // Merge with local attractions for the "Guide" experience
       const mergedData = [...data, ...attractionsData];
@@ -475,7 +475,7 @@ export default function DiscoveryPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [venues.length]);
 
   const loadEvents = useCallback(async (geographicZone = null) => {
     try {
@@ -507,6 +507,31 @@ export default function DiscoveryPage() {
     } finally {
       setEventsLoading(false);
     }
+  }, [isUsingGPSLocation, userLocation, venues]);
+
+  // Listen for automatic background refreshes from the API Caching layer
+  useEffect(() => {
+    const handleVenuesUpdated = (e) => {
+      const mergedData = [...e.detail, ...attractionsData];
+      setVenues(mergedData);
+    };
+    
+    const handleEventsUpdated = (e) => {
+      const published = Array.isArray(e.detail) ? e.detail.filter(ev => ev.isPublished && !ev.isDeleted) : [];
+      if (isUsingGPSLocation && userLocation && venues.length > 0) {
+        setEvents(sortEventsByDistance(published, venues, userLocation));
+      } else {
+        setEvents(published);
+      }
+    };
+
+    window.addEventListener('riviera_venues_updated', handleVenuesUpdated);
+    window.addEventListener('riviera_events_updated', handleEventsUpdated);
+
+    return () => {
+      window.removeEventListener('riviera_venues_updated', handleVenuesUpdated);
+      window.removeEventListener('riviera_events_updated', handleEventsUpdated);
+    };
   }, [isUsingGPSLocation, userLocation, venues]);
 
   // Group venues by business - Alternative approach without Map constructor
@@ -1295,8 +1320,7 @@ export default function DiscoveryPage() {
           )}
           
           {!isDayMode && filteredEvents.map((event) => {
-            const venue = venues.find(v => v.id === event.venueId);
-            if (!venue) return null;
+            const venue = venues.find(v => v.id === event.venueId) || null;
             
             const eventDate = new Date(event.startTime);
             const isToday = eventDate.toDateString() === new Date().toDateString();
