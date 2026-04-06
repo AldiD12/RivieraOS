@@ -736,6 +736,7 @@ export default function DiscoveryPage() {
     const whatsappNumber = 
       venue?.whatsappNumber || venue?.whatsAppNumber || venue?.phone ||
       event.venueWhatsappNumber ||
+      event.businessWhatsappNumber ||  // populated by Kristi's Task 5
       null;
     
     if (!whatsappNumber) {

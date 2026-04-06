@@ -178,3 +178,33 @@ dotnet ef database update
 ```
 
 *(Frontend is heavily reliant on this fix. Until this is fully deployed on Azure, creating an Event fails!)*
+
+---
+
+## Task 5: Expose Business Contact on Public Event DTO (URGENT)
+
+When a user taps **"CONFIRM ACCESS"** on an event in Night Mode, the frontend opens WhatsApp with a booking message. This works for venue-based events (using `VenueWhatsappNumber`), but **for business-level events (no venue assigned), `VenueWhatsappNumber` is null** because there's no venue.
+
+The frontend needs the **Business's WhatsApp/phone number** to work as a fallback contact for these events.
+
+### Changes Needed
+
+**1. Add `BusinessWhatsappNumber` to `PublicEventListItemDto`:**
+```csharp
+public string? BusinessWhatsappNumber { get; set; }
+```
+
+**2. Populate it in `PublicEventsController.cs` `GetEvents()` and `GetEventsByBusiness()` Select projections:**
+```csharp
+BusinessWhatsappNumber = e.Business != null ? e.Business.WhatsappNumber : 
+                         (e.Venue != null && e.Venue.Business != null ? e.Venue.Business.WhatsappNumber : null),
+```
+*(Use whatever the WhatsApp/Phone field is called on the `Business` entity — check `Business.cs` for the exact property name)*
+
+**3. Make sure `e.Business` is included in the query:**
+```csharp
+.Include(e => e.Business) // Add this Include for direct business reference
+.Include(e => e.Venue).ThenInclude(v => v!.Business)
+```
+
+Once this is deployed, the frontend will automatically use it — no frontend changes needed.
