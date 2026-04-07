@@ -189,12 +189,16 @@ The frontend needs the **Business's WhatsApp/phone number** to work as a fallbac
 
 ### Changes Needed
 
-**0. Add `WhatsappNumber` to `Business` Entity & DTOs:**
-Because we are making venue-less events possible, the `Business` itself needs a WhatsApp number (previously only `Venue` had this).
-- In `Entities/Business.cs`: Add `public string? WhatsappNumber { get; set; }`
-- In `DTOs/SuperAdmin/BusinessDtos.cs`: Add `public string? WhatsappNumber { get; set; }` to `CreateBusinessRequest`, `UpdateBusinessRequest`, `BusinessDetailDto`, and `BusinessListItemDto`.
-- Run migrations to add `whatsapp_number` to `core_businesses` table.
-- Update `SuperAdmin/BusinessesController.cs` to map `WhatsappNumber` on Create/Update.
+**0. Add New Fields to `Business` Entity & DTOs:**
+Because we are making venue-less events possible and expanding business capabilities, the `Business` itself needs additional fields (previously only `Venue` had some of these).
+- In `Entities/Business.cs$: Add the following properties:
+  - `public string? WhatsappNumber { get; set; }`
+  - `public string? OperationZone { get; set; }`
+  - `public string? GoogleMapsAddress { get; set; }`
+  - `public string? ReviewLink { get; set; }`
+- In `DTOs/SuperAdmin/BusinessDtos.cs`: Add these exact same 4 fields (`WhatsappNumber`, `OperationZone`, `GoogleMapsAddress`, `ReviewLink`) to `CreateBusinessRequest`, `UpdateBusinessRequest`, `BusinessDetailDto`, and `BusinessListItemDto`.
+- Run migrations to add `whatsapp_number`, `operation_zone`, `google_maps_address`, and `review_link` to the `core_businesses` table.
+- Update `SuperAdmin/BusinessesController.cs` to map these 4 fields on Create/Update.
 
 **1. Add `BusinessWhatsappNumber` to `PublicEventListItemDto`:**
 ```csharp

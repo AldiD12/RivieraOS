@@ -912,6 +912,9 @@ export default function SuperAdminDashboard() {
     contactEmail: '',
     logoUrl: '',
     whatsappNumber: '',
+    operationZone: '',
+    googleMapsAddress: '',
+    reviewLink: '',
     isActive: true
   });
 
@@ -1115,6 +1118,9 @@ export default function SuperAdminDashboard() {
         contactEmail: '',
         logoUrl: '',
         whatsappNumber: '',
+        operationZone: '',
+        googleMapsAddress: '',
+        reviewLink: '',
         isActive: true
       });
       
@@ -1142,6 +1148,9 @@ export default function SuperAdminDashboard() {
         contactEmail: '',
         logoUrl: '',
         whatsappNumber: '',
+        operationZone: '',
+        googleMapsAddress: '',
+        reviewLink: '',
         isActive: true
       });
       
@@ -2246,6 +2255,9 @@ export default function SuperAdminDashboard() {
                   contactEmail: fullBusiness.contactEmail || '',
                   logoUrl: fullBusiness.logoUrl || '',
                   whatsappNumber: fullBusiness.whatsappNumber || '',
+                  operationZone: fullBusiness.operationZone || '',
+                  googleMapsAddress: fullBusiness.googleMapsAddress || '',
+                  reviewLink: fullBusiness.reviewLink || '',
                   isActive: fullBusiness.isActive !== undefined ? fullBusiness.isActive : true
                 });
                 setShowEditBusinessModal(true);
@@ -2260,6 +2272,9 @@ export default function SuperAdminDashboard() {
                   contactEmail: business.contactEmail || '',
                   logoUrl: business.logoUrl || '',
                   whatsappNumber: business.whatsappNumber || '',
+                  operationZone: business.operationZone || '',
+                  googleMapsAddress: business.googleMapsAddress || '',
+                  reviewLink: business.reviewLink || '',
                   isActive: business.isActive !== undefined ? business.isActive : true
                 });
                 setShowEditBusinessModal(true);
