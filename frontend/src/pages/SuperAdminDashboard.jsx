@@ -2235,18 +2235,35 @@ export default function SuperAdminDashboard() {
             selectedBusiness={selectedBusiness}
             onBusinessSelect={handleBusinessSelect}
             onCreateBusiness={() => setShowCreateBusinessModal(true)}
-            onEditBusiness={(business) => {
-              setEditingBusiness(business);
-              setBusinessForm({
-                registeredName: business.registeredName || '',
-                brandName: business.brandName || '',
-                taxId: business.taxId || '',
-                contactEmail: business.contactEmail || '',
-                logoUrl: business.logoUrl || '',
-                whatsappNumber: business.whatsappNumber || '',
-                isActive: business.isActive
-              });
-              setShowEditBusinessModal(true);
+            onEditBusiness={async (business) => {
+              try {
+                const fullBusiness = await businessApi.superAdmin.getById(business.id);
+                setEditingBusiness(fullBusiness);
+                setBusinessForm({
+                  registeredName: fullBusiness.registeredName || '',
+                  brandName: fullBusiness.brandName || '',
+                  taxId: fullBusiness.taxId || '',
+                  contactEmail: fullBusiness.contactEmail || '',
+                  logoUrl: fullBusiness.logoUrl || '',
+                  whatsappNumber: fullBusiness.whatsappNumber || '',
+                  isActive: fullBusiness.isActive !== undefined ? fullBusiness.isActive : true
+                });
+                setShowEditBusinessModal(true);
+              } catch (err) {
+                console.error('Failed to fetch full business details for editing', err);
+                // Fallback to basic list data if fetch fails
+                setEditingBusiness(business);
+                setBusinessForm({
+                  registeredName: business.registeredName || '',
+                  brandName: business.brandName || '',
+                  taxId: business.taxId || '',
+                  contactEmail: business.contactEmail || '',
+                  logoUrl: business.logoUrl || '',
+                  whatsappNumber: business.whatsappNumber || '',
+                  isActive: business.isActive !== undefined ? business.isActive : true
+                });
+                setShowEditBusinessModal(true);
+              }
             }}
             onDeleteBusiness={handleDeleteBusiness}
             onManageFeatures={handleManageFeatures}
