@@ -85,8 +85,8 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
       const isRestaurant = venueType.includes('restaurant') || venueType.includes('restorant');
 
       if (isRestaurant) {
-        // Restaurant: WhatsApp with real venue phone (no hardcoded fallback)
-        const venuePhone = venue.whatsappNumber || venue.whatsAppNumber || venue.phone;
+        // Restaurant: WhatsApp with real venue phone or business phone fallback
+        const venuePhone = venue.whatsappNumber || venue.whatsAppNumber || venue.phone || venue.businessPhoneNumber;
         if (!venuePhone) {
           showToast('This venue has no contact number configured yet.');
           setSubmitting(false);
@@ -229,8 +229,12 @@ Thank you!`;
               {/* Navigate Button */}
               <button
                 onClick={() => {
-                  const url = `https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`;
-                  window.open(url, '_blank');
+                  if (venue.latitude && venue.longitude) {
+                    const url = `https://www.google.com/maps/dir/?api=1&destination=${venue.latitude},${venue.longitude}`;
+                    window.open(url, '_blank');
+                  } else if (venue.businessGoogleMapsAddress) {
+                    window.open(venue.businessGoogleMapsAddress, '_blank');
+                  }
                 }}
                 className={`w-full flex items-center justify-center gap-2 py-4 rounded-full border transition-all duration-300 ${
                   isDayMode
@@ -337,15 +341,19 @@ Thank you!`;
           )}
 
           {/* Get Directions */}
-          {venue.latitude && venue.longitude && (
+          {(venue.latitude && venue.longitude) || venue.businessGoogleMapsAddress ? (
             <button
               onClick={() => {
-                const dest = `${venue.latitude},${venue.longitude}`;
-                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-                const url = isIOS
-                  ? `maps://maps.apple.com/?daddr=${dest}&q=${encodeURIComponent(venue.name)}`
-                  : `https://www.google.com/maps/dir/?api=1&destination=${dest}`;
-                window.open(url, '_blank');
+                if (venue.latitude && venue.longitude) {
+                  const dest = `${venue.latitude},${venue.longitude}`;
+                  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+                  const url = isIOS
+                    ? `maps://maps.apple.com/?daddr=${dest}&q=${encodeURIComponent(venue.name)}`
+                    : `https://www.google.com/maps/dir/?api=1&destination=${dest}`;
+                  window.open(url, '_blank');
+                } else if (venue.businessGoogleMapsAddress) {
+                  window.open(venue.businessGoogleMapsAddress, '_blank');
+                }
               }}
               className={`w-full mb-4 px-4 py-3 rounded-full border flex items-center justify-center gap-2 transition-all duration-300 text-sm ${isDayMode ? 'bg-white border-zinc-300 text-zinc-700 hover:border-zinc-950 shadow-sm' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-[#10FF88] hover:text-[#10FF88]'}`}
             >
@@ -354,7 +362,7 @@ Thank you!`;
               </svg>
               <span className="text-sm font-medium tracking-wide">Get Directions</span>
             </button>
-          )}
+          ) : null}
 
           {/* Action Buttons */}
             <div className="flex gap-3 mt-2">

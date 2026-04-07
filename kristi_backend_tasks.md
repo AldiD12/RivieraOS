@@ -192,21 +192,28 @@ The frontend needs the **Business's WhatsApp/phone number** to work as a fallbac
 **0. Add New Fields to `Business` Entity & DTOs:**
 ~~*Kristi already did this! He added `PhoneNumber`, `OperationZone`, `GoogleMapsAddress`, and `ReviewLink` in commit 0ed6a0d.*~~
 
-**1. Add `BusinessPhoneNumber` to `PublicEventListItemDto`:**
+**1. Add Business Fields to Public DTOs:**
+Update `PublicEventListItemDto` AND `PublicVenueListItemDto` (and any other public venue DTOs) to include:
 ```csharp
 public string? BusinessPhoneNumber { get; set; }
+public string? BusinessGoogleMapsAddress { get; set; }
+public string? BusinessReviewLink { get; set; }
 ```
 
-**2. Populate it in `PublicEventsController.cs` `GetEvents()` and `GetEventsByBusiness()` Select projections:**
+**2. Populate them in `PublicEventsController.cs` and `PublicVenuesController.cs` projections:**
 ```csharp
 BusinessPhoneNumber = e.Business != null ? e.Business.PhoneNumber : 
                          (e.Venue != null && e.Venue.Business != null ? e.Venue.Business.PhoneNumber : null),
+BusinessGoogleMapsAddress = e.Business != null ? e.Business.GoogleMapsAddress : 
+                         (e.Venue != null && e.Venue.Business != null ? e.Venue.Business.GoogleMapsAddress : null),
+BusinessReviewLink = e.Business != null ? e.Business.ReviewLink : 
+                         (e.Venue != null && e.Venue.Business != null ? e.Venue.Business.ReviewLink : null),
 ```
 
-**3. Make sure `e.Business` is included in the query:**
+**3. Make sure the query includes them:**
 ```csharp
-.Include(e => e.Business) // Add this Include for direct business reference
+.Include(e => e.Business)
 .Include(e => e.Venue).ThenInclude(v => v!.Business)
 ```
 
-Once this is deployed, the frontend will automatically use it — no frontend changes needed.
+Once this is deployed, the frontend will automatically use it — no frontend changes needed!
