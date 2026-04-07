@@ -28,6 +28,7 @@ namespace BlackBear.Services.Core.DTOs.Public
         public string? VenueWhatsappNumber { get; set; }
         public int? BusinessId { get; set; }
         public string? BusinessName { get; set; }
+        public string? BusinessGoogleMapsAddress { get; set; }
         public bool IsPublished { get; set; }
         public bool IsDeleted { get; set; }
     }
@@ -56,6 +57,7 @@ namespace BlackBear.Services.Core.DTOs.Public
         public double? VenueLongitude { get; set; }
         public int? BusinessId { get; set; }
         public string? BusinessName { get; set; }
+        public string? BusinessGoogleMapsAddress { get; set; }
         public string? BusinessLogoUrl { get; set; }
         public bool IsPublished { get; set; }
         public bool IsDeleted { get; set; }
