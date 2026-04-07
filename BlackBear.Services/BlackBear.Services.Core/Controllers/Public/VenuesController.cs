@@ -83,7 +83,8 @@ namespace BlackBear.Services.Core.Controllers.Public
                     HasAvailability = availableCount > 0,
                     AvailableUnitsCount = availableCount,
                     BusinessId = v.BusinessId,
-                    BusinessName = v.Business?.BrandName ?? v.Business?.RegisteredName
+                    BusinessName = v.Business?.BrandName ?? v.Business?.RegisteredName,
+                    BusinessPhoneNumber = v.Business?.PhoneNumber
                 };
             }).ToList();
 

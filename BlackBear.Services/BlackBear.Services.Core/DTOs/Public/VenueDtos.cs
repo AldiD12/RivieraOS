@@ -16,6 +16,7 @@ namespace BlackBear.Services.Core.DTOs.Public
         public int AvailableUnitsCount { get; set; }
         public int BusinessId { get; set; }
         public string? BusinessName { get; set; }
+        public string? BusinessPhoneNumber { get; set; }
     }
 
     public class PublicVenueAvailabilityDetailDto
