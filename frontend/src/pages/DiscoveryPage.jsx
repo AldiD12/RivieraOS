@@ -211,80 +211,61 @@ function VenueMarker({ venue, isSelected, onClick, isDayMode, activeFilter }) {
   );
 }
 
-// 🌙 Night Mode Event Marker - Shows events on map
-function EventMarker({ event, venue, isSelected, onClick, isDayMode }) {
-  const eventDate = new Date(event.startTime);
-  const isToday = eventDate.toDateString() === new Date().toDateString();
-  const isUpcoming = eventDate > new Date();
-  
+// 🌙 Night Mode Business Event Marker - One pin per business, groups all its events
+function BusinessEventMarker({ businessName, events, isSelected, onClick }) {
+  const now = new Date();
+  const hasToday = events.some(e => {
+    const d = new Date(e.startTime);
+    return d.toDateString() === now.toDateString() && d > now;
+  });
+  const count = events.length;
+
   return (
-    <div 
+    <div
       className="relative flex flex-col items-center cursor-pointer group"
       onClick={onClick}
     >
-      {/* Pulsing ring for today's events */}
-      {isToday && isUpcoming && (
-        <div className="absolute w-12 h-12 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
+      {/* Pulsing ring for businesses with events tonight */}
+      {hasToday && (
+        <div className="absolute w-14 h-14 -translate-x-1/2 -translate-y-1/2 left-1/2 top-1/2">
           <div className="absolute inset-0 rounded-full border border-[#10FF88] opacity-50"
-               style={{ animation: 'pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1)' }}></div>
-          <div className="absolute inset-0 rounded-full bg-[#10FF88]/20 animate-pulse"></div>
+               style={{ animation: 'pulse-ring 2s infinite cubic-bezier(0.215, 0.61, 0.355, 1)' }} />
+          <div className="absolute inset-0 rounded-full bg-[#10FF88]/20 animate-pulse" />
         </div>
       )}
-      
-      {/* Main event marker */}
-      <div 
-        className={`
-          relative flex items-center justify-center rounded-full z-10
-          transition-all duration-300
-          ${isToday && isUpcoming
-            ? 'w-10 h-10 bg-zinc-950 border border-[#10FF88] shadow-[0_0_12px_rgba(16,255,136,0.4)]'
-            : isUpcoming
-            ? 'w-8 h-8 bg-zinc-950 border border-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.4)]'
-            : 'w-6 h-6 bg-zinc-900 border border-zinc-600 shadow-lg opacity-60'
-          }
-          ${isSelected ? 'scale-110' : 'group-hover:scale-110'}
-        `}
-      >
-        {/* Event icon */}
-        <div className={`${isToday && isUpcoming ? 'text-[#10FF88]' : isUpcoming ? 'text-purple-400' : 'text-zinc-500'}`}>
-          {event.vibe?.toLowerCase() === 'techno' ? (
-            // Lightning bolt for Techno
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M13 2.05v7.45h5.5l-9.5 12.5v-7.45H3.5L13 2.05z" />
-            </svg>
-          ) : event.vibe?.toLowerCase() === 'house' || event.vibe?.toLowerCase() === 'electronic' || event.vibe?.toLowerCase() === 'commercial' ? (
-            // Music note for House/Commercial
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-            </svg>
-          ) : event.vibe?.toLowerCase() === 'hiphop' || event.vibe?.toLowerCase() === 'hip hop' ? (
-            // Flame for Hip Hop
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17.5 11.5c-1.5-2.5-4-5.5-4-10.5 0 0-2.5 3.5-2.5 7.5s-2 5-2 5c-1-1.5-1.5-3.5-1.5-3.5-1 1.5-1.5 3.5-1.5 6 0 3.86 3.14 7 7 7s7-3.14 7-7c0-2-1-4-2.5-4.5z" />
-            </svg>
-          ) : (
-            // Star for generic/other events
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-            </svg>
-          )}
-        </div>
+
+      {/* Main pin */}
+      <div className={`
+        relative flex items-center justify-center rounded-full z-10
+        transition-all duration-300
+        ${hasToday
+          ? 'w-11 h-11 bg-zinc-950 border-2 border-[#10FF88] shadow-[0_0_14px_rgba(16,255,136,0.45)]'
+          : 'w-9 h-9 bg-zinc-950 border border-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.35)]'
+        }
+        ${isSelected ? 'scale-110' : 'group-hover:scale-110'}
+      `}>
+        {/* Music note icon */}
+        <svg className={`w-4 h-4 ${hasToday ? 'text-[#10FF88]' : 'text-purple-400'}`} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+        </svg>
+
+        {/* Event count badge */}
+        {count > 1 && (
+          <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#10FF88] flex items-center justify-center">
+            <span className="text-[9px] font-black text-zinc-950">{count}</span>
+          </div>
+        )}
       </div>
-      
-      {/* Event label */}
-      {(isSelected || (isToday && isUpcoming)) && (
-        <div 
-          className={`
-            mt-2 px-2 py-1 rounded-sm text-[10px] font-medium tracking-widest uppercase
-            backdrop-blur-md 
-            transition-opacity duration-300
-            bg-zinc-950/90 border border-zinc-800 text-zinc-400
-            ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
-          `}
-        >
-          {event.name}
-        </div>
-      )}
+
+      {/* Business name label */}
+      <div className={`
+        mt-2 px-2 py-1 rounded-sm text-[10px] font-bold tracking-widest uppercase
+        backdrop-blur-md bg-zinc-950/90 border border-zinc-800 text-zinc-300
+        whitespace-nowrap transition-opacity duration-300
+        ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
+      `}>
+        {businessName}
+      </div>
     </div>
   );
 }
@@ -1066,28 +1047,40 @@ export default function DiscoveryPage() {
                     )
                   ))}
                   
-                  {/* NIGHT MODE: Show events on map */}
-                  {!isDayMode && filteredEvents.map(event => {
-                    const venue = venues.find(v => v.id === event.venueId);
-                    if (!venue || !venue.latitude || !venue.longitude) return null;
-                    
-                    return (
-                      <Marker
-                        key={event.id}
-                        longitude={venue.longitude}
-                        latitude={venue.latitude}
-                        anchor="center"
-                      >
-                        <EventMarker
-                          event={event}
-                          venue={venue}
-                          isSelected={false}
-                          onClick={() => handleEventClick(event)}
-                          isDayMode={isDayMode}
-                        />
-                      </Marker>
-                    );
-                  })}
+                  {/* NIGHT MODE: One marker per business, grouped */}
+                  {!isDayMode && (() => {
+                    // Group events by businessId
+                    const byBusiness = {};
+                    filteredEvents.forEach(event => {
+                      if (!event.businessId) return;
+                      if (!byBusiness[event.businessId]) {
+                        byBusiness[event.businessId] = { events: [], businessName: event.businessName };
+                      }
+                      byBusiness[event.businessId].events.push(event);
+                    });
+
+                    return Object.entries(byBusiness).map(([businessId, { events: bizEvents, businessName }]) => {
+                      // Find coordinates from any venue belonging to this business
+                      const venue = venues.find(v => v.businessId === parseInt(businessId) && v.latitude && v.longitude);
+                      if (!venue) return null;
+
+                      return (
+                        <Marker
+                          key={`biz-${businessId}`}
+                          longitude={venue.longitude}
+                          latitude={venue.latitude}
+                          anchor="center"
+                        >
+                          <BusinessEventMarker
+                            businessName={businessName}
+                            events={bizEvents}
+                            isSelected={false}
+                            onClick={() => handleEventClick(bizEvents[0])}
+                          />
+                        </Marker>
+                      );
+                    });
+                  })()}
                 </>
               )}
               
