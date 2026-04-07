@@ -223,12 +223,10 @@ export default function BusinessAdminDashboard() {
             console.warn('⚠️ Profile access denied - continuing without profile data');
             return null; // Continue without profile
           }
-          if (err.message?.includes('CORS') || err.status === undefined) {
-            throw new Error('Business API endpoints not available. Please contact your administrator.');
-          }
           if (err.status === 401) {
             throw new Error('Authentication failed. Please login again.');
           }
+          return null;
           return null;
         }),
         businessApi.dashboard.get().catch(err => {
@@ -237,12 +235,10 @@ export default function BusinessAdminDashboard() {
             console.warn('⚠️ Dashboard access denied - continuing without dashboard data');
             return null; // Continue without dashboard
           }
-          if (err.message?.includes('CORS') || err.status === undefined) {
-            throw new Error('Business API endpoints not available. Please contact your administrator.');
-          }
           if (err.status === 401) {
             throw new Error('Authentication failed. Please login again.');
           }
+          return null;
           return null;
         }),
         businessApi.orders.getActive().catch(() => []),
