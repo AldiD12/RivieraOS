@@ -76,6 +76,10 @@ export default function BusinessAdminDashboard() {
 
   // Modal states
   const [showCreateStaffModal, setShowCreateStaffModal] = useState(false);
+  const [resetPasswordStaff, setResetPasswordStaff] = useState(null);
+  const [resetPasswordValue, setResetPasswordValue] = useState('');
+  const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
+  const [resetPasswordError, setResetPasswordError] = useState('');
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
   const [showCreateVenueModal, setShowCreateVenueModal] = useState(false);
@@ -352,18 +356,9 @@ export default function BusinessAdminDashboard() {
 
       const normalizedStaffForm = {
         ...staffForm,
-        phoneNumber: normalizedPhone
+        phoneNumber: normalizedPhone,
+        venueId: staffForm.venueId || null
       };
-      
-      console.log('📤 Creating staff with data:', {
-        email: normalizedStaffForm.email,
-        password: '************',
-        phoneNumber: normalizedStaffForm.phoneNumber,
-        fullName: normalizedStaffForm.fullName,
-        role: normalizedStaffForm.role,
-        pin: '****',
-        isActive: normalizedStaffForm.isActive
-      });
 
       // Call API
       await businessApi.staff.create(normalizedStaffForm);
@@ -459,6 +454,22 @@ export default function BusinessAdminDashboard() {
     } catch (err) {
       console.error('Error activating staff:', err);
       setError(`Failed to activate staff member: ${err.data || err.message}`);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!resetPasswordStaff || !resetPasswordValue) return;
+    setResetPasswordLoading(true);
+    setResetPasswordError('');
+    try {
+      await businessApi.staff.resetPassword(resetPasswordStaff.id, resetPasswordValue);
+      setResetPasswordStaff(null);
+      setResetPasswordValue('');
+    } catch (err) {
+      setResetPasswordError(err.response?.data?.message || err.message || 'Failed to reset password.');
+    } finally {
+      setResetPasswordLoading(false);
     }
   };
 
@@ -1558,6 +1569,20 @@ export default function BusinessAdminDashboard() {
                         {staff.isActive ? 'Deactivate' : 'Activate'}
                       </button>
                       <button
+                        onClick={() => {
+                          setResetPasswordStaff(staff);
+                          setResetPasswordValue('');
+                          setResetPasswordError('');
+                        }}
+                        className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
+                          isDarkMode
+                            ? 'bg-zinc-800 text-amber-400 hover:bg-zinc-700'
+                            : 'bg-gray-100 text-amber-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        Reset PWD
+                      </button>
+                      <button
                         onClick={() => handleDeleteStaff(staff.id)}
                         className={`px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
                           isDarkMode
@@ -2496,6 +2521,18 @@ export default function BusinessAdminDashboard() {
         staffForm={staffForm}
         onFormChange={handleStaffFormChange}
         onSubmit={handleEditStaff}
+      />
+
+      {/* Reset Password Modal */}
+      <ResetPasswordModal
+        isOpen={!!resetPasswordStaff}
+        onClose={() => { setResetPasswordStaff(null); setResetPasswordValue(''); setResetPasswordError(''); }}
+        staffMember={resetPasswordStaff}
+        newPassword={resetPasswordValue}
+        onPasswordChange={setResetPasswordValue}
+        onSubmit={handleResetPassword}
+        error={resetPasswordError}
+        loading={resetPasswordLoading}
       />
 
       {/* Create Category Modal */}
