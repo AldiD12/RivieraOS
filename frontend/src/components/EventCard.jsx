@@ -14,6 +14,9 @@ export default function EventCard({ event, venue, isDayMode, onClick, isIndustri
     hour: '2-digit',
     minute: '2-digit'
   });
+  const endTimeStr = event.endTime
+    ? new Date(event.endTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+    : null;
   
   // Determine entry type display
   let entryBadge = { text: 'FREE ENTRY', color: 'emerald' };
@@ -101,7 +104,7 @@ export default function EventCard({ event, venue, isDayMode, onClick, isIndustri
             
             <div className="px-6 py-4 flex items-center justify-between text-xs text-zinc-400 font-mono border-b border-zinc-800 bg-zinc-950/50">
               <span className="uppercase font-bold tracking-widest text-[10px]">
-                [ {venue?.name || 'TBA'} ]
+                [ {event.businessName} ]
               </span>
               <div className="flex items-center gap-3">
                 {event.maxGuests > 0 && (
@@ -110,7 +113,7 @@ export default function EventCard({ event, venue, isDayMode, onClick, isIndustri
                   </span>
                 )}
                 <span className="uppercase font-bold tracking-widest text-[10px] text-[#10FF88]">
-                  [ {timeStr} - LATE ]
+                  [ {timeStr}{endTimeStr ? ` - ${endTimeStr}` : ''} ]
                 </span>
               </div>
             </div>
@@ -213,9 +216,9 @@ export default function EventCard({ event, venue, isDayMode, onClick, isIndustri
           <h3 className="text-white font-bold text-lg leading-tight mb-1 drop-shadow-lg">
             {event.name}
           </h3>
-          {venue && (
+          {event.businessName && (
             <p className="text-white/90 text-sm font-medium drop-shadow-md">
-              📍 {venue.name}
+              📍 {event.businessName}
             </p>
           )}
         </div>

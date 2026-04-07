@@ -1391,7 +1391,7 @@ export default function DiscoveryPage() {
                   
                   <div className="px-6 py-4 flex items-center justify-between text-xs text-zinc-400 font-mono border-b border-zinc-800 bg-zinc-950/50">
                     <span className="uppercase font-bold tracking-widest text-[10px]">
-                      [ {venue?.name || 'TBA'} ]
+                      [ {event.businessName} ]
                     </span>
                     <div className="flex items-center gap-3">
                       {event.maxGuests > 0 && (
@@ -1400,10 +1400,8 @@ export default function DiscoveryPage() {
                         </span>
                       )}
                       <span className="uppercase font-bold tracking-widest text-[10px] text-[#10FF88]">
-                        [ {eventDate.toLocaleTimeString('en-GB', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })} - LATE ]
+                        [ {eventDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                        {event.endTime ? ` - ${new Date(event.endTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}` : ''} ]
                       </span>
                     </div>
                   </div>
