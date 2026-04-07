@@ -2327,20 +2327,26 @@ export default function SuperAdminDashboard() {
               }));
               setShowCreateStaffModal(true);
             }}
-            onEditStaff={(staff) => {
-              // Venues already fetched in handleBusinessSelect
-              setEditingStaff(staff);
-              setStaffForm({
-                email: staff.email || '',
-                phoneNumber: staff.phoneNumber || '',
-                fullName: staff.fullName || '',
-                role: staff.role || 'Staff',
-                pin: '', // Don't pre-fill PIN for security, update logic will omit if empty
-                isActive: staff.isActive,
-                venueId: staff.venueId || null,
-                venues: venues
-              });
-              setShowEditStaffModal(true);
+            onEditStaff={async (staff) => {
+              // List DTO omits email/phone — fetch full detail first
+              try {
+                const detail = await staffApi.getById(selectedBusiness.id, staff.id);
+                setEditingStaff(detail);
+                setStaffForm({
+                  email: detail.email || '',
+                  phoneNumber: detail.phoneNumber || '',
+                  fullName: detail.fullName || '',
+                  role: detail.role || 'Staff',
+                  pin: '', // Don't pre-fill PIN for security
+                  isActive: detail.isActive,
+                  venueId: detail.venueId || null,
+                  venues: venues
+                });
+                setShowEditStaffModal(true);
+              } catch (err) {
+                console.error('Failed to fetch staff detail:', err);
+                setError(getApiError(err));
+              }
             }}
             onDeleteStaff={handleDeleteStaff}
             onResetPassword={(staff) => {
