@@ -190,27 +190,18 @@ The frontend needs the **Business's WhatsApp/phone number** to work as a fallbac
 ### Changes Needed
 
 **0. Add New Fields to `Business` Entity & DTOs:**
-Because we are making venue-less events possible and expanding business capabilities, the `Business` itself needs additional fields (previously only `Venue` had some of these).
-- In `Entities/Business.cs$: Add the following properties:
-  - `public string? WhatsappNumber { get; set; }`
-  - `public string? OperationZone { get; set; }`
-  - `public string? GoogleMapsAddress { get; set; }`
-  - `public string? ReviewLink { get; set; }`
-- In `DTOs/SuperAdmin/BusinessDtos.cs`: Add these exact same 4 fields (`WhatsappNumber`, `OperationZone`, `GoogleMapsAddress`, `ReviewLink`) to `CreateBusinessRequest`, `UpdateBusinessRequest`, `BusinessDetailDto`, and `BusinessListItemDto`.
-- Run migrations to add `whatsapp_number`, `operation_zone`, `google_maps_address`, and `review_link` to the `core_businesses` table.
-- Update `SuperAdmin/BusinessesController.cs` to map these 4 fields on Create/Update.
+~~*Kristi already did this! He added `PhoneNumber`, `OperationZone`, `GoogleMapsAddress`, and `ReviewLink` in commit 0ed6a0d.*~~
 
-**1. Add `BusinessWhatsappNumber` to `PublicEventListItemDto`:**
+**1. Add `BusinessPhoneNumber` to `PublicEventListItemDto`:**
 ```csharp
-public string? BusinessWhatsappNumber { get; set; }
+public string? BusinessPhoneNumber { get; set; }
 ```
 
 **2. Populate it in `PublicEventsController.cs` `GetEvents()` and `GetEventsByBusiness()` Select projections:**
 ```csharp
-BusinessWhatsappNumber = e.Business != null ? e.Business.WhatsappNumber : 
-                         (e.Venue != null && e.Venue.Business != null ? e.Venue.Business.WhatsappNumber : null),
+BusinessPhoneNumber = e.Business != null ? e.Business.PhoneNumber : 
+                         (e.Venue != null && e.Venue.Business != null ? e.Venue.Business.PhoneNumber : null),
 ```
-*(Use whatever the WhatsApp/Phone field is called on the `Business` entity — check `Business.cs` for the exact property name)*
 
 **3. Make sure `e.Business` is included in the query:**
 ```csharp

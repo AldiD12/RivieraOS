@@ -81,8 +81,8 @@ export const CreateBusinessModal = ({
                 </label>
                 <input
                   type="tel"
-                  value={businessForm.whatsappNumber || ''}
-                  onChange={(e) => onFormChange('whatsappNumber', e.target.value)}
+                  value={businessForm.phoneNumber || ''}
+                  onChange={(e) => onFormChange('phoneNumber', e.target.value)}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                   placeholder="Enter WhatsApp number"
                 />
@@ -253,8 +253,8 @@ export const EditBusinessModal = ({
                 </label>
                 <input
                   type="tel"
-                  value={businessForm.whatsappNumber || ''}
-                  onChange={(e) => onFormChange('whatsappNumber', e.target.value)}
+                  value={businessForm.phoneNumber || ''}
+                  onChange={(e) => onFormChange('phoneNumber', e.target.value)}
                   className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:border-zinc-600 focus:outline-none"
                 />
               </div>
