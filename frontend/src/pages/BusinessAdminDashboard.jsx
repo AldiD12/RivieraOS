@@ -486,33 +486,15 @@ export default function BusinessAdminDashboard() {
   }, []);
 
   const handleCreateEvent = async (eventData) => {
-    try {
-      // Backend now beautifully handles null venueId for business-level events
-      if (!eventData.venueId) {
-        eventData.venueId = null;
-      }
-      await businessApi.events.create(eventData);
-      setShowCreateEventModal(false);
-      await fetchEvents();
-    } catch (err) {
-      console.error('Error creating event:', err);
-      setError(`Failed to create event: ${err.response?.data?.message || err.message}`);
-    }
+    await businessApi.events.create(eventData);
+    setShowCreateEventModal(false);
+    await fetchEvents();
   };
 
   const handleEditEvent = async (id, eventData) => {
-    try {
-      // Backend now beautifully handles null venueId for business-level events
-      if (!eventData.venueId) {
-        eventData.venueId = null;
-      }
-      await businessApi.events.update(id, eventData);
-      setEditingEvent(null);
-      await fetchEvents();
-    } catch (err) {
-      console.error('Error updating event:', err);
-      setError(`Failed to update event: ${err.response?.data?.message || err.message}`);
-    }
+    await businessApi.events.update(id, eventData);
+    setEditingEvent(null);
+    await fetchEvents();
   };
 
   const handleDeleteEvent = async (id) => {
