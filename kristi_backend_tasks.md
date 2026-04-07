@@ -189,6 +189,13 @@ The frontend needs the **Business's WhatsApp/phone number** to work as a fallbac
 
 ### Changes Needed
 
+**0. Add `WhatsappNumber` to `Business` Entity & DTOs:**
+Because we are making venue-less events possible, the `Business` itself needs a WhatsApp number (previously only `Venue` had this).
+- In `Entities/Business.cs`: Add `public string? WhatsappNumber { get; set; }`
+- In `DTOs/SuperAdmin/BusinessDtos.cs`: Add `public string? WhatsappNumber { get; set; }` to `CreateBusinessRequest`, `UpdateBusinessRequest`, `BusinessDetailDto`, and `BusinessListItemDto`.
+- Run migrations to add `whatsapp_number` to `core_businesses` table.
+- Update `SuperAdmin/BusinessesController.cs` to map `WhatsappNumber` on Create/Update.
+
 **1. Add `BusinessWhatsappNumber` to `PublicEventListItemDto`:**
 ```csharp
 public string? BusinessWhatsappNumber { get; set; }

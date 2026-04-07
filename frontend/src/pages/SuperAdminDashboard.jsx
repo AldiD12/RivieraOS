@@ -911,6 +911,7 @@ export default function SuperAdminDashboard() {
     taxId: '',
     contactEmail: '',
     logoUrl: '',
+    whatsappNumber: '',
     isActive: true
   });
 
@@ -1113,6 +1114,7 @@ export default function SuperAdminDashboard() {
         taxId: '',
         contactEmail: '',
         logoUrl: '',
+        whatsappNumber: '',
         isActive: true
       });
       
@@ -1139,6 +1141,7 @@ export default function SuperAdminDashboard() {
         taxId: '',
         contactEmail: '',
         logoUrl: '',
+        whatsappNumber: '',
         isActive: true
       });
       
@@ -2240,6 +2243,7 @@ export default function SuperAdminDashboard() {
                 taxId: business.taxId || '',
                 contactEmail: business.contactEmail || '',
                 logoUrl: business.logoUrl || '',
+                whatsappNumber: business.whatsappNumber || '',
                 isActive: business.isActive
               });
               setShowEditBusinessModal(true);
