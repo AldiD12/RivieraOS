@@ -11,6 +11,13 @@ import { CreateEventModal, EditEventModal, DeleteEventModal } from '../component
 import { SuperAdminFeaturesPanel } from '../components/SuperAdminFeaturesPanel';
 import BulkProductImport from '../components/BulkProductImport';
 
+// Extract API error message — backend may return a plain string or { message: "..." }
+const getApiError = (err) => {
+  const d = err.response?.data;
+  if (typeof d === 'string') return d;
+  return d?.message || err.message || 'Unknown error';
+};
+
 // Utility function to normalize phone numbers (match backend format)
 const normalizePhoneNumber = (phone) => {
   if (!phone) return '';
@@ -1031,7 +1038,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error fetching businesses:', err);
-      setError('Failed to fetch businesses: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
       setBusinesses([]);
     } finally {
       setLoading(false);
@@ -1085,7 +1092,7 @@ export default function SuperAdminDashboard() {
     } catch (err) {
       console.error('Error fetching menu:', err);
       if (err.response?.status !== 404) {
-        setError('Failed to load menu: ' + (err.response?.data?.message || err.message));
+        setError(getApiError(err));
       }
     } finally {
       setIsMenuLoading(false);
@@ -1140,7 +1147,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error creating business:', err);
-      setError('Failed to create business: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [businessForm, fetchBusinesses]);
 
@@ -1181,7 +1188,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error updating business:', err);
-      setError('Failed to update business: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [editingBusiness, businessForm, fetchBusinesses]);
 
@@ -1194,7 +1201,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error deleting business:', err);
-      setError('Failed to delete business: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [fetchBusinesses]);
 
@@ -1262,7 +1269,7 @@ export default function SuperAdminDashboard() {
       console.log('✅ Staff member created successfully');
     } catch (err) {
       console.error('Error creating staff:', err);
-      setError('Failed to create staff member: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedBusiness, staffForm]);
 
@@ -1306,7 +1313,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error updating staff:', err);
-      setError('Failed to update staff member: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedBusiness, editingStaff, staffForm]);
 
@@ -1323,7 +1330,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error deleting staff:', err);
-      setError('Failed to delete staff member: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedBusiness]);
 
@@ -1404,7 +1411,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error toggling staff activation:', err);
-      setError('Failed to toggle staff activation: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedBusiness]);
 
@@ -1440,7 +1447,7 @@ export default function SuperAdminDashboard() {
         setProducts([]);
         setError('');
       } else {
-        setError('Failed to load menu: ' + (err.response?.data?.message || err.message));
+        setError(getApiError(err));
       }
     } finally {
       setIsMenuLoading(false);
@@ -1459,7 +1466,7 @@ export default function SuperAdminDashboard() {
     } catch (err) {
       console.error('Error fetching products for category:', err);
       setProducts([]);
-      setError('Failed to fetch products: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     } finally {
       setProductsLoading(false);
     }
@@ -1488,7 +1495,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error creating category:', err);
-      setError('Failed to create category: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedBusiness, categoryForm, categoryExcludedVenues]);
 
@@ -1515,7 +1522,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error updating category:', err);
-      setError('Failed to update category: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedBusiness, editingCategory, categoryForm, categoryExcludedVenues]);
 
@@ -1533,7 +1540,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error deleting category:', err);
-      setError('Failed to delete category: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedBusiness, selectedCategory]);
 
@@ -1575,7 +1582,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error creating product:', err);
-      setError('Failed to create product: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [productForm, productExcludedVenues]);
 
@@ -1617,7 +1624,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error updating product:', err);
-      setError('Failed to update product: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [productForm, selectedCategory, editingProduct]);
 
@@ -1634,7 +1641,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error deleting product:', err);
-      setError('Failed to delete product: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedCategory]);
 
@@ -1678,7 +1685,7 @@ export default function SuperAdminDashboard() {
       console.error('Error fetching venues:', err);
       setVenues([]);
       if (err.response?.status !== 404) {
-        setError('Failed to fetch venues: ' + (err.response?.data?.message || err.message));
+        setError(getApiError(err));
       }
     } finally {
       setVenuesLoading(false);
@@ -1731,7 +1738,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error creating venue:', err);
-      setError('Failed to create venue: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedBusiness, venueForm]);
 
@@ -1759,7 +1766,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error updating venue:', err);
-      setError('Failed to update venue: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedBusiness, editingVenue, venueForm]);
 
@@ -1777,7 +1784,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error deleting venue:', err);
-      setError('Failed to delete venue: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedBusiness, selectedVenue]);
 
@@ -1819,7 +1826,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('❌ [SuperAdmin] Error creating zone:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Unknown error occurred';
+      const errorMessage = getApiError(err);
       setError('Failed to create zone: ' + errorMessage);
     }
   }, [selectedVenue, zoneForm]);
@@ -1848,7 +1855,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error updating zone:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Unknown error occurred';
+      const errorMessage = getApiError(err);
       setError('Failed to update zone: ' + errorMessage);
     }
   }, [selectedVenue, editingZone, zoneForm]);
@@ -1866,7 +1873,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error deleting zone:', err);
-      const errorMessage = err.response?.data?.message || err.message || 'Unknown error occurred';
+      const errorMessage = getApiError(err);
       setError('Failed to delete zone: ' + errorMessage);
     }
   }, [selectedVenue]);
@@ -1883,7 +1890,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error toggling zone active status:', err);
-      setError('Failed to toggle zone: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedVenue]);
 
@@ -1936,7 +1943,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error bulk creating units:', err);
-      setError('Failed to create units: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedVenue, selectedZone, bulkUnitForm, fetchUnitsForZone]);
 
@@ -1950,7 +1957,7 @@ export default function SuperAdminDashboard() {
       setError('');
     } catch (err) {
       console.error('Error deleting unit:', err);
-      setError('Failed to delete unit: ' + (err.response?.data?.message || err.message));
+      setError(getApiError(err));
     }
   }, [selectedVenue, selectedZone, fetchUnitsForZone]);
 
@@ -2002,7 +2009,7 @@ export default function SuperAdminDashboard() {
       setError(''); // Clear any previous errors
     } catch (err) {
       console.error('Error toggling event publish status:', err);
-      setError(`Failed to ${event.isPublished ? 'unpublish' : 'publish'} event: ${err.response?.data?.message || err.message}`);
+      setError(getApiError(err));
     }
   };
 
@@ -2013,7 +2020,7 @@ export default function SuperAdminDashboard() {
       setError(''); // Clear any previous errors
     } catch (err) {
       console.error('Error restoring event:', err);
-      setError(`Failed to restore event: ${err.response?.data?.message || err.message}`);
+      setError(getApiError(err));
     }
   };
 
@@ -2069,7 +2076,7 @@ export default function SuperAdminDashboard() {
       setError(''); // Clear any previous errors
     } catch (err) {
       console.error('Error deleting event:', err);
-      setError(`Failed to delete event: ${err.response?.data?.message || err.message}`);
+      setError(getApiError(err));
     }
   };
 

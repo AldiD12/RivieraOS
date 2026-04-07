@@ -2097,6 +2097,44 @@
         }
       }
     },
+    "/api/public/Events/geographic-zones": {
+      "get": {
+        "tags": [
+          "Events"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicGeographicZoneDto"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicGeographicZoneDto"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicGeographicZoneDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/public/Events": {
       "get": {
         "tags": [
@@ -2117,6 +2155,13 @@
             "schema": {
               "type": "integer",
               "format": "int32"
+            }
+          },
+          {
+            "name": "geographicZone",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -6444,6 +6489,29 @@
         }
       }
     },
+    "/api/public/Units/{unitId}/hierarchy": {
+      "get": {
+        "tags": [
+          "Units"
+        ],
+        "parameters": [
+          {
+            "name": "unitId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/business/venues/{venueId}/Units": {
       "get": {
         "tags": [
@@ -8723,10 +8791,6 @@
             "type": "string",
             "nullable": true
           },
-          "guestPhone": {
-            "type": "string",
-            "nullable": true
-          },
           "guestCount": {
             "type": "integer",
             "format": "int32"
@@ -9045,8 +9109,7 @@
         "required": [
           "endTime",
           "name",
-          "startTime",
-          "venueId"
+          "startTime"
         ],
         "type": "object",
         "properties": {
@@ -9062,6 +9125,7 @@
           "flyerImageUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
             "nullable": true
           },
           "startTime": {
@@ -9076,14 +9140,20 @@
             "type": "boolean"
           },
           "ticketPrice": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "minimumSpend": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "maxGuests": {
+            "maximum": 10000,
+            "minimum": 0,
             "type": "integer",
             "format": "int32"
           },
@@ -9102,7 +9172,8 @@
           },
           "venueId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -9127,13 +9198,18 @@
           "imageUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
             "nullable": true
           },
           "price": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "oldPrice": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double",
             "nullable": true
@@ -9210,10 +9286,6 @@
             "type": "string",
             "nullable": true
           },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
           "address": {
             "maxLength": 500,
             "type": "string",
@@ -9222,6 +9294,7 @@
           "imageUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
             "nullable": true
           },
           "latitude": {
@@ -9260,14 +9333,6 @@
             "type": "string",
             "nullable": true
           },
-          "capacityPerUnit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "basePrice": {
-            "type": "number",
-            "format": "double"
-          },
           "isActive": {
             "type": "boolean"
           }
@@ -9293,6 +9358,8 @@
             "type": "string"
           },
           "basePrice": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double",
             "nullable": true
@@ -9413,7 +9480,8 @@
           },
           "venueId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "venueName": {
             "type": "string",
@@ -9481,7 +9549,8 @@
           },
           "venueId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "venueName": {
             "type": "string",
@@ -9522,10 +9591,6 @@
             "nullable": true
           },
           "guestName": {
-            "type": "string",
-            "nullable": true
-          },
-          "guestPhone": {
             "type": "string",
             "nullable": true
           },
@@ -10199,8 +10264,7 @@
         "required": [
           "endTime",
           "name",
-          "startTime",
-          "venueId"
+          "startTime"
         ],
         "type": "object",
         "properties": {
@@ -10216,6 +10280,7 @@
           "flyerImageUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
             "nullable": true
           },
           "startTime": {
@@ -10230,14 +10295,20 @@
             "type": "boolean"
           },
           "ticketPrice": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "minimumSpend": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "maxGuests": {
+            "maximum": 10000,
+            "minimum": 0,
             "type": "integer",
             "format": "int32"
           },
@@ -10256,7 +10327,8 @@
           },
           "venueId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -10314,13 +10386,18 @@
           "imageUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
             "nullable": true
           },
           "price": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "oldPrice": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double",
             "nullable": true
@@ -10415,10 +10492,14 @@
             "type": "boolean"
           },
           "maxCapacity": {
+            "maximum": 10000,
+            "minimum": 0,
             "type": "integer",
             "format": "int32"
           },
           "bookingDepositAmount": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           }
@@ -10441,10 +10522,6 @@
             "type": "string",
             "nullable": true
           },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
           "address": {
             "maxLength": 500,
             "type": "string",
@@ -10453,6 +10530,7 @@
           "imageUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
             "nullable": true
           },
           "latitude": {
@@ -10491,14 +10569,6 @@
             "type": "string",
             "nullable": true
           },
-          "capacityPerUnit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "basePrice": {
-            "type": "number",
-            "format": "double"
-          },
           "isActive": {
             "type": "boolean"
           }
@@ -10519,6 +10589,8 @@
             "nullable": true
           },
           "basePrice": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double",
             "nullable": true
@@ -11053,6 +11125,26 @@
             "type": "string",
             "nullable": true
           },
+          "googleMapsAddress": {
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
+          },
+          "reviewLink": {
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "operationZone": {
+            "maxLength": 255,
+            "type": "string",
+            "nullable": true
+          },
           "isActive": {
             "type": "boolean"
           },
@@ -11171,6 +11263,22 @@
             "nullable": true
           },
           "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "googleMapsAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "reviewLink": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "operationZone": {
             "type": "string",
             "nullable": true
           },
@@ -11411,6 +11519,22 @@
             "nullable": true
           },
           "logoUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "googleMapsAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "reviewLink": {
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "operationZone": {
             "type": "string",
             "nullable": true
           },
@@ -11693,14 +11817,6 @@
             "nullable": true
           },
           "guestName": {
-            "type": "string",
-            "nullable": true
-          },
-          "guestPhone": {
-            "type": "string",
-            "nullable": true
-          },
-          "guestEmail": {
             "type": "string",
             "nullable": true
           },
@@ -12037,6 +12153,27 @@
           "logoUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "googleMapsAddress": {
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
+          },
+          "reviewLink": {
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "operationZone": {
+            "maxLength": 255,
+            "type": "string",
             "nullable": true
           },
           "subscriptionStatus": {
@@ -12134,8 +12271,7 @@
         "required": [
           "endTime",
           "name",
-          "startTime",
-          "venueId"
+          "startTime"
         ],
         "type": "object",
         "properties": {
@@ -12151,6 +12287,7 @@
           "flyerImageUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
             "nullable": true
           },
           "startTime": {
@@ -12165,14 +12302,20 @@
             "type": "boolean"
           },
           "ticketPrice": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "minimumSpend": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "maxGuests": {
+            "maximum": 10000,
+            "minimum": 0,
             "type": "integer",
             "format": "int32"
           },
@@ -12191,7 +12334,13 @@
           },
           "venueId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
+          },
+          "businessId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -12216,13 +12365,18 @@
           "imageUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
             "nullable": true
           },
           "price": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "oldPrice": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double",
             "nullable": true
@@ -12329,10 +12483,6 @@
             "type": "string",
             "nullable": true
           },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
           "address": {
             "maxLength": 500,
             "type": "string",
@@ -12341,6 +12491,7 @@
           "imageUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
             "nullable": true
           },
           "latitude": {
@@ -12379,14 +12530,6 @@
             "type": "string",
             "nullable": true
           },
-          "capacityPerUnit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "basePrice": {
-            "type": "number",
-            "format": "double"
-          },
           "isActive": {
             "type": "boolean"
           }
@@ -12412,6 +12555,8 @@
             "type": "string"
           },
           "basePrice": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double",
             "nullable": true
@@ -12597,7 +12742,8 @@
           },
           "venueId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "venueName": {
             "type": "string",
@@ -12674,7 +12820,8 @@
           },
           "venueId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "venueName": {
             "type": "string",
@@ -13369,13 +13516,18 @@
           },
           "venueId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "venueName": {
             "type": "string",
             "nullable": true
           },
           "venueAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "venueGeographicZone": {
             "type": "string",
             "nullable": true
           },
@@ -13471,13 +13623,18 @@
           },
           "venueId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
           },
           "venueName": {
             "type": "string",
             "nullable": true
           },
           "venueAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "venueGeographicZone": {
             "type": "string",
             "nullable": true
           },
@@ -13525,6 +13682,20 @@
           "message": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PublicGeographicZoneDto": {
+        "type": "object",
+        "properties": {
+          "zone": {
+            "type": "string",
+            "nullable": true
+          },
+          "eventCount": {
+            "type": "integer",
+            "format": "int32"
           }
         },
         "additionalProperties": false
@@ -13875,6 +14046,7 @@
           "guestPhone": {
             "maxLength": 50,
             "type": "string",
+            "format": "tel",
             "nullable": true
           },
           "guestEmail": {
@@ -14624,10 +14796,18 @@
           },
           "venueId": {
             "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "businessId": {
+            "type": "integer",
             "format": "int32"
           },
           "venue": {
             "$ref": "#/components/schemas/Venue"
+          },
+          "business": {
+            "$ref": "#/components/schemas/Business"
           },
           "eventBookings": {
             "type": "array",
@@ -14711,6 +14891,27 @@
           },
           "logoUrl": {
             "maxLength": 500,
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "googleMapsAddress": {
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
+          },
+          "reviewLink": {
+            "maxLength": 500,
+            "type": "string",
+            "nullable": true
+          },
+          "phoneNumber": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
+          },
+          "operationZone": {
+            "maxLength": 255,
             "type": "string",
             "nullable": true
           },
@@ -14812,8 +15013,7 @@
         "required": [
           "endTime",
           "name",
-          "startTime",
-          "venueId"
+          "startTime"
         ],
         "type": "object",
         "properties": {
@@ -14829,6 +15029,7 @@
           "flyerImageUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
             "nullable": true
           },
           "startTime": {
@@ -14843,14 +15044,20 @@
             "type": "boolean"
           },
           "ticketPrice": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "minimumSpend": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "maxGuests": {
+            "maximum": 10000,
+            "minimum": 0,
             "type": "integer",
             "format": "int32"
           },
@@ -14869,7 +15076,13 @@
           },
           "venueId": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true
+          },
+          "businessId": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -14894,13 +15107,18 @@
           "imageUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
             "nullable": true
           },
           "price": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           },
           "oldPrice": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double",
             "nullable": true
@@ -14995,10 +15213,14 @@
             "type": "boolean"
           },
           "maxCapacity": {
+            "maximum": 10000,
+            "minimum": 0,
             "type": "integer",
             "format": "int32"
           },
           "bookingDepositAmount": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double"
           }
@@ -15021,10 +15243,6 @@
             "type": "string",
             "nullable": true
           },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
           "address": {
             "maxLength": 500,
             "type": "string",
@@ -15033,6 +15251,7 @@
           "imageUrl": {
             "maxLength": 500,
             "type": "string",
+            "format": "uri",
             "nullable": true
           },
           "latitude": {
@@ -15071,14 +15290,6 @@
             "type": "string",
             "nullable": true
           },
-          "capacityPerUnit": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "basePrice": {
-            "type": "number",
-            "format": "double"
-          },
           "isActive": {
             "type": "boolean"
           }
@@ -15099,6 +15310,8 @@
             "nullable": true
           },
           "basePrice": {
+            "maximum": 99999,
+            "minimum": 0,
             "type": "number",
             "format": "double",
             "nullable": true
@@ -15163,6 +15376,15 @@
           },
           "isActive": {
             "type": "boolean"
+          },
+          "failedLoginAttempts": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "lockoutEnd": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -15266,15 +15488,7 @@
             "type": "integer",
             "format": "int32"
           },
-          "email": {
-            "type": "string",
-            "nullable": true
-          },
           "fullName": {
-            "type": "string",
-            "nullable": true
-          },
-          "phoneNumber": {
             "type": "string",
             "nullable": true
           },
@@ -15424,6 +15638,11 @@
           "allowsDigitalOrdering": {
             "type": "boolean",
             "readOnly": true
+          },
+          "geographicZone": {
+            "maxLength": 50,
+            "type": "string",
+            "nullable": true
           },
           "whatsappNumber": {
             "maxLength": 20,
@@ -16229,7 +16448,7 @@
   },
   "security": [
     {
-      "Bearer": [ ]
+      "Bearer": []
     }
   ]
 }
