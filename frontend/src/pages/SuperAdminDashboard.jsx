@@ -1109,7 +1109,18 @@ export default function SuperAdminDashboard() {
     e.preventDefault();
     
     try {
-      await businessApi.superAdmin.create(businessForm);
+      const payload = {
+        ...businessForm,
+        brandName: businessForm.brandName?.trim() || null,
+        taxId: businessForm.taxId?.trim() || null,
+        logoUrl: businessForm.logoUrl?.trim() || null,
+        phoneNumber: businessForm.phoneNumber?.trim() || null,
+        operationZone: businessForm.operationZone?.trim() || null,
+        googleMapsAddress: businessForm.googleMapsAddress?.trim() || null,
+        reviewLink: businessForm.reviewLink?.trim() || null
+      };
+
+      await businessApi.superAdmin.create(payload);
       setShowCreateBusinessModal(false);
       setBusinessForm({
         registeredName: '',
@@ -1138,7 +1149,18 @@ export default function SuperAdminDashboard() {
     if (!editingBusiness) return;
     
     try {
-      await businessApi.superAdmin.update(editingBusiness.id, businessForm);
+      const payload = {
+        ...businessForm,
+        brandName: businessForm.brandName?.trim() || null,
+        taxId: businessForm.taxId?.trim() || null,
+        logoUrl: businessForm.logoUrl?.trim() || null,
+        phoneNumber: businessForm.phoneNumber?.trim() || null,
+        operationZone: businessForm.operationZone?.trim() || null,
+        googleMapsAddress: businessForm.googleMapsAddress?.trim() || null,
+        reviewLink: businessForm.reviewLink?.trim() || null
+      };
+
+      await businessApi.superAdmin.update(editingBusiness.id, payload);
       setShowEditBusinessModal(false);
       setEditingBusiness(null);
       setBusinessForm({
