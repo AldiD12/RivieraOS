@@ -1,6 +1,18 @@
 import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
+// Parses coordinates out of a Google Maps share URL
+function parseGoogleMapsUrl(url) {
+  if (!url) return null;
+  const atMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (atMatch) return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) };
+  const qMatch = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) };
+  const embedMatch = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
+  if (embedMatch) return { lat: parseFloat(embedMatch[1]), lng: parseFloat(embedMatch[2]) };
+  return null;
+}
+
 // Lazy load heavy mapbox components (deferred until map view)
 const Map = lazy(() => import('react-map-gl'));
 const Marker = lazy(() => import('react-map-gl').then(mod => ({ default: mod.Marker })));
@@ -1047,28 +1059,32 @@ export default function DiscoveryPage() {
                     )
                   ))}
                   
-                  {/* NIGHT MODE: One marker per business, grouped */}
+                  {/* NIGHT MODE: One marker per business, using business Google Maps address for coords */}
                   {!isDayMode && (() => {
                     // Group events by businessId
                     const byBusiness = {};
                     filteredEvents.forEach(event => {
                       if (!event.businessId) return;
                       if (!byBusiness[event.businessId]) {
-                        byBusiness[event.businessId] = { events: [], businessName: event.businessName };
+                        byBusiness[event.businessId] = {
+                          events: [],
+                          businessName: event.businessName,
+                          googleMapsAddress: event.businessGoogleMapsAddress
+                        };
                       }
                       byBusiness[event.businessId].events.push(event);
                     });
 
-                    return Object.entries(byBusiness).map(([businessId, { events: bizEvents, businessName }]) => {
-                      // Find coordinates from any venue belonging to this business
-                      const venue = venues.find(v => v.businessId === parseInt(businessId) && v.latitude && v.longitude);
-                      if (!venue) return null;
+                    return Object.entries(byBusiness).map(([businessId, { events: bizEvents, businessName, googleMapsAddress }]) => {
+                      // Parse coordinates from the business-level Google Maps address
+                      const coords = parseGoogleMapsUrl(googleMapsAddress);
+                      if (!coords) return null;
 
                       return (
                         <Marker
                           key={`biz-${businessId}`}
-                          longitude={venue.longitude}
-                          latitude={venue.latitude}
+                          longitude={coords.lng}
+                          latitude={coords.lat}
                           anchor="center"
                         >
                           <BusinessEventMarker
