@@ -102,6 +102,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                     BusinessId = e.BusinessId,
                     BusinessName = e.Business != null ? e.Business.BrandName ?? e.Business.RegisteredName : null,
                     BusinessGoogleMapsAddress = e.Business != null ? e.Business.GoogleMapsAddress : null,
+                    BusinessPhoneNumber = e.Business != null ? e.Business.PhoneNumber : null,
                     SpotsRemaining = e.MaxGuests > 0 ? e.MaxGuests - e.EventBookings.Sum(b => b.GuestCount) : 0,
                     IsPublished = e.IsPublished,
                     IsDeleted = e.IsDeleted
@@ -156,6 +157,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                 BusinessId = evt.BusinessId,
                 BusinessName = evt.Business?.BrandName ?? evt.Business?.RegisteredName,
                 BusinessGoogleMapsAddress = evt.Business?.GoogleMapsAddress,
+                BusinessPhoneNumber = evt.Business?.PhoneNumber,
                 BusinessLogoUrl = evt.Business?.LogoUrl,
                 IsPublished = evt.IsPublished,
                 IsDeleted = evt.IsDeleted
@@ -200,6 +202,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                     BusinessId = e.BusinessId,
                     BusinessName = e.Business != null ? e.Business.BrandName ?? e.Business.RegisteredName : null,
                     BusinessGoogleMapsAddress = e.Business != null ? e.Business.GoogleMapsAddress : null,
+                    BusinessPhoneNumber = e.Business != null ? e.Business.PhoneNumber : null,
                     SpotsRemaining = e.MaxGuests > 0 ? e.MaxGuests - e.EventBookings.Sum(b => b.GuestCount) : 0,
                     IsPublished = e.IsPublished,
                     IsDeleted = e.IsDeleted
@@ -247,6 +250,7 @@ namespace BlackBear.Services.Core.Controllers.Public
                     BusinessId = e.BusinessId,
                     BusinessName = e.Business != null ? e.Business.BrandName ?? e.Business.RegisteredName : null,
                     BusinessGoogleMapsAddress = e.Business != null ? e.Business.GoogleMapsAddress : null,
+                    BusinessPhoneNumber = e.Business != null ? e.Business.PhoneNumber : null,
                     SpotsRemaining = e.MaxGuests > 0 ? e.MaxGuests - e.EventBookings.Sum(b => b.GuestCount) : 0,
                     IsPublished = e.IsPublished,
                     IsDeleted = e.IsDeleted
