@@ -28,6 +28,7 @@ const BusinessBottomSheet = lazy(() => import('../components/BusinessBottomSheet
 const AssetBottomSheet = lazy(() => import('../components/AssetBottomSheet'));
 const EventsView = lazy(() => import('../components/EventsView'));
 const LocationBottomSheet = lazy(() => import('../components/LocationBottomSheet'));
+const EventBottomSheet = lazy(() => import('../components/EventBottomSheet'));
 
 import { calculateDistance, sortEventsByDistance, sortVenuesByDistance, getCurrentLocation } from '../utils/locationUtils';
 import attractionsData from '../data/attractions_data.json';
@@ -292,6 +293,7 @@ export default function DiscoveryPage() {
   const [venues, setVenues] = useState([]);
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [selectedBusiness, setSelectedBusiness] = useState(null); // For business grouping
+  const [selectedEvent, setSelectedEvent] = useState(null); // For event detail bottom sheet
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all'); // Default: show all, sorted by distance

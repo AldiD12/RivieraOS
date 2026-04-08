@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { ImageUpload } from '../../ImageUpload';
 
 function buildPayload(formData) {
-  const { entryType, businessId, ...rest } = formData; // strip frontend-only fields
+  const { entryType, ...rest } = formData; // strip frontend-only fields
   return {
     ...rest,
+    businessId: formData.businessId ? parseInt(formData.businessId) : null,
     venueId: formData.venueId ? parseInt(formData.venueId) : null,
     isTicketed: entryType === 'ticketed',
     ticketPrice: entryType === 'ticketed' ? parseFloat(formData.ticketPrice) || 0 : 0,
@@ -16,7 +17,8 @@ function buildPayload(formData) {
   };
 }
 
-function validate(formData) {
+function validate(formData, isSuperAdmin) {
+  if (isSuperAdmin && !formData.businessId) return 'Business is required.';
   if (!formData.name?.trim()) return 'Event name is required.';
   if (!formData.startTime) return 'Start time is required.';
   if (!formData.endTime) return 'End time is required.';
@@ -271,7 +273,7 @@ export function CreateEventModal({ isOpen, onClose, onSubmit, venues, isSuperAdm
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationError = validate(formData);
+    const validationError = validate(formData, isSuperAdmin);
     if (validationError) { setError(validationError); return; }
     setLoading(true);
     setError('');
@@ -345,7 +347,7 @@ export function EditEventModal({ isOpen, onClose, onSubmit, event, venues, isSup
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationError = validate(formData);
+    const validationError = validate(formData, isSuperAdmin);
     if (validationError) { setError(validationError); return; }
     setLoading(true);
     setError('');
