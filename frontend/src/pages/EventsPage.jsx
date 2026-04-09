@@ -84,7 +84,9 @@ export default function EventsPage() {
     message += `\nHow many people: \n`;
     message += `Preferred arrival time: `;
     
-    const cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
+    let cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
+    if (cleanNumber.startsWith('+')) cleanNumber = cleanNumber.slice(1);
+    else if (cleanNumber.startsWith('0')) cleanNumber = '355' + cleanNumber.slice(1);
     const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
     
     console.log('📱 Opening WhatsApp URL:', whatsappUrl);

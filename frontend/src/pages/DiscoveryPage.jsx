@@ -767,8 +767,10 @@ export default function DiscoveryPage() {
     message += `\nHow many people: \n`;
     message += `Preferred arrival time: `;
     
-    // Clean the phone number (remove any non-digits except +)
-    const cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
+    // Normalize to international format for wa.me (no leading +, no local 0 prefix)
+    let cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
+    if (cleanNumber.startsWith('+')) cleanNumber = cleanNumber.slice(1);
+    else if (cleanNumber.startsWith('0')) cleanNumber = '355' + cleanNumber.slice(1);
     const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
