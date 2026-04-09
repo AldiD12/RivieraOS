@@ -70,19 +70,7 @@ export default function EventsPage() {
       minute: '2-digit'
     });
     
-    let message = `Hi! I'd like to book for ${event.name} at ${venue.name} on ${eventDate}.\n\n`;
-    message += `📅 Event: ${event.name}\n`;
-    message += `📍 Venue: ${venue.name}\n`;
-    message += `🕐 Date & Time: ${eventDate} at ${eventTime}\n`;
-    
-    if (event.minimumSpend > 0) {
-      message += `💎 Minimum Spend: €${event.minimumSpend} per table\n`;
-    } else if (event.isTicketed && event.ticketPrice > 0) {
-      message += `🎫 Ticket Price: €${event.ticketPrice}\n`;
-    }
-    
-    message += `\nHow many people: \n`;
-    message += `Preferred arrival time: `;
+    const message = `Pershendetje! E pame eventin "${event.name}" ne XIXA dhe donim te rezervonim. `;
     
     let cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
     if (cleanNumber.startsWith('+')) cleanNumber = cleanNumber.slice(1);

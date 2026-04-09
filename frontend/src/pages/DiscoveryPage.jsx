@@ -753,19 +753,7 @@ export default function DiscoveryPage() {
       minute: '2-digit'
     });
     
-    let message = `Hi! I'd like to book for ${event.name} at ${contactName} on ${eventDate}.\n\n`;
-    message += `📅 Event: ${event.name}\n`;
-    message += `📍 Venue: ${contactName}\n`;
-    message += `🕐 Date & Time: ${eventDate} at ${eventTime}\n`;
-    
-    if (event.minimumSpend > 0) {
-      message += `💎 Minimum Spend: €${event.minimumSpend} per table\n`;
-    } else if (event.isTicketed && event.ticketPrice > 0) {
-      message += `🎫 Ticket Price: €${event.ticketPrice}\n`;
-    }
-    
-    message += `\nHow many people: \n`;
-    message += `Preferred arrival time: `;
+    const message = `Pershendetje! E pame eventin "${event.name}" ne XIXA dhe donim te rezervonim. `;
     
     // Normalize to international format for wa.me (no leading +, no local 0 prefix)
     let cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
