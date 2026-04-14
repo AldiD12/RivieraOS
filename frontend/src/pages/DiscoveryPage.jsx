@@ -317,7 +317,7 @@ export default function DiscoveryPage() {
   const [eventVibeFilter, setEventVibeFilter] = useState('all');
   const [eventDateFilter, setEventDateFilter] = useState('all');
   const [eventDayFilter, setEventDayFilter] = useState(() => {
-    return new URLSearchParams(window.location.search).get('from') ? 'upcoming' : 'today';
+    return new URLSearchParams(window.location.search).get('from') ? 'upcoming' : 'upcoming';
   });
   const [eventGenreFilter, setEventGenreFilter] = useState('all');
   const [eventEntranceFilter, setEventEntranceFilter] = useState('all');
@@ -1510,7 +1510,7 @@ export default function DiscoveryPage() {
                 <button
                   onClick={() => { setDayDropdownOpen(!dayDropdownOpen); setGenreDropdownOpen(false); setEntranceDropdownOpen(false); }}
                   className={`flex items-center gap-1 px-3 py-2 rounded-full border text-[11px] font-bold tracking-widest uppercase transition-all duration-200 whitespace-nowrap ${
-                    eventDayFilter !== 'today' || dayDropdownOpen
+                    eventDayFilter !== 'upcoming' || dayDropdownOpen
                       ? 'bg-[#10FF88] border-[#10FF88] text-zinc-950 shadow-[0_0_12px_rgba(16,255,136,0.35)]'
                       : 'bg-zinc-900 border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white'
                   }`}
