@@ -845,6 +845,39 @@ export default function DiscoveryPage() {
     return filtered;
   }, [events, eventDayFilter, eventGenreFilter, eventEntranceFilter, fromVenueId, venues]);
 
+  const eventAvailableGenres = useMemo(() => {
+    if (!events || events.length === 0) return [{ id: 'all', label: 'All' }];
+    
+    const genres = new Set();
+    events.forEach(event => {
+      const gList = event.genre || event.vibe || event.musicGenre;
+      if (gList) {
+        gList.split(',').forEach(part => {
+          const trimmed = part.trim();
+          if (trimmed) genres.add(trimmed);
+        });
+      }
+    });
+    
+    const options = [{ id: 'all', label: 'All' }];
+    Array.from(genres).sort().forEach(g => {
+      const label = g.charAt(0).toUpperCase() + g.slice(1).toLowerCase();
+      options.push({ id: g.toLowerCase(), label });
+    });
+    
+    if (options.length === 1) {
+      options.push(
+        { id: 'electronic', label: 'Electronic' },
+        { id: 'popullore',  label: 'Popullore' },
+        { id: 'commercial', label: 'Commercial' },
+        { id: 'rock',       label: 'Rock' },
+        { id: 'hiphop',     label: 'Hip-Hop' }
+      );
+    }
+    
+    return options;
+  }, [events]);
+
   const filteredVenues = useMemo(() => {
     return venues.filter(v => {
       // Night mode: show all venues (map hidden or events-focused)
@@ -1402,16 +1435,39 @@ export default function DiscoveryPage() {
                     </div>
                   </div>
                   
-                  <div className="p-5 pt-3">
+                  <div className="p-5 pt-3 flex gap-2">
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEventClick(event);
                       }}
-                      className="w-full py-4 bg-zinc-900 border-2 border-white rounded-none text-[12px] font-black text-white hover:bg-white hover:text-black transition-all uppercase tracking-[0.2em]"
+                      className="flex-1 py-4 bg-zinc-900 border-2 border-white rounded-none text-[12px] font-black text-white hover:bg-white hover:text-black transition-all uppercase tracking-[0.2em]"
                     >
                       CONFIRM ACCESS
                     </button>
+                    {(event.latitude || event.businessGoogleMapsAddress) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          let url = '';
+                          if (event.latitude && event.longitude) {
+                            url = `https://www.google.com/maps/dir/?api=1&destination=${event.latitude},${event.longitude}`;
+                          } else if (event.businessGoogleMapsAddress) {
+                            url = event.businessGoogleMapsAddress;
+                          }
+                          if (url) {
+                            if (url.startsWith('http')) {
+                              window.open(url, '_blank', 'noopener,noreferrer');
+                            } else {
+                              window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(url)}`, '_blank', 'noopener,noreferrer');
+                            }
+                          }
+                        }}
+                        className="w-14 shrink-0 flex items-center justify-center bg-zinc-900 border-2 border-white text-white hover:bg-white hover:text-black transition-all"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">directions</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1566,14 +1622,7 @@ export default function DiscoveryPage() {
                   }`}
                 >
                   <span className="truncate max-w-[80px] inline-block align-bottom">
-                    {eventGenreFilter === 'all' ? 'GENRE' : [
-                      { id: 'all',        label: 'All' },
-                      { id: 'electronic', label: 'Electronic' },
-                      { id: 'popullore',  label: 'Popullore' },
-                      { id: 'commercial', label: 'Commercial' },
-                      { id: 'rock',       label: 'Rock' },
-                      { id: 'hiphop',     label: 'Hip-Hop' },
-                    ].find(o => o.id === eventGenreFilter)?.label || 'GENRE'}
+                    {eventGenreFilter === 'all' ? 'GENRE' : eventAvailableGenres.find(o => o.id === eventGenreFilter)?.label || 'GENRE'}
                   </span>
                   <svg className={`w-2.5 h-2.5 transition-transform ${genreDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
@@ -1584,14 +1633,7 @@ export default function DiscoveryPage() {
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setGenreDropdownOpen(false)}></div>
                     <div className="absolute top-full left-0 mt-2 min-w-[160px] bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden py-1">
-                      {[
-                        { id: 'all',        label: 'All' },
-                        { id: 'electronic', label: 'Electronic' },
-                        { id: 'popullore',  label: 'Popullore' },
-                        { id: 'commercial', label: 'Commercial' },
-                        { id: 'rock',       label: 'Rock' },
-                        { id: 'hiphop',     label: 'Hip-Hop' },
-                      ].map(opt => (
+                      {eventAvailableGenres.map(opt => (
                         <button
                           key={opt.id}
                           onClick={() => { setEventGenreFilter(opt.id); setGenreDropdownOpen(false); }}
