@@ -10,9 +10,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Riviera Premium Experience',
-        short_name: 'Riviera',
-        description: 'Premium Beach Club Experience Platform',
+        name: 'XIXA - Nightlife & Beach Clubs',
+        short_name: 'XIXA',
+        description: 'Discover and book the best nightlife and beach club experiences across Albania.',
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
