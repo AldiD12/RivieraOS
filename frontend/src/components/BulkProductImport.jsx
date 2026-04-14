@@ -64,12 +64,42 @@ export default function BulkProductImport({ businessId, existingCategories, onIm
     setImages(newImages);
   };
 
+  // Helper to add uniform background color to transparent PNG (Wolt-style)
+  const addUniformBackground = (transparentBlob, hexColor = '#1A1A1A') => {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(transparentBlob);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        // Add 10% padding so products sit nicely in the center like Wolt/UberEats
+        const padding = Math.max(img.width, img.height) * 0.1;
+        canvas.width = img.width + padding * 2;
+        canvas.height = img.height + padding * 2;
+        
+        const ctx = canvas.getContext('2d');
+        // 1. Fill solid background
+        ctx.fillStyle = hexColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // 2. Draw the transparent product centered on top
+        const x = (canvas.width - img.width) / 2;
+        const y = (canvas.height - img.height) / 2;
+        ctx.drawImage(img, x, y, img.width, img.height);
+        
+        // 3. Export as high-quality JPEG (smaller file size, perfect support)
+        canvas.toBlob((blob) => {
+          URL.revokeObjectURL(url);
+          resolve(blob);
+        }, 'image/jpeg', 0.95);
+      };
+      img.src = url;
+    });
+  };
+
   // 3. Photoroom API call
   const processImageWithAI = async (file) => {
     const formData = new FormData();
     formData.append('image_file', file);
-    // You can customize background color here if business has one saved
-    formData.append('bg_color', '#1A1A1A'); // Default dark theme background
     formData.append('size', 'preview');
 
     try {
@@ -83,8 +113,13 @@ export default function BulkProductImport({ businessId, existingCategories, onIm
 
       if (!response.ok) throw new Error('Photoroom API failed');
       
-      const blob = await response.blob();
-      return new File([blob], file.name, { type: 'image/png' });
+      const transparentBlob = await response.blob();
+      
+      // Paint the transparent product onto a uniform colored canvas
+      const uniformBgColor = '#1A1A1A'; // We can make this dynamic per business later
+      const finalBlob = await addUniformBackground(transparentBlob, uniformBgColor);
+      
+      return new File([finalBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' });
     } catch (err) {
       console.error('AI Processing Error:', err);
       return file; // fallback to original file if AI fails
