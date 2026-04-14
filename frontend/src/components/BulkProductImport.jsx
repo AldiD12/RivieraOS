@@ -12,7 +12,7 @@ export default function BulkProductImport({ businessId, existingCategories, onIm
   const [status, setStatus] = useState('idle'); // idle, parsing, processing_ai, creating, complete
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
-  const [bgColor, setBgColor] = useState('#1A1A1A'); // Dynamic background color picker
+  const [bgPrompt, setBgPrompt] = useState('on a luxury marble table top'); // AI Background prompt
 
   // 1. Handle Excel Upload
   const handleExcelUpload = (e) => {
@@ -65,46 +65,19 @@ export default function BulkProductImport({ businessId, existingCategories, onIm
     setImages(newImages);
   };
 
-  // Helper to add uniform background color to transparent PNG (Wolt-style)
-  const addUniformBackground = (transparentBlob, hexColor = '#1A1A1A') => {
-    return new Promise((resolve) => {
-      const url = URL.createObjectURL(transparentBlob);
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        // Add 10% padding so products sit nicely in the center like Wolt/UberEats
-        const padding = Math.max(img.width, img.height) * 0.1;
-        canvas.width = img.width + padding * 2;
-        canvas.height = img.height + padding * 2;
-        
-        const ctx = canvas.getContext('2d');
-        // 1. Fill solid background
-        ctx.fillStyle = hexColor;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        // 2. Draw the transparent product centered on top
-        const x = (canvas.width - img.width) / 2;
-        const y = (canvas.height - img.height) / 2;
-        ctx.drawImage(img, x, y, img.width, img.height);
-        
-        // 3. Export as high-quality JPEG (smaller file size, perfect support)
-        canvas.toBlob((blob) => {
-          URL.revokeObjectURL(url);
-          resolve(blob);
-        }, 'image/jpeg', 0.95);
-      };
-      img.src = url;
-    });
-  };
-
-  // 3. Photoroom API call
+  // 3. Photoroom API v2 call (AI Background Generation)
   const processImageWithAI = async (file) => {
     const formData = new FormData();
-    formData.append('image_file', file);
-    formData.append('size', 'preview');
+    formData.append('imageFile', file); // v2 uses imageFile instead of image_file
+    
+    if (bgPrompt && bgPrompt.trim() !== '') {
+      formData.append('background.prompt', bgPrompt);
+    } else {
+      formData.append('background.color', '#1A1A1A');
+    }
 
     try {
-      const response = await fetch('https://sdk.photoroom.com/v1/segment', {
+      const response = await fetch('https://image-api.photoroom.com/v2/edit', {
         method: 'POST',
         headers: {
           'x-api-key': import.meta.env.VITE_PHOTOROOM_API_KEY
@@ -114,12 +87,9 @@ export default function BulkProductImport({ businessId, existingCategories, onIm
 
       if (!response.ok) throw new Error('Photoroom API failed');
       
-      const transparentBlob = await response.blob();
+      const generatedBlob = await response.blob();
       
-      // Paint the transparent product onto a uniform colored canvas
-      const finalBlob = await addUniformBackground(transparentBlob, bgColor);
-      
-      return new File([finalBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' });
+      return new File([generatedBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' });
     } catch (err) {
       console.error('AI Processing Error:', err);
       return file; // fallback to original file if AI fails
@@ -289,28 +259,19 @@ export default function BulkProductImport({ businessId, existingCategories, onIm
         </div>
       </div>
 
-      {/* Action Bar (Color Picker & Submit) */}
+      {/* Action Bar (Prompt Input & Submit) */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-zinc-900/50 p-4 rounded-xl border border-zinc-700">
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col">
-            <label className="text-xs font-semibold text-zinc-400 mb-1 uppercase tracking-wider">Product Background</label>
-            <div className="flex items-center gap-2">
-              <input 
-                type="color" 
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
-                className="w-8 h-8 rounded cursor-pointer shrink-0 bg-transparent"
-              />
-              <input 
-                type="text" 
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
-                className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white w-24 focus:outline-none focus:border-zinc-500 font-mono"
-              />
-            </div>
-          </div>
-          <div className="text-xs text-zinc-500 max-w-[200px] leading-tight">
-            AI will remove original backgrounds and apply this color behind all items.
+        <div className="flex flex-col gap-1 w-full max-w-lg">
+          <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">AI Background Prompt Theme</label>
+          <input 
+            type="text" 
+            value={bgPrompt}
+            onChange={(e) => setBgPrompt(e.target.value)}
+            placeholder="e.g. on a marble table with bright studio lighting"
+            className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-zinc-500"
+          />
+          <div className="text-xs text-zinc-500 mt-1 leading-tight">
+            AI will generate this exact background theme for all products in this batch. Leave empty for solid dark.
           </div>
         </div>
 
