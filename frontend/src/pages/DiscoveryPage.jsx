@@ -269,15 +269,14 @@ function BusinessEventMarker({ businessName, events, isSelected, onClick }) {
           </div>
         )}
       </div>
-
-      {/* Business name label */}
+      {/* Business Name Label */}
       <div className={`
-        mt-2 px-2 py-1 rounded-sm text-[10px] font-bold tracking-widest uppercase
-        backdrop-blur-md bg-zinc-950/90 border border-zinc-800 text-zinc-300
-        whitespace-nowrap transition-opacity duration-300
+        absolute top-full mt-1 px-2 py-0.5 bg-zinc-950/80 backdrop-blur-sm rounded border border-zinc-800 pointer-events-none whitespace-nowrap z-20 transition-opacity duration-300
         ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
       `}>
-        {businessName}
+        <span className={`text-[10px] font-bold tracking-widest uppercase ${hasToday ? 'text-[#10FF88]' : 'text-zinc-300'}`}>
+          {businessName}
+        </span>
       </div>
     </div>
   );
