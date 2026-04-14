@@ -12,6 +12,7 @@ export default function BulkProductImport({ businessId, existingCategories, onIm
   const [status, setStatus] = useState('idle'); // idle, parsing, processing_ai, creating, complete
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
+  const [bgColor, setBgColor] = useState('#1A1A1A'); // Dynamic background color picker
 
   // 1. Handle Excel Upload
   const handleExcelUpload = (e) => {
@@ -116,8 +117,7 @@ export default function BulkProductImport({ businessId, existingCategories, onIm
       const transparentBlob = await response.blob();
       
       // Paint the transparent product onto a uniform colored canvas
-      const uniformBgColor = '#1A1A1A'; // We can make this dynamic per business later
-      const finalBlob = await addUniformBackground(transparentBlob, uniformBgColor);
+      const finalBlob = await addUniformBackground(transparentBlob, bgColor);
       
       return new File([finalBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' });
     } catch (err) {
@@ -259,7 +259,7 @@ export default function BulkProductImport({ businessId, existingCategories, onIm
       )}
 
       {/* Upload Zones */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Excel Upload */}
         <div className="border-2 border-dashed border-zinc-600 rounded-xl p-6 flex flex-col items-center justify-center text-center bg-zinc-900/50 hover:bg-zinc-800/80 transition-colors">
           <Upload className="w-8 h-8 text-zinc-400 mb-3" />
@@ -289,17 +289,40 @@ export default function BulkProductImport({ businessId, existingCategories, onIm
         </div>
       </div>
 
-      {/* Action Bar */}
-      <div className="flex justify-end gap-4 mb-6">
+      {/* Action Bar (Color Picker & Submit) */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 bg-zinc-900/50 p-4 rounded-xl border border-zinc-700">
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col">
+            <label className="text-xs font-semibold text-zinc-400 mb-1 uppercase tracking-wider">Product Background</label>
+            <div className="flex items-center gap-2">
+              <input 
+                type="color" 
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                className="w-8 h-8 rounded cursor-pointer shrink-0 bg-transparent"
+              />
+              <input 
+                type="text" 
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                className="bg-zinc-800 border border-zinc-700 rounded px-2 py-1.5 text-sm text-white w-24 focus:outline-none focus:border-zinc-500 font-mono"
+              />
+            </div>
+          </div>
+          <div className="text-xs text-zinc-500 max-w-[200px] leading-tight">
+            AI will remove original backgrounds and apply this color behind all items.
+          </div>
+        </div>
+
         <button
           onClick={handleImportAll}
           disabled={!previewProducts.length || status !== 'idle'}
-          className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+          className="px-6 py-3 bg-[#10FF88] hover:bg-[#00e074] text-zinc-950 disabled:opacity-50 disabled:bg-zinc-700 disabled:text-zinc-500 rounded-xl font-black uppercase tracking-wider transition-colors flex items-center justify-center gap-2 w-full sm:w-auto shrink-0"
         >
           {status === 'creating' ? (
-            <><Loader2 className="animate-spin w-4 h-4" /> Importing...</>
+            <><Loader2 className="animate-spin w-5 h-5" /> Importing...</>
           ) : (
-            'Import All Products'
+            'START BULK IMPORT'
           )}
         </button>
       </div>
