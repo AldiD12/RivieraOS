@@ -1338,12 +1338,12 @@ export default function DiscoveryPage() {
                 className="relative w-full bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden group hover:border-zinc-600 transition-all duration-500 shadow-2xl cursor-pointer mb-8"
                 onClick={() => handleEventClick(event)}
               >
-                {/* Event Image — full poster, no cropping */}
-                <div className="relative w-full min-h-[400px]">
+                {/* Poster Image — full, unobstructed */}
+                <div className="relative w-full overflow-hidden">
                   {event.flyerImageUrl || event.imageUrl ? (
                     <img 
                       alt="Event" 
-                      className="w-full h-auto block opacity-90 group-hover:scale-[1.02] transition-transform duration-700"
+                      className="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-700"
                       src={event.flyerImageUrl || event.imageUrl}
                     />
                   ) : (
@@ -1351,44 +1351,41 @@ export default function DiscoveryPage() {
                       <div className="w-16 h-16 border-2 border-zinc-700" />
                     </div>
                   )}
-                </div>
-                
-                {/* Overlays — gradient sits over the bottom portion of the image */}
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent z-10 pointer-events-none"></div>
-                
-                {/* Top Bar */}
-                <div className="absolute top-0 left-0 z-20 w-full flex justify-between p-4 border-b border-zinc-800/50">
-                  <div className="bg-zinc-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-zinc-700 shadow-md flex flex-col items-center justify-center font-mono">
-                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest leading-none">
-                      {eventDate.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase()}
-                    </span>
-                    <span className="text-xl font-black text-white leading-none mt-1">
-                      {eventDate.getDate()}
-                    </span>
+                  
+                  {/* Date badge — floats on top-left of image */}
+                  <div className="absolute top-4 left-4 z-20 flex items-start gap-2">
+                    <div className="bg-zinc-900/90 backdrop-blur-md px-4 py-2 rounded-2xl border border-zinc-700 shadow-md flex flex-col items-center justify-center font-mono">
+                      <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest leading-none">
+                        {eventDate.toLocaleDateString('en-GB', { month: 'short' }).toUpperCase()}
+                      </span>
+                      <span className="text-xl font-black text-white leading-none mt-1">
+                        {eventDate.getDate()}
+                      </span>
+                    </div>
                   </div>
                   
-                  {/* Entry Badge - Only show if free entry */}
+                  {/* Free entry badge — floats on top-right */}
                   {(!event.isTicketed || event.ticketPrice === 0) && event.minimumSpend === 0 && (
-                    <div className="bg-zinc-900/90 backdrop-blur-md px-4 py-2 border border-[#10FF88]/30 rounded-full flex items-center shadow-[0_0_10px_rgba(16,255,136,0.1)]">
+                    <div className="absolute top-4 right-4 z-20 bg-zinc-900/90 backdrop-blur-md px-4 py-2 border border-[#10FF88]/30 rounded-full flex items-center shadow-[0_0_10px_rgba(16,255,136,0.1)]">
                       <span className="text-[10px] font-mono text-[#10FF88] font-black tracking-widest uppercase">FREE ENTRY</span>
                     </div>
                   )}
                 </div>
                 
-                {/* Bottom Content - Exact from HTML */}
-                <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-col justify-end">
-                  <div className="p-6 pb-4 border-b border-zinc-800">
-                    <h2 className="text-4xl font-display font-normal text-white uppercase tracking-tighter mb-1 leading-none">
+                {/* Event Info — below the image */}
+                <div className="bg-zinc-950 border-t border-zinc-800">
+                  <div className="p-5 pb-3">
+                    <h2 className="text-2xl font-display font-normal text-white uppercase tracking-tighter mb-1 leading-none">
                       {event.name}
                     </h2>
                     {event.description && (
-                      <p className="text-xs font-mono text-zinc-400 font-bold tracking-widest uppercase">
-                        {event.description.substring(0, 30)}...
+                      <p className="text-xs font-mono text-zinc-400 font-bold tracking-widest uppercase mt-2">
+                        {event.description.substring(0, 50)}{event.description.length > 50 ? '...' : ''}
                       </p>
                     )}
                   </div>
                   
-                  <div className="px-6 py-4 flex items-center justify-between text-xs text-zinc-400 font-mono border-b border-zinc-800 bg-zinc-950/50">
+                  <div className="px-5 py-3 flex items-center justify-between text-xs text-zinc-400 font-mono border-t border-zinc-800">
                     <span className="uppercase font-bold tracking-widest text-[10px]">
                       [ {event.businessName} ]
                     </span>
@@ -1405,7 +1402,7 @@ export default function DiscoveryPage() {
                     </div>
                   </div>
                   
-                  <div className="p-6">
+                  <div className="p-5 pt-3">
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
