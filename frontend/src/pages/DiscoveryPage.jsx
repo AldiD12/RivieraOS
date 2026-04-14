@@ -1335,28 +1335,26 @@ export default function DiscoveryPage() {
             return (
               <div 
                 key={event.id} 
-                className="relative w-full aspect-[4/5] bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden group hover:border-zinc-600 transition-all duration-500 shadow-2xl cursor-pointer mb-8"
+                className="relative w-full bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden group hover:border-zinc-600 transition-all duration-500 shadow-2xl cursor-pointer mb-8"
                 onClick={() => handleEventClick(event)}
               >
-                {/* Event Image */}
-                <div className="absolute inset-0 z-0">
+                {/* Event Image — full poster, no cropping */}
+                <div className="relative w-full min-h-[400px]">
                   {event.flyerImageUrl || event.imageUrl ? (
                     <img 
                       alt="Event" 
-                      className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700 contrast-[1.4] saturate-50"
+                      className="w-full h-auto block opacity-90 group-hover:scale-[1.02] transition-transform duration-700"
                       src={event.flyerImageUrl || event.imageUrl}
                     />
                   ) : (
-                    <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+                    <div className="w-full aspect-[4/5] bg-zinc-800 flex items-center justify-center">
                       <div className="w-16 h-16 border-2 border-zinc-700" />
                     </div>
                   )}
                 </div>
                 
-                {/* Overlays - softened styles */}
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent z-10 pointer-events-none"></div>
-                <div className="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-2 rounded-2xl"></div>
-                <div className="absolute inset-0 z-10 pointer-events-none border border-zinc-800/50 m-4 rounded-[1rem]"></div>
+                {/* Overlays — gradient sits over the bottom portion of the image */}
+                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/60 to-transparent z-10 pointer-events-none"></div>
                 
                 {/* Top Bar */}
                 <div className="absolute top-0 left-0 z-20 w-full flex justify-between p-4 border-b border-zinc-800/50">
