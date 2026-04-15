@@ -374,36 +374,40 @@ export default function DiscoveryPage() {
   // Get user location IMMEDIATELY on mount (before anything else)
   useEffect(() => {
     if ('geolocation' in navigator) {
-      // Start geolocation request immediately
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userCoords = {
-            longitude: position.coords.longitude,
-            latitude: position.coords.latitude
-          };
-          setUserLocation(userCoords);
-          
-          // Update initial view state so map starts at user location
-          const newViewState = {
-            longitude: userCoords.longitude,
-            latitude: userCoords.latitude,
-            zoom: 14,
-            pitch: 45,
-            bearing: -10
-          };
-          setInitialViewState(newViewState);
-          setViewState(newViewState);
-        },
-        (error) => {
-          console.log('Geolocation not available, using default location:', error);
-          // Keep default RIVIERA_CENTER
-        },
-        {
-          enableHighAccuracy: false, // Faster, less battery
-          timeout: 3000, // Reduced to 3 seconds for faster response
-          maximumAge: 300000 // Cache for 5 minutes
-        }
-      );
+      try {
+        // Start geolocation request immediately
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userCoords = {
+              longitude: position.coords.longitude,
+              latitude: position.coords.latitude
+            };
+            setUserLocation(userCoords);
+            
+            // Update initial view state so map starts at user location
+            const newViewState = {
+              longitude: userCoords.longitude,
+              latitude: userCoords.latitude,
+              zoom: 14,
+              pitch: 45,
+              bearing: -10
+            };
+            setInitialViewState(newViewState);
+            setViewState(newViewState);
+          },
+          (error) => {
+            console.log('Geolocation not available, using default location:', error);
+            // Keep default RIVIERA_CENTER
+          },
+          {
+            enableHighAccuracy: false, // Faster, less battery
+            timeout: 3000, // Reduced to 3 seconds for faster response
+            maximumAge: 300000 // Cache for 5 minutes
+          }
+        );
+      } catch (e) {
+        console.warn('Geolocation was synchronously blocked by OS:', e);
+      }
     }
   }, []);
 
@@ -1744,27 +1748,32 @@ export default function DiscoveryPage() {
                 });
               } else if ('geolocation' in navigator) {
                 // Request location if not already available
-                navigator.geolocation.getCurrentPosition(
-                  (position) => {
-                    const coords = {
-                      longitude: position.coords.longitude,
-                      latitude: position.coords.latitude
-                    };
-                    setUserLocation(coords);
-                    if (mapRef.current) {
-                      mapRef.current.flyTo({
-                        center: [coords.longitude, coords.latitude],
-                        zoom: 14,
-                        duration: 1500,
-                        essential: true
-                      });
+                try {
+                  navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                      const coords = {
+                        longitude: position.coords.longitude,
+                        latitude: position.coords.latitude
+                      };
+                      setUserLocation(coords);
+                      if (mapRef.current) {
+                        mapRef.current.flyTo({
+                          center: [coords.longitude, coords.latitude],
+                          zoom: 14,
+                          duration: 1500,
+                          essential: true
+                        });
+                      }
+                    },
+                    () => {
+                      setToast('Unable to get your location. Please enable location services.');
+                      setTimeout(() => setToast(null), 3000);
                     }
-                  },
-                  () => {
-                    setToast('Unable to get your location. Please enable location services.');
-                    setTimeout(() => setToast(null), 3000);
-                  }
-                );
+                  );
+                } catch (e) {
+                  setToast('Location access is restricted by your device settings.');
+                  setTimeout(() => setToast(null), 3000);
+                }
               }
             }}
             className={`w-10 h-10 rounded-full backdrop-blur-md border flex items-center justify-center shadow-lg active:scale-95 transition-all group ${isDayMode ? 'bg-white/90 border-zinc-200 hover:border-zinc-400' : 'bg-zinc-900/90 border-zinc-800 hover:border-[#10FF88]/30'}`}
