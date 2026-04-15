@@ -1178,7 +1178,17 @@ export default function DiscoveryPage() {
 
                     return Object.entries(byBusiness).map(([businessId, { events: bizEvents, businessName, googleMapsAddress }]) => {
                       // Parse coordinates from the business-level Google Maps address
-                      const coords = parseGoogleMapsUrl(googleMapsAddress);
+                      let coords = parseGoogleMapsUrl(googleMapsAddress);
+
+                      // Fallback: If no coords from business address, look at the events' venue coordinates
+                      if (!coords && bizEvents.length > 0) {
+                        const fallBackVenueId = bizEvents[0].venueId;
+                        const eventVenue = venues.find(v => String(v.id) === String(fallBackVenueId));
+                        if (eventVenue && eventVenue.latitude && eventVenue.longitude) {
+                          coords = { lat: eventVenue.latitude, lng: eventVenue.longitude };
+                        }
+                      }
+
                       if (!coords) return null;
 
                       return (
