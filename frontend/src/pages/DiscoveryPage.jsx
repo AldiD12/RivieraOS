@@ -278,7 +278,7 @@ function BusinessEventMarker({ businessName, events, isSelected, onClick }) {
       {/* Business Name Label */}
       <div className={`
         absolute top-full mt-1 px-2 py-0.5 bg-zinc-950/80 backdrop-blur-sm rounded border border-zinc-800 pointer-events-none whitespace-nowrap z-20 transition-opacity duration-300
-        ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
+        opacity-100
       `}>
         <span className={`text-[10px] font-bold tracking-widest uppercase ${hasToday ? 'text-[#10FF88]' : 'text-zinc-300'}`}>
           {businessName}
@@ -837,18 +837,25 @@ export default function DiscoveryPage() {
       return true;
     });
 
-    // Pin host venue's events to top when returning from QR
-    if (fromVenueId) {
-      return [...filtered].sort((a, b) => {
+    // Sort Events (Host -> Voltage -> Chronological)
+    return [...filtered].sort((a, b) => {
+      // 1. If user scanned a venue QR, that specific venue is pinned to the absolute top
+      if (fromVenueId) {
         const aIsHost = String(a.venueId) === String(fromVenueId);
         const bIsHost = String(b.venueId) === String(fromVenueId);
         if (aIsHost && !bIsHost) return -1;
         if (!aIsHost && bIsHost) return 1;
-        return new Date(a.startTime) - new Date(b.startTime);
-      });
-    }
+      }
+      
+      // 2. Voltage Business Events get pinned to the top globally
+      const aIsVoltage = (a.businessName || '').toLowerCase().includes('voltage');
+      const bIsVoltage = (b.businessName || '').toLowerCase().includes('voltage');
+      if (aIsVoltage && !bIsVoltage) return -1;
+      if (!aIsVoltage && bIsVoltage) return 1;
 
-    return filtered;
+      // 3. Fallback chronological sorting
+      return new Date(a.startTime) - new Date(b.startTime);
+    });
   }, [events, eventDayFilter, eventGenreFilter, eventEntranceFilter, fromVenueId, venues]);
 
   const eventAvailableGenres = useMemo(() => {
