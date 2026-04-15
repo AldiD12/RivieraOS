@@ -218,6 +218,82 @@ function VenueMarker({ venue, isSelected, onClick, isDayMode, activeFilter }) {
           `}
         >
           {venue.name}
+          {/* Selected Map Pin - Multiple Events Interstitial Bottom Sheet */}
+          {selectedMapPinEvents && (
+            <>
+              <div 
+                className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 transition-opacity" 
+                onClick={() => setSelectedMapPinEvents(null)} 
+              />
+              <div className="fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] overflow-y-auto bg-zinc-950 rounded-t-3xl border-t border-zinc-800 animate-slide-up shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+                <div className="flex justify-center pt-4 pb-2">
+                  <div className="w-12 h-1.5 rounded-full bg-zinc-800" />
+                </div>
+                <div className="px-5 pt-3 pb-8">
+                  <div className="flex justify-between items-center mb-5">
+                    <div>
+                      <h2 className="text-xl font-display font-medium text-white uppercase tracking-wider">{selectedMapPinEvents.businessName}</h2>
+                      <p className="text-[10px] text-[#10FF88] font-mono tracking-widest uppercase mt-1">Select an Event</p>
+                    </div>
+                    <button 
+                      onClick={() => setSelectedMapPinEvents(null)} 
+                      className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {selectedMapPinEvents.events.map(e => {
+                      const d = new Date(e.startTime);
+                      const isToday = d.toDateString() === new Date().toDateString();
+                      return (
+                        <div 
+                          key={e.id} 
+                          onClick={() => { setSelectedMapPinEvents(null); handleEventClick(e); }}
+                          className="flex gap-4 p-3 bg-zinc-900/80 border border-zinc-800/80 rounded-2xl cursor-pointer hover:bg-zinc-800 hover:border-zinc-700 transition-all active:scale-[0.98]"
+                        >
+                          <div className="w-[72px] h-[90px] shrink-0 bg-zinc-950 rounded-xl overflow-hidden border border-zinc-800 relative">
+                            {e.flyerImageUrl ? (
+                              <img src={e.flyerImageUrl} alt="" className="w-full h-full object-cover saturate-50" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-2xl opacity-20">🪩</div>
+                            )}
+                            {isToday && (
+                              <div className="absolute top-1 left-1 bg-[#10FF88] px-1.5 py-0.5 rounded text-[8px] font-black text-black tracking-widest uppercase">
+                                Tonight
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 flex flex-col justify-center min-w-0">
+                            <h4 className="font-bold text-white text-sm uppercase leading-tight truncate">{e.name}</h4>
+                            
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="material-symbols-outlined text-[12px] text-zinc-500">calendar_month</span>
+                              <span className="text-xs font-mono text-zinc-400">
+                                {d.toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' })}
+                              </span>
+                            </div>
+                            
+                            <div className="flex items-center justify-between mt-3">
+                              <div className="text-[10px] border border-zinc-700 bg-zinc-800 px-2 py-0.5 rounded font-mono text-zinc-300 uppercase truncate max-w-[100px]">
+                                {e.genre || e.vibe || 'Nightclub'}
+                              </div>
+                              <div className="text-[#10FF88] text-[10px] uppercase tracking-widest font-bold flex items-center gap-1">
+                                View <span className="material-symbols-outlined text-[12px]">chevron_right</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
         </div>
       )}
     </div>
@@ -293,6 +369,7 @@ export default function DiscoveryPage() {
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [selectedBusiness, setSelectedBusiness] = useState(null); // For business grouping
   const [selectedEvent, setSelectedEvent] = useState(null); // For event detail bottom sheet
+  const [selectedMapPinEvents, setSelectedMapPinEvents] = useState(null); // For dealing with multiple events on single map pin
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeFilter, setActiveFilter] = useState('all'); // Default: show all, sorted by distance
@@ -1115,7 +1192,13 @@ export default function DiscoveryPage() {
                             businessName={businessName}
                             events={bizEvents}
                             isSelected={false}
-                            onClick={() => handleEventClick(bizEvents[0])}
+                            onClick={() => {
+                              if (bizEvents.length === 1) {
+                                handleEventClick(bizEvents[0]);
+                              } else {
+                                setSelectedMapPinEvents({ businessId, businessName, events: bizEvents });
+                              }
+                            }}
                           />
                         </Marker>
                       );
