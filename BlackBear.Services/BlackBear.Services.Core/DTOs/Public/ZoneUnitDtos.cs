@@ -117,6 +117,11 @@ namespace BlackBear.Services.Core.DTOs.Public
         public string? ImageUrl { get; set; }
         public bool OrderingEnabled { get; set; }
         public bool AllowsDigitalOrdering { get; set; }
+        public int BusinessId { get; set; }
+        public string? BusinessName { get; set; }
+        public string? BusinessBrandName { get; set; }
+        public string? BusinessReviewLink { get; set; }
+        public string? BusinessCoverImageUrl { get; set; }
     }
 
     // Check reservation status response

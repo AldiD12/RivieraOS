@@ -25,6 +25,7 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? TaxId { get; set; }
         public string? ContactEmail { get; set; }
         public string? LogoUrl { get; set; }
+        public string? CoverImageUrl { get; set; }
         public string? GoogleMapsAddress { get; set; }
         public string? ReviewLink { get; set; }
         public string? PhoneNumber { get; set; }
@@ -76,6 +77,10 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         public string? LogoUrl { get; set; }
 
         [MaxLength(500)]
+        [Url]
+        public string? CoverImageUrl { get; set; }
+
+        [MaxLength(500)]
         public string? GoogleMapsAddress { get; set; }
 
         [MaxLength(500)]
@@ -111,6 +116,10 @@ namespace BlackBear.Services.Core.DTOs.SuperAdmin
         [MaxLength(500)]
         [Url]
         public string? LogoUrl { get; set; }
+
+        [MaxLength(500)]
+        [Url]
+        public string? CoverImageUrl { get; set; }
 
         [MaxLength(500)]
         public string? GoogleMapsAddress { get; set; }

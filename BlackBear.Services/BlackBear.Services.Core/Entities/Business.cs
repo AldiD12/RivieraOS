@@ -31,6 +31,10 @@ namespace BlackBear.Services.Core.Entities
         [Column("logo_url")]
         public string? LogoUrl { get; set; }
 
+        [MaxLength(500)]
+        [Column("cover_image_url")]
+        public string? CoverImageUrl { get; set; }
+
         [MaxLength(50)]
         [Column("subscription_status")]
         public string SubscriptionStatus { get; set; } = "Trial";

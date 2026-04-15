@@ -84,7 +84,9 @@ namespace BlackBear.Services.Core.Controllers.Public
                     AvailableUnitsCount = availableCount,
                     BusinessId = v.BusinessId,
                     BusinessName = v.Business?.BrandName ?? v.Business?.RegisteredName,
-                    BusinessPhoneNumber = v.Business?.PhoneNumber
+                    BusinessPhoneNumber = v.Business?.PhoneNumber,
+                    BusinessBrandName = v.Business?.BrandName,
+                    BusinessReviewLink = v.Business?.ReviewLink
                 };
             }).ToList();
 
@@ -96,6 +98,7 @@ namespace BlackBear.Services.Core.Controllers.Public
         public async Task<ActionResult<PublicVenueDetailDto>> GetVenue(int id)
         {
             var venue = await _context.Venues
+                .Include(v => v.Business)
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(v => v.Id == id && !v.IsDeleted && v.IsActive);
 
@@ -113,7 +116,12 @@ namespace BlackBear.Services.Core.Controllers.Public
                 Address = venue.Address,
                 ImageUrl = venue.ImageUrl,
                 OrderingEnabled = venue.OrderingEnabled,
-                AllowsDigitalOrdering = venue.AllowsDigitalOrdering
+                AllowsDigitalOrdering = venue.AllowsDigitalOrdering,
+                BusinessId = venue.BusinessId,
+                BusinessName = venue.Business?.BrandName ?? venue.Business?.RegisteredName,
+                BusinessBrandName = venue.Business?.BrandName,
+                BusinessReviewLink = venue.Business?.ReviewLink,
+                BusinessCoverImageUrl = venue.Business?.CoverImageUrl
             });
         }
 

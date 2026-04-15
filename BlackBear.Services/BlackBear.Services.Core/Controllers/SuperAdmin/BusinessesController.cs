@@ -95,6 +95,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 TaxId = business.TaxId,
                 ContactEmail = business.ContactEmail,
                 LogoUrl = business.LogoUrl,
+                CoverImageUrl = business.CoverImageUrl,
                 GoogleMapsAddress = business.GoogleMapsAddress,
                 ReviewLink = business.ReviewLink,
                 PhoneNumber = business.PhoneNumber,
@@ -134,6 +135,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 TaxId = request.TaxId,
                 ContactEmail = request.ContactEmail,
                 LogoUrl = request.LogoUrl,
+                CoverImageUrl = request.CoverImageUrl,
                 GoogleMapsAddress = request.GoogleMapsAddress,
                 ReviewLink = request.ReviewLink,
                 PhoneNumber = request.PhoneNumber,
@@ -167,6 +169,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
                 TaxId = business.TaxId,
                 ContactEmail = business.ContactEmail,
                 LogoUrl = business.LogoUrl,
+                CoverImageUrl = business.CoverImageUrl,
                 GoogleMapsAddress = business.GoogleMapsAddress,
                 ReviewLink = business.ReviewLink,
                 PhoneNumber = business.PhoneNumber,
@@ -195,6 +198,7 @@ namespace BlackBear.Services.Core.Controllers.SuperAdmin
             business.TaxId = request.TaxId;
             business.ContactEmail = request.ContactEmail;
             business.LogoUrl = request.LogoUrl;
+            business.CoverImageUrl = request.CoverImageUrl;
             business.GoogleMapsAddress = request.GoogleMapsAddress;
             business.ReviewLink = request.ReviewLink;
             business.PhoneNumber = request.PhoneNumber;
