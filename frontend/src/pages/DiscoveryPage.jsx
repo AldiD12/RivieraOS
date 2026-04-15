@@ -4,12 +4,18 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 // Parses coordinates out of a Google Maps share URL
 function parseGoogleMapsUrl(url) {
   if (!url) return null;
-  const atMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if (atMatch) return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) };
-  const qMatch = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if (qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) };
+  // 1. Prioritize the exact pin drop coordinates (!3d / !4d) over the viewport
   const embedMatch = url.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/);
   if (embedMatch) return { lat: parseFloat(embedMatch[1]), lng: parseFloat(embedMatch[2]) };
+  
+  // 2. Query coordinates
+  const qMatch = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) };
+  
+  // 3. Fallback to viewport center coordinates
+  const atMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (atMatch) return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) };
+  
   return null;
 }
 
