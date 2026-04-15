@@ -31,6 +31,7 @@ if (string.IsNullOrEmpty(connectionString))
 Console.WriteLine($"[Startup] Environment: {builder.Environment.EnvironmentName}");
 Console.WriteLine($"[Startup] JWT Issuer: {jwtIssuer}");
 Console.WriteLine($"[Startup] Connection string found: {!string.IsNullOrEmpty(connectionString)}");
+Console.WriteLine($"[Startup] Allowed CORS Origins: {string.Join(", ", builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? Array.Empty<string>())}");
 
 // 1. Add services to the container.
 builder.Services.AddControllers();
@@ -203,6 +204,27 @@ app.Use(async (context, next) =>
 });
 
 app.UseCors("AllowFrontend");
+
+// Global exception handler — placed AFTER UseCors so error responses still get CORS headers.
+// Without this, unhandled exceptions produce bare 500 responses with no CORS headers,
+// which browsers report as CORS errors instead of showing the real server error.
+app.UseExceptionHandler(errorApp =>
+{
+    errorApp.Run(async context =>
+    {
+        context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+        context.Response.ContentType = "application/json";
+
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        var exceptionFeature = context.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
+        if (exceptionFeature?.Error is not null)
+        {
+            logger.LogError(exceptionFeature.Error, "Unhandled exception on {Method} {Path}", context.Request.Method, context.Request.Path);
+        }
+
+        await context.Response.WriteAsJsonAsync(new { error = "An unexpected error occurred." });
+    });
+});
 
 app.UseRateLimiter();
 
