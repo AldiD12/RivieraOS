@@ -67,7 +67,8 @@ export default function ReviewPage() {
           name: venueData.businessName || venueData.name || 'Venue', 
           location: venueData.address || 'Riviera',
           latitude: venueData.latitude,
-          longitude: venueData.longitude
+          longitude: venueData.longitude,
+          googleMapsLink: venueData.businessGoogleMapsAddress || venueData.googleMapsAddress || null
         });
       } else {
         throw new Error('Venue not found');
@@ -144,7 +145,12 @@ export default function ReviewPage() {
         }
 
         // Redirect to Google Maps for high ratings
-        if (venue.latitude && venue.longitude) {
+        if (venue.googleMapsLink) {
+          setTimeout(() => {
+            window.open(venue.googleMapsLink, '_blank');
+            setTimeout(() => navigate('/'), 2000);
+          }, 2000);
+        } else if (venue.latitude && venue.longitude) {
           setTimeout(() => {
             const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`;
             window.open(googleMapsUrl, '_blank');
