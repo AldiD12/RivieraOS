@@ -41,15 +41,48 @@ function LandingSpotPage() {
     // 3. Fetch Venue details for the Hero Image & Name & Ordering status
     const fetchVenueDetails = async () => {
       try {
+        // Fetch venue detail for image/ordering flags
         const response = await fetch(`${baseUrl}/public/Venues/${v}`);
         if (!response.ok) throw new Error('Failed to fetch venue');
         const venueData = await response.json();
-        setVenue(venueData);
-        // Update session with correct venue name
-        startSession(v, u || '', venueData.name);
+        
+        // Also fetch from the list endpoint to get businessId (detail endpoint doesn't include it)
+        let businessId = venueData.businessId || null;
+        let businessBrandName = venueData.businessName || venueData.name;
+        
+        if (!businessId) {
+          try {
+            const listResponse = await fetch(`${baseUrl}/public/Venues`);
+            if (listResponse.ok) {
+              const allVenues = await listResponse.json();
+              const matched = allVenues.find(vn => String(vn.id) === String(v));
+              if (matched) {
+                businessId = matched.businessId;
+                businessBrandName = matched.businessName || businessBrandName;
+              }
+            }
+          } catch (e) {
+            console.warn('Could not fetch venues list for businessId:', e);
+          }
+        }
+        
+        // Try to fetch business-level data for brand name and reviewLink
+        if (businessId) {
+          try {
+            const bizResponse = await fetch(`${baseUrl}/Businesses/${businessId}`);
+            if (bizResponse.ok) {
+              const bizData = await bizResponse.json();
+              businessBrandName = bizData.brandName || bizData.registeredName || businessBrandName;
+            }
+          } catch (bizErr) {
+            console.warn('Could not fetch business details:', bizErr);
+          }
+        }
+        
+        setVenue({ ...venueData, businessId, displayName: businessBrandName });
+        startSession(v, u || '', businessBrandName);
       } catch (err) {
         console.error('Failed to load venue details:', err);
-        // We don't block the user if venue details fail, they just won't see the custom hero image
       } finally {
         setLoading(false);
       }
@@ -106,7 +139,7 @@ function LandingSpotPage() {
 
         <div className="absolute bottom-6 left-0 right-0 px-6 z-20 text-center">
           <h1 className="font-display text-4xl md:text-5xl font-bold tracking-tight text-white uppercase mb-2 drop-shadow-lg">
-            {venue?.name || 'RIVIERA'}
+          {venue?.displayName || venue?.businessName || venue?.name || 'RIVIERA'}
           </h1>
           {unitId && (
             <div className="inline-block border border-stone-300 bg-white/90 px-4 py-1.5 rounded-full text-stone-700 font-mono text-xs tracking-widest uppercase shadow-md">
