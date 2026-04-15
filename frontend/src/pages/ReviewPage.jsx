@@ -51,7 +51,7 @@ export default function ReviewPage() {
     try {
       setLoading(true);
       
-      // Fetch directly from the venues endpoint instead of relying on the menu
+      // Step 1: Fetch venue to get businessId
       const venuesResponse = await fetch(`${baseUrl}/public/Venues`);
       
       if (!venuesResponse.ok) {
@@ -61,18 +61,37 @@ export default function ReviewPage() {
       const venuesData = await venuesResponse.json();
       const venueData = venuesData.find(v => String(v.id) === String(actualVenueId));
       
-      if (venueData) {
-        setVenue({
-          id: actualVenueId,
-          name: venueData.businessName || venueData.name || 'Venue', 
-          location: venueData.address || 'Riviera',
-          latitude: venueData.latitude,
-          longitude: venueData.longitude,
-          googleMapsLink: venueData.businessGoogleMapsAddress || venueData.googleMapsAddress || null
-        });
-      } else {
+      if (!venueData) {
         throw new Error('Venue not found');
       }
+
+      // Step 2: Fetch the parent Business to get the reviewLink
+      let reviewLink = null;
+      let businessName = venueData.businessName || venueData.name || 'Venue';
+      
+      if (venueData.businessId) {
+        try {
+          const businessResponse = await fetch(`${baseUrl}/Businesses/${venueData.businessId}`);
+          if (businessResponse.ok) {
+            const businessData = await businessResponse.json();
+            reviewLink = businessData.reviewLink || null;
+            businessName = businessData.brandName || businessData.registeredName || businessName;
+          }
+        } catch (bizErr) {
+          console.warn('Could not fetch business-level data, falling back to venue data:', bizErr);
+        }
+      }
+
+      setVenue({
+        id: actualVenueId,
+        businessId: venueData.businessId,
+        name: businessName, 
+        location: venueData.address || 'Riviera',
+        latitude: venueData.latitude,
+        longitude: venueData.longitude,
+        reviewLink: reviewLink,
+        googleMapsLink: venueData.businessGoogleMapsAddress || venueData.googleMapsAddress || null
+      });
       
       setLoading(false);
     } catch (err) {
@@ -144,8 +163,15 @@ export default function ReviewPage() {
           console.log('✅ Review submitted successfully');
         }
 
-        // Redirect to Google Maps for high ratings
-        if (venue.googleMapsLink) {
+        // Redirect to the review link for high ratings
+        // Priority: 1. Business reviewLink → 2. Google Maps link → 3. Coordinates fallback
+        if (venue.reviewLink) {
+          // Use the exact review link configured during business creation
+          setTimeout(() => {
+            window.open(venue.reviewLink, '_blank');
+            setTimeout(() => navigate('/'), 2000);
+          }, 2000);
+        } else if (venue.googleMapsLink) {
           setTimeout(() => {
             window.open(venue.googleMapsLink, '_blank');
             setTimeout(() => navigate('/'), 2000);
