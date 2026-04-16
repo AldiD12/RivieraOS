@@ -486,10 +486,10 @@ export default function DiscoveryPage() {
     try {
       setEventsLoading(true);
       const data = await publicEventsApi.getEvents(geographicZone);
-      
+
       // Filter: published, not deleted, and not in the past
       const now = new Date();
-      const published = Array.isArray(data)
+      let published = Array.isArray(data)
         ? data.filter(e => {
             const isPublished = e.isPublished !== undefined ? e.isPublished : true;
             const isDeleted = e.isDeleted !== undefined ? e.isDeleted : false;
@@ -499,7 +499,21 @@ export default function DiscoveryPage() {
             return isPublished && !isDeleted && isNotPast;
           })
         : [];
-      
+
+      // Client-side zone filtering fallback: the backend may not yet filter by
+      // geographicZone, so we filter here using venue address matching.
+      // This is safe to run even when the backend does filter — duplicating the
+      // filter is harmless, skipping it breaks zone selection entirely.
+      if (geographicZone && geographicZone !== 'EVERYWHERE') {
+        published = published.filter(e => {
+          // Prefer explicit zone field if backend starts returning it
+          if (e.geographicZone) return e.geographicZone === geographicZone;
+          // Fall back to address matching
+          const address = e.venueAddress || e.location || '';
+          return geographicZonesApi.extractZoneFromAddress(address) === geographicZone;
+        });
+      }
+
       // If using GPS location, sort by distance
       if (isUsingGPSLocation && userLocation && venues.length > 0) {
         const sortedEvents = sortEventsByDistance(published, venues, userLocation);
@@ -715,8 +729,27 @@ export default function DiscoveryPage() {
     sessionStorage.setItem('riviera-zone-picked', 'true');
 
     try {
+      // Get location BEFORE loading events so we can sort immediately
+      // without relying on stale state closure in loadEvents
       const location = await getCurrentLocation();
-      await loadEvents();
+      setUserLocation(location);
+
+      // Fetch raw events, then sort with the fresh location directly
+      // (can't pass location through loadEvents — it reads state which hasn't updated yet)
+      setEventsLoading(true);
+      const data = await publicEventsApi.getEvents();
+      const now = new Date();
+      const published = Array.isArray(data)
+        ? data.filter(e => {
+            const isPublished = e.isPublished !== undefined ? e.isPublished : true;
+            const isDeleted = e.isDeleted !== undefined ? e.isDeleted : false;
+            const endTime = e.endTime ? new Date(e.endTime) : new Date(new Date(e.startTime).getTime() + 6 * 60 * 60 * 1000);
+            return isPublished && !isDeleted && endTime > now;
+          })
+        : [];
+      const currentVenues = venues.length > 0 ? venues : [];
+      setEvents(sortEventsByDistance(published, currentVenues, location));
+      setEventsLoading(false);
 
       if (venues.length > 0) {
         const sortedVenues = sortVenuesByDistance(venues, location);
@@ -727,8 +760,9 @@ export default function DiscoveryPage() {
       setIsUsingGPSLocation(false);
       sessionStorage.setItem('riviera-zone', 'EVERYWHERE');
       sessionStorage.setItem('riviera-gps', 'false');
-      setToast('Could not get your location. Showing all venues.');
+      setToast({ message: 'Could not get your location. Showing all venues.', type: 'info' });
       setTimeout(() => setToast(null), 3000);
+      setEventsLoading(false);
       await loadEvents();
     }
   }, [loadEvents, venues]);
