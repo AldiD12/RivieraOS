@@ -32,12 +32,14 @@ export default function BulkProductImport({ businessId, existingCategories, onIm
         // Transform and validate data
         const transformed = data.map((row, index) => ({
           _id: index.toString(),
-          name: row.Name || row.name || '',
-          description: row.Description || row.description || '',
-          price: parseFloat(row.Price || row.price || 0),
-          categoryName: row.Category || row.category || 'Uncategorized',
-          isAlcohol: String(row.isAlcohol || row.IsAlcohol || 'false').toLowerCase() === 'true' || String(row.isAlcohol) === 'yes',
-          imageFile: row.ImageFile || row.imageFile || row.Image || row.image || '',
+          name: row.Name || row.name || row['Emri i Produktit'] || row['Emri'] || '',
+          description: row.Description || row.description || row['Pershkrimi'] || row['Përshkrimi'] || '',
+          price: parseFloat(row.Price || row.price || row['Cmimi'] || row['Çmimi'] || row['qmimi'] || 0),
+          categoryName: row.Category || row.category || row['Kategoria'] || row['Kategori'] || 'Uncategorized',
+          isAlcohol: String(row.isAlcohol || row.IsAlcohol || row['Alkool'] || 'false').toLowerCase() === 'true' || 
+                     String(row.isAlcohol || row['Alkool']) === 'yes' || 
+                     String(row.isAlcohol || row['Alkool']) === 'po',
+          imageFile: row.ImageFile || row.imageFile || row.Image || row.image || row['Vendi për Foto'] || row['Foto'] || '',
           imageUrl: '', // Will be filled after Cloudinary upload
           status: 'pending', // pending, ai_processing, uploading, created, error
           errorMsg: ''
