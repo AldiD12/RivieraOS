@@ -109,16 +109,7 @@ export const businessStaffApi = {
       pin: staffData.pin,
       venueId: staffData.venueId || null // ✅ Include venueId for venue assignment
     };
-    
-      email: apiData.email,
-      password: '************',
-      fullName: apiData.fullName,
-      phoneNumber: apiData.phoneNumber,
-      role: apiData.role,
-      pin: '****',
-      venueId: apiData.venueId
-    });
-    
+
     try {
       const response = await api.post('/business/Staff', apiData);
       return response.data;
@@ -162,16 +153,7 @@ export const businessStaffApi = {
       // ✅ CRITICAL FIX: Include venueId in API payload
       venueId: staffData.venueId !== undefined ? staffData.venueId : null
     };
-    
-      email: apiData.email,
-      fullName: apiData.fullName,
-      phoneNumber: apiData.phoneNumber,
-      role: apiData.role,
-      isActive: apiData.isActive,
-      pin: apiData.pin ? '****' : 'not changing',
-      venueId: apiData.venueId
-    });
-    
+
     const response = await api.put(`/business/Staff/${staffId}`, apiData);
     return response.data;
   },
