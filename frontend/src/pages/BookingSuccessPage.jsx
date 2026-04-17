@@ -71,7 +71,7 @@ export default function BookingSuccessPage() {
         <div className="text-center">
           <p className="text-red-500 text-xl mb-4">{error || 'Rezervimi nuk u gjet'}</p>
           <button
-            onClick={() => navigate('/discover')}
+            onClick={() => navigate('/')}
             className="bg-zinc-900 border border-zinc-800 text-white px-6 py-3 rounded-full hover:border-[#10FF88] transition-all"
           >
             Kthehu në Discovery / Back to Discovery
@@ -86,7 +86,7 @@ export default function BookingSuccessPage() {
       {/* Header */}
       <div className="bg-gradient-to-b from-zinc-900 to-zinc-950 border-b border-zinc-800 p-6">
         <button
-          onClick={() => navigate('/discover')}
+          onClick={() => navigate('/')}
           className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -257,7 +257,7 @@ export default function BookingSuccessPage() {
           </button>
 
           <button
-            onClick={() => navigate('/discover')}
+            onClick={() => navigate('/')}
             className="w-full bg-zinc-950 border border-[#10FF88] text-[#10FF88] px-6 py-4 rounded-full hover:bg-[#10FF88]/10 transition-all"
           >
             Shfleto Më Shumë Eksperienca / Browse More Experiences

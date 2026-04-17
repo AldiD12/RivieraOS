@@ -34,9 +34,8 @@ function LandingSpotPage() {
     setUnitId(u);
     setZoneId(z);
 
-    // 2. Start Session immediately to lock them into the "Venue Jail"
-    console.log('🔍 Pre-Menu Landing: QR code detected:', { venueId: v, unitId: u });
-    startSession(v, u || '', '');
+    // Session will be started after venue name is fetched (below)
+    // This avoids calling startSession twice with an empty venueName first
 
     // 3. Fetch Venue details for the Hero Image & Name & Ordering status
     const fetchVenueDetails = async () => {

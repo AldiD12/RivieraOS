@@ -13,7 +13,13 @@ export default function BookingStatusPage() {
   const [error, setError] = useState(null);
   const [showWaitlistPrompt, setShowWaitlistPrompt] = useState(false);
   const [waitlistEmail, setWaitlistEmail] = useState('');
-  const [isExpired, setIsExpired] = useState(false); // 🚨 TRAP 1 FIX
+  const [isExpired, setIsExpired] = useState(false);
+  const [toast, setToast] = useState('');
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(''), 4000);
+  };
 
   useEffect(() => {
     loadBooking();
@@ -68,7 +74,7 @@ export default function BookingStatusPage() {
           console.log('🔔 Booking updated via SignalR:', { status, unitCode });
           
           // Haptic feedback for confirmation
-          if (status === 'Confirmed' && haptics.isSupported()) {
+          if ((status === 'Reserved' || status === 'Confirmed') && haptics.isSupported()) {
             haptics.success();
           }
           
@@ -129,26 +135,17 @@ Faleminderit!`;
 
   const handleJoinWaitlist = async () => {
     if (!waitlistEmail) {
-      alert('Ju lutem vendosni email-in tuaj');
+      showToast('Ju lutem vendosni email-in tuaj');
       return;
     }
 
     try {
-      // 🚀 TWEAK 3: Waitlist placeholder (backend Phase 3)
-      console.log('📋 Waitlist request:', {
-        bookingCode: booking.bookingCode,
-        venueId: booking.venueId,
-        email: waitlistEmail,
-        zoneName: booking.zoneName,
-        guestCount: booking.guestCount
-      });
-
-      alert('✅ Ju jeni shtuar në listën e pritjes!\n\nDo të njoftoheni kur të lirohet një vend.');
+      // Waitlist placeholder — backend Phase 3
+      showToast('Ju jeni shtuar në listën e pritjes! Do të njoftoheni kur të lirohet një vend.');
       setShowWaitlistPrompt(false);
-      
     } catch (err) {
       console.error('Error joining waitlist:', err);
-      alert('Gabim në shtimin në listën e pritjes');
+      showToast('Gabim në shtimin në listën e pritjes');
     }
   };
 
@@ -190,11 +187,17 @@ Faleminderit!`;
   }
 
   const isPending = booking.status === 'Pending' && !isExpired;
-  const isConfirmed = booking.status === 'Confirmed';
+  // Backend sets status to 'Reserved' when collector approves (not 'Confirmed')
+  const isConfirmed = booking.status === 'Reserved' || booking.status === 'Confirmed' || booking.status === 'Active';
   const isCancelled = booking.status === 'Cancelled' || isExpired;
 
   return (
     <div className="min-h-screen bg-stone-50 p-6">
+      {toast && (
+        <div className="fixed top-4 left-4 right-4 z-50 bg-stone-900 text-white text-sm font-medium px-5 py-4 rounded-2xl shadow-xl">
+          {toast}
+        </div>
+      )}
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">

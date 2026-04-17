@@ -146,7 +146,8 @@ export default function CollectorDashboard() {
       setShowUnitModal(false);
     } catch (err) {
       console.error('Error updating unit status:', err);
-      alert(err.data?.message || 'Failed to update unit status');
+      setError(err.data?.message || 'Failed to update unit status');
+      setTimeout(() => setError(''), 4000);
     }
   };
 

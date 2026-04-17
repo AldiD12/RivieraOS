@@ -1,5 +1,7 @@
 // Reservation API Service
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+// Normalize: strip trailing slashes + any /api suffix, then re-add /api once
+const baseUrl = API_URL.trim().replace(/\/+$/, '').replace(/\/api$/, '') + '/api';
 
 const apiRequest = async (url, options = {}) => {
   const response = await fetch(url, {
@@ -40,17 +42,17 @@ const apiRequest = async (url, options = {}) => {
 export const reservationApi = {
   // Get available time slots for a venue on a specific date
   async getAvailability(venueId, date) {
-    return await apiRequest(`${API_URL}/public/Reservations/availability?venueId=${venueId}&date=${date.toISOString()}`);
+    return await apiRequest(`${baseUrl}/public/Reservations/availability?venueId=${venueId}&date=${date.toISOString()}`);
   },
 
   // Get zones/tables for a venue
   async getZones(venueId) {
-    return await apiRequest(`${API_URL}/public/Reservations/zones?venueId=${venueId}`);
+    return await apiRequest(`${baseUrl}/public/Reservations/zones?venueId=${venueId}`);
   },
 
   // Create a reservation
   async createReservation(reservationData) {
-    return await apiRequest(`${API_URL}/public/Reservations`, {
+    return await apiRequest(`${baseUrl}/public/Reservations`, {
       method: 'POST',
       body: JSON.stringify(reservationData)
     });
@@ -58,12 +60,12 @@ export const reservationApi = {
 
   // Get reservation status by booking code
   async getReservationStatus(bookingCode) {
-    return await apiRequest(`${API_URL}/public/Reservations/${bookingCode}`);
+    return await apiRequest(`${baseUrl}/public/Reservations/${bookingCode}`);
   },
 
   // Cancel a reservation by booking code
   async cancelReservation(bookingCode) {
-    return await apiRequest(`${API_URL}/public/Reservations/${bookingCode}`, {
+    return await apiRequest(`${baseUrl}/public/Reservations/${bookingCode}`, {
       method: 'DELETE'
     });
   }
