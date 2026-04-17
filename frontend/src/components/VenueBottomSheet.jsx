@@ -1,6 +1,11 @@
 import { useState, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// --- Constants (single source of truth for business rules) ---
+const TOAST_DURATION_MS = 4000;
+const BOOKING_SOURCE_NOTE = 'Booked via XIXA Discovery';
+const DEFAULT_EVENT_DURATION_HOURS = 6;
+
 const getHaptics = () => import('../utils/haptics').then(m => m.default);
 const getReservationApi = () => import('../services/reservationApi').then(m => m.reservationApi);
 const MenuPreview = lazy(() => import('./MenuPreview'));
@@ -62,7 +67,7 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
 
   const showToast = (msg) => {
     setToast(msg);
-    setTimeout(() => setToast(null), 4000);
+    setTimeout(() => setToast(null), TOAST_DURATION_MS);
   };
 
   const handleBookingSubmit = async (e) => {
@@ -123,7 +128,7 @@ Thank you!`;
           arrivalTime: bookingData.arrivalTime,
           reservationDate: bookingData.date,
           startTime: bookingData.date + 'T' + bookingData.arrivalTime + ':00',
-          notes: 'Booked via XIXA Discovery'
+          notes: BOOKING_SOURCE_NOTE
         };
 
         const resApi = await getReservationApi();
@@ -253,9 +258,14 @@ Thank you!`;
               {(isNature || isBeachVenue) && (
                 <button
                   onClick={() => {
-                    // Logic to find a boat partner or just open WhatsApp with a generic transfer request
                     const message = `Hi! I'm interested in booking a water taxi/transfer to ${venue.name}. Can you help me?`;
-                    window.open(`https://wa.me/355695811122?text=${encodeURIComponent(message)}`, '_blank'); // Placeholder boat partner
+                    // Prefer venue's own transfer partner number, fall back to env var, then hardcoded fallback
+                    const transferNumber =
+                      venue.transferPartnerPhone ||
+                      venue.boatPartnerPhone ||
+                      import.meta.env.VITE_WATER_TAXI_PHONE ||
+                      '355695811122';
+                    window.open(`https://wa.me/${transferNumber.replace(/[^\d]/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
                   }}
                   className={`w-full flex items-center justify-center gap-2 py-4 rounded-full border transition-all duration-300 ${
                     isDayMode

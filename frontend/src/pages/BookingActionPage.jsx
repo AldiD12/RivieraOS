@@ -2,31 +2,83 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import collectorApi from '../services/collectorApi';
 
+// Inline toast notification (replaces alert())
+function Toast({ message, type = 'info', onDismiss }) {
+  const colors = {
+    info: 'bg-zinc-900 text-white',
+    success: 'bg-green-600 text-white',
+    error: 'bg-red-600 text-white',
+  };
+  return (
+    <div className={`fixed top-4 left-4 right-4 z-50 rounded-2xl px-5 py-4 shadow-xl flex items-center gap-3 ${colors[type]}`}>
+      <span className="flex-1 text-sm font-bold">{message}</span>
+      <button onClick={onDismiss} className="shrink-0 opacity-70 hover:opacity-100 text-lg leading-none">×</button>
+    </div>
+  );
+}
+
+// Inline confirm dialog (replaces confirm())
+function ConfirmDialog({ message, onConfirm, onCancel, confirmLabel = 'Confirm', confirmClass = 'bg-green-600' }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4">
+      <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl">
+        <p className="text-zinc-900 text-base font-semibold mb-6 text-center leading-relaxed">{message}</p>
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            className="flex-1 py-3 rounded-full border border-zinc-300 text-zinc-700 font-bold text-sm hover:bg-zinc-50 transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className={`flex-1 py-3 rounded-full text-white font-bold text-sm transition-all ${confirmClass} hover:opacity-90`}
+          >
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function BookingActionPage() {
   const { bookingCode } = useParams();
   const navigate = useNavigate();
-  
+
   const [booking, setBooking] = useState(null);
   const [availableUnits, setAvailableUnits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showUnitGrid, setShowUnitGrid] = useState(false);
   const [processing, setProcessing] = useState(false);
-  // 🚨 MULTI-SELECT: Changed from single unitId to array of unitIds
   const [selectedUnits, setSelectedUnits] = useState([]);
   const [unitsToSelect, setUnitsToSelect] = useState(0);
+
+  // Toast state
+  const [toast, setToast] = useState(null); // { message, type }
+
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState(null); // { message, onConfirm, confirmLabel, confirmClass }
+
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  const showConfirm = (message, onConfirm, confirmLabel = 'Confirm', confirmClass = 'bg-green-600') => {
+    setConfirmDialog({ message, onConfirm, confirmLabel, confirmClass });
+  };
 
   useEffect(() => {
     checkAuthAndLoadBooking();
   }, [bookingCode]);
 
   const checkAuthAndLoadBooking = async () => {
-    // 🔐 SECURITY CHECK: Must have staff token
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
-    
+
     if (!token || (role !== 'Collector' && role !== 'Manager')) {
-      // Redirect to staff login or show "waiting" screen
       navigate(`/login?redirect=/action/${bookingCode}`);
       return;
     }
@@ -35,7 +87,7 @@ export default function BookingActionPage() {
       setLoading(true);
       const bookingData = await collectorApi.getBookingDetails(bookingCode);
       setBooking(bookingData);
-      
+
       if (bookingData.status !== 'Pending') {
         setError(`This booking is already ${bookingData.status}`);
       }
@@ -53,120 +105,109 @@ export default function BookingActionPage() {
 
   const handleApproveClick = async () => {
     try {
-      // Load available units for visual selection
       const units = await collectorApi.getAvailableUnits(bookingCode);
       setAvailableUnits(units);
       setShowUnitGrid(true);
-      
-      // 🚨 MULTI-SELECT: Set how many units need to be selected
       setUnitsToSelect(booking.unitsNeeded || 1);
       setSelectedUnits([]);
     } catch (err) {
       console.error('Error loading units:', err);
-      alert('Failed to load available units');
+      showToast('Failed to load available units', 'error');
     }
   };
 
-  // 🚨 MULTI-SELECT: Toggle unit selection (add/remove from array)
-  const handleUnitToggle = (unitId, unitCode) => {
+  const handleUnitToggle = (unitId) => {
     if (processing) return;
-    
-    // Check if already selected
+
     if (selectedUnits.includes(unitId)) {
-      // Deselect
       setSelectedUnits(prev => prev.filter(id => id !== unitId));
     } else {
-      // Select (if not at limit)
       if (selectedUnits.length < unitsToSelect) {
         setSelectedUnits(prev => [...prev, unitId]);
       } else {
-        alert(`You can only select ${unitsToSelect} unit${unitsToSelect > 1 ? 's' : ''}`);
+        showToast(`You can only select ${unitsToSelect} unit${unitsToSelect > 1 ? 's' : ''}`, 'info');
       }
     }
   };
 
-  // 🚨 MULTI-SELECT: Confirm selection and approve booking
-  const handleConfirmSelection = async () => {
+  const handleConfirmSelection = () => {
     if (selectedUnits.length !== unitsToSelect) {
-      alert(`Please select exactly ${unitsToSelect} unit${unitsToSelect > 1 ? 's' : ''}`);
+      showToast(`Please select exactly ${unitsToSelect} unit${unitsToSelect > 1 ? 's' : ''}`, 'error');
       return;
     }
 
-    // Get unit codes for confirmation message
     const selectedUnitCodes = availableUnits
       .filter(u => selectedUnits.includes(u.id))
       .map(u => u.unitCode)
       .join(', ');
 
-    if (!confirm(`Assign ${selectedUnits.length} unit${selectedUnits.length > 1 ? 's' : ''} (${selectedUnitCodes}) to Booking #${bookingCode}?`)) {
-      return;
-    }
+    showConfirm(
+      `Assign ${selectedUnits.length} unit${selectedUnits.length > 1 ? 's' : ''} (${selectedUnitCodes}) to Booking #${bookingCode}?`,
+      () => doApprove(selectedUnitCodes),
+      'Assign Units',
+      'bg-green-600'
+    );
+  };
 
+  const doApprove = async (selectedUnitCodes) => {
+    setConfirmDialog(null);
     try {
       setProcessing(true);
-      
-      // 🚨 MULTI-SELECT: Send array of unit IDs
       await collectorApi.approveBooking(bookingCode, selectedUnits);
-      
-      // Success!
+
       setBooking(prev => ({ ...prev, status: 'Reserved' }));
       setShowUnitGrid(false);
-      
-      // Show success message
-      alert(`✅ Booking approved! ${selectedUnits.length} unit${selectedUnits.length > 1 ? 's' : ''} assigned: ${selectedUnitCodes}`);
-      
-      // Redirect to dashboard after 2 seconds
-      setTimeout(() => {
-        navigate('/collector');
-      }, 2000);
-      
+      showToast(`Booking approved! ${selectedUnits.length} unit${selectedUnits.length > 1 ? 's' : ''} assigned: ${selectedUnitCodes}`, 'success');
+
+      setTimeout(() => navigate('/collector'), 2500);
     } catch (err) {
       console.error('Error approving booking:', err);
-      
-      // 🚨 TWEAK 2: Translate error messages to Albanian
+
       const errorData = err.response?.data;
       let errorMessage = 'Failed to approve booking';
-      
+
       if (errorData?.error === 'BOOKING_NOT_PENDING') {
         errorMessage = 'Kjo kërkesë ka skaduar ose është anulluar.';
-        
         if (errorData.currentStatus === 'Reserved') {
-          errorMessage += '\n\nKjo rezervim është tashmë konfirmuar.';
+          errorMessage += ' Kjo rezervim është tashmë konfirmuar.';
         } else if (errorData.currentStatus === 'Cancelled') {
-          errorMessage += '\n\nKjo rezervim është anulluar.';
+          errorMessage += ' Kjo rezervim është anulluar.';
         } else if (errorData.currentStatus === 'Active') {
-          errorMessage += '\n\nKlienti është tashmë në plazh.';
+          errorMessage += ' Klienti është tashmë në plazh.';
         }
       } else if (errorData?.error === 'INCORRECT_UNIT_COUNT') {
         errorMessage = `Wrong number of units selected. Need ${errorData.unitsNeeded || unitsToSelect}.`;
       } else if (errorData?.error) {
         errorMessage = errorData.error;
       }
-      
-      alert(errorMessage);
+
+      showToast(errorMessage, 'error');
       setProcessing(false);
     }
   };
 
-  const handleReject = async () => {
-    if (!confirm(`Reject booking #${bookingCode}?`)) {
-      return;
-    }
+  const handleReject = () => {
+    showConfirm(
+      `Reject booking #${bookingCode}? This cannot be undone.`,
+      doReject,
+      'Reject',
+      'bg-red-600'
+    );
+  };
 
+  const doReject = async () => {
+    setConfirmDialog(null);
     try {
       setProcessing(true);
       await collectorApi.rejectBooking(bookingCode);
-      
+
       setBooking(prev => ({ ...prev, status: 'Cancelled' }));
-      alert('❌ Booking rejected');
-      
-      setTimeout(() => {
-        navigate('/collector');
-      }, 2000);
-      
+      showToast('Booking rejected', 'info');
+
+      setTimeout(() => navigate('/collector'), 2000);
     } catch (err) {
       console.error('Error rejecting booking:', err);
-      alert('Failed to reject booking');
+      showToast('Failed to reject booking', 'error');
     } finally {
       setProcessing(false);
     }
@@ -200,14 +241,23 @@ export default function BookingActionPage() {
     );
   }
 
-  if (!booking) {
-    return null;
-  }
+  if (!booking) return null;
 
   // Show unit grid for selection
   if (showUnitGrid) {
     return (
       <div className="min-h-screen bg-black text-white p-6">
+        {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
+        {confirmDialog && (
+          <ConfirmDialog
+            message={confirmDialog.message}
+            onConfirm={confirmDialog.onConfirm}
+            onCancel={() => setConfirmDialog(null)}
+            confirmLabel={confirmDialog.confirmLabel}
+            confirmClass={confirmDialog.confirmClass}
+          />
+        )}
+
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
             <button
@@ -230,21 +280,20 @@ export default function BookingActionPage() {
             )}
           </div>
 
-          {/* 🎨 VISUAL UNIT GRID - Green squares with multi-select */}
           <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
             {availableUnits.map(unit => {
               const isSelected = selectedUnits.includes(unit.id);
-              
+
               return (
                 <button
                   key={unit.id}
-                  onClick={() => handleUnitToggle(unit.id, unit.unitCode)}
+                  onClick={() => handleUnitToggle(unit.id)}
                   disabled={processing}
                   className={`
                     rounded-3xl p-6 aspect-square flex flex-col items-center justify-center
                     transition-all disabled:opacity-50 disabled:cursor-not-allowed
-                    ${isSelected 
-                      ? 'bg-yellow-500 border-4 border-yellow-600 scale-110' 
+                    ${isSelected
+                      ? 'bg-yellow-500 border-4 border-yellow-600 scale-110'
                       : 'bg-green-900 border-2 border-green-600 hover:scale-105 hover:bg-green-800'
                     }
                   `}
@@ -264,7 +313,6 @@ export default function BookingActionPage() {
             })}
           </div>
 
-          {/* 🚨 MULTI-SELECT: Selection counter and confirm button */}
           <div className="mt-6 text-center">
             <p className="text-xl text-white mb-4">
               Selected: {selectedUnits.length} / {unitsToSelect}
@@ -288,9 +336,20 @@ export default function BookingActionPage() {
     );
   }
 
-  // Main approval page - Clean and simple
+  // Main approval page
   return (
     <div className="min-h-screen bg-white flex items-center justify-center p-6">
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
+      {confirmDialog && (
+        <ConfirmDialog
+          message={confirmDialog.message}
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={() => setConfirmDialog(null)}
+          confirmLabel={confirmDialog.confirmLabel}
+          confirmClass={confirmDialog.confirmClass}
+        />
+      )}
+
       <div className="max-w-md w-full">
         {/* Booking Details Card */}
         <div className="bg-zinc-50 rounded-3xl p-8 mb-6 border border-zinc-200 shadow-sm">
@@ -331,7 +390,6 @@ export default function BookingActionPage() {
               </div>
             </div>
 
-            {/* 🚨 MULTI-SELECT: Show units needed if > 1 */}
             {booking.unitsNeeded && booking.unitsNeeded > 1 && (
               <div className="bg-amber-50 rounded-2xl p-4 border border-amber-200 shadow-inner">
                 <p className="text-xs text-amber-700 uppercase tracking-wider mb-1">Units Needed</p>
@@ -351,7 +409,7 @@ export default function BookingActionPage() {
           </div>
         </div>
 
-        {/* Action Buttons - MASSIVE */}
+        {/* Action Buttons */}
         {booking.status === 'Pending' && (
           <div className="space-y-4">
             <button
@@ -361,7 +419,7 @@ export default function BookingActionPage() {
             >
               ✅ APPROVE
             </button>
-            
+
             <button
               onClick={handleReject}
               disabled={processing}

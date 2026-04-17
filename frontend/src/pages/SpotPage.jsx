@@ -290,8 +290,7 @@ export default function SpotPage() {
         haptics.error();
       }
       
-      // Display exact error to user
-      alert(err.message || 'Failed to place order. Please try again.');
+      // Error is already shown via setError above
     }
   };
 
@@ -337,7 +336,7 @@ export default function SpotPage() {
         startTime: new Date().toISOString()
       };
 
-      const response = await fetch(`${API_URL}/public/Reservations`, {
+      const response = await fetch(`${baseUrl}/public/Reservations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bookingData)
@@ -626,8 +625,6 @@ export default function SpotPage() {
       <section className="px-4 pt-14 pb-6 text-center border-b border-stone-200">
         <h1 className="font-display text-3xl font-bold mb-2 tracking-tight text-stone-900 uppercase">{venue?.name || 'RIVIERA'}</h1>
         <div className="flex flex-wrap items-center justify-center text-xs text-stone-500 gap-x-3 gap-y-1 mb-4 font-mono uppercase tracking-wider">
-          <span className="flex items-center"><span className="material-symbols-outlined text-[14px] mr-1 text-zinc-950">star</span> 9.8</span>
-          <span>•</span>
           <span>Open</span>
           {canOrder && <span>•</span>}
           {canOrder && <span>Min. <span className="text-zinc-950">ORDER</span></span>}
@@ -901,7 +898,7 @@ function MenuDisplay({ menu, cart, addToCart, updateQuantity, getTotalPrice, han
       {/* ⭐ RATE YOUR EXPERIENCE CARD (Always Available) */}
       <section className="mt-8 px-4 pb-4 border-t border-stone-200 pt-8">
          <div 
-           onClick={() => { window.location.href = `/review?v=${menu[0]?.products[0]?.venueId || ''}`; }}
+           onClick={() => { navigate(`/review?v=${venueId || ''}`); }}
            className="bg-stone-100 border border-stone-200 rounded-sm p-6 flex flex-col items-center text-center cursor-pointer hover:bg-stone-50 transition-all duration-300 relative overflow-hidden group"
          >
            {/* Subtle glow effect behind stars */}

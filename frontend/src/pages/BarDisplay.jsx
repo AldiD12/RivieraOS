@@ -101,7 +101,8 @@ export default function BarDisplay() {
       await fetchOrders(); // Refresh list
     } catch (err) {
       console.error('Error updating order:', err);
-      alert('Failed to update order status');
+      setError('Failed to update order status. Please try again.');
+      setTimeout(() => setError(''), 4000);
     }
   };
 

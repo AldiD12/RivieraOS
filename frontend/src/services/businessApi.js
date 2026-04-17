@@ -18,10 +18,6 @@ api.interceptors.request.use(
     const token = localStorage.getItem('token') || localStorage.getItem('azure_jwt_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('🔐 Business API call with token:', config.method.toUpperCase(), config.url);
-      console.log('🔐 Token preview:', token.substring(0, 20) + '...');
-    } else {
-      console.warn('⚠️ No authentication token found for business API call');
     }
     return config;
   },
@@ -33,7 +29,6 @@ api.interceptors.request.use(
 // Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => {
-    console.log('✅ Business API success:', response.config.method.toUpperCase(), response.config.url);
     // Handle empty responses (204 No Content)
     if (response.status === 204 || !response.data) {
       response.data = { success: true };
@@ -44,7 +39,6 @@ api.interceptors.response.use(
     console.error('❌ Business API error:', error.response?.status, error.response?.data);
     
     if (error.response?.status === 401) {
-      console.log('🔒 Unauthorized - redirecting to login');
       localStorage.clear();
       window.location.href = '/login';
     }
