@@ -1,0 +1,28 @@
+name: Deploy to Azure Container Apps
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Build and deploy to Azure Container Apps
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          resourceGroup: rg-blackbear-dev-001
+          containerAppName: blackbear-api
+          acrName: blackbearapiark
+          appSourcePath: ${{ github.workspace }}/BlackBear.Services/BlackBear.Services.Core
+          imageToBuild: blackbearapiark.azurecr.io/blackbear-api:${{ github.sha }}

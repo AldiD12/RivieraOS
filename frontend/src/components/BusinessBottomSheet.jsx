@@ -121,7 +121,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
 
   return (
     <div className="absolute bottom-0 left-0 right-0 z-30 pointer-events-auto">
-      <div className="bg-[#F6F5F2] text-[#111111] p-6 rounded-t-3xl shadow-2xl">
+      <div className={`p-6 rounded-t-3xl shadow-2xl ${isDayMode ? 'bg-[#F6F5F2] text-[#111111]' : 'bg-zinc-950 text-white border-t border-zinc-800'}`}>
 
         {/* TITLE & HEADER */}
         <div className="flex items-start justify-between mb-4">
@@ -133,7 +133,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center text-[#111111] hover:bg-zinc-200 rounded-full transition-colors"
+            className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${isDayMode ? 'text-[#111111] hover:bg-zinc-200' : 'text-zinc-400 hover:bg-zinc-800'}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -147,7 +147,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
             {getAmenityIcons().map((amenity, index) => (
               <span
                 key={index}
-                className="border border-zinc-300 px-3 py-1 text-xs font-mono uppercase rounded-full"
+                className={`border px-3 py-1 text-xs font-mono uppercase rounded-full ${isDayMode ? 'border-zinc-300 text-zinc-700' : 'border-zinc-700 text-zinc-400'}`}
               >
                 {amenity.icon} {amenity.name}
               </span>
@@ -160,9 +160,9 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
 
           {/* BEACH CARD (Direct Booking) */}
           {beachVenue && (
-            <div className="bg-white border border-zinc-300 p-4 rounded-2xl flex justify-between items-center">
+            <div className={`border p-4 rounded-2xl flex justify-between items-center ${isDayMode ? 'bg-white border-zinc-300' : 'bg-zinc-900 border-zinc-800'}`}>
               <div>
-                <h3 className="font-sans font-bold text-lg">{beachVenue.name || 'THE BEACH'}</h3>
+                <h3 className={`font-sans font-bold text-lg ${isDayMode ? 'text-zinc-950' : 'text-white'}`}>{beachVenue.name || 'THE BEACH'}</h3>
                 <p className="flex items-center gap-2 text-[#10B981] font-mono text-xs mt-1">
                   <span className="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse"></span>
                   {beachVenue.availableUnitsCount || 0} BEDS AVAILABLE
@@ -170,7 +170,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
               </div>
               <button
                 onClick={() => startDirectBooking(beachVenue.id)}
-                className="bg-[#111111] text-white px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-800 transition-colors rounded-full"
+                className={`px-4 py-3 font-mono text-xs uppercase font-bold transition-colors rounded-full ${isDayMode ? 'bg-zinc-950 text-white hover:bg-zinc-800' : 'bg-[#10FF88] text-zinc-950 hover:shadow-[0_0_20px_rgba(16,255,136,0.4)]'}`}
               >
                 Secure Sunbed
               </button>
@@ -179,10 +179,10 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
 
           {/* RESTAURANT CARD */}
           {restaurantVenue && (
-            <div className="bg-white border border-zinc-300 p-4 rounded-2xl">
+            <div className={`border p-4 rounded-2xl ${isDayMode ? 'bg-white border-zinc-300' : 'bg-zinc-900 border-zinc-800'}`}>
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="font-sans font-bold text-lg">{restaurantVenue.name || 'RESTAURANT'}</h3>
+                  <h3 className={`font-sans font-bold text-lg ${isDayMode ? 'text-zinc-950' : 'text-white'}`}>{restaurantVenue.name || 'RESTAURANT'}</h3>
                   {restaurantVenue.description ? (
                     <p className="text-zinc-500 font-mono text-xs mt-1 line-clamp-1">{restaurantVenue.description}</p>
                   ) : (
@@ -192,14 +192,14 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
                 {getWhatsAppNumber() ? (
                   <button
                     onClick={() => openWhatsApp(getWhatsAppNumber())}
-                    className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors shrink-0 ml-3 rounded-full"
+                    className={`border px-4 py-3 font-mono text-xs uppercase font-bold transition-colors shrink-0 ml-3 rounded-full ${isDayMode ? 'border-zinc-950 text-zinc-950 hover:bg-zinc-100' : 'border-zinc-600 text-white hover:border-[#10FF88] hover:text-[#10FF88]'}`}
                   >
                     Request Table
                   </button>
                 ) : (
                   <button
                     onClick={() => startDirectBooking(restaurantVenue.id)}
-                    className="border border-[#111111] text-[#111111] px-4 py-3 font-mono text-xs uppercase font-bold hover:bg-zinc-100 transition-colors shrink-0 ml-3 rounded-full"
+                    className={`border px-4 py-3 font-mono text-xs uppercase font-bold transition-colors shrink-0 ml-3 rounded-full ${isDayMode ? 'border-zinc-950 text-zinc-950 hover:bg-zinc-100' : 'border-zinc-600 text-white hover:border-[#10FF88] hover:text-[#10FF88]'}`}
                   >
                     View Details
                   </button>
@@ -208,7 +208,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
               {/* View Menu button */}
               <button
                 onClick={() => setMenuVenue(restaurantVenue)}
-                className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 border border-zinc-200 text-zinc-600 font-mono text-xs uppercase tracking-wider hover:bg-zinc-50 transition-colors rounded-full"
+                className={`mt-3 w-full flex items-center justify-center gap-2 py-2.5 border font-mono text-xs uppercase tracking-wider transition-colors rounded-full ${isDayMode ? 'border-zinc-200 text-zinc-600 hover:bg-zinc-50' : 'border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:bg-zinc-800'}`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -221,7 +221,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
           {/* UPCOMING EVENTS (from real API) */}
           {eventsLoading && (
             <div className="py-3 flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-zinc-300 border-t-zinc-700 rounded-full animate-spin"></div>
+              <div className={`w-4 h-4 border-2 rounded-full animate-spin ${isDayMode ? 'border-zinc-300 border-t-zinc-700' : 'border-zinc-700 border-t-[#10FF88]'}`}></div>
               <span className="text-xs font-mono text-zinc-400 uppercase">Loading events...</span>
             </div>
           )}
@@ -235,9 +235,9 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
                 const timeStr = date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
                 return (
-                  <div key={event.id} className="bg-white border border-zinc-300 p-3 rounded-2xl mb-2 flex justify-between items-center">
+                  <div key={event.id} className={`border p-3 rounded-2xl mb-2 flex justify-between items-center ${isDayMode ? 'bg-white border-zinc-300' : 'bg-zinc-900 border-zinc-800'}`}>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-sans font-bold text-sm truncate">{event.name}</h4>
+                      <h4 className={`font-sans font-bold text-sm truncate ${isDayMode ? 'text-zinc-950' : 'text-white'}`}>{event.name}</h4>
                       <div className="flex items-center gap-3 mt-1">
                         <span className="text-[10px] font-mono text-zinc-500">{dateStr} {timeStr}</span>
                         {event.vibe && (
@@ -270,7 +270,7 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
             <MenuPreview
               venueId={menuVenue.id}
               venueName={menuVenue.name || business.name}
-              isDayMode={true}
+              isDayMode={isDayMode}
               onClose={() => setMenuVenue(null)}
             />
           </Suspense>

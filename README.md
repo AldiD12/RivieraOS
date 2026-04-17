@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏖️ Riviera OS
 
 **High-performance beach club management system for the Albanian Riviera**
@@ -355,3 +356,7 @@ This is a private project for Albanian Riviera beach clubs. For inquiries, conta
 ---
 
 **Built with ❤️ for the Albanian Riviera**
+=======
+# BlackBear-Services
+
+>>>>>>> 2b932178268fabf975a22361789703eec735d718

@@ -125,7 +125,7 @@ function App() {
             path="/manager" 
             element={
               <ProtectedRoute role="Manager">
-                <BusinessAdminDashboard />
+                <AdminDashboard />
               </ProtectedRoute>
             } 
           />
@@ -134,7 +134,7 @@ function App() {
             path="/admin" 
             element={
               <ProtectedRoute role="Manager">
-                <BusinessAdminDashboard />
+                <AdminDashboard />
               </ProtectedRoute>
             } 
           />
