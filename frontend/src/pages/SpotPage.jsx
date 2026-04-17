@@ -208,13 +208,15 @@ export default function SpotPage() {
   };
 
   const updateQuantity = (productId, delta) => {
-    setCart(cart.map(item => {
-      if (item.id === productId) {
-        const newQuantity = item.quantity + delta;
-        return newQuantity > 0 ? { ...item, quantity: newQuantity } : item;
-      }
-      return item;
-    }).filter(item => item.quantity > 0));
+    setCart(prev =>
+      prev
+        .map(item =>
+          item.id === productId
+            ? { ...item, quantity: item.quantity + delta }
+            : item
+        )
+        .filter(item => item.quantity > 0)
+    );
   };
 
   const getTotalPrice = () => {
