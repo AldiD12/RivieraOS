@@ -60,32 +60,20 @@ export default function ReviewPage() {
       
       const venuesData = await venuesResponse.json();
       const venueData = venuesData.find(v => String(v.id) === String(actualVenueId));
-      
+
       if (!venueData) {
         throw new Error('Venue not found');
       }
 
-      // Step 2: Fetch the parent Business to get the reviewLink
-      let reviewLink = null;
-      let businessName = venueData.businessName || venueData.name || 'Venue';
-      
-      if (venueData.businessId) {
-        try {
-          const businessResponse = await fetch(`${baseUrl}/Businesses/${venueData.businessId}`);
-          if (businessResponse.ok) {
-            const businessData = await businessResponse.json();
-            reviewLink = businessData.reviewLink || null;
-            businessName = businessData.brandName || businessData.registeredName || businessName;
-          }
-        } catch (bizErr) {
-          console.warn('Could not fetch business-level data, falling back to venue data:', bizErr);
-        }
-      }
+      // reviewLink is already embedded in the public venue response as businessReviewLink
+      // — no need to call the authenticated /Businesses/ endpoint
+      const reviewLink = venueData.businessReviewLink || null;
+      const businessName = venueData.businessName || venueData.name || 'Venue';
 
       setVenue({
         id: actualVenueId,
         businessId: venueData.businessId,
-        name: businessName, 
+        name: businessName,
         location: venueData.address || 'Riviera',
         latitude: venueData.latitude,
         longitude: venueData.longitude,
