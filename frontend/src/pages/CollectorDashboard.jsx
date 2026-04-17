@@ -39,32 +39,30 @@ export default function CollectorDashboard() {
         .then((success) => {
           if (success) {
             setIsConnected(true);
-            console.log('🔴 Collector Dashboard - SignalR Connected');
 
-            // Listen for booking events
-            connection.on('BookingCreated', (booking) => {
-              console.log('🆕 New booking received:', booking);
-              if (booking.unitCode) {
-                console.log(`📍 Unit ${booking.unitCode} - New booking for ${booking.guestName}`);
-              }
+            // New booking arrived — needs approval
+            connection.on('BookingCreated', () => {
               fetchVenueData();
             });
 
-            connection.on('BookingStatusChanged', (data) => {
-              console.log('📝 Booking status changed:', data);
-              if (data.unitCode && data.unitStatus) {
-                console.log(`📍 Unit ${data.unitCode} - Status: ${data.unitStatus} (${data.newStatus})`);
-              }
+            // Collector approved a booking (status → Reserved)
+            connection.on('BookingApproved', () => {
+              fetchVenueData();
+            });
+
+            // Collector rejected a booking (status → Cancelled)
+            connection.on('BookingRejected', () => {
+              fetchVenueData();
+            });
+
+            // Collector checked in a guest (status → Active)
+            connection.on('BookingCheckedIn', () => {
               fetchVenueData();
             });
           } else {
-            // SignalR failed, but don't show as permanently offline
-            // Set a timeout to retry or show as degraded mode
-            console.warn('⚠️ SignalR connection failed - running in polling mode');
             setTimeout(() => {
-              // Don't show as offline if we can still fetch data
               if (venueData) {
-                setIsConnected(true); // Show as connected but without real-time updates
+                setIsConnected(true);
               }
             }, 5000);
           }
@@ -72,34 +70,21 @@ export default function CollectorDashboard() {
         .catch((err) => {
           console.error('SignalR connection failed:', err);
           setIsConnected(false);
-          
-          // Fallback: If we can fetch data via API, don't show as completely offline
-          setTimeout(() => {
-            if (venueData) {
-              console.log('📡 Using API polling mode instead of SignalR');
-              setIsConnected(true); // Show as connected via API
-            }
-          }, 3000);
         });
 
       // Handle reconnection
       connection.onreconnecting(() => {
-        console.log('🔄 SignalR reconnecting...');
         setIsConnected(false);
       });
 
       connection.onreconnected(() => {
-        console.log('✅ SignalR reconnected');
         setIsConnected(true);
         fetchVenueData();
       });
 
       connection.onclose(() => {
-        console.log('❌ SignalR disconnected');
-        // Don't immediately show as offline - try to maintain API connection
         setTimeout(() => {
           if (venueData) {
-            console.log('📡 Maintaining API connection after SignalR disconnect');
             setIsConnected(true);
           } else {
             setIsConnected(false);
@@ -111,7 +96,9 @@ export default function CollectorDashboard() {
     return () => {
       if (connection) {
         connection.off('BookingCreated');
-        connection.off('BookingStatusChanged');
+        connection.off('BookingApproved');
+        connection.off('BookingRejected');
+        connection.off('BookingCheckedIn');
       }
     };
   }, [connection, venueData]);
@@ -121,7 +108,6 @@ export default function CollectorDashboard() {
       setLoading(true);
       setError('');
       const data = await collectorApi.getVenueUnits();
-      console.log('📦 Venue data received:', data);
       setVenueData(data);
       
       // Auto-select first zone if available
@@ -140,7 +126,6 @@ export default function CollectorDashboard() {
 
   const handleUnitAction = async (unitId, newStatus) => {
     try {
-      console.log(`🔄 Updating unit ${unitId} to status: ${newStatus}`);
       await collectorApi.updateUnitStatus(unitId, { status: newStatus });
       await fetchVenueData(); // Refresh data
       setShowUnitModal(false);

@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 
+const API_URL = import.meta.env.VITE_API_URL ||
   'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
+const baseUrl = API_URL.trim().replace(/\/+$/, '').replace(/\/api$/, '') + '/api';
 
 const getAuthHeader = () => ({
   Authorization: `Bearer ${localStorage.getItem('token')}`
@@ -17,10 +18,9 @@ const collectorApi = {
    */
   getVenueUnits: async () => {
     try {
-      const response = await axios.get(`${API_URL}/collector/units`, {
+      const response = await axios.get(`${baseUrl}/collector/units`, {
         headers: getAuthHeader()
       });
-      console.log('✅ Collector units fetched successfully');
       return response.data;
     } catch (error) {
       console.error('❌ Failed to fetch collector units:', error);
@@ -54,12 +54,11 @@ const collectorApi = {
       }
 
       const response = await axios.put(
-        `${API_URL}/collector/units/${unitId}/status`,
+        `${baseUrl}/collector/units/${unitId}/status`,
         payload,
         { headers: getAuthHeader() }
       );
 
-      console.log(`✅ Unit ${unitId} status updated to ${data.status}`);
       return response.data;
     } catch (error) {
       console.error(`❌ Failed to update unit ${unitId} status:`, error);
@@ -78,10 +77,9 @@ const collectorApi = {
   getBookingDetails: async (bookingCode) => {
     try {
       const response = await axios.get(
-        `${API_URL}/collector/bookings/${bookingCode}`,
+        `${baseUrl}/collector/bookings/${bookingCode}`,
         { headers: getAuthHeader() }
       );
-      console.log('✅ Booking details fetched successfully');
       return response.data;
     } catch (error) {
       console.error('❌ Failed to fetch booking details:', error);
@@ -100,10 +98,9 @@ const collectorApi = {
   getAvailableUnits: async (bookingCode) => {
     try {
       const response = await axios.get(
-        `${API_URL}/collector/bookings/${bookingCode}/available-units`,
+        `${baseUrl}/collector/bookings/${bookingCode}/available-units`,
         { headers: getAuthHeader() }
       );
-      console.log('✅ Available units fetched successfully');
       return response.data;
     } catch (error) {
       console.error('❌ Failed to fetch available units:', error);
@@ -128,11 +125,10 @@ const collectorApi = {
         : { unitId: unitIds };  // Single unit: send single ID (legacy)
       
       const response = await axios.put(
-        `${API_URL}/collector/bookings/${bookingCode}/approve`,
+        `${baseUrl}/collector/bookings/${bookingCode}/approve`,
         payload,
         { headers: getAuthHeader() }
       );
-      console.log('✅ Booking approved successfully');
       return response.data;
     } catch (error) {
       console.error('❌ Failed to approve booking:', error);
@@ -151,11 +147,10 @@ const collectorApi = {
   rejectBooking: async (bookingCode) => {
     try {
       const response = await axios.put(
-        `${API_URL}/collector/bookings/${bookingCode}/reject`,
+        `${baseUrl}/collector/bookings/${bookingCode}/reject`,
         {},
         { headers: getAuthHeader() }
       );
-      console.log('✅ Booking rejected successfully');
       return response.data;
     } catch (error) {
       console.error('❌ Failed to reject booking:', error);
