@@ -166,7 +166,9 @@ export default function SpotPage() {
         zoneId: zoneId,
         unitId: unitId,
         allowsDigitalOrdering: venueData.allowsDigitalOrdering,
-        orderingEnabled: venueData.orderingEnabled
+        orderingEnabled: venueData.orderingEnabled,
+        imageUrl: venueData.imageUrl || null,
+        businessCoverImageUrl: venueData.businessCoverImageUrl || null
       });
       
       // 🏖️ VENUE JAIL: Enrich session with venue context for isolation protocols
@@ -600,7 +602,7 @@ export default function SpotPage() {
         <img 
           alt={venue?.name || "Venue"} 
           className="w-full h-full object-cover rounded-none" 
-          src={venue?.imageUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuD8WwQlTWCp-ILL2b_lkfUnaiP9s_hGxRZsn-2CAzXztNWkQieRJmoqS9akLFXLBRdX9c-jJQvaQuspeWk-ZnDGKwbZd7oXDHdUC3Xc8brjUZUdR8EBjcl4JbBvFNaV_FOvpawMlgzQ3ltJuJMqHjuTtHWlJLb5BlcrqOBl6LifJGu4Gu1VrjRpVC9Cwy5i5-cQIPBxiikNRKM23KeJIhy24G1nxGJS9ap35lyt4gXPVxgbu8fU8m3QxqQeB93tuvMcrHvuAGIa_I5r"}
+          src={venue?.imageUrl || venue?.businessCoverImageUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuD8WwQlTWCp-ILL2b_lkfUnaiP9s_hGxRZsn-2CAzXztNWkQieRJmoqS9akLFXLBRdX9c-jJQvaQuspeWk-ZnDGKwbZd7oXDHdUC3Xc8brjUZUdR8EBjcl4JbBvFNaV_FOvpawMlgzQ3ltJuJMqHjuTtHWlJLb5BlcrqOBl6LifJGu4Gu1VrjRpVC9Cwy5i5-cQIPBxiikNRKM23KeJIhy24G1nxGJS9ap35lyt4gXPVxgbu8fU8m3QxqQeB93tuvMcrHvuAGIa_I5r"}
         />
         <div className="absolute top-0 left-0 right-0 p-4 flex items-center justify-between z-10 bg-gradient-to-b from-black/80 to-transparent">
           <div className="flex-1 mx-3 relative max-w-md w-full">
