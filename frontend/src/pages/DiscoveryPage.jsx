@@ -405,10 +405,15 @@ export default function DiscoveryPage() {
     setBusinessEventsCount(counts);
   }, [venues, events]);
 
-  const loadVenues = useCallback(async () => {
+  const loadVenues = useCallback(async (geographicZone = null) => {
     try {
       setLoading(true);
-      const data = await venueApi.getVenues();
+      let data;
+      if (geographicZone && geographicZone !== 'EVERYWHERE') {
+        data = await geographicZonesApi.getVenuesByGeographicZone(geographicZone);
+      } else {
+        data = await venueApi.getVenues();
+      }
       setVenues(data);
     } catch (err) {
       setError('Failed to load venues');
@@ -585,13 +590,6 @@ export default function DiscoveryPage() {
   const handleCloseBottomSheet = useCallback(() => {
     setSelectedVenue(null);
     setSelectedBusiness(null);
-    if (mapRef.current) {
-      mapRef.current.flyTo({
-        ...RIVIERA_CENTER,
-        duration: 1500,
-        essential: true
-      });
-    }
   }, []);
 
   const handleZoneSelect = useCallback(async (zone) => {
@@ -608,7 +606,7 @@ export default function DiscoveryPage() {
         await loadVenues();
       } else {
         await loadEvents(zone);
-        await loadVenues();
+        await loadVenues(zone);
       }
     } catch (error) {
       // Zone load failed, keep existing data
@@ -825,9 +823,9 @@ export default function DiscoveryPage() {
       {viewMode === 'map' && (
         <div className="absolute inset-0 z-[1]">
           <Suspense fallback={
-            <div className="flex h-full w-full items-center justify-center bg-[#FAFAF9]">
-              <div className="flex flex-col items-center gap-4 text-stone-500">
-                <div className="w-10 h-10 border-4 border-stone-200 border-t-stone-800 rounded-full animate-spin"></div>
+            <div className={`flex h-full w-full items-center justify-center ${isDayMode ? 'bg-[#FAFAF9]' : 'bg-zinc-950'}`}>
+              <div className={`flex flex-col items-center gap-4 ${isDayMode ? 'text-stone-500' : 'text-zinc-400'}`}>
+                <div className={`w-10 h-10 border-4 rounded-full animate-spin ${isDayMode ? 'border-stone-200 border-t-stone-800' : 'border-zinc-800 border-t-[#10FF88]'}`}></div>
                 <span className="font-mono text-sm tracking-widest uppercase">Loading Base Map...</span>
               </div>
             </div>
@@ -1260,9 +1258,9 @@ export default function DiscoveryPage() {
                     <h2 className="text-4xl font-display font-normal text-white uppercase tracking-tighter mb-1 leading-none">
                       {event.name}
                     </h2>
-                    {event.description && (
+                    {event.description && event.description.length > 0 && (
                       <p className="text-xs font-mono text-zinc-400 font-bold tracking-widest uppercase">
-                        {event.description.substring(0, 30)}...
+                        {event.description.length > 30 ? `${event.description.substring(0, 30)}...` : event.description}
                       </p>
                     )}
                   </div>

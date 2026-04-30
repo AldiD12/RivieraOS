@@ -185,8 +185,8 @@ export default function LocationBottomSheet({
               ))}
 
               {/* GPS Action - Industrial Style */}
-              <div className="mt-4 pt-6 border-t border-zinc-800">
-                <button 
+              <div className={`mt-4 pt-6 border-t ${isDayMode ? 'border-stone-200' : 'border-zinc-800'}`}>
+                <button
                   onClick={handleGPSClick}
                   className={`
                     w-full py-4 px-5 border flex items-center justify-center gap-3 transition-all

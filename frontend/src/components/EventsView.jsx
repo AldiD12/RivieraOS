@@ -225,9 +225,9 @@ export default function EventsView({
                     <h2 className="text-4xl font-display font-normal text-white uppercase tracking-tighter mb-1 leading-none">
                       {event.name}
                     </h2>
-                    {event.description && (
+                    {event.description && event.description.length > 0 && (
                       <p className="text-xs font-mono text-zinc-400 font-bold tracking-widest uppercase">
-                        {event.description.substring(0, 30)}...
+                        {event.description.length > 30 ? `${event.description.substring(0, 30)}...` : event.description}
                       </p>
                     )}
                   </div>

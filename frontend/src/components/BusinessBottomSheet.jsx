@@ -5,15 +5,13 @@ import { calculateDistance } from '../utils/locationUtils';
 const MenuPreview = lazy(() => import('./MenuPreview'));
 
 export default function BusinessBottomSheet({ business, onClose, onVenueSelect, isDayMode, userLocation }) {
-  if (!business) return null;
-
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(false);
-  const [menuVenue, setMenuVenue] = useState(null); // venue to show menu for
+  const [menuVenue, setMenuVenue] = useState(null);
 
   // Fetch real events for this business from API
   useEffect(() => {
-    if (!business.id) return;
+    if (!business?.id) return;
 
     let cancelled = false;
     setEventsLoading(true);
@@ -35,7 +33,9 @@ export default function BusinessBottomSheet({ business, onClose, onVenueSelect, 
       .finally(() => { if (!cancelled) setEventsLoading(false); });
 
     return () => { cancelled = true; };
-  }, [business.id]);
+  }, [business?.id]);
+
+  if (!business) return null;
 
   const getSafeType = (v) => (v.type || v.venueType || v.category || '').toLowerCase();
 

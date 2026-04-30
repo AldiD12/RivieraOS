@@ -4,7 +4,7 @@
  * Industrial Grade: Error handling, retries, caching
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.riviera-os.com';
+const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 
 class VenueApiService {
   constructor() {
@@ -40,6 +40,35 @@ class VenueApiService {
 
     this.cache.set(cacheKey, { data: venues, timestamp: Date.now() });
     return venues;
+  }
+
+  /**
+   * Get a single venue by ID
+   * @param {string} venueId
+   * @returns {Promise<Object>}
+   */
+  async getById(venueId) {
+    const cacheKey = `venue-${venueId}`;
+
+    if (this.cache.has(cacheKey)) {
+      const cached = this.cache.get(cacheKey);
+      if (Date.now() - cached.timestamp < this.cacheTimeout) {
+        return cached.data;
+      }
+    }
+
+    const response = await fetch(`${API_URL}/public/Venues/${venueId}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const venue = await response.json();
+    this.cache.set(cacheKey, { data: venue, timestamp: Date.now() });
+    return venue;
   }
 
   /**

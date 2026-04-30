@@ -38,7 +38,8 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
   ];
 
   const venueType = (venue.type || '').toLowerCase();
-  const isBeachVenue = venueType.includes('beach') || venueType.includes('plazh');
+  const isBeachClub = venueType.includes('beach club') || venueType === 'beach_club';
+  const isBeachVenue = (venueType.includes('beach') || venueType.includes('plazh')) && !isBeachClub;
 
   const availability = venue.availability;
   const hasAvailability = availability && availability.availableUnits > 0;
@@ -79,11 +80,11 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
       localStorage.setItem('riviera_guestPhone', bookingData.guestPhone);
 
       const venueType = (venue.type || '').toLowerCase();
-      const isBeach = venueType.includes('beach') || venueType.includes('plazh');
-      const isRestaurant = venueType.includes('restaurant') || venueType.includes('restorant');
+      const isBeachClubType = venueType.includes('beach club') || venueType === 'beach_club';
+      const isBeach = (venueType.includes('beach') || venueType.includes('plazh')) && !isBeachClubType;
+      const isWhatsAppBooking = venueType.includes('restaurant') || venueType.includes('restorant') || isBeachClubType;
 
-      if (isRestaurant) {
-        // Restaurant: WhatsApp with real venue phone (no hardcoded fallback)
+      if (isWhatsAppBooking) {
         const venuePhone = venue.whatsappNumber || venue.whatsAppNumber || venue.phone;
         if (!venuePhone) {
           showToast('This venue has no contact number configured yet.');
@@ -93,9 +94,9 @@ export default function VenueBottomSheet({ venue, onClose, isDayMode = false }) 
 
         const message = `Hi! 👋
 
-I'd like to reserve a table:
+I'd like to make a reservation:
 
-🍽️ Restaurant: ${venue.name}
+📍 ${venue.name}
 👥 Guests: ${bookingData.guestCount}
 📅 Date: ${new Date(bookingData.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
 🕐 Time: ${bookingData.arrivalTime}
