@@ -65,19 +65,6 @@ function LandingSpotPage() {
           }
         }
         
-        // Try to fetch business-level data for brand name and reviewLink
-        if (businessId) {
-          try {
-            const bizResponse = await fetch(`${baseUrl}/Businesses/${businessId}`);
-            if (bizResponse.ok) {
-              const bizData = await bizResponse.json();
-              businessBrandName = bizData.brandName || bizData.registeredName || businessBrandName;
-            }
-          } catch (bizErr) {
-            console.warn('Could not fetch business details:', bizErr);
-          }
-        }
-        
         setVenue({ ...venueData, businessId, displayName: businessBrandName });
         startSession(v, u || '', businessBrandName);
       } catch (err) {
