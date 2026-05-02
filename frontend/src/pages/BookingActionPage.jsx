@@ -403,7 +403,7 @@ export default function BookingActionPage() {
             <div>
               <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Requested Time</p>
               <p className="text-lg text-zinc-900">
-                {new Date(booking.requestedTime).toLocaleString()}
+                {new Date(booking.startTime).toLocaleString()}
               </p>
             </div>
           </div>
