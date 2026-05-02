@@ -418,16 +418,26 @@ export default function MenuPage() {
         const menuController = new AbortController();
         const menuTimeoutId = setTimeout(() => menuController.abort(), 5000);
         
-        const menuResponse = await fetch(`${API_URL}/public/Venues/${VENUE_ID}/menu`, {
+        const menuResponse = await fetch(`${API_URL}/public/Orders/menu?venueId=${VENUE_ID}`, {
           signal: menuController.signal
         });
         clearTimeout(menuTimeoutId);
         
         if (menuResponse.ok) {
           const menuData = await menuResponse.json();
-          setMenuItems(menuData.items || []);
+          // Backend returns array of categories, each with a products array
+          const flatItems = Array.isArray(menuData)
+            ? menuData.flatMap(cat =>
+                (cat.products || []).map(p => ({
+                  ...p,
+                  categoryName: cat.name,
+                  basePrice: p.price ?? p.basePrice
+                }))
+              )
+            : (menuData.items || []);
+          setMenuItems(flatItems);
           
-          const uniqueCategories = ['All Items', ...new Set(menuData.items?.map(item => item.categoryName) || [])];
+          const uniqueCategories = ['All Items', ...new Set(flatItems.map(item => item.categoryName) || [])];
           setCategories(uniqueCategories);
           
           console.log('🍽️ Menu data loaded:', menuData);

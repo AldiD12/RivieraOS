@@ -4,7 +4,7 @@
  * Industrial Grade: Error handling, retries, caching
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://api.riviera-os.com';
+const API_URL = (import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api').replace(/\/+$/, '');
 
 class VenueApiService {
   constructor() {
