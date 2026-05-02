@@ -4,6 +4,7 @@ import { reservationApi } from '../services/reservationApi';
 import { signalrService } from '../services/signalrService';
 import whatsappLink from '../utils/whatsappLink';
 import haptics from '../utils/haptics';
+import PageLoader from '../components/PageLoader';
 
 export default function BookingStatusPage() {
   const { bookingCode } = useParams();
@@ -25,20 +26,12 @@ export default function BookingStatusPage() {
     loadBooking();
     setupSignalR();
     
-    // Load Google Fonts
-    const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Inter:wght@200;300;400;500;600&display=swap';
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
-    
-    // 🚨 TRAP 1 FIX: Check for expired pending bookings every 30 seconds
     const expiryCheckInterval = setInterval(() => {
       checkBookingExpiry();
-    }, 30000); // Check every 30 seconds
+    }, 30000);
     
     return () => {
       signalrService.disconnect();
-      document.head.removeChild(link);
       clearInterval(expiryCheckInterval);
     };
   }, [bookingCode]);
@@ -149,16 +142,8 @@ Faleminderit!`;
     }
   };
 
-  // Loading state
   if (loading) {
-    return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center p-8">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-6 border-2 border-stone-300 border-t-stone-900 rounded-full animate-spin"></div>
-          <p className="text-lg text-stone-600">Duke ngarkuar rezervimin...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader message="Duke ngarkuar rezervimin..." />;
   }
 
   // Error state

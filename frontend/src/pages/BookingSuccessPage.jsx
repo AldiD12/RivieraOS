@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Clock, Users, Bed, CheckCircle, ArrowLeft, Share2 } from 'lucide-react';
 import { reservationApi } from '../services/reservationApi';
+import PageLoader from '../components/PageLoader';
 
 export default function BookingSuccessPage() {
   const { bookingCode } = useParams();
@@ -10,14 +11,12 @@ export default function BookingSuccessPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch real booking data from API
   useEffect(() => {
     const fetchBooking = async () => {
       try {
         setLoading(true);
         const data = await reservationApi.getReservationStatus(bookingCode);
-        
-        // Transform API response to match our UI expectations
+
         const transformedBooking = {
           bookingCode: data.bookingCode,
           venueName: data.venueName,
@@ -26,22 +25,26 @@ export default function BookingSuccessPage() {
           unitCodes: data.unitCodes || [],
           guestCount: data.guestCount,
           sunbedCount: data.unitsNeeded || 1,
-          arrivalTime: data.startTime ? new Date(data.startTime).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
-          expirationTime: data.expirationTime ? new Date(data.expirationTime).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
-          totalPrice: data.totalPrice || 0,
-          status: data.status
+          arrivalTime: data.startTime
+            ? new Date(data.startTime).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' })
+            : 'N/A',
+          expirationTime: data.expirationTime
+            ? new Date(data.expirationTime).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit' })
+            : 'N/A',
+          totalPrice: data.totalPrice || null,
+          status: data.status,
         };
-        
+
         setBooking(transformedBooking);
         setError(null);
       } catch (err) {
         console.error('Failed to fetch booking:', err);
-        setError('Rezervimi nuk u gjet / Booking not found');
+        setError('Booking not found');
       } finally {
         setLoading(false);
       }
     };
-    
+
     if (bookingCode) {
       fetchBooking();
     }
@@ -52,29 +55,27 @@ export default function BookingSuccessPage() {
       navigator.share({
         title: 'XIXA Booking Confirmation',
         text: `Booking confirmed! Code: ${booking.bookingCode}`,
-        url: window.location.href
+        url: window.location.href,
       });
     }
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
-      </div>
-    );
+    return <PageLoader message="Loading booking..." />;
   }
 
   if (error || !booking) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-6">
-        <div className="text-center">
-          <p className="text-red-500 text-xl mb-4">{error || 'Rezervimi nuk u gjet'}</p>
+      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center p-6">
+        <div className="text-center max-w-xs">
+          <p className="text-stone-500 font-mono text-sm uppercase tracking-widest mb-6">
+            {error || 'Booking not found'}
+          </p>
           <button
             onClick={() => navigate('/')}
-            className="bg-zinc-900 border border-zinc-800 text-white px-6 py-3 rounded-full hover:border-[#10FF88] transition-all"
+            className="bg-stone-900 text-white px-6 py-3 rounded-full text-xs font-mono tracking-widest uppercase hover:bg-stone-700 transition-all"
           >
-            Kthehu në Discovery / Back to Discovery
+            Back to Discovery
           </button>
         </div>
       </div>
@@ -82,94 +83,87 @@ export default function BookingSuccessPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="min-h-screen bg-[#FAFAF9] text-stone-900">
       {/* Header */}
-      <div className="bg-gradient-to-b from-zinc-900 to-zinc-950 border-b border-zinc-800 p-6">
+      <div className="bg-white border-b border-stone-200 p-6">
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-6"
+          className="flex items-center gap-2 text-stone-400 hover:text-stone-900 transition-colors mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span>Back to Discovery</span>
+          <span className="text-xs font-mono uppercase tracking-widest">Back to Discovery</span>
         </button>
 
         {/* Success Icon */}
         <div className="flex justify-center mb-6">
           <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-[#10FF88]/20 border-2 border-[#10FF88] flex items-center justify-center">
-              <CheckCircle className="w-12 h-12 text-[#10FF88]" />
+            <div className="w-20 h-20 rounded-full bg-emerald-50 border-2 border-emerald-500 flex items-center justify-center">
+              <CheckCircle className="w-10 h-10 text-emerald-500" />
             </div>
-            <div className="absolute inset-0 rounded-full bg-[#10FF88]/20 animate-ping"></div>
           </div>
         </div>
 
-        <h1 
-          className="text-4xl font-light text-center mb-2"
+        <h1
+          className="text-3xl font-light text-center mb-1 text-stone-900"
           style={{ fontFamily: 'Playfair Display, serif' }}
         >
           Rezervimi u Konfirmua
         </h1>
-        <p className="text-center text-zinc-400 text-sm uppercase tracking-widest">
+        <p className="text-center text-stone-400 text-[10px] font-mono uppercase tracking-widest">
           Booking Confirmed
         </p>
       </div>
 
-      {/* Booking Code */}
-      <div className="p-6">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-8 mb-6 shadow-md">
-          <p className="text-xs uppercase tracking-widest text-zinc-500 mb-3 text-center">
+      {/* Content */}
+      <div className="p-6 max-w-lg mx-auto">
+        {/* Booking Code */}
+        <div className="bg-white border border-stone-200 rounded-3xl p-8 mb-4 shadow-sm">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-3 text-center">
             Kodi Juaj / Your Code
           </p>
           <div className="text-center">
-            <p 
-              className="text-5xl font-light text-[#10FF88] mb-2"
+            <p
+              className="text-5xl font-light text-stone-900 mb-2"
               style={{ fontFamily: 'JetBrains Mono, monospace' }}
             >
               {booking.bookingCode}
             </p>
-            <p className="text-sm text-zinc-400">
-              Tregoja këtë kod në plazh / Show this code at the beach
+            <p className="text-xs font-mono text-stone-400 uppercase tracking-wider">
+              Show this code at the beach
             </p>
           </div>
         </div>
 
         {/* Sunbed Codes */}
         {booking.unitCodes && booking.unitCodes.length > 0 ? (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6 shadow-md">
-            <p className="text-xs uppercase tracking-widest text-zinc-500 mb-4">
+          <div className="bg-white border border-stone-200 rounded-3xl p-6 mb-4 shadow-sm">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-4">
               Shtretërit Tuaj / Your Sunbeds
             </p>
             <div className="flex gap-3 justify-center flex-wrap">
               {booking.unitCodes.map((code, index) => (
                 <div
                   key={index}
-                  className="bg-zinc-950 border border-[#10FF88] rounded-full px-6 py-3 shadow-inner"
+                  className="bg-stone-50 border border-stone-300 rounded-full px-6 py-3"
                 >
-                  <p 
-                    className="text-2xl font-mono text-[#10FF88]"
-                  >
-                    {code}
-                  </p>
+                  <p className="text-2xl font-mono text-stone-900">{code}</p>
                 </div>
               ))}
             </div>
-            <p className="text-center text-xs text-zinc-500 mt-4">
-              {booking.sunbedCount} shtretër pranë njëri-tjetrit
+            <p className="text-center text-xs font-mono text-stone-400 mt-4 uppercase tracking-wider">
+              {booking.sunbedCount} sunbed{booking.sunbedCount !== 1 ? 's' : ''} side by side
             </p>
           </div>
         ) : (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6 shadow-md">
-            <p className="text-xs uppercase tracking-widest text-zinc-500 mb-4 text-center">
+          <div className="bg-white border border-stone-200 rounded-3xl p-6 mb-4 shadow-sm">
+            <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400 mb-4 text-center">
               Shtretërit Tuaj / Your Sunbeds
             </p>
             <div className="text-center">
-              <p className="text-white mb-2">
-                {booking.sunbedCount} shtretër të rezervuar
+              <p className="text-stone-700 font-mono text-sm mb-1">
+                {booking.sunbedCount} sunbed{booking.sunbedCount !== 1 ? 's' : ''} reserved
               </p>
-              <p className="text-sm text-zinc-400">
-                Kodet e shtretërve do t'ju jepen në plazh
-              </p>
-              <p className="text-xs text-zinc-500 mt-2">
+              <p className="text-xs text-stone-400">
                 Sunbed codes will be assigned at the beach
               </p>
             </div>
@@ -177,123 +171,112 @@ export default function BookingSuccessPage() {
         )}
 
         {/* Details */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6 space-y-4 shadow-md">
-          <p className="text-xs uppercase tracking-widest text-zinc-500 mb-4">
+        <div className="bg-white border border-stone-200 rounded-3xl p-6 mb-4 space-y-4 shadow-sm">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-stone-400">
             Detajet / Details
           </p>
 
           <div className="flex items-start gap-3">
-            <MapPin className="w-5 h-5 text-[#10FF88] mt-0.5" />
+            <MapPin className="w-4 h-4 text-stone-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-white font-medium">{booking.venueName}</p>
-              <p className="text-sm text-zinc-400">{booking.zoneName}</p>
+              <p className="text-stone-900 font-medium text-sm">{booking.venueName}</p>
+              <p className="text-xs text-stone-400">{booking.zoneName}</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <Users className="w-5 h-5 text-[#10FF88] mt-0.5" />
+            <Users className="w-4 h-4 text-stone-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-white font-medium">{booking.guestCount} Persona</p>
-              <p className="text-sm text-zinc-400">{booking.guestCount} Guests</p>
+              <p className="text-stone-900 text-sm">{booking.guestCount} Persona / Guests</p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <Bed className="w-5 h-5 text-[#10FF88] mt-0.5" />
+            <Bed className="w-4 h-4 text-stone-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-white font-medium">{booking.sunbedCount} Shtretër</p>
-              <p className="text-sm text-zinc-400">{booking.sunbedCount} Sunbeds</p>
+              <p className="text-stone-900 text-sm">
+                {booking.sunbedCount} Shtretër / Sunbed{booking.sunbedCount !== 1 ? 's' : ''}
+              </p>
             </div>
           </div>
 
           <div className="flex items-start gap-3">
-            <Clock className="w-5 h-5 text-[#10FF88] mt-0.5" />
+            <Clock className="w-4 h-4 text-stone-400 mt-0.5 shrink-0" />
             <div>
-              <p className="text-white font-medium">Ora e Arritjes: {booking.arrivalTime}</p>
-              <p className="text-sm text-zinc-400">Arrival Time: {booking.arrivalTime}</p>
+              <p className="text-stone-900 text-sm">Ora e Arritjes / Arrival: {booking.arrivalTime}</p>
             </div>
           </div>
         </div>
 
         {/* Expiration Warning */}
-        <div className="bg-amber-900/20 border border-amber-600/50 rounded-3xl p-6 mb-6 shadow-md">
+        <div className="bg-amber-50 border border-amber-200 rounded-3xl p-5 mb-4">
           <div className="flex items-start gap-3">
-            <Clock className="w-5 h-5 text-amber-500 mt-0.5" />
+            <Clock className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
             <div>
-              <p className="text-amber-500 font-medium mb-1">
-                ⏰ Rezervimi skadon në {booking.expirationTime}
+              <p className="text-amber-700 text-sm font-medium mb-0.5">
+                Reservation expires at {booking.expirationTime}
               </p>
-              <p className="text-sm text-amber-200/80">
-                Reservation expires at {booking.expirationTime} (15 minutes after arrival time)
+              <p className="text-xs text-amber-600">
+                15 minutes after arrival time — arrive on time to keep your spot
               </p>
             </div>
           </div>
         </div>
 
-        {/* Price */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6 shadow-md">
-          <div className="flex justify-between items-center">
-            <p className="text-zinc-400">Totali / Total</p>
-            <p 
-              className="text-4xl font-light text-[#10FF88]"
-              style={{ fontFamily: 'Playfair Display, serif' }}
-            >
-              €{booking.totalPrice}
+        {/* Price — only shown when a real value is available */}
+        {booking.totalPrice != null && booking.totalPrice > 0 && (
+          <div className="bg-white border border-stone-200 rounded-3xl p-6 mb-4 shadow-sm">
+            <div className="flex justify-between items-center">
+              <p className="text-xs font-mono uppercase tracking-widest text-stone-400">
+                Totali / Total
+              </p>
+              <p
+                className="text-3xl font-light text-stone-900"
+                style={{ fontFamily: 'Playfair Display, serif' }}
+              >
+                €{booking.totalPrice}
+              </p>
+            </div>
+            <p className="text-xs text-stone-400 text-right mt-1 font-mono">
+              €{(booking.totalPrice / booking.sunbedCount).toFixed(2)} × {booking.sunbedCount}{' '}
+              shtretër
             </p>
           </div>
-          <p className="text-xs text-zinc-500 text-right mt-1">
-            €{(booking.totalPrice / booking.sunbedCount).toFixed(2)} × {booking.sunbedCount} shtretër
-          </p>
-        </div>
+        )}
 
         {/* Action Buttons */}
         <div className="space-y-3">
           <button
             onClick={handleShare}
-            className="w-full bg-zinc-900 border border-zinc-800 text-white px-6 py-4 rounded-full flex items-center justify-center gap-2 hover:border-[#10FF88] transition-all"
+            className="w-full bg-white border border-stone-200 text-stone-700 px-6 py-4 rounded-full flex items-center justify-center gap-2 hover:border-stone-400 transition-all text-xs font-mono uppercase tracking-widest"
           >
-            <Share2 className="w-5 h-5" />
+            <Share2 className="w-4 h-4" />
             <span>Shpërndaj / Share</span>
           </button>
 
           <button
             onClick={() => navigate('/')}
-            className="w-full bg-zinc-950 border border-[#10FF88] text-[#10FF88] px-6 py-4 rounded-full hover:bg-[#10FF88]/10 transition-all"
+            className="w-full bg-stone-900 text-white px-6 py-4 rounded-full hover:bg-stone-700 transition-all text-xs font-mono uppercase tracking-widest"
           >
-            Shfleto Më Shumë Eksperienca / Browse More Experiences
+            Browse More Experiences
           </button>
         </div>
 
-        {/* Help Text */}
+        {/* Help */}
         <div className="mt-8 text-center">
-          <p className="text-xs text-zinc-500 mb-2">
+          <p className="text-xs text-stone-400 mb-2 font-mono uppercase tracking-widest">
             Pyetje? / Questions?
           </p>
           <a
-            href={`https://wa.me/${booking.venuePhone || '+355692000000'}`}
+            href={`https://wa.me/${booking.venuePhone}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#10FF88] text-sm hover:underline"
+            className="text-stone-600 text-xs font-mono hover:text-stone-900 underline underline-offset-2 transition-colors"
           >
             Kontakto Plazhin / Contact Beach Club
           </a>
         </div>
       </div>
-
-      {/* Animations */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes ping {
-            75%, 100% {
-              transform: scale(2);
-              opacity: 0;
-            }
-          }
-          .animate-ping {
-            animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
-          }
-        `
-      }} />
     </div>
   );
 }

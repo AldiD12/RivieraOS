@@ -5,6 +5,7 @@ import { useAppStore } from '../store/appStore';
 import { useCartStore } from '../store/cartStore';
 import whatsappLink from '../utils/whatsappLink';
 import haptics from '../utils/haptics';
+import PageLoader from '../components/PageLoader';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://blackbear-api.kindhill-9a9eea44.italynorth.azurecontainerapps.io/api';
 // Bulletproof: strip trailing slashes + /api suffix, then always re-add /api
@@ -423,11 +424,7 @@ export default function SpotPage() {
   }, [menu, selectedCategoryId, searchQuery]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center">
-        <div className="text-stone-400 font-mono uppercase tracking-widest text-sm animate-pulse">Loading menu //</div>
-      </div>
-    );
+    return <PageLoader message="Loading menu..." />;
   }
 
   if (error && !venue) {

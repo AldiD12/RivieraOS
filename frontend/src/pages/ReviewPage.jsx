@@ -22,29 +22,12 @@ export default function ReviewPage() {
   const actualVenueId = venueId || searchParams.get('v');
 
   useEffect(() => {
-    // Add Google Fonts
-    const link1 = document.createElement('link');
-    link1.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap';
-    link1.rel = 'stylesheet';
-    document.head.appendChild(link1);
-
-    const link2 = document.createElement('link');
-    link2.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap';
-    link2.rel = 'stylesheet';
-    document.head.appendChild(link2);
-
-    // Fetch real venue data from backend
     if (actualVenueId) {
       fetchVenueData();
     } else {
       setError('No venue ID provided');
       setLoading(false);
     }
-
-    return () => {
-      document.head.removeChild(link1);
-      document.head.removeChild(link2);
-    };
   }, [actualVenueId]);
 
   const fetchVenueData = async () => {
